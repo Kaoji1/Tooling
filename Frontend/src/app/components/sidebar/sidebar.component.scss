@@ -1,11 +1,16 @@
 .sidebar {
+  // position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 200px;
   background-color: #1e1e2f;
   color: #fff;
-  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.5rem;
+  box-sizing: border-box;
+  // padding: 1.5rem;
 
   .top {
     .logo {
@@ -17,6 +22,7 @@
 
     .nav-links {
       list-style: none;
+      margin: 0;
       padding: 0;
 
       li {
