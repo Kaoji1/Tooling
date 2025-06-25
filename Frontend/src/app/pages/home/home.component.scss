@@ -1,19 +1,20 @@
 .home-layout {
   display: flex;
   flex-direction: row;
-  height: 100vh;
+  height: 100%;
   width: 100%;
+  overflow: hidden;
 
   .content-area {
     flex-grow: 1;
-    // padding: 2rem;
+    padding: 20px;
     background-color: #f4f4f4;
     overflow-y: auto;
-    margin-left: 200px;
-    height: 100vh;
+    margin-left: 0;
+    height: 100%;
   }
 
   app-sidebar {
-    width: 250px;
+    width: 200px;
   }
 }
