@@ -14,5 +14,5 @@ export class SidebarComponent {
   logout() {
     this.router.navigate(['/login']);
   }
-
+ imagePath = 'assets/images/1.png';
 }

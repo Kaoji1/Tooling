@@ -5,16 +5,29 @@
   width: 100%;
   overflow: hidden;
 
+
   .content-area {
     flex-grow: 1;
     padding: 20px;
-    background-color: #f4f4f4;
+    background-color: #d2e5ec;
     overflow-y: auto;
     margin-left: 0;
     height: 100%;
+
+    
+    h1  {      
+      padding: 5px 0 5px 0;
+    }
+
+    p {
+      font-size:12px ;
+      color: rgb(32, 32, 42);
+    }
   }
 
   app-sidebar {
     width: 200px;
   }
+
+  
 }

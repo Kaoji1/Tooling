@@ -1,0 +1,65 @@
+$primary-color:#005BAC;
+$background-gradient:linear-gradient(to right,#112036,$primary-color);
+$card-bg:#fff;
+$input-border:#ccc;
+
+.login-page {
+    height: 100vh;
+    background: $background-gradient;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    font-family: Georgia;
+
+    .login-card {
+        background-color: $card-bg;
+        border-radius: 30px;
+        padding: 40px;
+        width: 480px;
+       
+    }
+
+    h1 {
+        text-align: center;
+        margin: 30px;
+        font-weight: 100;
+        font-size: 40px;
+    }
+
+    label {
+        
+        display: block;
+    }
+
+   input[type="text"],
+   input[type="password"] {
+    
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid $input-border;
+        margin:10px;
+    }
+
+    .show-password{
+        font-size: 12px;
+        margin: 15px;
+        display: flex;
+        color:#878787;
+        gap:5px;
+
+    }
+   
+   
+
+    .btn-singin {
+        background-color: #007bff;
+        width: 100%;
+        padding:15px;
+        border-radius: 5px;
+        border: 1px solid $input-border;
+        color: #fff;
+    }
+
+
+}
