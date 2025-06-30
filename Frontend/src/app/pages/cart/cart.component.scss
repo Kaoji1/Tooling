@@ -28,16 +28,14 @@
        table {
         width: 100%;
         border-collapse: collapse;
-        margin:20px ;
+        margin-top:20px ;
         color: #4a4949;
-        
         
         th, td {
           padding: 12px;
           text-align: left;
           border: 1px solid #D2D2D2;
           text-align: center;
-         
           
         }
 
@@ -46,9 +44,22 @@
           padding: 15px;
           font-size: 18px;
           font-weight: 100;
-          
         }
+      } //table
+
+
+      .btn-sendrequest {
+        margin:20px;
+        background-color: rgb(235, 51, 51);
+        color: white;
+        justify-self:end ;
+        display: block;
+        border: none;
+        border-radius: 20px;
+        font-size: 22px;
+        padding: 12px;
+        
       }
-    }
+    }//main
     
 }
