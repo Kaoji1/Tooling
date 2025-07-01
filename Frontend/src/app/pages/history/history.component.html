@@ -12,7 +12,7 @@
                     <label for="datesetup">Date Setup</label>
                 <input type="date" id="datesetup">
                 </div>
-                
+               
              
                 
                 <div class="group-select">
@@ -40,7 +40,7 @@
                 </div>
                 </div>
                 <div class="btn-group-req">
-                    <button class="btn-sort" type="submit">Sort</button>
+                    <button class="btn-sort" type="submit"> Sort <i class="bi bi-sort-down"></i></button>
                     
                 </div>
             
@@ -59,9 +59,8 @@
                             <th >QTY</th>
                             <th>Input Date</th>
                             <th>Due Date</th>
-                            <th>Insert</th>
-                            <th>Edit</th>
-                            <th>Del</th>
+                            <th>Status</th>
+                            
                             
                             
                         </tr>
@@ -79,8 +78,7 @@
                             <td>1</td>
                             <td>1</td>
                             <td>1</td>
-                            <td>l</td>
-                            <td>l</td>
+                            
                             
                         </tr>
                         <tr >
@@ -95,10 +93,11 @@
                             <td>1</td>
                             <td>1</td>
                             <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
+                            
                             
                         </tr>
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
                          
                     </tbody>
                 </table>

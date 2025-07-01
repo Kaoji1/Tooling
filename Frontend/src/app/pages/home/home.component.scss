@@ -20,6 +20,12 @@
       margin-bottom: 5px;
       
     }
+    i {
+      color: #ffffff;
+      font-size: 25px;
+      margin: 5px;
+      
+    }
     p{
       color: rgb(16, 3, 114);
       margin-bottom: 20px;
@@ -87,7 +93,7 @@
           margin: 20px;
 
           .btn-view {
-            width: 100px;
+            width: 120px;
             height: 45px;
             background-color: #005eb8;
             color: white;
@@ -100,7 +106,7 @@
             
           }
           .btn-import {
-            width: 100px;
+            width: 120px;
             height: 45px;
             background-color: #00a5b5;
             color: white;
@@ -151,7 +157,7 @@
         border: none;
         border-radius: 20px;
         font-size: 22px;
-        padding: 12px;
+        padding: 10px;
         
       }
 
