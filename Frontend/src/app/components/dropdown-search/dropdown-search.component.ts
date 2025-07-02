@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 @Component ({
     selector: 'app-dropdown-search',
     standalone: true,
-    imports:[CommonModule,FormsModule,NgSelectModule],
+    imports:[CommonModule, FormsModule, NgSelectModule],
     templateUrl: './dropdown-search.component.html',
     styleUrl: './dropdown-search.component.scss'
 })

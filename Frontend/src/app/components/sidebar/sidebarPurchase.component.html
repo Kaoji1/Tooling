@@ -1,0 +1,36 @@
+<nav class="sidebar">
+
+  <div class="top">
+
+
+        <img src="logominebea.png" width="205px" />
+
+
+
+
+
+     <ul class="nav-links">
+        <li routerLinkActive="active">
+          <a routerLink="/home"> <i class="bi bi-newspaper"></i> Request List </a>
+        </li>
+        <li routerLinkActive="active">
+          <a routerLink="/cart"> <i class="bi bi-cart"></i> Request History </a>
+        </li>
+        <li routerLinkActive="active">
+         <a routerLink="/history"> <i class="bi bi-clock-history"></i> Graph Analyze </a>
+        </li>
+      </ul>
+
+  </div>
+
+  <div class="bottom">
+
+    <div class="user-info">Username</div>
+    <button (click)="logout()" class="logout-btn">❌</button>
+
+
+  </div>
+
+</nav>
+
+
