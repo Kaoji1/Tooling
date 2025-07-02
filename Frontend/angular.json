@@ -54,12 +54,24 @@
               }
             ],
             "styles": [
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 
               "src/styles.scss",
               "node_modules/@ng-select/ng-select/themes/default.theme.css"
               
 
 
+=======
+              "./node_modules/bootstrap/dist/css/bootstrap-grid.min.css",
+              "./node_modules/bootstrap-icons/font/bootstrap-icons.css",
+              "src/styles.scss"
+>>>>>>> Stashed changes
+=======
+              "./node_modules/bootstrap/dist/css/bootstrap-grid.min.css",
+              "./node_modules/bootstrap-icons/font/bootstrap-icons.css",
+              "src/styles.scss"
+>>>>>>> Stashed changes
 
 
             ],
