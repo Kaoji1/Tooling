@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import {RouterModule} from '@angular/router';
 
 @Component({
-  selector: 'app-sidebar',
+  selector: 'app-sidebarpurchase',
   standalone: true,
   imports: [RouterModule],
   templateUrl: './sidebarPurchase.component.html',
