@@ -6,11 +6,14 @@ import { RequestlistComponent } from './pages/requestlist/requestlist.component'
 
 export const routes: Routes = [
 
-    {path: '',redirectTo:'home',pathMatch:'full'},
-    {path: 'home', component: HomeComponent},
-    {path: 'cart', component: CartComponent},
-    {path: 'history' ,component: HistoryComponent },
-    {path: 'requestlist' ,component: RequestlistComponent },
+    // User Group Page
+    // {path: '', redirectTo: 'home', pathMatch: 'full'},
+    // {path: 'home', component: HomeComponent},
+    // {path: 'cart', component: CartComponent},
+    // {path: 'history', component: HistoryComponent},
 
+    // Purchase Group Page
+    {path: '', redirectTo: 'requestlist', pathMatch: 'full'},
+    {path: 'requestlist', component: RequestlistComponent},
 
 ];
