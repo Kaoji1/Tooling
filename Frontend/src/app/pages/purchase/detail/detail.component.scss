@@ -1,0 +1,44 @@
+.detail-layout{
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  background-color: rgb(255, 255, 255);
+}
+
+// ข้อความข้างบน
+.toptext {
+  margin-top: 20px;
+  margin-left: 20px;
+}
+
+p {
+  color: #3f4bff;
+  font-size: 20px;
+}
+
+// กล่อง ItemNo.
+.Box-itemNo h1 {
+  font-size: 30px;
+}
+
+.Box-itemNo {
+  width: fit-content;
+  margin-top: 20px;
+  margin-left: 20px;
+  padding: 20px;
+  color: rgb(0, 0, 0);
+  background-color: #bbdfff;
+  border: solid 3px #0084f9;
+  border-radius: 14px;
+}
+
+// ตาราง
+.table-responsive {
+  margin-top: 25px;
+}
+
+.pagination {
+  margin-top: 25px;
+  justify-content: center ;
+}
