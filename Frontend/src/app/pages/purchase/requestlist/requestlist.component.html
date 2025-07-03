@@ -1,9 +1,99 @@
+<!-- จัดเรียงsidebarและหน้าทั้งหน้า -->
 <div class="layout">
-
+<!-- sidebarฝั่งuser -->
   <app-sidebarpurchase></app-sidebarpurchase>
-
+<!-- ข้อมูลในหน้านี้ไม่รวมsidebar -->
   <div class="content">
-    <p>Nong yak non </p>
-  </div>
+
+    <h1 class="re"> Request List </h1>
+    <p class="the"> The loan withdrawal request is here. </p>
+
+
+    <div class="box-input">
+
+      <div class="form-input">
+
+        <div class="group-select">
+          <label for="datesetup">Date Setup</label>
+          <input type="date" id="datesetup">
+        </div>
+
+        <div class="group-select">
+          <label for="duedate">Due Date</label>
+          <input type="date" id="duedate">
+        </div>
+
+        <div class="group-select">
+          <label for="case">Case</label>
+          <select class="form-select" id="satus">
+            <option selected>Case Select</option>
+            <option value="1">Set up</option>
+            <option value="2">Other</option>
+          </select>
+        </div>
+         <div class="table-responsive">
+      <table class="table table-bordered text-center">
+        <!-- หัวตาราง -->
+        <thead>
+          <tr>
+            <th>Part No.</th>
+            <th>Item No.</th>
+            <th>Content/Spec</th>
+            <th>Process</th>
+            <th>Case NG.</th>
+            <th>QTY.</th>
+            <th>Input Date</th>
+            <th>Detail</th>
+            
+          </tr>
+        </thead>
+        <!-- ในตาราง -->
+        <tbody>
+          <!-- row1 -->
+          <tr>
+
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            
+          </tr>
+          <!-- row2 -->
+          <tr>
+
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            
+          </tr>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </tbody>
+      </table>
+    </div>
+
+      </div>
+
+      <nav aria-label="Navigation">
+        <ul class="pagination">
+          <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+          <li i class="page-item"><a class="page-link" href="#">1</a></li>
+          <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+          <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        </ul>
+      </nav>
+
+    </div>
+    
 
 </div>

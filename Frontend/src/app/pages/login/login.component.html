@@ -3,28 +3,23 @@
   <div class="login-card">
     <h1>Login</h1>
 
-       <form (ngSubmit)="onLogin()" #loginForm="ngForm">
-            <label for="userid">User ID :</label>
-            <input type="text" name="userid" [(ngModel)]="username" required placeholder="Enter user id" />
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+      <label for="userid">User ID :</label>
+      <input type="text" name="userid" [(ngModel)]="username" required placeholder="Enter user id" />
 
-            <label for="password">Password :</label>
-            <input type="password" id="passwordinput" name="password" [(ngModel)]="password" required placeholder="Enter password" />
+      <label for="password">Password :</label>
+      <input type="password" id="passwordinput" name="password" [(ngModel)]="password" required
+        placeholder="Enter password" />
 
-            <div class="show-password">
-                <input type="checkbox" id="showpwd" (change)="togglePasswordVisibility()" />
-                <label for="showpwd">Show password</label>
-            </div>
+      <div class="show-password">
+        <input type="checkbox" id="showpwd" (change)="togglePasswordVisibility()" />
+        <label for="showpwd">Show password</label>
+      </div>
 
-            <button type="submit" class="btn-singin">IN</button>
+      <button type="submit" class="btn-singin">IN</button>
 
-             <p *ngIf="errorMessage" style="color:red;">{{ errorMessage }}</p>
+      <p *ngIf="errorMessage" style="color:red;">{{ errorMessage }}</p>
     </form>
-    
-    </div>
-</div> 
 
-
-
- 
-
-    
+  </div>
+</div>

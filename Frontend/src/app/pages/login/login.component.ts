@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { Router } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { AuthServices } from '../../service/auth.services';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -8,7 +7,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterOutlet,CommonModule, FormsModule],
+  imports: [RouterOutlet, CommonModule, FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -44,7 +43,7 @@ export class LoginComponent {
   }
 
   // โชว์passwordเมื่อกดckebox
-      ngAfterViewInit(): void {
+  ngAfterViewInit(): void {
     const checkbox = document.getElementById('showpwd') as HTMLInputElement;
     const passwordInput = document.getElementById('passwordinput') as HTMLInputElement;
     if (checkbox && passwordInput) {
