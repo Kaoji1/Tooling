@@ -11,7 +11,7 @@ import { RequestlistComponent } from './pages/purchase/requestlist/requestlist.c
 import { DetailComponent } from './pages/purchase/detail/detail.component';
 import { HistoryRequestComponent } from './pages/purchase/history-request/history-request.component';
 
-import {AuthGuard } from './guards/auth.guard';
+// import {AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
 
