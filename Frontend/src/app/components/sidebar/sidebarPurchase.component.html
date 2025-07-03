@@ -1,14 +1,8 @@
 <nav class="sidebar">
-
   <div class="top">
-
-
-        <img src="logominebea.png" width="205px" />
-
-
-
-
-
+      <!-- logo -->
+      <img src="logominebea.png" width="205px" />
+    <!-- แถบเมนู -->
      <ul class="nav-links">
         <li routerLinkActive="active">
           <a routerLink="/requestlist"> <i class="bi bi-newspaper"></i> Request List </a>
@@ -20,17 +14,12 @@
          <a routerLink="/graphanalyze"> <i class="bi bi-clock-history"></i> Graph Analyze </a>
         </li>
       </ul>
-
   </div>
-
+  <!-- ปุ่มlogout+Username -->
   <div class="bottom">
-
     <div class="user-info">Username</div>
     <button (click)="logout()" class="logout-btn">❌</button>
-
-
   </div>
-
 </nav>
 
 
