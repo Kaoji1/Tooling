@@ -5,21 +5,27 @@
   .content{
     display: block;
     width: 100%;
+    background-color: white;
   }
 
 }
 .re{
   font-size: 40px;
+  margin-top: 20px;
+  margin-left: 20px;
 }
 
 .the{
   font-size: 20px;
+  margin-top: 20px;
+  margin-left: 20px;
 }
 
-box-input{
-   display: flex;
+.box-input{
    justify-content: space-between;
-}
+   width: 100%;
+   
+
 
  .form-input{
             display: flex;
@@ -35,6 +41,8 @@ box-input{
     .group-select { //label+select
             flex-direction: column;
             display: flex;
+            margin-top: 20px;
+            margin-left: 20px;
     }
 
     label {
@@ -67,6 +75,7 @@ box-input{
           text-align: left;
           border: 1px solid #D2D2D2;
           text-align: center;
-          width: 100%;
+          
           
         }
+      }
