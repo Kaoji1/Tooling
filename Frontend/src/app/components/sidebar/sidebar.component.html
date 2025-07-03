@@ -1,14 +1,14 @@
 <nav class="sidebar">
-
+    <!-- แถบของเมนูแยกกับusername -->
   <div class="top">
-    
-   
+
+
         <img src="logominebea.png" width="205px" />
-    
 
-    
 
-    
+
+
+
      <ul class="nav-links">
         <li routerLinkActive="active">
           <a routerLink="/home"> <i class="bi bi-newspaper"></i> Request </a>
@@ -22,28 +22,13 @@
         <li routerLinkActive="active">
           <a routerLink="/about"> About Us </a>
         </li>
-        <li routerLinkActive="active">
-         <a routerLink="/requestlist">  Request List </a>
-        </li>
-        <li routerLinkActive="active">
-         <a routerLink="/historyrequest">  History Request </a>
-        </li>
-         <li routerLinkActive="active">
-         <a routerLink="/detail">  Detail </a>
-        </li>
-        
       </ul>
-
   </div>
-
+  <!-- ฝั่งแสดงแถบUsernameและปุ่มlogout -->
   <div class="bottom">
-
     <div class="user-info">Username</div>
-    <button (click)="logout()" class="logout-btn">❌</button>
-
-
+    <button (click)="logout()" class="logout-btn"><i class="bi bi-box-arrow-right"></i></button>
   </div>
-
 </nav>
 
 

@@ -1,0 +1,99 @@
+<!-- จัดเรียงsidebarและหน้าทั้งหน้า -->
+<div class="history-layout">
+  <!-- sidebarฝั่งuser -->
+  <app-sidebar></app-sidebar>
+  <!-- ข้อมูลในหน้านี้ไม่รวมsidebar -->
+  <div class="main">
+    <h1>History</h1>
+    <p>Requset History</p>
+    <!-- ฝั่งdropdownรับค่า -->
+    <div class="box-input">
+      <div class="form-input">
+        <div class="group-select">
+          <label for="datesetup">Date Setup</label>
+          <input type="date" id="datesetup">
+        </div>
+        <div class="group-select">
+          <label for="duedate">Due Date</label>
+          <input type="date" id="duedate">
+        </div>
+        <div class="group-select">
+          <label for="satus">Satus</label>
+          <select class="form-select" id="satus">
+            <option selected>Open this select menu</option>
+            <option value="1">Complete</option>
+            <option value="2">InComplete</option>
+            <option value="3">Three</option>
+          </select>
+        </div>
+        <div class="group-select">
+          <label for="filter">Filter/Select Item</label>
+          <select class="form-select" id="filter">
+            <option selected>Open this select menu</option>
+            <option value="1">One</option>
+            <option value="2">Two</option>
+            <option value="3">Three</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-group-req">
+        <button class="btn-sort" type="submit"> Sort <i class="bi bi-sort-down"></i></button>
+      </div>
+    </div>
+    <!-- ตารางที่รับค่ามาจากการกดsend request -->
+    <div class="table-responsive">
+      <table class="table table-bordered text-center">
+        <!-- หัวตาราง -->
+        <thead>
+          <tr>
+            <th>Part No.</th>
+            <th>Item No.</th>
+            <th>Spec</th>
+            <th>Process</th>
+            <th>Machine Type</th>
+            <th>Machine No.</th>
+            <th>QTY</th>
+            <th>Input Date</th>
+            <th>Due Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <!-- ในตาราง -->
+        <tbody>
+          <!-- row1 -->
+          <tr>
+
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+          </tr>
+          <!-- row2 -->
+          <tr>
+
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+          </tr>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </tbody>
+      </table>
+    </div>
+    <!--table-->
+    <app-dropdown-search></app-dropdown-search>
+  </div>
+</div>
