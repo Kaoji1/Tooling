@@ -4,6 +4,7 @@ import { CartComponent } from './pages/cart/cart.component';
 import { HistoryComponent } from './pages/history/history.component';
 import { RequestlistComponent } from './pages/requestlist/requestlist.component';
 import { DetailComponent } from './pages/detail/detail.component';
+import { HistoryRequestComponent } from './pages/history-request/history-request.component';
 
 export const routes: Routes = [
 
@@ -16,6 +17,7 @@ export const routes: Routes = [
     // Purchase Group Page
     {path: '', redirectTo: 'requestlist', pathMatch: 'full'},
     {path: 'requestlist', component: RequestlistComponent},
+    {path: 'history-request', component: HistoryRequestComponent},
     {path: 'detail', component: DetailComponent}
 
 ];

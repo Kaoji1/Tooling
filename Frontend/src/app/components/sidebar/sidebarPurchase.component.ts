@@ -9,7 +9,7 @@ import {RouterModule} from '@angular/router';
   templateUrl: './sidebarPurchase.component.html',
   styleUrl: './sidebar.component.scss'
 })
-export class SidebarComponent {
+export class SidebarPurchaseComponent {
   constructor(private router: Router) { }
 
   logout() {
