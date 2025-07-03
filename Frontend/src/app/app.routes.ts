@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login.component';
 
 // User pages
@@ -11,7 +12,7 @@ import { RequestlistComponent } from './pages/purchase/requestlist/requestlist.c
 import { DetailComponent } from './pages/purchase/detail/detail.component';
 import { HistoryRequestComponent } from './pages/purchase/history-request/history-request.component';
 
-// import {AuthGuard } from './guards/auth.guard';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
 
@@ -19,15 +20,28 @@ export const routes: Routes = [
   {path: 'login', component: LoginComponent},
 
   // User Group Page
- 
-  {path: 'home', component: HomeComponent},
-  {path: 'cart', component: CartComponent},
-  {path: 'history', component: HistoryComponent},
+  {path: '', redirectTo: 'home', pathMatch: 'full'},
+  {path: 'home', component: HomeComponent, canActivate: [authGuard], data: {role: 'user'}},
+  {path: 'cart', component: CartComponent, canActivate: [authGuard], data: {role: 'user'}},
+  {path: 'history', component: HistoryComponent, canActivate: [authGuard], data: {role: 'user'}},
 
   // Purchase Group Page
-  
-  {path: 'requestlist', component: RequestlistComponent},
-  {path: 'detail', component: DetailComponent},
-  {path: 'history-request', component: HistoryRequestComponent},
+  {path: '', redirectTo: 'requestlist', pathMatch: 'full'},
+  {path: 'requestlist', component: RequestlistComponent, canActivate: [authGuard], data: {role: 'purchase'}},
+  {path: 'detail', component: DetailComponent, canActivate: [authGuard], data: {role: 'purchase'}},
+  {path: 'history-request', component: HistoryRequestComponent, canActivate: [authGuard], data: {role: 'purchase'}},
+
+  // Redirect old dashboard routes to new home pages
+  { path: 'user-dashboard', redirectTo: '/user-home', pathMatch: 'full' },
+  { path: 'purchase-dashboard', redirectTo: '/purchase-home', pathMatch: 'full' },
+
+  // Catch all
+  { path: '**', redirectTo: '/login' }
 
 ];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
