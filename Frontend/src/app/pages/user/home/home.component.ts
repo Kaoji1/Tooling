@@ -47,4 +47,5 @@ export class HomeComponent {
     const isChecked = event.target.checked;
     this.data.forEach(row => (row.selected = isChecked));
   }
+  
 }

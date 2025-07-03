@@ -4,7 +4,7 @@
     <app-sidebar></app-sidebar>
     <!-- หน้าทั้งหมดไม่รวมsidebar -->
     <div class="content-area">
-        <h1>Request </h1>
+        <h4>Request </h4>
         <p>Product Requisition </p>
         <!-- group รวม 2 row,button -->
          <div class="group-req ">
@@ -24,7 +24,7 @@
               <div class="group-select">
                 <label for="Fac">Fac</label>
                 <select class="form-select" id="Fac" >
-                     <option selected>Open this select menu</option>
+                     <option selected disabled > Open this select menu</option>
                     <option value="1">One</option>
                     <option value="2">Two</option>
                     <option value="3">Three</option>
@@ -112,21 +112,20 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let item of data" [ngClass]="{'select-row': item.selected}">
-                      <td>
-                        <input type="checkbox" [(ngModel)]="item.selected">
-                      </td>
-                      <td>{{ item.partNo }}</td>
-                      <td>{{ item.itemNo }}</td>
-                      <td>{{ item.spec }}</td>
-                      <td>{{ item.process }}</td>
-                      <td>{{ item.machineType }}</td>
-                      <td>{{ item.machineNo }}</td>
-                      <td>{{ item.qty }}</td>
-                      <td>{{ item.inputDate }}</td>
-                      <td>{{ item.dueDate }}</td>
-                      <td>{{ item.status }}</td>
-                    </tr>
+                    <tbody>
+                        <tr *ngFor="let item of data"  >
+                          <td><input type="checkbox" [(ngModel)]="item.selected"></td>
+                          <td>{{ item.partNo }}</td>
+                          <td>{{ item.itemNo }}</td>
+                          <td>{{ item.spec }}</td>
+                          <td>{{ item.process }}</td>
+                          <td>{{ item.machineType }}</td>
+                          <td>{{ item.machineNo }}</td>
+                          <td>{{ item.qty }}</td>
+                          <td>{{ item.inputDate }}</td>
+                          <td>{{ item.dueDate }}</td>
+                          <td>{{ item.status }}</td>
+                        </tr>
                   </tbody>
                 </table>
               </div>
@@ -146,8 +145,8 @@
       <div class="modal-body">
         <form>
           <div class="mb-3">
-            <label for="recipient-name" class="col-form-label">Recipient:</label>
-            <input type="text" class="form-control" id="recipient-name">
+            <label for="recipient-name" class="col-form-label">Open File:</label>
+            <button type="button" class="form-control" id="recipient-name" style="width: 200px; background-color: dimgrey; color: white;">Open File</button>
           </div>
           <div class="mb-3">
             <label for="message-text" class="col-form-label">Message:</label>
