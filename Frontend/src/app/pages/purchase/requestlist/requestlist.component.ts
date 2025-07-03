@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { SidebarComponent } from '../../components/sidebar/sidebarPurchase.component';
+import { SidebarComponent } from '../../../components/sidebar/sidebarPurchase.component';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
