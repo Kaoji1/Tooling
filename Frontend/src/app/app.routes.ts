@@ -19,13 +19,13 @@ export const routes: Routes = [
   {path: 'login', component: LoginComponent},
 
   // User Group Page
-  {path: '', redirectTo: 'home', pathMatch: 'full'},
+ 
   {path: 'home', component: HomeComponent},
   {path: 'cart', component: CartComponent},
   {path: 'history', component: HistoryComponent},
 
   // Purchase Group Page
-  {path: '', redirectTo: 'requestlist', pathMatch: 'full'},
+  
   {path: 'requestlist', component: RequestlistComponent},
   {path: 'detail', component: DetailComponent},
   {path: 'history-request', component: HistoryRequestComponent},
