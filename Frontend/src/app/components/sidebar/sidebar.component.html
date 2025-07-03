@@ -1,11 +1,15 @@
 <nav class="sidebar">
     <!-- แถบของเมนูแยกกับusername -->
   <div class="top">
-    <!-- logominebea -->
-    <img src="logominebea.png" width="205px" />
-    <!-- แถบlink Pages -->
-    <ul class="nav-links">
-      <!-- ปุ่มกดpage ใช้ routerlinkเผื่อเชื่อมไปหน้าค่าวๆและroterlinkactiveเพื่อให้ขึ้นสีค้างไว้เมื่ออยู่หน้านั้นๆ -->
+
+
+        <img src="logominebea.png" width="205px" />
+
+
+
+
+
+     <ul class="nav-links">
         <li routerLinkActive="active">
           <a routerLink="/home"> <i class="bi bi-newspaper"></i> Request </a>
         </li>
@@ -32,7 +36,9 @@
   <!-- ฝั่งแสดงแถบUsernameและปุ่มlogout -->
   <div class="bottom">
     <div class="user-info">Username</div>
-    <button (click)="logout()" class="logout-btn">❌</button>
+    <button (click)="logout()" class="logout-btn"><i class="bi bi-box-arrow-right"></i></button>
+
+
   </div>
 </nav>
 

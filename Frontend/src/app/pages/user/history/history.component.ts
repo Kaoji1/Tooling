@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { SidebarComponent } from '../../components/sidebar/sidebar.component';
+import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { RouterOutlet } from '@angular/router';
-import { DropdownSearchComponent } from '../../components/dropdown-search/dropdown-search.component';
+import { DropdownSearchComponent } from '../../../components/dropdown-search/dropdown-search.component';
 
 
 
