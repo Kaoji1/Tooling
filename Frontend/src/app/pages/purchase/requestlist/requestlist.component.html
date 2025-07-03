@@ -3,7 +3,87 @@
   <app-sidebarpurchase></app-sidebarpurchase>
 
   <div class="content">
-    <p>Nong yak non </p>
-  </div>
+
+    <h1 class="re"> Request List </h1>
+    <p class="the"> The loan withdrawal request is here. </p>
+
+
+    <div class="box-input">
+
+      <div class="form-input">
+
+        <div class="group-select">
+          <label for="datesetup">Date Setup</label>
+          <input type="date" id="datesetup">
+        </div>
+
+        <div class="group-select">
+          <label for="duedate">Due Date</label>
+          <input type="date" id="duedate">
+        </div>
+
+        <div class="group-select">
+          <label for="case">Case</label>
+          <select class="form-select" id="satus">
+            <option selected>Case Select</option>
+            <option value="1">Set up</option>
+            <option value="2">Other</option>
+          </select>
+        </div>
+         <div class="table-responsive">
+      <table class="table table-bordered text-center">
+        <!-- หัวตาราง -->
+        <thead>
+          <tr>
+            <th>Part No.</th>
+            <th>Item No.</th>
+            <th>Content/Spec</th>
+            <th>Process</th>
+            <th>Case NG.</th>
+            <th>QTY.</th>
+            <th>Input Date</th>
+            <th>Detail</th>
+            
+          </tr>
+        </thead>
+        <!-- ในตาราง -->
+        <tbody>
+          <!-- row1 -->
+          <tr>
+
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            
+          </tr>
+          <!-- row2 -->
+          <tr>
+
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            <td>1</td>
+            
+          </tr>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </tbody>
+      </table>
+    </div>
+
+      </div>
+
+
+    </div>
+    
 
 </div>
