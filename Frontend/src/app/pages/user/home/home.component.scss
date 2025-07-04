@@ -18,7 +18,7 @@
       display: flex;
       justify-content: space-between;
       flex-direction: row;
-      
+
 
       h4 {
         margin-bottom: 5px;
@@ -29,21 +29,21 @@
         border: none;
         background-color: white;
 
-         i {
-        color: #000000;
-        font-size: 25px;
-        margin-right: 10px;
+        i {
+          color: #000000;
+          font-size: 25px;
+          margin-right: 10px;
 
-      }
+        }
 
       }
     }
 
-      p {
-        color: rgb(16, 3, 114);
-        margin-bottom: 5px;
-      }
-    
+    p {
+      color: rgb(16, 3, 114);
+      margin-bottom: 5px;
+    }
+
 
     //row1+row2+button
     .group-req {
@@ -75,11 +75,12 @@
               margin-bottom: 5px;
             }
 
-            .ng-select{
-              
+            .ng-select {
+
               width: 180px;
               border-radius: 20px;
             }
+
             input {
               padding: 8px;
               border-radius: 5px;
@@ -131,46 +132,51 @@
 
     //.group-req
     //ตารางในbox-main
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      color: #4a4949;
+    .table-responsive {
+      max-height: 550px;
+      max-width: 1290px;
 
-      th,
-      td {
-        padding: 8px;
-        text-align: center;
-        border: 1px solid #D2D2D2;
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        color: #4a4949;
+
+        th,
+        td {
+          padding: 6px;
+          text-align: center;
+          border: 1px solid #D2D2D2;
+        }
+
+        th {
+          background-color: #E3E3E3;
+          padding: 15px;
+          font-size: 16px;
+          font-weight: 100;
+        }
+
+        .selected-row {
+          background-color: #84c4d6 !important;
+        }
       }
 
-      th {
-        background-color: #E3E3E3;
-        padding: 15px;
-        font-size: 16px;
-        font-weight: 100;
-      }
 
-      .selected-row {
-        background-color: #84c4d6 !important;
-      }
-    }
-
-    .btn-sendrequest {
-      margin: 20px;
-      background-color: rgb(235, 51, 51);
-      color: white;
-      justify-self: end;
-      display: block;
-      border: none;
-      border-radius: 20px;
-      font-size: 22px;
-      padding: 8px;
 
     }
   }
 
-  // .box-main
-}
+  .btn-sendrequest {
+    margin: 20px;
+    background-color: rgb(235, 51, 51);
+    color: white;
+    justify-self: end;
+    display: block;
+    border: none;
+    border-radius: 20px;
+    font-size: 22px;
+    padding: 8px;
 
-// .home-
+    // .box-main
+  }
+}

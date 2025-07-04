@@ -4,6 +4,8 @@ import { SidebarComponent } from '../../../components/sidebar/sidebar.component'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { CartService } from '../cart/cart.service';
+import { Router } from '@angular/router';
 
 
 
@@ -56,4 +58,15 @@ export class HomeComponent {
         {id: 4,name:'Casefour'}
     ];
     selectedCase: number | null=null ;
+
+    constructor(private cartService: CartService, private router: Router) {}
+
+    addToCart(){
+      const selectedItems = this.data.filter(item => item.selected);
+      console.log('ส่งตะกร้า:', selectedItems);
+      this.cartService.setCartItems(selectedItems);
+      this.router.navigate(['/cart']);
+    }
+
+
 }

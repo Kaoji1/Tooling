@@ -6,7 +6,10 @@
         <div class="main">
             <div class="header">
         <h4>Cart</h4>
-        <i class="bi bi-bell"></i>
+        <button class="lol" type="button" ><i class="bi bi-bell" ></i>
+      <span class="position-absolute top-2  translate-middle badge rounded-pill bg-danger">99+
+      <span class="visually-hidden">unread messages</span>
+  </span></button>
       </div>
                 
                 <p>all your request in here</p>
@@ -31,283 +34,25 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
+                       
+                        <tr *ngFor="let item of cartItems;let i = index">
+                            <td>{{ item.partNo }}</td>
+                            <td>{{ item.itemNo }}</td>
+                            <td>{{ item.spec }}</td>
+                            <td>{{ item.process }}</td>
+                            <td>{{ item.machineType }}</td>
+                            <td>{{ item.machineNo }}</td>
+                            <td>{{ item.qty }}</td>
+                            <td>{{ item.inputDate }}</td>
+                            <td>{{ item.dueDate }}</td>
+                            
+                            
                             <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
                             <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
+                            <td><button class="del" type="submit" (chick)="removeItem(i)"><i class="bi bi-trash"></i></button></td>
                             
                         </tr>
-                         <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr>
-                         <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr>
-                         <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr>
-                         <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr>
-                         <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr> <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr>
-                         <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr>
-                         <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr>
-                         <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr>
-                         <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr>
-                         <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr> <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr> <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr> <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr> <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr> <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr> <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr> <tr >
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td>1</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type=submit><i class="bi bi-trash"></i></button></td>
-                            
-                        </tr>
+                         
                         
                         
                             
