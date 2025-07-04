@@ -3,12 +3,14 @@ import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
+
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [SidebarComponent, RouterOutlet,CommonModule, FormsModule],
+  imports: [SidebarComponent, RouterOutlet,CommonModule, FormsModule, NgSelectModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -47,5 +49,11 @@ export class HomeComponent {
     const isChecked = event.target.checked;
     this.data.forEach(row => (row.selected = isChecked));
   }
-  
+  case = [
+        {id: 1,name:'Caseone'},
+        {id: 2,name:'Casetwo'},
+        {id: 3,name:'Casethree'},
+        {id: 4,name:'Casefour'}
+    ];
+    selectedCase: number | null=null ;
 }
