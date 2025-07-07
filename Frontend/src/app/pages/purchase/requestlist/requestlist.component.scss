@@ -1,11 +1,12 @@
 .layout {
   display: flex;
-  
+
 
   .content {
     display: block;
     width: 100%;
     background-color: white;
+  }
 
     .re {
       font-size: 40px;
@@ -24,6 +25,7 @@
     .box-input {
       justify-content: space-between;
       width: 100%;
+    }
 
 
 
@@ -44,6 +46,7 @@
         display: flex;
         margin-top: 20px;
         margin-left: 20px;
+      }
 
 
         label {
@@ -55,7 +58,7 @@
 
         }
 
-        select,
+        
         input {
           padding: 8px;
           border: 1px solid #b9b6b6;
@@ -64,7 +67,7 @@
           color: #7a7878;
           width: 200px;
         }
-      }
+      
 
       table {
 
@@ -72,9 +75,10 @@
         border-collapse: collapse;
         margin-top: 20px;
         color: #4a4949;
+      }
 
 
-        th,
+        
         td {
           padding: 12px;
           text-align: left;
@@ -85,11 +89,24 @@
         }
 
         .pagination {
-          margin-top: 25px;
-          justify-content: center;
+          display: flex;
+          justify-content: center ;
+          padding: 0;
+          margin: 0;
+          bottom: 0;
 
         }
+
+        .pagination-wrapper {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          text-align: center;
+          padding: 10px 0;
+        }
+        .case{
+          color: #7a7878;
+        }
+
       }
-    }
-  }
-}
