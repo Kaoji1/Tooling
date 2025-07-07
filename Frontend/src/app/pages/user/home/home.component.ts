@@ -161,17 +161,11 @@ export class HomeComponent implements OnInit {
 
    case_:any|null = null;
 
-   oase = [
-        {id: 1,name:'Caseone'},
-        {id: 2,name:'Casetwo'},
-        {id: 3,name:'Casethree'},
-        {id: 4,name:'Casefour'}
-    ];
-    selectedCase: number | null=null ;
-
-
     isSearched: boolean = false;
     Setup() {
+      this.items = [];
+
+      
       const division = this.div_;
       const fac = this.fac_;
       const Case = this.case_;
