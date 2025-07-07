@@ -48,6 +48,19 @@
         margin-left: 20px;
       }
 
+      .form-select {
+        color: #7a7878; /* สีเทาสำหรับ placeholder */
+        border: 1px solid rgb(157, 157, 157); /* กรอบสีดำ */
+        border-radius: 10px;
+        padding: 8px;
+        font-size: 14px;
+        width: 200px;
+      }
+
+
+      .form-select:valid {
+        color: black;
+      }
 
         label {
           font-size: 16px;
@@ -58,7 +71,11 @@
 
         }
 
-        
+      .form-select option {
+        color: black;
+      }
+
+
         input {
           padding: 8px;
           border: 1px solid #b9b6b6;
@@ -67,7 +84,7 @@
           color: #7a7878;
           width: 200px;
         }
-      
+
 
       table {
 
@@ -78,7 +95,7 @@
       }
 
 
-        
+
         td {
           padding: 12px;
           text-align: left;
