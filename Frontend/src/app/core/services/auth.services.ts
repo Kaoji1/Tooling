@@ -1,6 +1,6 @@
 // src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
-import { USER } from '../mock-user';
+import { USER } from '../../mock-user';
 import { Router } from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
