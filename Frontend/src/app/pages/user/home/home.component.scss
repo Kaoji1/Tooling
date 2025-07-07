@@ -133,7 +133,7 @@
     //.group-req
     //ตารางในbox-main
     .table-responsive {
-      max-height: 550px;
+      max-height: 405px;
       max-width: 1290px;
 
       table {
@@ -147,6 +147,12 @@
           padding: 6px;
           text-align: center;
           border: 1px solid #D2D2D2;
+          
+          .yoyu {
+            width: 50px;
+           
+            
+          }
         }
 
         th {
