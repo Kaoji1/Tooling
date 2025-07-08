@@ -5,13 +5,43 @@
   width: 100%;
   background-color: rgb(255, 255, 255);
 
+
+  // วางใน .detail-layout หรือ .main ก็ได้
+.bell-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+
+  .lol {
+    position: relative;
+    border: none;
+    background-color: white;
+    cursor: pointer;
+
+    i {
+      color: #000;
+      font-size: 25px;
+    }
+
+    .badge {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      font-size: 12px;
+      padding: 4px 6px;
+    }
+  }
+}
+
+
   // ข้อความข้างบน
   .toptext {
     margin-top: 20px;
     margin-left: 20px;
 
     p {
-      color: #3f4bff;
+      color: #0066B3;
       font-size: 20px;
     }
   }
@@ -34,8 +64,8 @@
     margin-left: 20px;
     padding: 20px;
     color: rgb(0, 0, 0);
-    background-color: #bbdfff;
-    border: solid 3px #0084f9;
+    background-color: #dff0ff;
+    border: solid 3px #0065bd;
     border-radius: 14px;
 
     h1 {
@@ -65,3 +95,4 @@
     }
   }
 }
+
