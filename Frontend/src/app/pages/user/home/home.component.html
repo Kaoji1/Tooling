@@ -49,13 +49,15 @@
             <label for="date">Date</label>
             <input type="date" class="form-control" placeholder="Enter date" id="date" />
           </div>
-          <div class="group-select">
-            <label for="case">Case </label>
+          <div class="group-select" style="width: 180px;">
+            <label for="case" >Case </label>
             <ng-select 
+
               [items]="Case" 
               bindLabel="Case" 
               bindValue="value" 
-              [(ngModel)]="case_"
+              [(ngModel)]="selectedType"
+              (change)="onTypechange()"
               placeholder="Select a case">
             </ng-select>
           </div>
@@ -65,6 +67,7 @@
         <div class="req-row2">
           <!-- group รวม label,select -->
           <div class="group-select">
+            
             <label for="case">Part No. </label>
             <ng-select 
               [items]="partNo" 
@@ -98,36 +101,88 @@
             </ng-select>
           </div>
           <div class="group-select">
-            <label for="Machine No">Machine No</label>
+            <label for="Machine No">Machine Type</label>
             <ng-select 
-              [items]="machineNo" 
+              [items]="machineType" 
               bindLabel="label" 
               bindValue="value" 
-              [(ngModel)]="selectedMachineNo"
-              placeholder="Select a case">
+              [(ngModel)]="selectedMachineType"
+              placeholder="Select machineType">
             </ng-select>
           </div>
           <!-- inputQTYใส่เลข -->
-          <div class="group-select">
+          <div class="group-select" *ngIf="selectedType === 'setup' " >
             <label for="phonenumber">QTY</label>
-            <input type="number" class="form-control" min="0" step="1" placeholder="Enter QTY" id="qty" />
+            <input  type="number" class="form-control" min="0" step="1" placeholder="Enter QTY" id="qty" />
           </div>
-          <!--div group-select-->
+          <!--div group-select -->
         </div>
         <!--div row2-->
+        
       </div>
       <!--div input-req-->
       <!-- btn group -->
       <div class="btn-group-req">
+        <button class="btn-viewall" type="button" (click)="clearall()"> CLEARALL <i class="bi bi-list"></i></button>
         <button class="btn-import" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal"
           data-bs-whatever="@getbootstrap"> IMPORT <i class="bi bi-download"></i></button>
-        <button class="btn-view" type="submit" (click)="Setup()"> VIEW <i class="bi bi-eye-fill"></i></button>
+        <button class="btn-view" type="button" (click)="Setupview()"> VIEW <i class="bi bi-eye-fill"></i></button>
+        
       </div>
+      
     </div>
     <!--div grop-req-->
-    <!-- table -->
+    <!-- table setup-->
     <div class="table-responsive">
-      <table *ngIf="items.length > 0"class="table table-bordered text-center">
+      
+      <table *ngIf="selectedType === 'setup' && items.length > 0"class="table table-bordered text-center">
+        <thead>
+          <tr>
+            <!-- <th>
+              <input type="checkbox" id="selectAll" >
+            </th> -->
+            <th>Part No.</th>
+            <th>Item No.</th>
+            <th>Spec</th>
+            <th>Process</th>
+            <th>Machine Type</th>
+            <th>Machine No.</th>
+            <th>On Hand</th>
+            <th>Usage</th>
+            <th>QTY</th>
+            <th>Case</th>
+            
+          </tr>
+        </thead>
+        <tbody>
+        <tbody>
+          <tr *ngFor="let item of items ">
+            <!-- <td><input type="checkbox" ></td> -->
+            <td>{{ item.partNo }}</td>
+            <td>{{ item.itemNo }}</td>
+            <td>{{ item.spec }}</td>
+            <td>{{ item.process }}</td>
+            <td>{{ item.machineType }}</td>
+            <td>{{ item.machineNo }}</td>
+            <td>{{ item.onHand }}</td>
+            <td>{{ item.usage }}</td>
+            <td><input class="yoyu" type="number" ></td>
+            <td>SET UP</td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- <div *ngIf="items.length === 0 && isSearched" class="alert alert-warning mt-2">
+        ไม่พบข้อมูล
+      </div> -->
+    </div>
+
+
+
+
+    <!-- table other-->
+    <div class="table-responsive">
+      
+      <table *ngIf="selectedType === 'other' && items.length > 0"class="table table-bordered text-center">
         <thead>
           <tr>
             <th>
@@ -148,28 +203,41 @@
         </thead>
         <tbody>
         <tbody>
-          <tr *ngFor="let item of items" >
+          <tr *ngFor="let item of items ">
             <td><input type="checkbox" ></td>
             <td>{{ item.partNo }}</td>
             <td>{{ item.itemNo }}</td>
             <td>{{ item.spec }}</td>
             <td>{{ item.process }}</td>
             <td>{{ item.machineType }}</td>
-            <td>{{ item.machineNo }}</td>
+            <td><input class="yoyu" type="number" ></td>
             <td>{{ item.onHand }}</td>
             <td>{{ item.usage }}</td>
             <td><input class="yoyu" type="number" ></td>
-            <td>{{ item.case }}</td>
+            <td>
+              <ng-select 
+              [items]="caseother" 
+              bindLabel="caseother" 
+              bindValue="viewCase" 
+              [(ngModel)]="item.caseother_"
+              [appendTo]="'body'"
+              placeholder="Select a case">
+              </ng-select>
+            </td>
           </tr>
         </tbody>
       </table>
-      <div *ngIf="items.length === 0 && isSearched" class="alert alert-warning mt-2">
+      <!-- <div *ngIf="items.length === 0 && isSearched" class="alert alert-warning mt-2">
         ไม่พบข้อมูล
-      </div>
+      </div> -->
     </div>
 
-    <button class="btn-sendrequest" type="button" ><i class="bi bi-cart-plus"></i> Add To
-      Cart</button>
+
+
+
+
+
+    <button class="btn-sendrequest" type="button" (click)="addTocart()"><i class="bi bi-cart-plus"></i> Add To Cart</button>
   </div>
   <!--div box-main-->
 </div>

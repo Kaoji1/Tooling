@@ -8,6 +8,7 @@ import { CartService } from '../cart/cart.service';
 import { Router } from '@angular/router';
 import { MOCKDATA } from '../../../mock-data';
 import { machine } from 'os';
+import { cartService } from '../../../core/services/cartService';
 
 
 
@@ -20,26 +21,71 @@ import { machine } from 'os';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
+  constructor(private cartService: CartService,private router:Router){}
+
   mockData: any[] = [];
 
   // ตัวเลือกทั้งหมด
   partNo: any[] = [];
   spec: any[] = [];
   process: any[] = [];
-  machineNo: any[] = [];
+  machineType: any[] = [];
   items: any = [];
+  displayData: any[]=[];
+  item:any;
+  setupItem = [];
+  otherItem = [];
+
+  
+  
+
+
+  onTypechange() {
+    
+    if (this.selectedType === 'setup'){
+      this.items = this.setupItem;
+    }
+    else if (this.selectedType ==='outer') {
+      this.items = this.otherItem;
+    }
+    else {
+      this.items=[];
+    }
+  }
 
   // ค่าที่เลือก
   selectedPratNo: string | null = null;
   selectedSpec: string | null = null;
   selectedProcess: string | null = null;
-  selectedMachineNo: string | null = null;
+  selectedMachineType: string | null = null;
+  selectedType: string | null = null;
+  
+  
+ 
+
 
   ngOnInit() {
     this.mockData = MOCKDATA;
+    this.displayData = this.items;
 
     const uniquePartNos = [...new Set(this.mockData.map(item => item.partNo))];
     this.partNo = uniquePartNos.map(part => ({ label: part, value: part }));
+  }
+
+  // ฟังก์ชั่นปุ่มcleardata
+  clearall() {
+    this.items = [];
+    this.selectedSpec = null;
+    this.selectedProcess = null;
+    this.selectedMachineType = null;
+    this.selectedPratNo = null;
+    this.div_ = null;
+    this.fac_ = null;
+    this.case_ = null;
+    this.otherItem.forEach(item => item,this.caseother_=null);
+    this.caseother_ = null;
+    
+    
   }
 
   //  ฟังก์ชันเมื่อเลือก Part No
@@ -47,7 +93,7 @@ export class HomeComponent implements OnInit {
     if (!this.selectedPratNo) {
       this.spec = [];
       this.process = [];
-      this.machineNo = [];
+      this.machineType = [];
       return;
     }
 
@@ -63,7 +109,7 @@ export class HomeComponent implements OnInit {
       value: process
     }));
 
-    this.machineNo = [...new Set(filtered.map(item => item.machineNo))].map(no => ({
+    this.machineType = [...new Set(filtered.map(item => item.machineType))].map(no => ({
       label: no,
       value: no
     }));
@@ -71,7 +117,7 @@ export class HomeComponent implements OnInit {
     // reset ค่าเลือกอื่นเมื่อ part เปลี่ยน
     this.selectedSpec = null;
     this.selectedProcess = null;
-    this.selectedMachineNo = null;
+    this.selectedMachineType = null;
   }
 
 
@@ -79,7 +125,7 @@ export class HomeComponent implements OnInit {
   onSpecChange() {
     if (!this.selectedSpec || !this.selectedPratNo) {
       this.process = [];
-      this.machineNo = [];
+      this.machineType = [];
       return;
     }
 
@@ -94,7 +140,7 @@ export class HomeComponent implements OnInit {
       value: process
     }));
 
-    this.machineNo = [...new Set(filtered.map(item => item.machineNo))].map(no => ({
+    this.machineType = [...new Set(filtered.map(item => item.selectedMachineType))].map(no => ({
       label: no,
       value: no
     }));
@@ -107,7 +153,7 @@ export class HomeComponent implements OnInit {
 
   onProcessChange() {
     if (!this.selectedProcess || !this.selectedPratNo || !this.selectedSpec ) {
-      this.machineNo = [];
+      this.machineType = [];
       return;
     }
 
@@ -119,7 +165,7 @@ export class HomeComponent implements OnInit {
     );
 
 
-    this.machineNo = [...new Set(filtered.map(item => item.machineNo))].map(no => ({
+    this.machineType = [...new Set(filtered.map(item => item.machineType))].map(no => ({
       label: no,
       value: no
     }));
@@ -153,16 +199,36 @@ export class HomeComponent implements OnInit {
 
     fac_:any| null = null;
 
-  // ของcase
+  // ของcasemaster
    Case = [
-        { Case: 'Setup', value: 'Setup' }, // ตัวเลือกเคสที่ 1
-        { Case: 'Other', value: 'Other' }, // ตัวเลือกเคสที่ 2
+        { Case: 'Setup', value: 'setup' }, // ตัวเลือกเคสที่ 1
+        { Case: 'Other', value: 'other' }, // ตัวเลือกเคสที่ 2
    ]
 
    case_:any|null = null;
 
+//  csdeother
+  caseother = [
+        { caseoyher: 'BRO', viewCase: 'BRO' }, // ตัวเลือกเคสที่ 1
+        { caseother: 'BUR', viewCase: 'BUR' }, // ตัวเลือกเคสที่ 2
+        { caseother: 'USA', viewCase: 'USA' }, // ตัวเลือกเคสที่ 3
+        { caseother: 'HOL', viewCase: 'HOL' }, // ตัวเลือกเคสที่ 4
+        { caseother: 'INV', viewCase: 'INV' }, // ตัวเลือกเคสที่ 5
+        { caseother: 'MOD', viewCase: 'MOD' }, // ตัวเลือกเคสที่ 6
+        { caseother: 'NON', viewCase: 'NON' }, // ตัวเลือกเคสที่ 7
+        { caseother: 'RET', viewCase: 'RET' }, // ตัวเลือกเคสที่ 8
+        { caseother: 'SPA', viewCase: 'SPA' }, // ตัวเลือกเคสที่ 9
+        { caseother: 'STO', viewCase: 'STO' }, // ตัวเลือกเคสที่ 10
+        { caseother: 'CHA', viewCase: 'CHA' }, // ตัวเลือกเคสที่ 11 
+   ]
+
+
+   caseother_:any|null = null;
+
     isSearched: boolean = false;
-    Setup() {
+
+    // ฟังก์ชั่นของปุ่มviewกรองตามที่เลือก
+    Setupview() {
       this.items = [];
 
       
@@ -172,16 +238,16 @@ export class HomeComponent implements OnInit {
       const partNo = this.selectedPratNo;
       const spec = this.selectedSpec;
       const process = this.selectedProcess;
-      const machineNo = this.selectedMachineNo;
+      const machineType = this.selectedMachineType;
 
       this.isSearched = true;
 
-      if (partNo && process && machineNo && division && fac && Case && spec !== null ) {
+      if (partNo && process && machineType && division && fac  && spec !== null ) {
         const filtered = this .mockData.filter(item =>
           item.partNo === partNo &&
           item.spec === spec &&
           item.process === process &&
-          item.machineNo === machineNo  
+          item.machineType === machineType  
         );
 
         if (filtered.length > 0 ) {
@@ -189,6 +255,25 @@ export class HomeComponent implements OnInit {
           
         }
       }
+    }
+
+
+
+    // ฟังก์ชั่นadd to caet
+    addTocart()  {
+      const itemsWithContext = this.items.map((item: any) => ({
+        ...item,
+        division: this.div_,
+        fac: this.fac_,
+        case: this.case_,
+        Date_of_Req:null,
+        selectedPratNo: this.selectedPratNo,
+        selectedSpec: this.selectedSpec,
+        selectedProcess: this.selectedProcess,
+        selectedMachineType: this.selectedMachineType
+
+      }));
+      this.cartService.setCartItems(itemsWithContext);
     }
     
    

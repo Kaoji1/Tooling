@@ -15,7 +15,7 @@
                 <p>all your request in here</p>
             <!-- table -->
                 <div class="table-responsive">
-                <table class="table table-bordered text-center">
+                <table class="table table-bordered text-center" *ngIf="items.length >0">
                     <thead>
                         <tr>
                             <th>Part No.</th>
@@ -38,7 +38,7 @@
                     </thead>
                     <tbody>
                        
-                        <tr *ngFor="let item of cartItems;let i = index">
+                        <tr *ngFor="let item of items;let i = index">
                             <td>{{ item.partNo }}</td>
                             <td>{{ item.itemNo }}</td>
                             <td>{{ item.spec }}</td>
@@ -52,7 +52,7 @@
                             
                             <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
                             <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type="submit" (chick)="removeItem(i)"><i class="bi bi-trash"></i></button></td>
+                            <td><button class="del" type="submit"><i class="bi bi-trash"></i></button></td>
                             
                         </tr>
                          

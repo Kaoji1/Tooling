@@ -58,6 +58,10 @@ export const MOCKDATA = [
     {division: 'GM', fac: '1', case: 'setup', partNo: 'P001', itemNo: 'I001', spec: '8x16mm', process: 'Cutting', machineType: 'Lathe', machineNo: 'M01', onHand: 100, usage: 30},
     {division: 'GM', fac: '1', case: 'setup', partNo: 'P001', itemNo: 'I001', spec: '8x16mm', process: 'Polishing', machineType: 'Lathe', machineNo: 'M01', onHand: 100, usage: 30},
     {division: 'GM', fac: '1', case: 'setup', partNo: 'P001', itemNo: 'I001', spec: '8x16mm', process: 'Milling', machineType: 'CNC', machineNo: 'M04', onHand: 100, usage: 30},
+    {division: 'GM', fac: '1', case: 'setup', partNo: 'P001', itemNo: 'I001', spec: '8x16mm', process: 'Cutting', machineType: 'Lathe', machineNo: 'M01', onHand: 100, usage: 30},
+    {division: 'GM', fac: '1', case: 'setup', partNo: 'P001', itemNo: 'I001', spec: '8x16mm', process: 'Polishing', machineType: 'Lathe', machineNo: 'M01', onHand: 100, usage: 30},
+    {division: 'GM', fac: '1', case: 'setup', partNo: 'P001', itemNo: 'I001', spec: '8x16mm', process: 'Milling', machineType: 'CNC', machineNo: 'M04', onHand: 100, usage: 30},
+
 
 
 

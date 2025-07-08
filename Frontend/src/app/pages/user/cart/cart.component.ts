@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
-import { CartService } from './cart.service';
+import { cartService } from '../../../core/services/cartService';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Router } from '@angular/router';
@@ -17,17 +17,16 @@ import { CommonModule } from '@angular/common';
 
 export class CartComponent {
   
-cartItems: any[] = [];
+items : any[] = [];
 
-constructor(private cartService: CartService) {}
+constructor(private cartService: cartService) {}
 
 ngOnInit(): void {
-this.cartItems = this.cartService.getCartItem();
-console.log('ตะกร้า:',this.cartItems);
+  this.items = this.cartService.getcartItems([]);
 }
 
-removeItem(index: number):void {
-this.cartItems.splice(index,1);
-this.cartService.setCartItems(this.cartItems); }
-  
+clearCart() {
+    this.cartService.clearCart();
+    this.items = [];
+  }
 }
