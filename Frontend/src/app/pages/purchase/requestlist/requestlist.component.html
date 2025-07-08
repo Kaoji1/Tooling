@@ -2,20 +2,34 @@
 <div class="layout">
   <!-- sidebarฝั่งuser -->
   <app-sidebarpurchase></app-sidebarpurchase>
+  
+
   <!-- ข้อมูลในหน้านี้ไม่รวมsidebar -->
   <div class="content">
-
-    <h1 class="re"> Request List 
     
+    <!--คุมหัวข้อเรื่องของหน้า content-->
+    <div class="header"> 
+      
+      <!--หัวข้อเรื่องของหน้า content-->
+    <h1 class="re"> Request List </h1>
     
-    <button class="lol" type="button"><i class="bi bi-bell"></i>
+  <!--ปุ่มระฆัง-->
+    <button class="lol" type="button"><i class="bi-bell"></i>
         <span class="position-absolute top-2  translate-middle badge rounded-pill bg-danger">99+
           <span class="visually-hidden">unread messages</span>
-        </span></button>
-   </h1>
+        </span>
+        </button>
+        
+      </div>
+        
+
+
    
+      <!--คำบรรยายใต้หัวข้อ-->
         <p class="the"> The loan withdrawal request is here. </p>
-    <div class="box-input">
+    
+      <!--ตัวเลือก-->
+        <div class="box-input">
       <div class="form-input">
 
         <div class="group-select">
@@ -39,7 +53,9 @@
 
         </div>
       </div>
-        <div class="table-responsive">
+        
+      <!--ตาราง-->
+      <div class="table-responsive">
           <table class="table table-bordered text-center">
             <!-- หัวตาราง -->
             <thead>
@@ -143,6 +159,7 @@
                 <td>1</td>
 
               </tr>
+
               <tr>
 
                 <td>1</td>
@@ -155,13 +172,14 @@
                 <td>1</td>
 
               </tr>
+              
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </tbody>
           </table>
         </div>
 
-
+        <!--ปุ่มเลื่อนหน้า-->
         <div class="pagination-wrapper">
               <nav aria-label="Navigation">
                 <ul class="pagination">
