@@ -1,19 +1,21 @@
-// โครงหลักของหน้า
+// โครงสร้างหลักของหน้า
 .detail-layout {
   display: flex;
   flex-direction: row;
   width: 100%;
   height: 100%;
   background-color: #ffffff;
+  overflow-x: hidden; // ป้องกันการเลื่อนแนวนอนของทั้งหน้า
 
-  //  พื้นที่แสดงเนื้อหาหลัก
+  // พื้นที่เนื้อหาหลักด้านขวา
   .main {
     flex: 1;
     width: 100%;
+    overflow-x: hidden; // ป้องกันการเลื่อนแนวนอนของส่วนเนื้อหา
     box-sizing: border-box;
     padding-bottom: 60px;
 
-    // กล่องข้อความบนหัว
+    // ส่วนหัวเรื่อง
     .toptext {
       margin-top: 20px;
       margin-left: 20px;
@@ -28,7 +30,7 @@
       }
     }
 
-    // กล่อง item no
+    // กล่องแสดงหมายเลขรายการ
     .Box-itemNo {
       width: fit-content;
       margin: 20px;
@@ -44,7 +46,7 @@
       }
     }
 
-    //  กล่อง back กับ กระดิ่งขวาบน
+    // กลุ่มปุ่มย้อนกลับ และไอคอนแจ้งเตือนมุมขวาบน
     .top-right-icons {
       position: absolute;
       top: 20px;
@@ -53,7 +55,6 @@
       align-items: center;
       gap: 10px;
 
-      // ปุ่ม back
       .back-btn {
         background-color: transparent;
         border: none;
@@ -66,7 +67,6 @@
         }
       }
 
-      // กระดิ่งแ
       .bell-container {
         position: relative;
 
@@ -92,18 +92,17 @@
       }
     }
 
-    // ตาราง
+    // พื้นที่ตารางข้อมูล
     .table-responsive {
       width: 100%;
-      padding: 0 8px;
-      margin-top: 20px;
       overflow-x: auto;
       box-sizing: border-box;
+      margin-top: 20px;
 
       table {
         width: 100%;
-        border-collapse: collapse;
         table-layout: auto;
+        border-collapse: collapse;
 
         th, td {
           padding: 8px 12px;
@@ -111,10 +110,18 @@
           text-align: center;
           white-space: nowrap;
         }
+
+        thead th {
+          position: sticky;
+          top: 0;
+          background-color: #ffffff;
+          z-index: 2;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
       }
     }
 
-    // แถบเปลี่ยนหน้า
+    // แถบเปลี่ยนหน้าด้านล่าง
     .pagination-wrapper {
       position: fixed;
       bottom: 0;
@@ -122,7 +129,6 @@
       width: 100%;
       text-align: center;
       padding: 10px 0;
-
 
       .pagination {
         display: flex;
