@@ -1,24 +1,30 @@
 .layout {
   display: flex;
-
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 
   .content {
-    display: block;
     width: 100%;
+    height: 100%;
+    display: block;
+    flex-direction: column;
+    align-items: start;
+    padding: 20px;
     background-color: white;
+   
+    
+    
   
 
     .re {
-      font-size: 40px;
-      margin-top: 20px;
-      margin-left: 20px;
+      margin-bottom: 5px;
       
     }
 
     .the {
-      font-size: 20px;
-      margin-top: 20px;
-      margin-left: 20px;
+      margin-bottom: 5px;
       color: #0066B3;
     }
 
@@ -28,7 +34,18 @@
       width: 100%;
     }
 
-    .lol {
+    .header {
+      display: flex;
+      justify-content: space-between;
+      flex-direction: row;
+
+
+      h4 {
+        margin-bottom: 5px;
+
+      }
+
+      .lol {
         border: none;
         background-color: white;
 
@@ -40,6 +57,7 @@
         }
 
       }
+    }
 
       
 
@@ -119,7 +137,7 @@
       }
 
         .pagination {
-          display: flex;
+          display: fixed;
           justify-content: center ;
           padding: 0;
           margin: 0;
@@ -136,6 +154,6 @@
           padding: 10px 0;
         }
         
-      
+        
       }
     }
