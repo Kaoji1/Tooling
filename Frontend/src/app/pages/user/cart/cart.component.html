@@ -15,16 +15,19 @@
                 <p>all your request in here</p>
             <!-- table -->
                 <div class="table-responsive">
-                <table class="table table-bordered text-center" *ngIf="items">
+                <table class="table table-bordered text-center" *ngIf="cartItems.length > 0" >
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>Part No.</th>
                             <th>Item No.</th>
                             <th>Spec</th>
                             <th>Process</th>
                             <th>Machine Type</th>
                             <th>Machine No.</th>
+                            <th >Usage</th>
                             <th >QTY.</th>
+                            <th >Case</th>
                             <th>Input Date</th>
                             <th>Due Date</th>
                             <th>Insert</th>
@@ -38,21 +41,22 @@
                     </thead>
                     <tbody>
                        
-                        <tr *ngFor="let item of items;let i = index">
-                            <td>{{ item.partNo }}</td>
-                            <td>{{ item.itemNo }}</td>
-                            <td>{{ item.spec }}</td>
-                            <td>{{ item.process }}</td>
-                            <td>{{ item.machineType }}</td>
+                        <tr *ngFor="let item of cartItems; let i = index">
+                            <td>{{ i + 1}}</td>
+                            <td>{{ item.partNo  }}</td>
+                            <td>{{ item.itemNo  }}</td>
+                            <td>{{ item.Spec }}</td>
+                            <td>{{ item.Process }}</td>
+                            <td>{{ item.MachineType }}</td>
                             <td>{{ item.machineNo }}</td>
+                            <td>{{ item.usage }}</td>
                             <td>{{ item.qty }}</td>
+                            <td>{{ item.case }}</td>
+                            <td>{{ item.setupDate }}</td>
                             <td>{{ item.inputDate }}</td>
-                            <td>{{ item.dueDate }}</td>
-                            
-                            
                             <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
                             <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type="submit"><i class="bi bi-trash"></i></button></td>
+                            <td><button class="del" type="submit" (click)="removeItem(i)"><i class="bi bi-trash"></i></button></td>
                             
                         </tr>
                          

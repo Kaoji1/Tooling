@@ -45,9 +45,9 @@
             <label for="phonenumber">Phone Number</label>
             <input type="tel" class="form-control" placeholder="Enter your phone number" id="phonenumber" />
           </div>
-          <div class="group-select">
+          <div class="group-select"> 
             <label for="date">Date</label>
-            <input type="date" class="form-control" placeholder="Enter date" id="date" />
+            <input type="date" class="form-control" placeholder="Enter date" id="date" [(ngModel)]="Date" />
           </div>
           <div class="group-select" style="width: 180px;">
             <label for="case" >Case </label>
@@ -138,9 +138,9 @@
       <table *ngIf="selectedType === 'setup' && items.length > 0"class="table table-bordered text-center">
         <thead>
           <tr>
-            <!-- <th>
-              <input type="checkbox" id="selectAll" >
-            </th> -->
+            <th>
+              <input type="checkbox"  >
+            </th>
             <th>Part No.</th>
             <th>Item No.</th>
             <th>Spec</th>
@@ -157,7 +157,7 @@
         <tbody>
         <tbody>
           <tr *ngFor="let item of items ">
-            <!-- <td><input type="checkbox" ></td> -->
+            <td><input type="checkbox"  ></td>
             <td>{{ item.partNo }}</td>
             <td>{{ item.itemNo }}</td>
             <td>{{ item.spec }}</td>
@@ -166,7 +166,7 @@
             <td>{{ item.machineNo }}</td>
             <td>{{ item.onHand }}</td>
             <td>{{ item.usage }}</td>
-            <td><input class="yoyu" type="number" ></td>
+            <td><input class="yoyu" type="number" [(ngModel)]="item.qty"min="1"></td>
             <td>SET UP</td>
           </tr>
         </tbody>
@@ -237,7 +237,7 @@
 
 
 
-    <button class="btn-sendrequest" type="button" (click)="addTocart()"><i class="bi bi-cart-plus"></i> Add To Cart</button>
+    <button class="btn-sendrequest" type="button" (click)="addTocart()" ><i class="bi bi-cart-plus"></i> Add To Cart</button>
   </div>
   <!--div box-main-->
 </div>
