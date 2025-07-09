@@ -32,6 +32,11 @@
         }
       }
 
+      h6{
+             
+              margin-top: 60px;
+            }
+
       .header-content {
         display: flex;
         justify-content: space-between;
@@ -74,14 +79,33 @@
         width: 200px;
       }
 
+
       .form-select:valid {
         color: black;
       }
 
-      .box-input {
-      justify-content: space-between;
-      width: 100%;
-    }
+        label {
+          font-size: 16px;
+          color: #2d2c2c;
+          text-align: center;
+          margin-bottom: 5px;
+
+
+        }
+
+      .form-select option {
+        color: black;
+      }
+
+
+        input {
+          padding: 8px;
+          border: 1px solid #b9b6b6;
+          border-radius: 10px;
+          font-size: 14px;
+          color: #7a7878;
+          width: 200px;
+        }
   }
 
 }
