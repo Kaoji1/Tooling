@@ -1,40 +1,38 @@
-<!-- จัดเรียงsidebarและหน้าทั้งหน้า -->
+<!-- Layout หลักที่จัดเรียง sidebar กับ content -->
 <div class="layout">
-  <!-- sidebarฝั่งuser -->
+  <!-- Sidebar ฝั่งซ้าย -->
   <app-sidebarpurchase></app-sidebarpurchase>
 
-  <!-- ข้อมูลในหน้านี้ไม่รวมsidebar -->
+  <!-- Content ด้านขวา -->
   <div class="content">
 
-
-    <!--คุมหัวข้อเรื่องของหน้า content-->
+    <!-- Header -->
     <div class="header">
       <div class="header-content">
-      <!--หัวข้อเรื่องของหน้า content-->
-    <h1 class="reh"> Request History </h1>
-
-     <!--ปุ่มระฆัง-->
-    <button class="lol" type="button"><i class="bi-bell"></i>
-        <span class="position-absolute top-2  translate-middle badge rounded-pill bg-danger">99+
-          <span class="visually-hidden">unread messages</span>
-        </span>
+        <h1 class="reh">Request History</h1>
+        <button class="lol" type="button">
+          <i class="bi-bell"></i>
+          <span class="position-absolute top-2 translate-middle badge rounded-pill bg-danger">
+            99+
+            <span class="visually-hidden">unread messages</span>
+          </span>
         </button>
-        </div>
       </div>
+    </div>
 
-      <!--คำบรรยายใต้หัวข้อ-->
-        <p class="the"> The loan withdrawal history is here. </p>
+    <!-- คำอธิบายใต้หัวข้อ -->
+    <p class="the">The loan withdrawal history is here.</p>
 
-
-        <!--ตัวเลือก-->
-        <div class="box-input">
+    <!-- ฟอร์มตัวเลือก -->
+    <div class="box-input">
       <div class="form-input">
-
         <div class="group-select">
           <label for="datesetup">Date</label>
           <input type="date" id="datesetup">
         </div>
+
         <h6>TO</h6>
+
         <div class="group-select">
           <label for="duedate">Date</label>
           <input type="date" id="duedate">
@@ -42,63 +40,123 @@
 
         <div class="group-select">
           <label for="case">Case</label>
-
           <select class="form-select" id="status" required>
-             <option value="" disabled selected hidden>Select a case</option>
-             <option value="1">Set up</option>
-             <option value="2">Other</option>
+            <option value="" disabled selected hidden>Select a case</option>
+            <option value="1">Set up</option>
+            <option value="2">Other</option>
           </select>
         </div>
-
       </div>
-      <div class="table-responsive">
-        <table class="table table-bordered text-center">
-          <!-- หัวตาราง -->
-          <thead>
-            <tr>
-              <th>Document</th>
-              <th>Item Name</th>
-              <th>Part No.</th>
-              <th>Spec</th>
-              <th>Process</th>
-              <th>Mac Type</th>
-              <th>Mac QTY.</th>
-              <th>Case NG.</th>
-              <th>On hand</th>
-              <th>QTY.</th>
-              <th>Reg.</th>
-              <th>New</th>
-              <th>Non</th>
-              <th>Con.</th>
-              <th>Status</th>
-              <th>Fac.</th>
-              <th>Status Export</th>
-              <th>Remark</th>
-              <th>Export Date</th>
-            </tr>
-          </thead>
-          <!-- ในตาราง -->
-          <tbody>
-            <!-- row -->
-            <tr>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-            </tr>
+    </div>
 
+    <!-- ตารางข้อมูล -->
+    <div class="table-responsive">
+      <table class="table table-bordered text-center">
+        <thead>
+          <tr>
+            <th>Document</th>
+            <th>Item Name</th>
+            <th>Part No.</th>
+            <th>Spec</th>
+            <th>Process</th>
+            <th>Mac Type</th>
+            <th>Mac QTY.</th>
+            <th>Case NG.</th>
+            <th>On hand</th>
+            <th>QTY.</th>
+            <th>Reg.</th>
+            <th>New</th>
+            <th>Non</th>
+            <th>Con.</th>
+            <th>Status</th>
+            <th>Fac.</th>
+            <th>Status Export</th>
+            <th>Remark</th>
+            <th>Export Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows ซ้ำ 8 แถว -->
+          <tr>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td>
+            <td><input type="checkbox" id="selectAll"></td>
+            <td>1</td><td>1</td>
+          </tr>
+          <tr>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td>
+            <td><input type="checkbox" id="selectAll"></td>
+            <td>1</td><td>1</td>
+          </tr>
+          <tr>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td>
+            <td><input type="checkbox" id="selectAll"></td>
+            <td>1</td><td>1</td>
+          </tr>
+          <tr>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td>
+            <td><input type="checkbox" id="selectAll"></td>
+            <td>1</td><td>1</td>
+          </tr>
+          <tr>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td>
+            <td><input type="checkbox" id="selectAll"></td>
+            <td>1</td><td>1</td>
+          </tr>
+          <tr>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td>
+            <td><input type="checkbox" id="selectAll"></td>
+            <td>1</td><td>1</td>
+          </tr>
+          <tr>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td>
+            <td><input type="checkbox" id="selectAll"></td>
+            <td>1</td><td>1</td>
+          </tr>
+          <tr>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td><td>1</td><td>1</td><td>1</td><td>1</td>
+            <td>1</td>
+            <td><input type="checkbox" id="selectAll"></td>
+            <td>1</td><td>1</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-wrapper">
+      <nav aria-label="Page navigation example">
+        <ul class="pagination">
+          <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+          <li class="page-item"><a class="page-link" href="#">1</a></li>
+          <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+          <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        </ul>
+      </nav>
+    </div>
+
+  </div>
+</div>
