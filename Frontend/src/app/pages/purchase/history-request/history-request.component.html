@@ -8,7 +8,7 @@
     
     <!--คุมหัวข้อเรื่องของหน้า content-->
     <div class="header"> 
-      
+      <div class="header-content">
       <!--หัวข้อเรื่องของหน้า content-->
     <h1 class="reh"> Request History </h1>
 
@@ -18,8 +18,35 @@
           <span class="visually-hidden">unread messages</span>
         </span>
         </button>
-        
+        </div>
       </div>
 
       <!--คำบรรยายใต้หัวข้อ-->
         <p class="the"> The loan withdrawal history is here. </p>
+
+
+        <!--ตัวเลือก-->
+        <div class="box-input">
+      <div class="form-input">
+
+        <div class="group-select">
+          <label for="datesetup">Date</label>
+          <input type="date" id="datesetup">
+        </div>
+        <h6>TO</h6>
+        <div class="group-select">
+          <label for="duedate">Date</label>
+          <input type="date" id="duedate">
+        </div>
+
+        <div class="group-select">
+          <label for="case">Case</label>
+
+          <select class="form-select" id="status" required>
+             <option value="" disabled selected hidden>Select a case</option>
+             <option value="1">Set up</option>
+             <option value="2">Other</option>
+          </select>
+
+        </div>
+      </div>
