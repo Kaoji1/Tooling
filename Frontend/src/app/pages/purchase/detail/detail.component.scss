@@ -113,6 +113,16 @@
           white-space: nowrap;
         }
 
+        .Editicon {
+          border: none;
+        }
+
+        .Editicon img {
+          align-items: center;
+          background-color: none;
+          height: 20px;
+          width: 20px;
+        }
 
         thead th {
           position: sticky;
