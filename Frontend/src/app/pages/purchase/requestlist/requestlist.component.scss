@@ -13,19 +13,21 @@
     align-items: start;
     padding: 20px;
     background-color: white;
-   
-    
-    
-  
+
+
+
+
 
     .re {
       margin-bottom: 5px;
-      
+      font-size: 22px;
+
     }
 
     .the {
       margin-bottom: 5px;
       color: #0066B3;
+      font-size: 15px;
     }
 
 
@@ -49,6 +51,7 @@
         border: none;
         background-color: white;
 
+
         i {
           color: #000000;
           font-size: 25px;
@@ -59,7 +62,11 @@
       }
     }
 
-      
+            h6{
+
+              margin-top: 60px;
+            }
+
 
       .form-input {
         display: flex;
@@ -124,15 +131,24 @@
         border-collapse: collapse;
         margin-top: 20px;
         color: #4a494a;
-        
-      
+
+
 
         td {
           padding: 12px;
           text-align: left;
           border: 1px solid #D2D2D2;
           text-align: center;
-        
+
+        }
+
+        thead th {
+          position: sticky;
+          top: 0;
+          background-color: #E3E3E3;
+          z-index: 2;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+          border: 1px solid #d2d2d2;
         }
       }
 
@@ -153,7 +169,19 @@
           text-align: center;
           padding: 10px 0;
         }
-        
-        
+
+
+        .detailicon {
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+
+        img {
+
+          height: 25px;
+        }
       }
     }
+
+  }

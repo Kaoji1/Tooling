@@ -98,6 +98,8 @@
       overflow-x: auto;
       box-sizing: border-box;
       margin-top: 20px;
+      padding-left: 15px;
+      padding-right: 15px;
 
       table {
         width: 100%;
@@ -111,10 +113,21 @@
           white-space: nowrap;
         }
 
+        .Editicon {
+          border: none;
+        }
+
+        .Editicon img {
+          align-items: center;
+          background-color: none;
+          height: 20px;
+          width: 20px;
+        }
+
         thead th {
           position: sticky;
           top: 0;
-          background-color: #ffffff;
+          background-color: #E3E3E3;
           z-index: 2;
           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
@@ -124,7 +137,7 @@
     // แถบเปลี่ยนหน้าด้านล่าง
     .pagination-wrapper {
       position: fixed;
-      bottom: 0;
+      bottom: 30px;
       left: 0;
       width: 100%;
       text-align: center;
@@ -138,12 +151,10 @@
         list-style: none;
 
         .page-item {
-          margin: 0 5px;
 
           .page-link {
             padding: 6px 12px;
             border: 1px solid #ccc;
-            border-radius: 4px;
             color: #0066B3;
             text-decoration: none;
             background-color: #f9f9f9;
