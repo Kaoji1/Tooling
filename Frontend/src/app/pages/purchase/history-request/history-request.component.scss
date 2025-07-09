@@ -17,7 +17,7 @@
     .reh {
       margin-bottom: 10px;
       font-size: 22px;
-      
+
     }
 
     .lol {
@@ -33,7 +33,7 @@
       }
 
       h6{
-             
+
               margin-top: 60px;
             }
 
@@ -109,3 +109,25 @@
   }
 
 }
+
+  .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      box-sizing: border-box;
+      margin-top: 20px;
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+
+      table {
+        width: 100%;
+        table-layout: auto;
+        border-collapse: collapse;
+      }
+
+        th, td {
+          padding: 8px 12px;
+          border: 1px solid #ccc;
+          text-align: center;
+          white-space: nowrap;
+        }
