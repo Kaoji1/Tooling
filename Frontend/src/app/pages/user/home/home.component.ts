@@ -4,11 +4,11 @@ import { SidebarComponent } from '../../../components/sidebar/sidebar.component'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { CartService } from '../cart/cart.service';
 import { Router } from '@angular/router';
 import { MOCKDATA } from '../../../mock-data';
-import { machine } from 'os';
-import { cartService } from '../../../core/services/cartService';
+
+
+
 
 
 
@@ -21,7 +21,7 @@ import { cartService } from '../../../core/services/cartService';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
-  constructor(private cartService: CartService,private router:Router){}
+  
 
   mockData: any[] = [];
 
@@ -35,6 +35,10 @@ export class HomeComponent implements OnInit {
   item:any;
   setupItem = [];
   otherItem = [];
+  router: any;
+  itemNo:any;
+  Date:string= '';
+  date:string='';
 
   
   
@@ -70,6 +74,8 @@ export class HomeComponent implements OnInit {
 
     const uniquePartNos = [...new Set(this.mockData.map(item => item.partNo))];
     this.partNo = uniquePartNos.map(part => ({ label: part, value: part }));
+
+    
   }
 
   // ฟังก์ชั่นปุ่มcleardata
@@ -230,11 +236,8 @@ export class HomeComponent implements OnInit {
     // ฟังก์ชั่นของปุ่มviewกรองตามที่เลือก
     Setupview() {
       this.items = [];
-
-      
       const division = this.div_;
       const fac = this.fac_;
-      const Case = this.case_;
       const partNo = this.selectedPratNo;
       const spec = this.selectedSpec;
       const process = this.selectedProcess;
@@ -257,25 +260,55 @@ export class HomeComponent implements OnInit {
       }
     }
 
+// add to cart
 
+addTocart() {
+  const setupDate = new Date().toISOString().split('T')[0]; // รูปแบบ YYYY-MM-DD
+  const inputDate = this.Date || new Date().toISOString().split('T')[0];
+ // ถ้า this.Date ไม่มีค่าให้ใช้วันเวลาปัจจุบัน
 
-    // ฟังก์ชั่นadd to caet
-    addTocart()  {
-      const itemsWithContext = this.items.map((item: any) => ({
-        ...item,
-        division: this.div_,
-        fac: this.fac_,
-        case: this.case_,
-        Date_of_Req:null,
-        selectedPratNo: this.selectedPratNo,
-        selectedSpec: this.selectedSpec,
-        selectedProcess: this.selectedProcess,
-        selectedMachineType: this.selectedMachineType
+  const newArray = this.items.map((item: any) => ({
+    partNo: item.partNo,
+    spec: item.spec,
+    process: item.process,
+    machineType: item.machineType,
+    usage: item.usage,
+    qty: item.qty || 1,
+    division: this.div_,
+    factory: this.fac_,
+    case: this.case_,
+    ITEMNO: this.itemNo,
+    inputDate: inputDate,
+    setupDate: setupDate
+  }));
 
-      }));
-      this.cartService.setCartItems(itemsWithContext);
+  const confirmAdd = confirm('Do you want to add items to cart?');
+  if (confirmAdd) {
+    const existingCart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+    const updatedCart = [...existingCart, ...newArray];
+    sessionStorage.setItem('cart', JSON.stringify(updatedCart));
+
+    const addMore = confirm('Items added to cart');
+    if (addMore) {
+      this.clearall();
+    } else {
+      this.router.navigate(['/pages/user/cart']);
     }
+  }
+}
+
+
+
+
+
     
+                
+
+
+            
+        
    
 
 }
+
+
