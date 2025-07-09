@@ -154,6 +154,18 @@
           padding: 10px 0;
         }
         
+
+        .detailicon {
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
         
+        img {
+          weight: 30px;
+          height: 25px;
+        }
       }
     }
+
+  }
