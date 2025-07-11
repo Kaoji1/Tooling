@@ -49,7 +49,7 @@ export class HomeComponent implements OnInit {
     if (this.selectedType === 'setup'){
       this.items = this.setupItem;
     }
-    else if (this.selectedType ==='outer') {
+    else if (this.selectedType ==='other') {
       this.items = this.otherItem;
     }
     else {
@@ -254,7 +254,10 @@ export class HomeComponent implements OnInit {
         );
 
         if (filtered.length > 0 ) {
-          this.items = filtered;
+          this.items = filtered.map(item => ({
+            ...item,
+            qty:null
+          }));
           
         }
       }
@@ -288,12 +291,13 @@ addTocart() {
     const updatedCart = [...existingCart, ...newArray];
     sessionStorage.setItem('cart', JSON.stringify(updatedCart));
 
-    const addMore = confirm('Items added to cart');
-    if (addMore) {
-      this.clearall();
-    } else {
-      this.router.navigate(['/pages/user/cart']);
-    }
+     this.clearall();
+    // const addMore = confirm('Items added to cart');
+    // if (addMore) {
+    //   this.clearall();
+    // } else {
+    //   this.router.navigate(['/pages/user/cart']);
+    // }
   }
 }
 
