@@ -2,32 +2,32 @@
 <div class="layout">
   <!-- sidebarฝั่งuser -->
   <app-sidebarpurchase></app-sidebarpurchase>
-  
+
 
   <!-- ข้อมูลในหน้านี้ไม่รวมsidebar -->
   <div class="content">
-    
+
     <!--คุมหัวข้อเรื่องของหน้า content-->
-    <div class="header"> 
-      
+    <div class="header">
+
       <!--หัวข้อเรื่องของหน้า content-->
     <h1 class="re"> Request List </h1>
-    
+
   <!--ปุ่มระฆัง-->
     <button class="lol" type="button"><i class="bi-bell"></i>
         <span class="position-absolute top-2  translate-middle badge rounded-pill bg-danger">99+
           <span class="visually-hidden">unread messages</span>
         </span>
         </button>
-        
+
       </div>
-        
 
 
-   
+
+
       <!--คำบรรยายใต้หัวข้อ-->
         <p class="the"> The loan withdrawal request is here. </p>
-    
+
       <!--ตัวเลือก-->
         <div class="box-input">
       <div class="form-input">
@@ -53,7 +53,7 @@
 
         </div>
       </div>
-        
+
       <!--ตาราง-->
       <div class="table-responsive">
           <table class="table table-bordered text-center">
@@ -64,7 +64,7 @@
                 <th>Item No.</th>
                 <th>Content/Spec</th>
                 <th>Process</th>
-                <th>Case NG.</th>
+                <th>Case</th>
                 <th>QTY.</th>
                 <th>Input Date</th>
                 <th>Detail</th>
@@ -107,7 +107,7 @@
                 </td>
 
               </tr>
-              
+
               <!-- row3 -->
               <tr>
 
@@ -215,7 +215,7 @@
                 </td>
 
               </tr>
-              
+
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </tbody>
@@ -234,7 +234,7 @@
                 </ul>
               </nav>
         </div>
-    
+
 
 
   </div>

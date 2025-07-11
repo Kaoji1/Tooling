@@ -105,14 +105,16 @@ html, body {
   }
 
   .export-btn{
-    display: flex;
+    position: absolute;
+    right: 0;
     flex-direction: column;
     margin-top: 40px;
-    margin-left: 350px;
-    
+    margin-right: 20px;
+
   }
 
   .export-btn button {
+    align-items: center;
     border: none;
     background-color: rgb(255, 0, 0);
     padding: 10px;
