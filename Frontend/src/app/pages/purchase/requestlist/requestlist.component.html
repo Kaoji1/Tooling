@@ -28,42 +28,44 @@
       <!--คำบรรยายใต้หัวข้อ-->
         <p class="the"> The loan withdrawal request is here. </p>
 
-      <!--ตัวเลือก-->
-        <div class="box-input">
-      <div class="form-input">
+     <div class="box-input">
+  <div class="form-input">
 
-        <div class="group-select">
-          <label for="datesetup">Date</label>
-          <input type="date" id="datesetup">
-        </div>
-        <h6>TO</h6>
-        <div class="group-select">
-          <label for="duedate">Date</label>
-          <input type="date" id="duedate">
-        </div>
+    <div class="group-select">
+      <label for="datesetup">Date</label>
+      <input type="date" id="datesetup">
+    </div>
 
-        <div class="group-select">
-          <label for="case">Case</label>
+    <h6>TO</h6>
 
-          <select class="form-select" id="status" required>
-             <option value="" disabled selected hidden>Select a case</option>
-             <option value="1">Set up</option>
-             <option value="2">Other</option>
-          </select>
-          
-          <div class="group-select">
-          <label for="case">Filter/Select Item</label>
+    <div class="group-select">
+      <label for="duedate">Date</label>
+      <input type="date" id="duedate">
+    </div>
 
-          <select class="form-select" id="status" required>
-             <option value="" disabled selected hidden>Select a case</option>
-             <option value="1">Caseone</option>
-             <option value="2">Casetwo</option>
-             <option value="2">Casethree</option>
-             <option value="2">Casefour</option>
-          </select>
-         
-        </div>
-      </div>
+    <div class="group-select">
+      <label for="case">Case</label>
+      <select class="form-select" id="case" required>
+        <option value="" disabled selected hidden>Select a case</option>
+        <option value="1">Set up</option>
+        <option value="2">Other</option>
+      </select>
+    </div>
+
+    <div class="group-select">
+      <label for="filter">Filter/Select Item</label>
+      <select class="form-select" id="filter" required>
+        <option value="" disabled selected hidden>Select a case</option>
+        <option value="1">Caseone</option>
+        <option value="2">Casetwo</option>
+        <option value="3">Casethree</option>
+        <option value="4">Casefour</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
 
       <!--ตาราง-->
       <div class="table-responsive">
