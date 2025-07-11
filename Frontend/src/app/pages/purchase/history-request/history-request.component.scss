@@ -106,16 +106,19 @@ html, body {
 
   .export-btn{
     display: flex;
-    justify-content: end;
-    padding-right: 20px;
+    flex-direction: column;
+    margin-top: 40px;
+    margin-left: 350px;
+    
   }
 
   .export-btn button {
     border: none;
-    background-color: rgb(255, 29, 100);
+    background-color: rgb(255, 0, 0);
     padding: 10px;
     border-radius: 10px;
     color: white;
+    height: 50px;
   }
 
 
