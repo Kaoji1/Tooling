@@ -127,7 +127,7 @@
 
     .pagination-wrapper {
       position: fixed;
-      bottom: 20px;
+      bottom: 30px;
       left: 0;
       width: 100%;
       text-align: center;
@@ -139,6 +139,19 @@
         padding: 0;
         margin: 0;
       }
+
+      .page-link {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            color: #0066B3;
+            text-decoration: none;
+            background-color: #f9f9f9;
+          }
+
+          .page-link:hover {
+            background-color: #e2f0ff;
+            border-color: #0066B3;
+          }
     }
 
     .detailicon {
