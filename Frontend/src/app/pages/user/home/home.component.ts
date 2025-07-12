@@ -39,6 +39,8 @@ export class HomeComponent implements OnInit {
   itemNo:any;
   Date:string= '';
   date:string='';
+  phon: any=[];
+  
 
   
   
@@ -87,7 +89,7 @@ export class HomeComponent implements OnInit {
     this.selectedPratNo = null;
     this.div_ = null;
     this.fac_ = null;
-    this.case_ = null;
+    this.selectedType = null;
     this.otherItem.forEach(item => item,this.caseother_=null);
     this.caseother_ = null;
     
@@ -235,33 +237,48 @@ export class HomeComponent implements OnInit {
 
     // ฟังก์ชั่นของปุ่มviewกรองตามที่เลือก
     Setupview() {
-      this.items = [];
-      const division = this.div_;
-      const fac = this.fac_;
-      const partNo = this.selectedPratNo;
-      const spec = this.selectedSpec;
-      const process = this.selectedProcess;
-      const machineType = this.selectedMachineType;
+  this.items = [];
 
-      this.isSearched = true;
+  const division = this.div_;
+  const fac = this.fac_;
+  const partNo = this.selectedPratNo;
+  const spec = this.selectedSpec;
+  const process = this.selectedProcess;
+  const machineType = this.selectedMachineType;
+  const Date = this.Date;
+  
 
-      if (partNo && process && machineType && division && fac  && spec !== null ) {
-        const filtered = this .mockData.filter(item =>
-          item.partNo === partNo &&
-          item.spec === spec &&
-          item.process === process &&
-          item.machineType === machineType  
-        );
+  this.isSearched = true;
 
-        if (filtered.length > 0 ) {
-          this.items = filtered.map(item => ({
-            ...item,
-            qty:null
-          }));
-          
-        }
-      }
+  // ตรวจสอบว่าไม่มีค่าที่เป็น undefined, null, หรือ string ว่าง
+  if (
+    partNo && partNo.trim() !== '' &&
+    spec && spec.trim() !== '' &&
+    process && process.trim() !== '' &&
+    machineType && machineType.trim() !== '' &&
+    division && division.trim() !== '' &&
+    fac && fac.trim() !== '' &&
+    Date && Date.trim() !== ''
+    
+  ) {
+    const filtered = this.mockData.filter(item =>
+      item.partNo === partNo &&
+      item.spec === spec &&
+      item.process === process &&
+      item.machineType === machineType
+    );
+
+    if (filtered.length > 0) {
+      this.items = filtered.map(item => ({
+        ...item,
+        qty: null,
+         checked: true
+      }));
     }
+  } else {
+    alert("กรุณาเลือกข้อมูลให้ครบทุกช่องก่อนค้นหา");
+  }
+}
 
 // add to cart
 
