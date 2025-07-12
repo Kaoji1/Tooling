@@ -104,6 +104,26 @@ html, body {
     width: 200px;
   }
 
+  .export-btn{
+    position: absolute;
+    right: 0;
+    flex-direction: column;
+    margin-top: 40px;
+    margin-right: 20px;
+
+  }
+
+  .export-btn button {
+    align-items: center;
+    border: none;
+    background-color: rgb(255, 0, 0);
+    padding: 10px;
+    border-radius: 10px;
+    color: white;
+    height: 50px;
+  }
+
+
   .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -112,17 +132,16 @@ html, body {
     margin-top: 20px;
 
     table {
-      width: 100%;
-      table-layout: auto;
-      border-collapse: collapse;
+        width: 100%;
+        table-layout: auto;
+        border-collapse: collapse;
 
-      th, td {
-        padding: 10px 8px;
-        border: 1px solid #ccc;
-        text-align: center;
-        white-space: nowrap;
-      }
-      }
+        th, td {
+          padding: 8px 12px;
+          border: 1px solid #ccc;
+          text-align: center;
+          white-space: nowrap;
+        }
     }
   }
 
@@ -167,3 +186,4 @@ html, body {
       }
     }
 
+  }
