@@ -336,7 +336,7 @@ addTocart() {
 
     this.clearall();  // เคลียร์ฟอร์มหลังเพิ่ม
   }
-  window.location.reload();
+  
 }
 
 }

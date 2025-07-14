@@ -14,4 +14,16 @@ import { DropdownSearchComponent } from '../../../components/dropdown-search/dro
 })
 export class HistoryComponent {
 
+  docNo: string = '';
+  items: any[] = [];
+
+  ngOnInit() {
+    const docData = sessionStorage.getItem('created_doc');
+    if (docData) {
+      const parsed = JSON.parse(docData);
+      this.docNo = parsed.doc_no;
+      this.items = parsed.items;
+    }
+  }
+
 }

@@ -54,16 +54,22 @@
         </thead>
         <!-- ในตาราง -->
         <tbody>
-          <!-- row1 -->
-          <tr>
-
-            
-          </tr>
-          <!-- row2 -->
+            <tr *ngFor="let doc of docs; index as i">
+              <td>{{ i + 1 }}</td>
+              <td>{{ doc.doc_no }}</td>
+              <td>{{ doc.division || '-' }}</td>
+              <td>{{ doc.fac || '-' }}</td>
+              <td>{{ doc.date || (doc.createdDate || '-') }}</td>
+              <td>{{ doc.process || 'Waiting' }}</td>
+              <td>{{ doc.status || 'Pending' }}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary" >View</button>
+              </td>
+            </tr>
+          </tbody>
          
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </tbody>
+          
+        
       </table>
     </div>
     <!--table-->

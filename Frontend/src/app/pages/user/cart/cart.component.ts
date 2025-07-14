@@ -16,6 +16,8 @@ export class CartComponent implements OnInit {
   cartItems: any[] = [];
   editingIndex: number | null = null;
   originalItem: any = null;
+  items: any;
+  router: any;
 
   ngOnInit() {
     this.loadCart();
@@ -71,6 +73,40 @@ removeItem(index: number) {
     sessionStorage.setItem('cart', JSON.stringify(this.cartItems));
     alert('Item deleted');
     window.location.reload();  // โหลดหน้าใหม่เลย = อัปเดต Sidebar ใหม่ด้วย
+  }
+}
+
+
+// เทสสร้างDoc
+
+Create_Doc() {
+  if (confirm('Do you want to create this document?')) {
+    const createdDocNo = 'DOC-' + new Date().getTime(); // สร้าง Doc_no จำลอง
+    const itemsToSave = [...this.cartItems]; // สำเนาข้อมูลตะกร้าปัจจุบัน
+
+    const doc = {
+      doc_no: createdDocNo,
+      items: itemsToSave,  // เก็บข้อมูลตะกร้า ณ ตอนสร้าง doc
+      date: new Date().toLocaleDateString(),
+      status: 'Pending'
+    };
+
+    const existingDocs = sessionStorage.getItem('created_docs');
+    const docs = existingDocs ? JSON.parse(existingDocs) : [];
+
+    docs.push(doc);
+    sessionStorage.setItem('created_docs', JSON.stringify(docs));
+
+    // เคลียร์ตะกร้า
+    this.cartItems = [];
+    sessionStorage.removeItem('cart');
+
+    alert(`สร้างเอกสารเรียบร้อย!\nเลขที่: ${createdDocNo}`);
+
+    // ไปหน้า History
+    this.router.navigate(['/pages/history']);
+  } else {
+    // ถ้าไม่ตกลงสร้าง ก็ไม่ทำอะไร
   }
 }
 
