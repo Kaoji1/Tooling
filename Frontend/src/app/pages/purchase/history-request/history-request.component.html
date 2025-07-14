@@ -47,14 +47,46 @@
           </select>
           </div>
 
+  <!--ปุ่ม Export to AS400-->
           <div class="export-btn">
-            <button>EXPORT TO AS400</button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">EXPORT TO AS400</button>
           </div>
+        </div>
 
-
+  <!--Modal แสดง Export to AS400?-->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="export-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+    
+      <div class="modal-header justify-content-center border-0">
+        <h1 class="modal-title w-100 text-center" id="export">Export to AS400?</h1>
+      </div>
+      <div class="modal-footer justify-content-center border-0">
+        <div class="d-grid gap-3 d-md-flex justify-content-center">
+          <button type="button" class="btn btn-primary btn-lg px-4" data-bs-toggle="modal" data-bs-target="#completeModal">Yes</button>
+          <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">No</button>
+        </div>
       </div>
     </div>
+  </div>
+</div>
 
+<!-- Modal เสร็จสิ้น -->
+<div class="modal fade" id="completeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header justify-content-center border-0">
+        <i class="bi bi-check-circle-fill text-success" style="font-size: 120px;"></i>
+      </div>
+      <div class="modal-body justify-content-center border-0">
+        <h1 class="modal-title w-0 text-center" id="export">EXPORT AS400 success!</h1>
+      </div>
+      <div class="modal-footer justify-content-center border-0">
+        <button type="button" class="btn btn-primary btn-lg px-4" onclick="window.location.href='nextpage.html'">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
 
     <!-- ตารางข้อมูล -->
     <div class="table-responsive">
