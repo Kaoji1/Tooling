@@ -41,16 +41,15 @@
         <!-- หัวตาราง -->
         <thead>
           <tr>
-            <th>Part No.</th>
-            <th>Item No.</th>
-            <th>Spec</th>
+            <th>No.</th>
+            <th>Doc_Name</th>
+            <th>Division</th>
+            <th>Fac</th>
+            <th>Date</th>
             <th>Process</th>
-            <th>Machine Type</th>
-            <th>Machine No.</th>
-            <th>QTY</th>
-            <th>Input Date</th>
-            <th>Due Date</th>
             <th>Status</th>
+            <th>Detail</th>
+            
           </tr>
         </thead>
         <!-- ในตาราง -->
@@ -58,31 +57,10 @@
           <!-- row1 -->
           <tr>
 
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
+            
           </tr>
           <!-- row2 -->
-          <tr>
-
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-          </tr>
+         
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </tbody>

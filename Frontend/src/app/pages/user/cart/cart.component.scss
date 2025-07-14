@@ -14,6 +14,16 @@
     align-items: start;
     padding: 20px;
     background-color: white;
+    
+    .masterform-group {
+      display: flex;
+      .form-group {
+        display: block;
+        justify-content: space-around;
+        margin: 10px;
+        
+      }
+    }
 
    .header {
       display: flex;
@@ -45,7 +55,7 @@
     }
     // ตาราง
    .table-responsive{
-    max-height: 550px;
+    max-height: 500px;
     max-width: 1290px;
        table {
       width: 100%;
@@ -97,6 +107,7 @@
             color: white;
           }
         } 
+        
       } //table
     }
       

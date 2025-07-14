@@ -41,6 +41,7 @@ export class HomeComponent implements OnInit {
   date:string='';
   phon: any=[];
   
+  
 
   
   
@@ -51,8 +52,14 @@ export class HomeComponent implements OnInit {
     if (this.selectedType === 'setup'){
       this.items = this.setupItem;
     }
-    else if (this.selectedType ==='other') {
-      this.items = this.otherItem;
+    else if (this.selectedType === 'other') {
+  this.items = this.otherItem.map(item => ({
+     ...(item as any),   // บอกว่า item เป็น any เพื่อให้ใช้ spread ได้
+      qty: null,
+      checked: true,
+      case: this.selectedType,
+      caseother: null
+  }));
     }
     else {
       this.items=[];
@@ -71,14 +78,28 @@ export class HomeComponent implements OnInit {
 
 
   ngOnInit() {
-    this.mockData = MOCKDATA;
-    this.displayData = this.items;
+  this.mockData = MOCKDATA;
+  this.displayData = this.items;
 
-    const uniquePartNos = [...new Set(this.mockData.map(item => item.partNo))];
-    this.partNo = uniquePartNos.map(part => ({ label: part, value: part }));
+  const uniquePartNos = [...new Set(this.mockData.map(item => item.partNo))];
+  this.partNo = uniquePartNos.map(part => ({ label: part, value: part }));
 
-    
-  }
+  //  โหลดค่า division และ fac ที่เคยเลือกไว้จาก sessionStorage
+  const savedDiv = sessionStorage.getItem('selectedDiv');
+  const savedFac = sessionStorage.getItem('selectedFac');
+
+  if (savedDiv) this.div_ = savedDiv;
+  if (savedFac) this.fac_ = savedFac;
+}
+onDivChange(value: any) {
+  this.div_ = value;
+  sessionStorage.setItem('selectedDiv', value);
+}
+
+onFacChange(value: any) {
+  this.fac_ = value;
+  sessionStorage.setItem('selectedFac', value);
+}
 
   // ฟังก์ชั่นปุ่มcleardata
   clearall() {
@@ -87,11 +108,9 @@ export class HomeComponent implements OnInit {
     this.selectedProcess = null;
     this.selectedMachineType = null;
     this.selectedPratNo = null;
-    this.div_ = null;
-    this.fac_ = null;
+    
     this.selectedType = null;
-    this.otherItem.forEach(item => item,this.caseother_=null);
-    this.caseother_ = null;
+    
     
     
   }
@@ -107,10 +126,10 @@ export class HomeComponent implements OnInit {
 
     const filtered = this.mockData.filter(item => item.partNo === this.selectedPratNo);
 
-    this.spec = [...new Set(filtered.map(item => item.spec))].map(spec => ({
-      label: spec,
-      value: spec
-    }));
+    // this.spec = [...new Set(filtered.map(item => item.spec))].map(spec => ({
+    //   label: spec,
+    //   value: spec
+    // }));
 
     this.process = [...new Set(filtered.map(item => item.process))].map(process => ({
       label: process,
@@ -123,51 +142,50 @@ export class HomeComponent implements OnInit {
     }));
 
     // reset ค่าเลือกอื่นเมื่อ part เปลี่ยน
-    this.selectedSpec = null;
+    // this.selectedSpec = null;
     this.selectedProcess = null;
     this.selectedMachineType = null;
   }
 
 
   //  ฟังก์ชันเมื่อเลือก Spec
-  onSpecChange() {
-    if (!this.selectedSpec || !this.selectedPratNo) {
-      this.process = [];
-      this.machineType = [];
-      return;
-    }
+  // onSpecChange() {
+  //   if (!this.selectedSpec || !this.selectedPratNo) {
+  //     this.process = [];
+  //     this.machineType = [];
+  //     return;
+  //   }
 
-    const filtered = this.mockData.filter(item => 
-      item.spec === this.selectedSpec &&
-      item.partNo === this.selectedPratNo
+  //   const filtered = this.mockData.filter(item => 
+  //     item.spec === this.selectedSpec &&
+  //     item.partNo === this.selectedPratNo
        
-    );
+  //   );
 
-    this.process = [...new Set(filtered.map(item => item.process))].map(process => ({
-      label: process,
-      value: process
-    }));
+  //   this.process = [...new Set(filtered.map(item => item.process))].map(process => ({
+  //     label: process,
+  //     value: process
+  //   }));
 
-    this.machineType = [...new Set(filtered.map(item => item.selectedMachineType))].map(no => ({
-      label: no,
-      value: no
-    }));
+  //   this.machineType = [...new Set(filtered.map(item => item.selectedMachineType))].map(no => ({
+  //     label: no,
+  //     value: no
+  //   }));
 
 
-  }
+  // }
 
 
   // กรองprocess
 
   onProcessChange() {
-    if (!this.selectedProcess || !this.selectedPratNo || !this.selectedSpec ) {
+    if (!this.selectedProcess || !this.selectedPratNo  ) {
       this.machineType = [];
       return;
     }
 
     const filtered = this.mockData.filter(item => 
       item.process === this.selectedProcess &&
-      item.spec === this.selectedSpec &&
       item.partNo === this.selectedPratNo
     
     );
@@ -217,21 +235,20 @@ export class HomeComponent implements OnInit {
 
 //  csdeother
   caseother = [
-        { caseoyher: 'BRO', viewCase: 'BRO' }, // ตัวเลือกเคสที่ 1
-        { caseother: 'BUR', viewCase: 'BUR' }, // ตัวเลือกเคสที่ 2
-        { caseother: 'USA', viewCase: 'USA' }, // ตัวเลือกเคสที่ 3
-        { caseother: 'HOL', viewCase: 'HOL' }, // ตัวเลือกเคสที่ 4
-        { caseother: 'INV', viewCase: 'INV' }, // ตัวเลือกเคสที่ 5
-        { caseother: 'MOD', viewCase: 'MOD' }, // ตัวเลือกเคสที่ 6
-        { caseother: 'NON', viewCase: 'NON' }, // ตัวเลือกเคสที่ 7
-        { caseother: 'RET', viewCase: 'RET' }, // ตัวเลือกเคสที่ 8
-        { caseother: 'SPA', viewCase: 'SPA' }, // ตัวเลือกเคสที่ 9
-        { caseother: 'STO', viewCase: 'STO' }, // ตัวเลือกเคสที่ 10
-        { caseother: 'CHA', viewCase: 'CHA' }, // ตัวเลือกเคสที่ 11 
-   ]
+  { caseother: 'BRO', viewCase: 'BRO' },
+  { caseother: 'BUR', viewCase: 'BUR' },
+  { caseother: 'USA', viewCase: 'USA' },
+  { caseother: 'HOL', viewCase: 'HOL' },
+  { caseother: 'INV', viewCase: 'INV' },
+  { caseother: 'MOD', viewCase: 'MOD' },
+  { caseother: 'NON', viewCase: 'NON' },
+  { caseother: 'RET', viewCase: 'RET' },
+  { caseother: 'SPA', viewCase: 'SPA' },
+  { caseother: 'STO', viewCase: 'STO' },
+  { caseother: 'CHA', viewCase: 'CHA' }
+];
 
-
-   caseother_:any|null = null;
+   
 
     isSearched: boolean = false;
 
@@ -242,7 +259,7 @@ export class HomeComponent implements OnInit {
   const division = this.div_;
   const fac = this.fac_;
   const partNo = this.selectedPratNo;
-  const spec = this.selectedSpec;
+  
   const process = this.selectedProcess;
   const machineType = this.selectedMachineType;
   const Date = this.Date;
@@ -253,7 +270,7 @@ export class HomeComponent implements OnInit {
   // ตรวจสอบว่าไม่มีค่าที่เป็น undefined, null, หรือ string ว่าง
   if (
     partNo && partNo.trim() !== '' &&
-    spec && spec.trim() !== '' &&
+    
     process && process.trim() !== '' &&
     machineType && machineType.trim() !== '' &&
     division && division.trim() !== '' &&
@@ -263,7 +280,7 @@ export class HomeComponent implements OnInit {
   ) {
     const filtered = this.mockData.filter(item =>
       item.partNo === partNo &&
-      item.spec === spec &&
+     
       item.process === process &&
       item.machineType === machineType
     );
@@ -272,7 +289,8 @@ export class HomeComponent implements OnInit {
       this.items = filtered.map(item => ({
         ...item,
         qty: null,
-         checked: true
+        checked: true,
+        case: this.selectedType
       }));
     }
   } else {
@@ -285,9 +303,16 @@ export class HomeComponent implements OnInit {
 addTocart() {
   const setupDate = new Date().toISOString().split('T')[0]; // รูปแบบ YYYY-MM-DD
   const inputDate = this.Date || new Date().toISOString().split('T')[0];
- // ถ้า this.Date ไม่มีค่าให้ใช้วันเวลาปัจจุบัน
 
-  const newArray = this.items.map((item: any) => ({
+  // ✅ เลือกเฉพาะรายการที่ติ๊ก checkbox เท่านั้น
+  const selectedItems = this.items.filter((item: any) => item.checked);
+
+  if (selectedItems.length === 0) {
+    alert('กรุณาเลือกอย่างน้อย 1 รายการ');
+    return;
+  }
+
+  const newArray = selectedItems.map((item: any) => ({
     partNo: item.partNo,
     spec: item.spec,
     process: item.process,
@@ -296,39 +321,23 @@ addTocart() {
     qty: item.qty || 1,
     division: this.div_,
     factory: this.fac_,
-    case: this.case_,
-    ITEMNO: this.itemNo,
+    case: this.selectedType,
+    ITEMNO: item.itemNo || this.itemNo,   // หาก item มี itemNo ให้ใช้ของมัน
     inputDate: inputDate,
-    setupDate: setupDate
+    setupDate: setupDate,
+    caseother: item.caseother || null 
   }));
 
-  const confirmAdd = confirm('Do you want to add items to cart?');
+  const confirmAdd = confirm('Do you want to add selected items to cart?');
   if (confirmAdd) {
     const existingCart = JSON.parse(sessionStorage.getItem('cart') || '[]');
     const updatedCart = [...existingCart, ...newArray];
     sessionStorage.setItem('cart', JSON.stringify(updatedCart));
 
-     this.clearall();
-    // const addMore = confirm('Items added to cart');
-    // if (addMore) {
-    //   this.clearall();
-    // } else {
-    //   this.router.navigate(['/pages/user/cart']);
-    // }
+    this.clearall();  // เคลียร์ฟอร์มหลังเพิ่ม
   }
+  window.location.reload();
 }
-
-
-
-
-
-    
-                
-
-
-            
-        
-   
 
 }
 

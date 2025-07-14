@@ -22,25 +22,28 @@
         <div class="req-row1">
           <!-- รวม label,select ของ division,fac,phon,date -->
           <div class="group-select">
-            <label for="division">Division</label>
-            <ng-select 
-              [items]="Div" 
-              bindLabel="label" 
-              bindValue="value" 
-              [(ngModel)]="div_" 
-              placeholder="Select Division">
-            </ng-select>
-          </div>
-          <div class="group-select">
-            <label for="Fac">Fac</label>
-            <ng-select 
-              [items]="Fac" 
-              bindLabel="label" 
-              bindValue="value" 
-              [(ngModel)]="fac_"
-              placeholder="Select a Fac">
-            </ng-select>
-          </div>
+                <label for="division">Division</label>
+                <ng-select 
+                  [items]="Div" 
+                  bindLabel="label" 
+                  bindValue="value" 
+                  [ngModel]="div_"
+                  (ngModelChange)="onDivChange($event)"
+                  placeholder="Select Division">
+                </ng-select>
+              </div>
+
+              <div class="group-select">
+                <label for="Fac">Fac</label>
+                <ng-select 
+                  [items]="Fac" 
+                  bindLabel="label" 
+                  bindValue="value" 
+                  [ngModel]="fac_"
+                  (ngModelChange)="onFacChange($event)"
+                  placeholder="Select a Fac">
+                </ng-select>
+            </div>
           <div class="group-select">
             <label for="phonenumber">Phone Number</label>
             <input type="tel" class="form-control" placeholder="Enter your phone number" id="phonenumber" [(ngModel)]="phon"/>
@@ -78,7 +81,7 @@
               placeholder="Select  partNo">
             </ng-select>
           </div>
-          <div class="group-select">
+          <!-- <div class="group-select">
             <label for="spec">Spec</label>
             <ng-select 
               [items]="spec" 
@@ -88,7 +91,7 @@
               (ngModelChange)="onSpecChange()"
               placeholder="Select spec">
             </ng-select>
-          </div>
+          </div> -->
           <div class="group-select">
             <label for="process">Process</label>
             <ng-select 
@@ -186,7 +189,7 @@
         <thead>
           <tr>
             <th>
-              <input type="checkbox" id="selectAll" >
+              # 
             </th>
             <th>Part No.</th>
             <th>Item No.</th>
@@ -204,7 +207,7 @@
         <tbody>
         <tbody>
           <tr *ngFor="let item of items ">
-            <td><input type="checkbox" ></td>
+            <td><input type="checkbox"  [(ngModel)]="item.checked " ></td>
             <td>{{ item.partNo }}</td>
             <td>{{ item.itemNo }}</td>
             <td>{{ item.spec }}</td>
@@ -215,14 +218,14 @@
             <td>{{ item.usage }}</td>
             <td><input class="yoyu" type="number" ></td>
             <td>
-              <ng-select 
-              [items]="caseother" 
-              bindLabel="caseother" 
-              bindValue="viewCase" 
-              [(ngModel)]="item.caseother_"
+             <ng-select 
+               [items]="caseother" 
+              bindLabel="viewCase" 
+              bindValue="caseother"  
+              [(ngModel)]="item.caseother"
               [appendTo]="'body'"
               placeholder="Select a case">
-              </ng-select>
+            </ng-select>
             </td>
           </tr>
         </tbody>

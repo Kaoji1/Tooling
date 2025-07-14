@@ -14,8 +14,14 @@
           <a routerLink="/home"> <i class="bi bi-newspaper"></i> Request </a>
         </li>
         <li routerLinkActive="active">
-          <a routerLink="/cart"> <i class="bi bi-cart"></i> Cart </a>
+          <a routerLink="/cart">
+            
+            <i class="bi bi-cart"></i>
+            
+           Cart <span class="cartCount" *ngIf="cartCount > 0" class="cart-count">{{ cartCount }}</span>
+          </a>
         </li>
+
         <li routerLinkActive="active">
          <a routerLink="/history"> <i class="bi bi-clock-history"></i> History </a>
         </li>

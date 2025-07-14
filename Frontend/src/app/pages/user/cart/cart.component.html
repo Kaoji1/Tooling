@@ -13,6 +13,18 @@
       </div>
                 
                 <p>all your request in here</p>
+        <div class="masterform-group">
+
+            <div class="form-group">
+                <label for="division" style="width: 100px; margin-right: 10px;">Division:</label>
+                <input id="division" type="text" class="form-control" style="flex: 1;" [value]="cartItems[0]?.division" readonly>
+            </div>
+
+            <div class="form-group ">
+                <label for="factory" style="width: 100px; margin-right: 10px;">Fac:</label>
+                <input id="factory" type="text" class="form-control" style="flex: 1;" [value]="cartItems[0]?.factory" readonly>
+            </div>
+        </div>
             <!-- table -->
                 <div class="table-responsive">
                 <table class="table table-bordered text-center" *ngIf="cartItems.length > 0" >
@@ -41,28 +53,73 @@
                     </thead>
                     <tbody>
                        
-                        <tr *ngFor="let item of cartItems; let i = index">
-                            <td>{{ i + 1}}</td>
-                            <td>{{ item.partNo  }}</td>
-                            <td>{{ item.itemNo  }}</td>
+                       <tr *ngFor="let item of cartItems; let i = index">
+                            <td>{{ i + 1 }}</td>
+                            <td>{{ item.partNo }}</td>
+                            <td>{{ item.itemNo }}</td>
                             <td>{{ item.Spec }}</td>
                             <td>{{ item.Process }}</td>
                             <td>{{ item.MachineType }}</td>
                             <td>{{ item.machineNo }}</td>
                             <td>{{ item.usage }}</td>
-                            <td>{{ item.qty }}</td>
-                            <td>{{ item.case }}</td>
+
+                            <!-- QTY -->
+                            <td>
+                                <ng-container *ngIf="editingIndex === i; else showQty">
+                                <input [(ngModel)]="item.qty" type="number" min="1" class="form-control" />
+                                </ng-container>
+                                <ng-template #showQty>{{ item.qty }}</ng-template>
+                            </td>
+
+                           <td>
+                            {{ item.case === 'setup' ? 'SET UP' : (item.caseother || '-') }}
+                            </td>
+
                             <td>{{ item.setupDate }}</td>
-                            <td>{{ item.inputDate }}</td>
-                            <td><button class="Insert" type="submit"><i class="bi bi-arrow-down-left-square"></i></button></td>
-                            <td><button class="edit" type="submit"><i class="bi bi-pencil-square"></i></button></td>
-                            <td><button class="del" type="submit" (click)="removeItem(i)"><i class="bi bi-trash"></i></button></td>
-                            
+
+                            <!-- Due Date -->
+                            <td>
+                                <ng-container *ngIf="editingIndex === i; else showDueDate">
+                                <input [(ngModel)]="item.inputDate" type="date" class="form-control" />
+                                </ng-container>
+                                <ng-template #showDueDate>{{ item.inputDate | date:'yyyy-MM-dd' }}</ng-template>
+                            </td>
+
+                            <!-- Insert -->
+                            <td>
+                                <button class="Insert btn btn-outline-primary btn-sm" type="button">
+                                <i class="bi bi-arrow-down-left-square"></i>
+                                </button>
+                            </td>
+
+                            <!-- Edit / Save / Cancel -->
+                            <td>
+                                <!-- ปุ่ม Edit -->
+                                <button *ngIf="editingIndex !== i"
+                                        class="btn btn-primary btn-sm"
+                                        type="button"
+                                        (click)="startEdit(i)">
+                                <i class="bi bi-pencil-square"></i>
+                                </button>
+
+                                <!-- ปุ่ม Save + Cancel -->
+                                <div *ngIf="editingIndex === i" class="d-flex gap-1">
+                                    <button class="btn btn-success btn-sm px-1 py-0" type="button" (click)="saveEdit(i)">
+                                        <i class="bi bi-check-lg"></i> Save
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm px-1 py-0" type="button" (click)="cancelEdit()">
+                                        <i class="bi bi-x-circle"></i> Cancel
+                                    </button>
+                                </div>
+                            </td>
+
+                            <!-- Delete -->
+                            <td>
+                                <button class="btn btn-danger btn-sm" type="button" (click)="removeItem(i)">
+                                <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
                         </tr>
-                         
-                        
-                        
-                            
 
                     </tbody>
                 </table>
