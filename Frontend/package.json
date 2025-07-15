@@ -22,7 +22,7 @@
     "@angular/platform-server": "^18.2.0",
     "@angular/router": "^18.2.0",
     "@angular/ssr": "^18.2.20",
-    "@ng-select/ng-select": "^12.0.0",
+    "@ng-select/ng-select": "^12.0.7",
     "bootstrap": "^5.3.7",
     "bootstrap-icons": "^1.13.1",
     "express": "^4.18.2",
