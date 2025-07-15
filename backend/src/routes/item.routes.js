@@ -1,4 +1,4 @@
-onst express = require('express');
+const express = require('express');
 const { mockItems } = require('../config/mockData');
 const { authenticateToken } = require('../middleware/auth.middleware');
 const router = express.Router();
