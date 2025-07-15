@@ -2,38 +2,15 @@
 <div class="layout">
   <!-- sidebarฝั่งuser -->
   <app-sidebarpurchase></app-sidebarpurchase>
-
+  
 
   <!-- ข้อมูลในหน้านี้ไม่รวมsidebar -->
   <div class="content">
-
-    <!--คุมหัวข้อเรื่องของหน้า content-->
-    <div class="header">
-
-      <!--หัวข้อเรื่องของหน้า content-->
-      <h1 class="re"> Request List </h1>
-
-
-      <!--แจ้งเตือน-->
-      <!-- <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="toast-header">
-    <i class="bi-bell"></i>
-    <strong class="me-auto">Notification</strong>
-    <small>11 mins ago</small>
-      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-    </div>
-      <div class="toast-body">
-        Hello, world! This is a toast message.
-      </div>
-    </div>-->
-
-      <!--ปุ่มระฆัง-->
       <div class="header">
-        <div class="header-content">
-        </div>
+        <h1 class="re"> Request List </h1>
+          <app-notification class="noti"></app-notification>
       </div>
-    </div>
-
+    
     <!--คำบรรยายใต้หัวข้อ-->
     <p class="the"> The loan withdrawal request is here. </p>
 

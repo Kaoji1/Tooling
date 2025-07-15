@@ -25,10 +25,17 @@
       font-size: 15px;
     }
 
+    
+
     .header {
       display: flex;
       justify-content: space-between;
       flex-direction: row;
+
+      .noti{
+        justify-self: end;
+
+      }
 
       h4 {
         margin-bottom: 5px;

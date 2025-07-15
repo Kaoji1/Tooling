@@ -6,19 +6,14 @@
   <!-- Content ด้านขวา -->
   <div class="content">
 
+
     <!-- Header -->
-    <div class="header">
-      <div class="header-content">
-        <h1 class="reh">Request History</h1>
-        <button class="lol" type="button">
-          <i class="bi-bell"></i>
-          <span class="position-absolute top-2 translate-middle badge rounded-pill bg-danger">
-            99+
-            <span class="visually-hidden">unread messages</span>
-          </span>
-        </button>
-      </div>
+
+    <div class="header-content">
+      <h1 class="reh">Request History</h1>
+      <app-notification class="noti"></app-notification>
     </div>
+
 
     <!-- คำอธิบายใต้หัวข้อ -->
     <p class="the">The loan withdrawal history is here.</p>
@@ -45,278 +40,283 @@
             <option value="1">Set up</option>
             <option value="2">Other</option>
           </select>
-          </div>
-
-  <!--ปุ่ม Export to AS400-->
-          <div class="export-btn">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">EXPORT TO AS400</button>
-          </div>
         </div>
 
-  <!--Modal แสดง Export to AS400? Y/N-->
-<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="export-title" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-    
-      <div class="modal-header justify-content-center border-0"> <!--header = ส่วนบนของฟอร์ม justify-content = การปรับตำแหน่ง  border = การกำหนดเส้นขอบ -->
-        <h1 class="modal-title w-100 text-center" id="export">Export to AS400?</h1>
-      </div>
-      <div class="modal-footer justify-content-center border-0">
-        <div class="d-grid gap-3 d-md-flex justify-content-center"> <!--d-grid gap = การเว้นระยะ-->
-          <button type="button" class="btn btn-primary btn-lg px-4" data-bs-toggle="modal" data-bs-target="#completeModal">Yes</button>
-          <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">No</button>
+        <!--ปุ่ม Export to AS400-->
+        <div class="export-btn">
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">EXPORT TO
+            AS400</button>
         </div>
       </div>
+
+      <!--Modal แสดง Export to AS400? Y/N-->
+      <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="export-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+
+            <div class="modal-header justify-content-center border-0">
+              <!--header = ส่วนบนของฟอร์ม justify-content = การปรับตำแหน่ง  border = การกำหนดเส้นขอบ -->
+              <h1 class="modal-title w-100 text-center" id="export">Export to AS400?</h1>
+            </div>
+            <div class="modal-footer justify-content-center border-0">
+              <div class="d-grid gap-3 d-md-flex justify-content-center">
+                <!--d-grid gap = การเว้นระยะ-->
+                <button type="button" class="btn btn-primary btn-lg px-4" data-bs-toggle="modal"
+                  data-bs-target="#completeModal">Yes</button>
+                <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">No</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Success -->
+      <div class="modal fade" id="completeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header justify-content-center border-0">
+              <i class="bi bi-check-circle-fill text-success" style="font-size: 120px;"></i>
+            </div>
+            <div class="modal-body justify-content-center border-0">
+              <h1 class="modal-title w-0 text-center" id="export">EXPORT AS400 success!</h1>
+            </div>
+            <div class="modal-footer justify-content-center border-0">
+              <button type="button" class="btn btn-primary btn-lg px-4"
+                onclick="window.location.href='nextpage.html'">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ตารางข้อมูล -->
+      <div class="table-responsive">
+        <table class="table table-bordered text-center">
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Item Name</th>
+              <th>Part No.</th>
+              <th>Spec</th>
+              <th>Process</th>
+              <th>Mac Type</th>
+              <th>Mac QTY.</th>
+              <th>Case</th>
+              <th>On hand</th>
+              <th>QTY.</th>
+              <th>Reg.</th>
+              <th>New</th>
+              <th>Non</th>
+              <th>Con.</th>
+              <!-- //con คืออะไร// -->
+              <th>Status</th>
+              <th>Fac.</th>
+              <th>Status Export</th>
+              <th>Remark</th>
+              <th>Export Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Rows ซ้ำ 8 แถว -->
+            <tr>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>
+                <input type="checkbox" id="selectAll">
+              </td>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>
+                <input type="checkbox" id="selectAll">
+              </td>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>
+                <input type="checkbox" id="selectAll">
+              </td>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>
+                <input type="checkbox" id="selectAll">
+              </td>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>
+                <input type="checkbox" id="selectAll">
+              </td>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>
+                <input type="checkbox" id="selectAll">
+              </td>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>
+                <input type="checkbox" id="selectAll">
+              </td>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>1</td>
+              <td>
+                <input type="checkbox" id="selectAll">
+              </td>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-wrapper">
+        <nav aria-label="Page navigation example">
+          <ul class="pagination">
+            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+          </ul>
+        </nav>
+      </div>
+
     </div>
   </div>
-</div>
-
-<!-- Modal Success -->
-<div class="modal fade" id="completeModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header justify-content-center border-0">
-        <i class="bi bi-check-circle-fill text-success" style="font-size: 120px;"></i>
-      </div>
-      <div class="modal-body justify-content-center border-0">
-        <h1 class="modal-title w-0 text-center" id="export">EXPORT AS400 success!</h1>
-      </div>
-      <div class="modal-footer justify-content-center border-0">
-        <button type="button" class="btn btn-primary btn-lg px-4" onclick="window.location.href='nextpage.html'">OK</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-    <!-- ตารางข้อมูล -->
-    <div class="table-responsive">
-      <table class="table table-bordered text-center">
-        <thead>
-          <tr>
-            <th>Document</th>
-            <th>Item Name</th>
-            <th>Part No.</th>
-            <th>Spec</th>
-            <th>Process</th>
-            <th>Mac Type</th>
-            <th>Mac QTY.</th>
-            <th>Case</th>
-            <th>On hand</th>
-            <th>QTY.</th>
-            <th>Reg.</th>
-            <th>New</th>
-            <th>Non</th>
-            <th>Con.</th>
-            <!-- //con คืออะไร// -->
-            <th>Status</th>
-            <th>Fac.</th>
-            <th>Status Export</th>
-            <th>Remark</th>
-            <th>Export Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Rows ซ้ำ 8 แถว -->
-          <tr>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>
-              <input type="checkbox" id="selectAll">
-            </td>
-            <td>1</td>
-            <td>1</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>
-              <input type="checkbox" id="selectAll">
-            </td>
-            <td>1</td>
-            <td>1</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>
-              <input type="checkbox" id="selectAll">
-            </td>
-            <td>1</td>
-            <td>1</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>
-              <input type="checkbox" id="selectAll">
-            </td>
-            <td>1</td>
-            <td>1</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>
-              <input type="checkbox" id="selectAll">
-            </td>
-            <td>1</td>
-            <td>1</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>
-              <input type="checkbox" id="selectAll">
-            </td>
-            <td>1</td>
-            <td>1</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>
-              <input type="checkbox" id="selectAll">
-            </td>
-            <td>1</td>
-            <td>1</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>1</td>
-            <td>
-              <input type="checkbox" id="selectAll">
-            </td>
-            <td>1</td>
-            <td>1</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Pagination -->
-    <div class="pagination-wrapper">
-      <nav aria-label="Page navigation example">
-        <ul class="pagination">
-          <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-          <li class="page-item"><a class="page-link" href="#">1</a></li>
-          <li class="page-item"><a class="page-link" href="#">2</a></li>
-          <li class="page-item"><a class="page-link" href="#">3</a></li>
-          <li class="page-item"><a class="page-link" href="#">Next</a></li>
-        </ul>
-      </nav>
-    </div>
-
-  </div>
-</div>
