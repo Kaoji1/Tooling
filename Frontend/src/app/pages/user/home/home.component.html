@@ -23,10 +23,10 @@
           <!-- รวม label,select ของ division,fac,phon,date -->
           <div class="group-select">
                 <label for="division">Division</label>
-                <ng-select 
-                  [items]="Div" 
-                  bindLabel="label" 
-                  bindValue="value" 
+                <ng-select
+                  [items]="Div"
+                  bindLabel="label"
+                  bindValue="value"
                   [ngModel]="div_"
                   (ngModelChange)="onDivChange($event)"
                   placeholder="Select Division">
@@ -35,10 +35,10 @@
 
               <div class="group-select">
                 <label for="Fac">Fac</label>
-                <ng-select 
-                  [items]="Fac" 
-                  bindLabel="label" 
-                  bindValue="value" 
+                <ng-select
+                  [items]="Fac"
+                  bindLabel="label"
+                  bindValue="value"
                   [ngModel]="fac_"
                   (ngModelChange)="onFacChange($event)"
                   placeholder="Select a Fac">
@@ -48,17 +48,17 @@
             <label for="phonenumber">Phone Number</label>
             <input type="tel" class="form-control" placeholder="Enter your phone number" id="phonenumber" [(ngModel)]="phon"/>
           </div>
-          <div class="group-select"> 
+          <div class="group-select">
             <label for="date">Date</label>
             <input type="date" class="form-control" placeholder="Enter date" id="date" [min]="today" [(ngModel)]="Date" />
           </div>
           <div class="group-select" style="width: 180px;">
             <label for="case" >Case</label>
-            <ng-select 
+            <ng-select
 
-              [items]="Case" 
-              bindLabel="Case" 
-              bindValue="value" 
+              [items]="Case"
+              bindLabel="Case"
+              bindValue="value"
               [(ngModel)]="selectedType"
               (change)="onTypechange()"
               placeholder="Select a case">
@@ -70,12 +70,12 @@
         <div class="req-row2">
           <!-- group รวม label,select -->
           <div class="group-select">
-            
+
             <label for="case">Part No. </label>
-            <ng-select 
-              [items]="partNo" 
-              bindLabel="label" 
-              bindValue="value" 
+            <ng-select
+              [items]="partNo"
+              bindLabel="label"
+              bindValue="value"
               [(ngModel)]="selectedPratNo"
               (ngModelChange)="onPartNoChange()"
               placeholder="Select  partNo">
@@ -83,10 +83,10 @@
           </div>
           <!-- <div class="group-select">
             <label for="spec">Spec</label>
-            <ng-select 
-              [items]="spec" 
-              bindLabel="label" 
-              bindValue="value" 
+            <ng-select
+              [items]="spec"
+              bindLabel="label"
+              bindValue="value"
               [(ngModel)]="selectedSpec"
               (ngModelChange)="onSpecChange()"
               placeholder="Select spec">
@@ -94,10 +94,10 @@
           </div> -->
           <div class="group-select">
             <label for="process">Process</label>
-            <ng-select 
-              [items]="process" 
-              bindLabel="label" 
-              bindValue="value" 
+            <ng-select
+              [items]="process"
+              bindLabel="label"
+              bindValue="value"
               [(ngModel)]="selectedProcess"
               (ngModelChange)="onProcessChange()"
               placeholder="Select process">
@@ -105,10 +105,10 @@
           </div>
           <div class="group-select">
             <label for="Machine No">Machine Type</label>
-            <ng-select 
-              [items]="machineType" 
-              bindLabel="label" 
-              bindValue="value" 
+            <ng-select
+              [items]="machineType"
+              bindLabel="label"
+              bindValue="value"
               [(ngModel)]="selectedMachineType"
               placeholder="Select machineType">
             </ng-select>
@@ -121,7 +121,7 @@
           <!--div group-select -->
         </div>
         <!--div row2-->
-        
+
       </div>
       <!--div input-req-->
       <!-- btn group -->
@@ -130,19 +130,19 @@
         <button class="btn-import" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal"
           data-bs-whatever="@getbootstrap"> IMPORT <i class="bi bi-download"></i></button>
         <button class="btn-view" type="button" (click)="Setupview()"> VIEW <i class="bi bi-eye-fill"></i></button>
-        
+
       </div>
-      
+
     </div>
     <!--div grop-req-->
     <!-- table setup-->
     <div class="table-responsive">
-      
+
       <table *ngIf="selectedType === 'setup' && items.length > 0"class="table table-bordered text-center">
         <thead>
           <tr>
             <th>
-              #  
+              #
             </th>
             <th>Part No.</th>
             <th>Item No.</th>
@@ -154,7 +154,7 @@
             <th>Usage</th>
             <th>QTY</th>
             <th>Case</th>
-            
+
           </tr>
         </thead>
         <tbody>
@@ -184,12 +184,12 @@
 
     <!-- table other-->
     <div class="table-responsive">
-      
+
       <table *ngIf="selectedType === 'other' && items.length > 0"class="table table-bordered text-center">
         <thead>
           <tr>
             <th>
-              # 
+              #
             </th>
             <th>Part No.</th>
             <th>Item No.</th>
@@ -201,7 +201,7 @@
             <th>Usage</th>
             <th>QTY</th>
             <th>Case</th>
-            
+
           </tr>
         </thead>
         <tbody>
@@ -218,10 +218,10 @@
             <td>{{ item.usage }}</td>
             <td><input class="yoyu" type="number"  [(ngModel)]="item.qty"min="0" ></td>
             <td>
-             <ng-select 
-               [items]="caseother" 
-              bindLabel="viewCase" 
-              bindValue="caseother"  
+             <ng-select
+               [items]="caseother"
+              bindLabel="viewCase"
+              bindValue="caseother"
               [(ngModel)]="item.caseother"
               [appendTo]="'body'"
               placeholder="Select a case">
@@ -269,7 +269,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Send File</button>
+        <button type="button" class="btn btn-primary">Send File</button> 
       </div>
     </div>
   </div>

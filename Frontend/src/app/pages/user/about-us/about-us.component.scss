@@ -1,0 +1,16 @@
+.layout {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  background-color: rgb(255, 255, 255);
+}
+
+.team {
+  display: flex;
+  justify-content: center;
+}
+
+.team h1 {
+  align-items: center;
+}
