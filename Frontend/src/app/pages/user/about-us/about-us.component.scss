@@ -42,30 +42,17 @@
 
 .teampic {
   display: flex;
-  flex-wrap: wrap; 
+  flex-wrap: wrap;
   justify-content: center;
   height: auto;
   gap: 100px;
-  background-color: rgb(91, 91, 91);
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 50px;
   max-width: 1000px;
+  background-color: rgb(255, 255, 255);
 
 }
 
-/* ตัวอย่างตกแต่ง box แต่ละคน */
-// .teampic div {
-//   width: 200px;
-//   height: 200px;
-//   background-color: white;
-//   color: black;
-//   font-size: 24px;
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   border-radius: 50%;
- 
-// }
 
 .member {
   display: flex;
@@ -78,15 +65,17 @@
 .circle {
   width: 200px;
   height: 200px;
-  background-color: white;
+  background-color: rgb(255, 255, 255);
   color: black;
   font-size: 24px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   margin-bottom: 10px;
   overflow: hidden;
+  line-height: 1px;
 }
 
 .circle img {
@@ -94,3 +83,10 @@
   height: 100%;
   object-fit: cover;             /* ให้รูปไม่ยืด บีบ หรือเพี้ยน */
 }
+
+
+.teampic p {
+  color: black;
+}
+
+
