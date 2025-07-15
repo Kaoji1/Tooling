@@ -45,6 +45,25 @@
         }
       }
     }
+      .dropdown-menu-notifications {
+      width: 300px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .notification-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    .notification-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #28a745; /* green */
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
     
     .notification
 
@@ -64,6 +83,10 @@
       flex-wrap: wrap;
       gap: 25px;
       justify-content: flex-start;
+
+      h6{
+        margin-top: 60px;
+      }
     }
 
     .group-select {
