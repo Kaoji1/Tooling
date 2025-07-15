@@ -21,7 +21,7 @@ import { MOCKDATA } from '../../../mock-data';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
-  
+
 
   mockData: any[] = [];
 
@@ -40,15 +40,15 @@ export class HomeComponent implements OnInit {
   Date:string= '';
   date:string='';
   phon: any=[];
-  
+
   today=new Date().toISOString().split('T')[0];
 
-  
-  
+
+
 
 
   onTypechange() {
-    
+
     if (this.selectedType === 'setup'){
       this.items = this.setupItem;
     }
@@ -73,9 +73,9 @@ export class HomeComponent implements OnInit {
   selectedProcess: string | null = null;
   selectedMachineType: string | null = null;
   selectedType: string | null = null;
-  
-  
- 
+
+
+
 
 
   ngOnInit() {
@@ -102,18 +102,18 @@ onFacChange(value: any) {
   sessionStorage.setItem('selectedFac', value);
 }
 
-  // ฟังก์ชั่นปุ่มcleardata
+  // ฟังก์ชั่นปุ่ม cleardata
   clearall() {
     this.items = [];
     this.selectedSpec = null;
     this.selectedProcess = null;
     this.selectedMachineType = null;
     this.selectedPratNo = null;
-    
+
     this.selectedType = null;
-    
-    
-    
+
+
+
   }
 
   //  ฟังก์ชันเมื่อเลือก Part No
@@ -157,10 +157,10 @@ onFacChange(value: any) {
   //     return;
   //   }
 
-  //   const filtered = this.mockData.filter(item => 
+  //   const filtered = this.mockData.filter(item =>
   //     item.spec === this.selectedSpec &&
   //     item.partNo === this.selectedPratNo
-       
+
   //   );
 
   //   this.process = [...new Set(filtered.map(item => item.process))].map(process => ({
@@ -185,10 +185,10 @@ onFacChange(value: any) {
       return;
     }
 
-    const filtered = this.mockData.filter(item => 
+    const filtered = this.mockData.filter(item =>
       item.process === this.selectedProcess &&
       item.partNo === this.selectedPratNo
-    
+
     );
 
 
@@ -249,7 +249,7 @@ onFacChange(value: any) {
   { caseother: 'CHA', viewCase: 'CHA' }
 ];
 
-   
+
 
     isSearched: boolean = false;
 
@@ -260,28 +260,28 @@ onFacChange(value: any) {
   const division = this.div_;
   const fac = this.fac_;
   const partNo = this.selectedPratNo;
-  
+
   const process = this.selectedProcess;
   const machineType = this.selectedMachineType;
   const Date = this.Date;
-  
+
 
   this.isSearched = true;
 
   // ตรวจสอบว่าไม่มีค่าที่เป็น undefined, null, หรือ string ว่าง
   if (
     partNo && partNo.trim() !== '' &&
-    
+
     process && process.trim() !== '' &&
     machineType && machineType.trim() !== '' &&
     division && division.trim() !== '' &&
     fac && fac.trim() !== '' &&
     Date && Date.trim() !== ''
-    
+
   ) {
     const filtered = this.mockData.filter(item =>
       item.partNo === partNo &&
-     
+
       item.process === process &&
       item.machineType === machineType
     );
@@ -327,7 +327,7 @@ addTocart() {
     ITEMNO: item.itemNo || this.itemNo,   // หาก item มี itemNo ให้ใช้ของมัน
     inputDate: inputDate,
     setupDate: setupDate,
-    caseother: item.caseother || null, 
+    caseother: item.caseother || null,
     machineNoother: item.machineNoother || null
   }));
 
@@ -339,7 +339,7 @@ addTocart() {
 
     this.clearall();  // เคลียร์ฟอร์มหลังเพิ่ม
   }
-  
+
 }
 
 }
