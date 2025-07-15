@@ -41,7 +41,7 @@ export class HomeComponent implements OnInit {
   date:string='';
   phon: any=[];
   
-  
+  today=new Date().toISOString().split('T')[0];
 
   
   
@@ -56,6 +56,7 @@ export class HomeComponent implements OnInit {
   this.items = this.otherItem.map(item => ({
      ...(item as any),   // บอกว่า item เป็น any เพื่อให้ใช้ spread ได้
       qty: null,
+      machineNoother:null,
       checked: true,
       case: this.selectedType,
       caseother: null
@@ -289,6 +290,7 @@ onFacChange(value: any) {
       this.items = filtered.map(item => ({
         ...item,
         qty: null,
+        machineNoother:null,
         checked: true,
         case: this.selectedType
       }));
@@ -325,7 +327,8 @@ addTocart() {
     ITEMNO: item.itemNo || this.itemNo,   // หาก item มี itemNo ให้ใช้ของมัน
     inputDate: inputDate,
     setupDate: setupDate,
-    caseother: item.caseother || null 
+    caseother: item.caseother || null, 
+    machineNoother: item.machineNoother || null
   }));
 
   const confirmAdd = confirm('Do you want to add selected items to cart?');

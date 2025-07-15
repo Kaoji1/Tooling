@@ -50,7 +50,7 @@
           </div>
           <div class="group-select"> 
             <label for="date">Date</label>
-            <input type="date" class="form-control" placeholder="Enter date" id="date" [(ngModel)]="Date" />
+            <input type="date" class="form-control" placeholder="Enter date" id="date" [min]="today" [(ngModel)]="Date" />
           </div>
           <div class="group-select" style="width: 180px;">
             <label for="case" >Case</label>
@@ -114,10 +114,10 @@
             </ng-select>
           </div>
           <!-- inputQTYใส่เลข -->
-          <div class="group-select" *ngIf="selectedType === 'setup' " >
+          <!-- <div class="group-select" *ngIf="selectedType === 'setup' " >
             <label for="phonenumber">QTY</label>
             <input  type="number" class="form-control" min="0" step="1" placeholder="Enter QTY" id="qty" />
-          </div>
+          </div> -->
           <!--div group-select -->
         </div>
         <!--div row2-->
@@ -213,10 +213,10 @@
             <td>{{ item.spec }}</td>
             <td>{{ item.process }}</td>
             <td>{{ item.machineType }}</td>
-            <td><input class="yoyu" type="number" ></td>
+            <td><input class="yoyu" type="text" [(ngModel)]="item.machineNoother" ></td>
             <td>{{ item.onHand }}</td>
             <td>{{ item.usage }}</td>
-            <td><input class="yoyu" type="number" ></td>
+            <td><input class="yoyu" type="number"  [(ngModel)]="item.qty"min="0" ></td>
             <td>
              <ng-select 
                [items]="caseother" 
