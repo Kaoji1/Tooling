@@ -18,8 +18,7 @@ app-sidebar {
 
 /* เนื้อหา main ที่ scroll ได้ */
 .main {
-  display: flex;
-  justify-content: center;
+  display: block;
   height: 100%;
   width: 100%;
   overflow-y: auto;
@@ -27,9 +26,14 @@ app-sidebar {
   box-sizing: border-box;
 }
 
+.team {
+  display: flex;
+  justify-content: center;
+
+}
+
 /* หัวข้อ Our Team */
 .team h1 {
-  justify-content: center;
   margin-top: 50px;
   font-size: 32px;
 }
