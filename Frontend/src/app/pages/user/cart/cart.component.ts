@@ -4,12 +4,13 @@ import { SidebarComponent } from '../../../components/sidebar/sidebar.component'
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MOCKDATA } from '../../../mock-data';
+import { NotificationComponent } from '../../../components/notification/notification.component';
 import { machine } from 'os';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, FormsModule, CommonModule],
+  imports: [RouterOutlet, SidebarComponent, FormsModule, CommonModule,NotificationComponent],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.scss'
 })

@@ -5,7 +5,7 @@ import { SidebarComponent } from '../../../components/sidebar/sidebar.component'
 @Component({
   selector: 'about-us',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent],
+  imports: [RouterOutlet, SidebarComponent,],
   templateUrl: './about-us.component.html',
   styleUrl: './about-us.component.scss'
 })

@@ -4,6 +4,7 @@ import { SidebarComponent } from '../../../components/sidebar/sidebar.component'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { NotificationComponent } from '../../../components/notification/notification.component';
 import { Router } from '@angular/router';
 import { MOCKDATA } from '../../../mock-data';
 
@@ -16,7 +17,7 @@ import { MOCKDATA } from '../../../mock-data';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [SidebarComponent, RouterOutlet,CommonModule, FormsModule, NgSelectModule],
+  imports: [SidebarComponent, RouterOutlet,CommonModule, FormsModule, NgSelectModule,NotificationComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
