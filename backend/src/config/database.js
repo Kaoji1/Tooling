@@ -1,15 +1,14 @@
 const sql = require('mssql');
 
-const dbConfig = {
-  server: "pbp155", // ที่อยู่เซิร์ฟเวอร์ฐานข้อมูล
-  user: "Cost_Team", // ชื่อผู้ใช้สำหรับการเชื่อมต่อฐานข้อมูล
-  password: "Cost@User1", // รหัสผ่านสำหรับการเชื่อมต่อฐานข้อมูล
-  database: "db_Indirect_Expense", // ชื่อฐานข้อมูลที่ต้องการเชื่อมต่อ
+const config = {
+  user: 'Cost_Team',
+  password: 'Cost@User1',
+  server: 'pbp155',
+  database: 'db_ToolingSmartRack',
   options: {
-      trustServerCertificate: true, // เชื่อถือใบรับรองเซิร์ฟเวอร์
-      trustedConnection: true, // ใช้การเชื่อมต่อที่เชื่อถือได้
-      encrypt: false, // ปิดการเข้ารหัสการเชื่อมต่อ
-  },
+    encrypt: false,
+    trustServerCertificate: true
+  }
 };
 
 // สร้างการเชื่อมต่อฐานข้อมูลแบบ Pool
@@ -30,4 +29,5 @@ module.exports = {
   poolPromise // ส่งออก poolPromise สำหรับการเชื่อมต่อฐานข้อมูล
 };
 
+fetchData();
 

@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Router } from '@angular/router';
 import { MOCKDATA } from '../../../mock-data';
-
+import { ApiService } from '../../../core/services/api.service';
 
 
 
@@ -21,7 +21,6 @@ import { MOCKDATA } from '../../../mock-data';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
-  
 
   mockData: any[] = [];
 
@@ -81,7 +80,7 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
   this.mockData = MOCKDATA;
   this.displayData = this.items;
-
+  this.Get_caseother();
   const uniquePartNos = [...new Set(this.mockData.map(item => item.partNo))];
   this.partNo = uniquePartNos.map(part => ({ label: part, value: part }));
 
