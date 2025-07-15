@@ -6,6 +6,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { HomeComponent } from './pages/user/home/home.component';
 import { CartComponent } from './pages/user/cart/cart.component';
 import { HistoryComponent } from './pages/user/history/history.component';
+import { AboutUsComponent } from './pages/user/about-us/about-us.component';
 
 // Purchase pages
 import { RequestlistComponent } from './pages/purchase/requestlist/requestlist.component';
@@ -24,6 +25,7 @@ export const routes: Routes = [
   {path: 'home', component: HomeComponent, },
   {path: 'cart', component: CartComponent, },
   {path: 'history', component: HistoryComponent, },
+  {path: 'about-us', component: AboutUsComponent},
 
   // Purchase Group Page
   {path: '', redirectTo: 'requestlist', pathMatch: 'full'},
