@@ -6,16 +6,14 @@ const express = require('express');
 
 const app = express();
 
-const port = 8400;
+const port = 3000;
 
-
-app.get('/', (req, res) => {
-  res.send('Hello Hell!');
-});
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+
+
 
 // // Import routes
 // const authRoutes = require('./src/routes/auth.routes');
