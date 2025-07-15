@@ -60,7 +60,7 @@
                             <td>{{ item.Spec }}</td>
                             <td>{{ item.Process }}</td>
                             <td>{{ item.MachineType }}</td>
-                            <td>{{ item.machineNo }}</td>
+                            <td>{{ item.case === 'setup' ? item.machineNo : (item.machineNoother)  }}</td>
                             <td>{{ item.usage }}</td>
 
                             <!-- QTY -->

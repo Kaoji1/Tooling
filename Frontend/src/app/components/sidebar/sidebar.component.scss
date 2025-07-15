@@ -47,6 +47,7 @@
           text-align: center;
           text-decoration: none;
           // แสดงการเคลื่อนไหวเมื่อเอาเม้าส์ชี้
+           position: relative;
           &:hover {
             color: #ffffff;
             background-color: #005eb8;
@@ -54,15 +55,19 @@
           
 
 
-        span {
-          background-color: red;
-          color: white;
-          padding: 5px;
-          border-radius: 100px;
-          font-size: 18px;
-          margin-bottom:20px ;
-          
-        }
+                span {
+              position: absolute;     
+              top: 2px;              
+              right: 45px;            
+              background-color: red;
+              color: white;
+              padding: 5px;
+              border-radius: 10px;
+              font-size: 13px;
+              min-width: 20px;
+              text-align: center;
+              line-height: 1;
+            }
         }
       }
     }

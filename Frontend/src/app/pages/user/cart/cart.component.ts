@@ -4,6 +4,7 @@ import { SidebarComponent } from '../../../components/sidebar/sidebar.component'
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MOCKDATA } from '../../../mock-data';
+import { machine } from 'os';
 
 @Component({
   selector: 'app-cart',
@@ -41,7 +42,8 @@ export class CartComponent implements OnInit {
         division: cartItem.division,
         dueDate: cartItem.dueDate || '',
         case:cartItem.case,
-        caseother:cartItem.caseother
+        caseother:cartItem.caseother,
+        machineNoother:cartItem.machineNoother
       };
     });
   }
@@ -72,7 +74,7 @@ removeItem(index: number) {
     this.cartItems.splice(index, 1);
     sessionStorage.setItem('cart', JSON.stringify(this.cartItems));
     alert('Item deleted');
-    window.location.reload();  // โหลดหน้าใหม่เลย = อัปเดต Sidebar ใหม่ด้วย
+    
   }
 }
 
