@@ -13,9 +13,10 @@ import {RouterModule} from '@angular/router';
 export class NotificationComponent {
   isOpen = false;
 
-  notifications = Array.from({ length: 200 }).map((_, i) => ({
+  notifications = Array.from({ length: 99 }).map((_, i) => ({
     id: i + 1,
     message: `ข้อความแจ้งเตือน ${i + 1}`
+    
   }));
 
   toggleNotification() {

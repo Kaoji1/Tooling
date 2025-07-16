@@ -12,9 +12,16 @@
   right: -12px;
   background: red;
   color: #fff;
-  border-radius: 50%;
+  border-radius: 9px;
   padding: 2px 6px;
   font-size: 12px;
+}
+
+ .close-btn {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+
 }
 
 .notification-panel {
@@ -44,6 +51,7 @@
 
 .notification-item {
   display: flex;
+  border-bottom: 1px solid #eee;
   align-items: center;
   padding: 5px 0;
 }
@@ -59,21 +67,8 @@
 .notification-item .text {
   flex: 1;
   background: #eee;
-  height: 20px;
+  height: 50px;
   border-radius: 4px;
 }
 
-/*.notification-dropdown {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 9999;
-}
 
-.notification-dropdown .dot {
-  width: 10px;
-  height: 10px;
-  background: #00FF99;
-  border-radius: 50%;
-  display: inline-block;
-}*/
