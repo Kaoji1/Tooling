@@ -5,7 +5,9 @@
 <div class="notification-panel" *ngIf="isOpen">
   <div class="header">
     <span>New ({{ notifications.length }})</span>
-    <button (click)="toggleNotification()">✕</button>
+    <button class="close-btn" (click)="toggleNotification()">
+      <i class="bi bi-x-circle"></i>
+    </button>
   </div>
   <div class="notification-list">
     <div *ngFor="let item of notifications" class="notification-item">
