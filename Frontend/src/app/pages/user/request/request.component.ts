@@ -5,23 +5,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
-import { Router } from '@angular/router';
 import { MOCKDATA } from '../../../mock-data';
-import { ApiService } from '../../../core/services/api.service';
-
-
-
 
 
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-request',
   standalone: true,
-  imports: [SidebarComponent, RouterOutlet,CommonModule, FormsModule, NgSelectModule,NotificationComponent],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  imports: [SidebarComponent, RouterOutlet, CommonModule, FormsModule, NgSelectModule, NotificationComponent],
+  templateUrl: './request.component.html',
+  styleUrl: './request.component.scss'
 })
-export class HomeComponent implements OnInit {
+export class requestComponent implements OnInit {
 
   mockData: any[] = [];
 
@@ -42,9 +37,6 @@ export class HomeComponent implements OnInit {
   phon: any=[];
 
   today=new Date().toISOString().split('T')[0];
-
-
-
 
 
   onTypechange() {
@@ -343,5 +335,3 @@ addTocart() {
 }
 
 }
-
-

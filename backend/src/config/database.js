@@ -4,7 +4,7 @@ const config = {
   user: 'Cost_Team',
   password: 'Cost@User1',
   server: 'pbp155',
-  database: 'db_ToolingSmartRack',
+  database: 'db_SmartCuttingTool_PMA',
   options: {
     encrypt: false,
     trustServerCertificate: true

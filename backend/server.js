@@ -1,18 +1,21 @@
 const express = require('express');
-// const cors = require('cors');
+const cors = require('cors');
+const routes = require('./src/routes/index.route.js'); // Import the routes
 // const bodyParser = require('body-parser');
 // const path = require('path');
 // require('dotenv').config();
 
 const app = express();
-
 const port = 3000;
+
+
+app.use('/api', routes);
+
 
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-
 
 
 // // Import routes

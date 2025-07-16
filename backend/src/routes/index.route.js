@@ -5,7 +5,7 @@ const router = express.Router(); // สร้าง instance ของ Router
 
 // นำเข้าคอนโทรเลอร์
 const testcontroller =require('../controllers/testcontroller');
-const authController = require('../controllers/auth.controller');
+
 // // นำเข้าคอนโทรลเลอร์ที่ใช้สำหรับจัดการคำขอ
 
 // const masterRequestsController = require('../controllers/masterRequestsController');
@@ -24,9 +24,10 @@ const authController = require('../controllers/auth.controller');
 // const HistoryGrindingController = require('../controllers/HistoryGrindingController');
 // const Req_GrindingController = require('../controllers/Req_GrindingController');
 
-// // ส่งออก router สำหรับใช้งานในที่อื่น
-// module.exports = router;
+// ส่งออก router สำหรับใช้งานในที่อื่น
+module.exports = router;
 
+router.get('/get_part_name', testcontroller.Post_part_name);
 // // กำหนดเส้นทาง request
 // router.get('/get_part_no', masterRequestsController.Post_OPIST_PartNo); // GET request สำหรับดึงหมายเลขพาร์ท
 // router.post('/post_process', masterRequestsController.Post_OPIST_Process); // POST request สำหรับส่งข้อมูล process
@@ -63,5 +64,3 @@ const authController = require('../controllers/auth.controller');
 // router.post('/post_receive', DetailController.Post_receive); // POST request สำหรับส่งข้อมูลการรับ
 // router.post('/post_dashboard_detail', DetailController.Post_dashboard_detail); // POST request ส่งหน้าdashboard
 
-
-router.get('/get_caseother', testcontroller.Post_CaseOther);
