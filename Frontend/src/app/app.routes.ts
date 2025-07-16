@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login.component';
 
 // User pages
-import { HomeComponent } from './pages/user/home/home.component';
+import { requestComponent } from './pages/user/request/request.component';
 import { CartComponent } from './pages/user/cart/cart.component';
 import { HistoryComponent } from './pages/user/history/history.component';
 import { AboutUsComponent } from './pages/user/about-us/about-us.component';
@@ -21,8 +21,8 @@ export const routes: Routes = [
   {path: 'login', component: LoginComponent},
 
   // User Group Page
-  {path: '', redirectTo: 'home', pathMatch: 'full'},
-  {path: 'home', component: HomeComponent, },
+  {path: '', redirectTo: 'request', pathMatch: 'full'},
+  {path: 'request', component: requestComponent, },
   {path: 'cart', component: CartComponent, },
   {path: 'history', component: HistoryComponent, },
   {path: 'about-us', component: AboutUsComponent},
@@ -33,9 +33,9 @@ export const routes: Routes = [
   {path: 'detail', component: DetailComponent},
   {path: 'history-request', component: HistoryRequestComponent},
 
-  // Redirect old dashboard routes to new home pages
-  { path: 'user-dashboard', redirectTo: '/user-home', pathMatch: 'full' },
-  { path: 'purchase-dashboard', redirectTo: '/purchase-home', pathMatch: 'full' },
+  // Redirect old dashboard routes to new request pages
+  { path: 'user-dashboard', redirectTo: '/user-request', pathMatch: 'full' },
+  { path: 'purchase-dashboard', redirectTo: '/purchase-request', pathMatch: 'full' },
 
   // Catch all
   { path: '**', redirectTo: '/login' }

@@ -1,7 +1,9 @@
-const { connectDb, closeDb, poolPromise } = require("../config/db.config"); // นำเข้าฟังก์ชันสำหรับเชื่อมต่อกับฐานข้อมูล
+
+const poolPromise = require("../config/db"); // นำเข้า poolPromise สำหรับการเชื่อมต่อกับฐานข้อมูล
+
 var Type = require("mssql").TYPES;// นำเข้า TYPE สำหรับใช้ในการกำหนดชนิดข้อมูล
 
-const Post_CaseOther = async function (req, res) {
+const Post_OPIST_PartNo = async function (req, res) {
   try {
     // console.log("Request Body:", req.body); // แสดงข้อมูลที่ได้รับจาก body
 
@@ -10,7 +12,7 @@ const Post_CaseOther = async function (req, res) {
 
     const result = await pool
       .request() // สร้างคำขอใหม่
-      .query("EXEC [trans].[viwer.Viwe_tb_CaseTool]"); // เรียกใช้ stored procedure
+      .query("EXEC [trans].[stored_Master_Tooling_Query_A]"); // เรียกใช้ stored procedure
 
     // console.log("Query Result:", result); // แสดงผลลัพธ์ของคำขอ
     res.json(result.recordset); // ส่งผลลัพธ์กลับไปยังผู้เรียก
@@ -20,3 +22,6 @@ const Post_CaseOther = async function (req, res) {
   }
 };
 
+module.exports = {
+  Post_part_name, // ส่งออกฟังก์ชันสำหรับใช้ในที่อื่น
+};
