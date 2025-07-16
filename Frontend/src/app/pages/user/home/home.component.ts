@@ -81,7 +81,7 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
   this.mockData = MOCKDATA;
   this.displayData = this.items;
-  this.Get_caseother();
+  // this.Get_caseother();
   const uniquePartNos = [...new Set(this.mockData.map(item => item.partNo))];
   this.partNo = uniquePartNos.map(part => ({ label: part, value: part }));
 
