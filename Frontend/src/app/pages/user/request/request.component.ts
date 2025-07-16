@@ -60,7 +60,7 @@ export class requestComponent implements OnInit {
   }
 
   // ค่าที่เลือก
-  selectedPratNo: string | null = null;
+  selectedPartNo: string | null = null;
   selectedSpec: string | null = null;
   selectedProcess: string | null = null;
   selectedMachineType: string | null = null;
@@ -100,7 +100,7 @@ onFacChange(value: any) {
     this.selectedSpec = null;
     this.selectedProcess = null;
     this.selectedMachineType = null;
-    this.selectedPratNo = null;
+    this.selectedPartNo = null;
 
     this.selectedType = null;
 
@@ -110,14 +110,14 @@ onFacChange(value: any) {
 
   //  ฟังก์ชันเมื่อเลือก Part No
   onPartNoChange() {
-    if (!this.selectedPratNo) {
+    if (!this.selectedPartNo) {
       this.spec = [];
       this.process = [];
       this.machineType = [];
       return;
     }
 
-    const filtered = this.mockData.filter(item => item.partNo === this.selectedPratNo);
+    const filtered = this.mockData.filter(item => item.partNo === this.selectedPartNo);
 
     // this.spec = [...new Set(filtered.map(item => item.spec))].map(spec => ({
     //   label: spec,
@@ -143,7 +143,7 @@ onFacChange(value: any) {
 
   //  ฟังก์ชันเมื่อเลือก Spec
   // onSpecChange() {
-  //   if (!this.selectedSpec || !this.selectedPratNo) {
+  //   if (!this.selectedSpec || !this.selectedPartNo) {
   //     this.process = [];
   //     this.machineType = [];
   //     return;
@@ -151,7 +151,7 @@ onFacChange(value: any) {
 
   //   const filtered = this.mockData.filter(item =>
   //     item.spec === this.selectedSpec &&
-  //     item.partNo === this.selectedPratNo
+  //     item.partNo === this.selectedPartNo
 
   //   );
 
@@ -172,14 +172,14 @@ onFacChange(value: any) {
   // กรองprocess
 
   onProcessChange() {
-    if (!this.selectedProcess || !this.selectedPratNo  ) {
+    if (!this.selectedProcess || !this.selectedPartNo  ) {
       this.machineType = [];
       return;
     }
 
     const filtered = this.mockData.filter(item =>
       item.process === this.selectedProcess &&
-      item.partNo === this.selectedPratNo
+      item.partNo === this.selectedPartNo
 
     );
 
@@ -191,7 +191,7 @@ onFacChange(value: any) {
 
 
   }
-  // selectedPratNo: string | null = null;
+  // selectedPartNo: string | null = null;
   // selectedSpec: string | null = null;
   // selectedProcess: string | null = null;
   //  selectedMachineNo: string | null = null;
@@ -251,7 +251,7 @@ onFacChange(value: any) {
 
   const division = this.div_;
   const fac = this.fac_;
-  const partNo = this.selectedPratNo;
+  const partNo = this.selectedPartNo;
 
   const process = this.selectedProcess;
   const machineType = this.selectedMachineType;
