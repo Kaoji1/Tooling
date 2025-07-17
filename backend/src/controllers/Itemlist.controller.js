@@ -1,7 +1,7 @@
 const { connectDb, closeDb, poolPromise } = require("../config/database"); // นำเข้าฟังก์ชันสำหรับเชื่อมต่อกับฐานข้อมูล
 var Type = require("mssql").TYPES;// นำเข้า TYPE สำหรับใช้ในการกำหนดชนิดข้อมูล
 
-exports.PartName = async function (req, res) {
+exports.Item = async function (req, res) {
   try {
     // console.log("Request Body:", req.body); // แสดงข้อมูลที่ได้รับจาก body
 
@@ -10,7 +10,7 @@ exports.PartName = async function (req, res) {
 
     const result = await pool
       .request() // สร้างคำขอใหม่
-      .query("SELECT * FROM [viewer].[View_tb_PartPH]"); // เรียกใช้ stored procedure
+      .query("SELECT TOP (100) * FROM [viewer].[tb_Item_MasterAll_PH]"); // เรียกใช้ stored procedure
 
     // console.log("Query Result:", result); // แสดงผลลัพธ์ของคำขอ
     res.json(result.recordset); // ส่งผลลัพธ์กลับไปยังผู้เรียก

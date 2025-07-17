@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+const baseUrl = 'http://localhost:3000/api';
+
 export interface DropdownItem {
   value: any;
   label: string;
@@ -46,41 +48,41 @@ export interface FilterRequest {
   providedIn: 'root'
 })
 export class RequestService {
-  private baseUrl = 'http://localhost:3000/api';
 
-  constructor(private http: HttpClient) { }
+
+  constructor(private httpClient: HttpClient) { }
 
   // Dropdown data methods
-  getDivisions(): Observable<DropdownItem[]> {
-    return this.http.get<DropdownItem[]>(`${this.baseUrl}/divisions`);
+  getDivisions(): Observable<any[]> {
+    return this.httpClient.get<any>(`${baseUrl}/divisions`);
   }
 
-  getFacilities(divisionId: number): Observable<DropdownItem[]> {
-    return this.http.get<DropdownItem[]>(`${this.baseUrl}/facilities/${divisionId}`);
+  getFacilities(divisionId: number): Observable<any[]> {
+    return this.httpClient.get<any>(`${baseUrl}/facilities/${divisionId}`);
   }
 
   getCases(): Observable<CaseItem[]> {
-    return this.http.get<CaseItem[]>(`${this.baseUrl}/cases`);
+    return this.httpClient.get<any>(`${baseUrl}/cases`);
   }
 
   getParts(caseId: number): Observable<DropdownItem[]> {
-    return this.http.get<DropdownItem[]>(`${this.baseUrl}/parts/${caseId}`);
+    return this.httpClient.get<any>(`${baseUrl}/parts/${caseId}`);
   }
 
   getProcesses(partId: number): Observable<DropdownItem[]> {
-    return this.http.get<DropdownItem[]>(`${this.baseUrl}/processes/${partId}`);
+    return this.httpClient.get<any>(`${baseUrl}/processes/${partId}`);
   }
 
   getMachineTypes(processId: number): Observable<DropdownItem[]> {
-    return this.http.get<DropdownItem[]>(`${this.baseUrl}/machine-types/${processId}`);
+    return this.httpClient.get<any>(`${baseUrl}/machine-types/${processId}`);
   }
 
   getCaseOther(): Observable<CaseOtherItem[]> {
-    return this.http.get<CaseOtherItem[]>(`${this.baseUrl}/case-other`);
+    return this.httpClient.get<any>(`${baseUrl}/case-other`);
   }
 
-  // Get filtered items
-  getItems(filter: FilterRequest): Observable<RequestItem[]> {
-    return this.http.post<RequestItem[]>(`${this.baseUrl}/items`, filter);
+  Get filtered items
+  getItems(filter: FilterRequest): Observable<any[]> {
+    return this.httpClient.get<any>(`${baseUrl}/items`, filter);
   }
 }
