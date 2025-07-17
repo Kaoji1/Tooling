@@ -81,8 +81,4 @@ export class RequestService {
     return this.httpClient.get<any>(`${baseUrl}/case-other`);
   }
 
-  Get filtered items
-  getItems(filter: FilterRequest): Observable<any[]> {
-    return this.httpClient.get<any>(`${baseUrl}/items`, filter);
-  }
 }

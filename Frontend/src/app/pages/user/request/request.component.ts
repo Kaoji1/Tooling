@@ -185,22 +185,6 @@ export class requestComponent {
       machineTypeId: this.selectedMachineType || undefined
     };
 
-    this.requestService.getItems(filter).subscribe({
-      next: (items) => {
-        this.items = items.map(item => ({
-          ...item,
-          checked: false,
-          machineNoother: item.machineNo,
-          caseother: null
-        }));
-        this.isSearched = true;
-      },
-      error: (error) => {
-        console.error('Error loading items:', error);
-        this.items = [];
-        this.isSearched = true;
-      }
-    });
   }
 
   // Clear all selections

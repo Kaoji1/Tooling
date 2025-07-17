@@ -10,7 +10,7 @@ exports.Item = async function (req, res) {
 
     const result = await pool
       .request() // สร้างคำขอใหม่
-      .query("SELECT TOP (100) * FROM [viewer].[tb_Item_MasterAll_PH]"); // เรียกใช้ stored procedure
+      .query("SELECT [ITEM_NO], [NAME_NAME], [SPEC], [DRWG], [ON_HAND], [MAIN_WAREHOUSE], [MAIN_LOCATION]  FROM [viewer].[tb_Item_MasterAll_PH]"); // เรียกใช้ stored procedure
 
     // console.log("Query Result:", result); // แสดงผลลัพธ์ของคำขอ
     res.json(result.recordset); // ส่งผลลัพธ์กลับไปยังผู้เรียก
