@@ -24,7 +24,7 @@
   height: 100%;
   width: 100%;
   overflow-y: auto;
-  background-color: #ffffff;
+  background: linear-gradient(#ffffff,  #c2e5ff);
   box-sizing: border-box;
 }
 
@@ -47,9 +47,8 @@
   height: auto;
   gap: 100px ;
   padding: 20px;
-  border-radius: 50px;
+  border-radius: 10px;
   max-width: 1000px;
-  background-color: rgb(255, 255, 255);
   row-gap: 20px;
 }
 
