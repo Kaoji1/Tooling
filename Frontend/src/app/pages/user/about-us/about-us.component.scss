@@ -89,4 +89,14 @@
   color: black;
 }
 
-
+.objec {
+  display: flex;
+  flex-direction: column; /* เรียงแนวตั้ง */
+  align-items: center;     /* จัดตรงกลางแนวนอน */
+  padding-top: 50px;
+}
+.objec h1{
+  font-size: 32px;
+  margin-bottom: 30px;
+  text-align: center;
+}
