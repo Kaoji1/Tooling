@@ -170,7 +170,7 @@
 
 .member {
       background-color: #ffffff;
-      border: 5px solid #004492;
+      border: 5px solid #0066B3;
       border-radius: 16px;
       padding: 30px;
       width: 200px;
@@ -182,3 +182,33 @@
 .member p {
   background-color: black;
 }
+
+.con{
+  background-color: #0066B3;
+  margin-bottom: none;
+  color: #ffffff;
+  line-height: 50px;
+}
+
+.con p{
+  font-weight: bold;     /* ทำให้หนา */
+  font-style: italic;    /* ทำให้เอียง */
+  font-size: 30px;
+  margin-left: 40px;
+  
+  
+}
+img{
+  width: 30px;
+  margin-left: 40px;
+  
+}
+
+.address {
+  width: 500px;           /* กำหนดความกว้าง */
+  word-wrap: break-word;  /* บังคับตัดคำถ้าจำเป็น */
+  white-space: normal;    /* อนุญาตให้ขึ้นบรรทัดใหม่ */
+  
+
+}
+
