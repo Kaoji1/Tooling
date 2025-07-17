@@ -25,7 +25,8 @@ export class LoginComponent {
       const role = this.auth.getRole();
       if (role === 'role1') {
         this.router.navigate(['/request']);
-      } else if (role === 'role2') {
+      }
+      else if (role === 'role2') {
         this.router.navigate(['/requestlist']);
       }
     } else {

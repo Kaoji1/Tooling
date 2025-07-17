@@ -22,14 +22,14 @@ export const routes: Routes = [
 
   // User Group Page
   {path: '', redirectTo: 'request', pathMatch: 'full'},
-  {path: 'request', component: requestComponent, },
-  {path: 'cart', component: CartComponent, },
-  {path: 'history', component: HistoryComponent, },
+  {path: 'request', component: requestComponent},
+  {path: 'cart', component: CartComponent},
+  {path: 'history', component: HistoryComponent},
   {path: 'about-us', component: AboutUsComponent},
 
   // Purchase Group Page
   {path: '', redirectTo: 'requestlist', pathMatch: 'full'},
-  {path: 'requestlist', component: RequestlistComponent,},
+  {path: 'requestlist', component: RequestlistComponent},
   {path: 'detail', component: DetailComponent},
   {path: 'history-request', component: HistoryRequestComponent},
 

@@ -5,7 +5,7 @@
   <!-- หน้าทั้งหมดไม่รวมsidebar -->
   <div class="content-area">
     <div class="header">
-      <h4>Request </h4>
+      <h4> Request </h4>
       <app-notification class="noti"></app-notification>
 
     </div>
@@ -19,45 +19,48 @@
         <div class="req-row1">
           <!-- รวม label,select ของ division,fac,phon,date -->
           <div class="group-select">
-                <label for="division">Division</label>
+                <label for="division"> Division </label>
                 <ng-select
                   [items]="Div"
                   bindLabel="label"
                   bindValue="value"
-                  [ngModel]="div_"
+                  [ngModel]="Div"
                   (ngModelChange)="onDivChange($event)"
                   placeholder="Select Division">
                 </ng-select>
               </div>
 
               <div class="group-select">
-                <label for="Fac">Fac</label>
+                <label for="Fac"> Fac </label>
                 <ng-select
                   [items]="Fac"
                   bindLabel="label"
                   bindValue="value"
-                  [ngModel]="fac_"
+                  [ngModel]="Fac"
                   (ngModelChange)="onFacChange($event)"
                   placeholder="Select a Fac">
                 </ng-select>
             </div>
-          <div class="group-select">
-            <label for="phonenumber">Phone Number</label>
-            <input type="tel" class="form-control" placeholder="Enter your phone number" id="phonenumber" [(ngModel)]="phon"/>
-          </div>
-          <div class="group-select">
-            <label for="date">Date</label>
-            <input type="date" class="form-control" placeholder="Enter date" id="date" [min]="today" [(ngModel)]="Date" />
-          </div>
-          <div class="group-select" style="width: 180px;">
-            <label for="case" >Case</label>
-            <ng-select
 
+          <div class="group-select">
+            <label for="phonenumber"> Phone Number </label>
+            <input type="tel" class="form-control" placeholder="Enter your phone number" id="phonenumber" [(ngModel)]="phone"/>
+          </div>
+
+          <div class="group-select">
+            <label for="date"> DueDate </label>
+            <input type="date" class="form-control" placeholder="Enter date" id="date" [min]="today" [(ngModel)]="DueDate" />
+          </div>
+
+          <!-- select case -->
+          <div class="group-select" style="width: 180px;">
+            <label for="case"> Case </label>
+            <ng-select
               [items]="Case"
               bindLabel="Case"
               bindValue="value"
-              [(ngModel)]="selectedType"
-              (change)="onTypechange()"
+              [(ngModel)]="Case"
+              (change)="onCaseChange()"
               placeholder="Select a case">
             </ng-select>
           </div>
@@ -68,34 +71,24 @@
           <!-- group รวม label,select -->
           <div class="group-select">
 
-            <label for="case">Part No. </label>
+            <label for="case"> Part No. </label>
             <ng-select
-              [items]="partNo"
+              [items]="PartNo"
               bindLabel="label"
               bindValue="value"
-              [(ngModel)]="selectedPartNo"
+              [(ngModel)]="PartNo"
               (ngModelChange)="onPartNoChange()"
               placeholder="Select  partNo">
             </ng-select>
           </div>
-          <!-- <div class="group-select">
-            <label for="spec">Spec</label>
-            <ng-select
-              [items]="spec"
-              bindLabel="label"
-              bindValue="value"
-              [(ngModel)]="selectedSpec"
-              (ngModelChange)="onSpecChange()"
-              placeholder="Select spec">
-            </ng-select>
-          </div> -->
+
           <div class="group-select">
             <label for="process">Process</label>
             <ng-select
-              [items]="process"
+              [items]="Process"
               bindLabel="label"
               bindValue="value"
-              [(ngModel)]="selectedProcess"
+              [(ngModel)]="Process"
               (ngModelChange)="onProcessChange()"
               placeholder="Select process">
             </ng-select>
@@ -103,19 +96,14 @@
           <div class="group-select">
             <label for="Machine No">Machine Type</label>
             <ng-select
-              [items]="machineType"
+              [items]="MachineType"
               bindLabel="label"
               bindValue="value"
-              [(ngModel)]="selectedMachineType"
+              [(ngModel)]="MachineType"
               placeholder="Select machineType">
             </ng-select>
           </div>
-          <!-- inputQTYใส่เลข -->
-          <!-- <div class="group-select" *ngIf="selectedType === 'setup' " >
-            <label for="phonenumber">QTY</label>
-            <input  type="number" class="form-control" min="0" step="1" placeholder="Enter QTY" id="qty" />
-          </div> -->
-          <!--div group-select -->
+
         </div>
         <!--div row2-->
 
@@ -216,7 +204,7 @@
             <td><input class="yoyu" type="number"  [(ngModel)]="item.qty"min="0" ></td>
             <td>
              <ng-select
-               [items]="caseother"
+              [items]="caseother"
               bindLabel="viewCase"
               bindValue="caseother"
               [(ngModel)]="item.caseother"
