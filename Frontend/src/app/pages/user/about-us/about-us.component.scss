@@ -121,7 +121,6 @@
   background-color: white;
   padding: 5px;
   border-radius: 1  0px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .circle {
@@ -179,12 +178,10 @@
       transition: all 0.3s ease;
 }
 
-.member p {
-  background-color: black;
-}
 
 .con{
   background-color: #0066B3;
+  margin-top: 50px;
   margin-bottom: none;
   color: #ffffff;
   line-height: 50px;
@@ -195,20 +192,20 @@
   font-style: italic;    /* ทำให้เอียง */
   font-size: 30px;
   margin-left: 40px;
-  
-  
+
+
 }
 img{
   width: 30px;
   margin-left: 40px;
-  
+
 }
 
 .address {
   width: 500px;           /* กำหนดความกว้าง */
   word-wrap: break-word;  /* บังคับตัดคำถ้าจำเป็น */
   white-space: normal;    /* อนุญาตให้ขึ้นบรรทัดใหม่ */
-  
+
 
 }
 
