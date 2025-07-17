@@ -125,8 +125,8 @@
 }
 
 .circle {
-  width: 200px;
-  height: 200px;
+  width: 100px;
+  height: 100px;
   background-color: rgb(255, 255, 255);
   color: black;
   font-size: 24px;
@@ -149,6 +149,7 @@
 
 .teampic p {
   color: black;
+
 }
 
 .objec {
@@ -167,6 +168,17 @@
   text-align: left;
 }
 
-.member p{
-      background-color: black;
+.member {
+      background-color: #ffffff;
+      border: 5px solid #004492;
+      border-radius: 16px;
+      padding: 30px;
+      width: 200px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: all 0.3s ease;
+}
+
+.member p {
+  background-color: black;
 }
