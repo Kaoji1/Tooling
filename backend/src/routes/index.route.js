@@ -7,8 +7,8 @@ const ItemlistController = require('../controllers/Itemlist.controller'); // ค
 
 // กำหนดเส้นทาง request
 router.get('/get_PARTNO', ItemlistController.Post_PARTNO);
-router.post('/post_PROCESS', ItemlistController.Post_PROCESS); // POST request สำหรับส่งข้อมูล process
-router.post('/post_machine_type', ItemlistController.OPIST_MC); // POST request สำหรับส่งประเภทเครื่องจักร
+router.get('/post_PROCESS', ItemlistController.Post_PROCESS); // POST request สำหรับส่งข้อมูล process
+router.post('/post__MACHINETYPE', ItemlistController.Post_MACHINETYPE); // POST request สำหรับส่งประเภทเครื่องจักร
 router.post('/post_item_no', ItemlistController.Post_item_detail); // POST request สำหรับส่งรายละเอียดของ item
 router.post('/post_request_to_cart', ItemlistController.Post_request_to_cart); // POST request สำหรับส่งคำขอไปยังตะกร้า
 router.get('/get_list_table', ItemlistController.Get_list_table); 

@@ -18,13 +18,19 @@ export class RequestService {
     private httpClient: HttpClient // เก็บ HttpClient สำหรับทำ HTTP requests
   ) { }
 
-   getPARTNO(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
+  getPARTNO(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
     return this.httpClient.get(`${baseUrl}/get_PARTNO`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
   }
 
   post_PROCESS(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
     return this.httpClient.post(`${baseUrl}/post_PROCESS`, data) // ส่ง HTTP POST request เพื่อส่งข้อมูล process
   }
+
+  post_MACHINETYPE(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
+    return this.httpClient.post(`${baseUrl}/post__MACHINETYPE`, data) // ส่ง HTTP POST request เพื่อส่งข้อมูล process
+  }
+
+
 }
 
 

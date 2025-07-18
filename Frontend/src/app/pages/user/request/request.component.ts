@@ -35,7 +35,8 @@ export class requestComponent {
   MachineType_: any = [];
   caseother: any = [];
   Spec_:any=[];
-  
+  setupItem = [];
+  otherItem = [];
 
   // option dropdown
   spec:any=[];
@@ -45,7 +46,7 @@ export class requestComponent {
   PartNo:any=[];
   Process:any=[];
   MachineType:any=[];
-
+  
   // Form fields
   phone_: string = '';
   DueDate_: string = '';
@@ -76,6 +77,7 @@ export class requestComponent {
       { label: '4', value: '4' },
       { label: '5', value: '5' },
       { label: '6', value: '6' }, 
+      { label: '7', value: '7' }, 
     ];
 
     this.Case = [
@@ -85,10 +87,12 @@ export class requestComponent {
   }
 
   async ngOnInit()  {
-    this.Get_SPEC();
+    this.Get_PARTNO();
+    
+    
   }
 // เรียกใช้ตัวดึงapi
-  Get_SPEC() {
+  Get_PARTNO() {
     // เรียก API เพื่อดึงข้อมูล SPEC
     this.api.getPARTNO().subscribe({
       // ถ้าสำเร็จ จะทำการเก็บ response ลงใน spec
@@ -102,8 +106,8 @@ export class requestComponent {
     });
   }
 
-  async Post_PROCESS(event: { value: undefined; }) {
-    // console.log(event.value); // แสดงค่าที่ได้รับใน console
+  async post_PROCESS(event:any) {
+    console.log(event.value); // แสดงค่าที่ได้รับใน console
     // เช็คว่า event.value มีค่าหรือไม่
     if (event.value !== undefined) {
       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
@@ -122,6 +126,62 @@ export class requestComponent {
     }
   }
 
+// โดยใช้ Post_machine_type ที่ดึงมาจาก api.service.ts เพื่อเชื่อมต่อ API แล้วทำการส่งข้อมูล(post)ไป SQL
+  // เรียกใช้งาน api.post_machine_type โดยส่งค่าจาก event.value ไป
+  async Post_MACHINETYPE(event:any) {
+    // console.log(event.value) // แสดงค่าที่ได้รับใน console
+    // เช็คว่า event.value มีค่าหรือไม่
+    if (event.value !== undefined) {
+      // เก็บค่า OPIST_Process จาก event.value
+      const Process = event.value.OPIST_Process;
+      // สร้างอ็อบเจ็กต์ data สำหรับส่งไปยัง API
+      const data = {
+        OPIST_PartNo: this.PartNo.OPIST_PartNo,
+        OPIST_Process: Process,
+      };
+
+      // เรียก API เพื่อส่งข้อมูล machine type
+      this.api
+        .post_MACHINETYPE(data)
+        // console.log(event.value) // แสดงค่าที่ได้รับใน console
+        .subscribe({
+          // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_mc และ rev_
+          next: (response) => {
+            if (response.length > 0) {
+              this.MachineType_ = response[0];
+              // this.rev_ = response[0][0].OPIST_DwgRev;
+              // console.log(response, this.rev_, response[0][0].OPIST_DwgRev); // แสดงผลลัพธ์ใน console
+            }
+          },
+          // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+          error: (e) => console.error(e),
+        });
+    }
+  }
+  
+
+onTypechange() {
+
+    if (this.selectedType === 'setup'){
+      this.items = this.setupItem;
+    }
+    else if (this.selectedType === 'other') {
+  this.items = this.otherItem.map(item => ({
+     ...(item as any),   // บอกว่า item เป็น any เพื่อให้ใช้ spread ได้
+      qty: null,
+      machineNoother:null,
+      checked: true,
+      case: this.selectedType,
+      caseother: null
+  }));
+    }
+    else {
+      this.items=[];
+    }
+  }
+
+
+
 
 
 // function add to cart
@@ -131,7 +191,6 @@ AddToCart() {
     //console.log(filteredItems.length, this.items.length); // แสดงจำนวนรายการใน console
     // เช็คว่ากรอก mc no และ qty ได้กรอกหมดทุกตัวไหม
     if (filteredItems.length < this.items.length) {
-      //Swal.fire({}) ใช้สำหรับแสดง popup โดยใช้ SweetAlert2 ซึ่งเป็นไลบรารี
       
       return; // หยุดการดำเนินการถ้ายังไม่กรอกข้อมูลครบ
     }

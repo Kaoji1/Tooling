@@ -59,6 +59,7 @@
               bindLabel="label"
               bindValue="value"
               [(ngModel)]="Case_"
+              (Change)="onTypechange()"
               placeholder="Select a case">
             </ng-select>
           </div>
@@ -75,6 +76,7 @@
               bindLabel="PartNo"
               [(ngModel)]="PartNo_"
               [virtualScroll]="true"
+              (ngModelchange)="post_PROCESS($event)"
               placeholder="Select  partNo">
             </ng-select>
           </div>

@@ -20,6 +20,8 @@ const Post_PARTNO = async function (req, res) {
   }
 };
 
+
+
 // ฟังก์ชันเพื่อดึงข้อมูลตาม OPIST_PartNo
 const Post_PROCESS = async function (req, res) {
   try {
@@ -47,7 +49,7 @@ const Post_PROCESS = async function (req, res) {
 };
 
 // ฟังก์ชันเพื่อดึงข้อมูลตาม OPIST_Process
-const OPIST_MC = async function (req, res) {
+const Post_MACHINETYPE = async function (req, res) {
   try {
     const { PartNo, Process } = req.body; // ดึงหมายเลขชิ้นส่วนและกระบวนการจาก body
 
@@ -248,7 +250,7 @@ const Get_list_table = async function (req, res) {
 module.exports = {
   Post_PARTNO,
   Post_PROCESS,
-  OPIST_MC,
+  Post_MACHINETYPE,
   Post_item_detail,
   Post_request_to_cart,
   Get_list_table,
