@@ -18,6 +18,9 @@ export interface CaseOtherItem {
   caseother: any;
   viewCase: string;
 }
+export interface SPEC {
+  spec: string;
+}
 
 export interface RequestItem {
   ItemId?: number;
@@ -79,6 +82,10 @@ export class RequestService {
 
   getCaseOther(): Observable<CaseOtherItem[]> {
     return this.httpClient.get<any>(`${baseUrl}/case-other`);
+  }
+
+  getSPEC(): Observable<SPEC[]> {
+    return this.httpClient.get<any>(`${baseUrl}/SPEC`);
   }
 
 }
