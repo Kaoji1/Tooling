@@ -7,6 +7,8 @@ const ItemlistController = require('../controllers/Itemlist.controller'); // ค
 
 // กำหนดเส้นทาง request
 router.get('/Item', ItemlistController.Item); // POST request สำหรับดึงหมายเลขพาร์ท
+router.get('/SPEC', ItemlistController.SPEC); // POST request สำหรับดึงหมายเลขพาร์ท
+
 
 // ส่งออก router สำหรับใช้งานในที่อื่น
 module.exports = router;

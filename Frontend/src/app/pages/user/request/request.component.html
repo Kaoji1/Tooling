@@ -29,6 +29,7 @@
                   placeholder="Select Division">
                 </ng-select>
               </div>
+              
 
               <div class="group-select">
                 <label for="Fac"> Fac </label>
@@ -81,6 +82,17 @@
               placeholder="Select  partNo">
             </ng-select>
           </div>
+          <div class="group-select">
+                <label for="spec"> Spec </label>
+                <ng-select
+                  [items]="Div"
+                  bindLabel="label"
+                  bindValue="value"
+                  [ngModel]="spec_"
+                  (ngModelChange)="onDivChange($event)"
+                  placeholder="Select Spec">
+                </ng-select>
+              </div>
 
           <div class="group-select">
             <label for="process">Process</label>

@@ -9,6 +9,7 @@ import { MOCKDATA } from '../../../mock-data';
 import { RequestService, FilterRequest } from '../../../core/services/request.service';
 
 
+
 @Component({
   selector: 'app-request',
   standalone: true,
@@ -19,6 +20,7 @@ import { RequestService, FilterRequest } from '../../../core/services/request.se
     FormsModule,
     NgSelectModule,
     NotificationComponent,
+    
   ],
   templateUrl: './request.component.html',
   styleUrl: './request.component.scss'
@@ -32,6 +34,7 @@ export class requestComponent {
   Process: any[] = [];
   MachineType: any[] = [];
   caseother: any[] = [];
+  spec_:any=[];
 
   // Selected values
   selectedDivision: number | null = null;
@@ -70,9 +73,19 @@ export class requestComponent {
         console.error('Error loading divisions:', error);
       }
     });
+    
 
     // Load cases
     this.requestService.getCases().subscribe({
+      next: (cases) => {
+        this.Case = cases;
+      },
+      error: (error) => {
+        console.error('Error loading cases:', error);
+      }
+    });
+    // Load spec
+    this.requestService.getSPEC().subscribe({
       next: (cases) => {
         this.Case = cases;
       },
