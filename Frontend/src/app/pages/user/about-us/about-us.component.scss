@@ -201,19 +201,19 @@ img{
 
 }
 
-.address {
-             /* กำหนดความกว้าง */
-  word-wrap: break-word;  /* บังคับตัดคำถ้าจำเป็น */
-  white-space: normal;    /* อนุญาตให้ขึ้นบรรทัดใหม่ */
-  margin-left: 40px;
-  display: flex;
+// .address {
+//              /* กำหนดความกว้าง */
+//   word-wrap: break-word;  /* บังคับตัดคำถ้าจำเป็น */
+//   white-space: normal;    /* อนุญาตให้ขึ้นบรรทัดใหม่ */
+//   margin-left: 40px;
+//   display: flex;
   
-}
+// }
 
-.right img{
- text-align: right;
- width: 500;
-}
+// .right img{
+//  text-align: right;
+//  width: 500;
+// }
 
 .left {
   text-align: left;
@@ -224,9 +224,9 @@ img{
   margin-left: 0px;
 }
 
-.right span{
-  text-align: left;
-}
+// .right span{
+//   text-align: left;
+// }
 
 .phone {
   display: flex;
@@ -248,3 +248,15 @@ img{
 .rightmain{
   margin-right: 405px;
 }
+
+.address{
+  display: flex;
+  justify-content: space-between;
+  margin-left: 40px;
+ 
+}
+
+.right{
+  margin-right: 176px;
+}
+
