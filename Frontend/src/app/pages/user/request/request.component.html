@@ -24,8 +24,7 @@
                   [items]="Div"
                   bindLabel="label"
                   bindValue="value"
-                  [ngModel]="Div"
-                  (ngModelChange)="onDivChange($event)"
+                  [ngModel]="Div_"
                   placeholder="Select Division">
                 </ng-select>
               </div>
@@ -37,20 +36,19 @@
                   [items]="Fac"
                   bindLabel="label"
                   bindValue="value"
-                  [ngModel]="Fac"
-                  (ngModelChange)="onFacChange($event)"
+                  [ngModel]="Fac_"
                   placeholder="Select a Fac">
                 </ng-select>
             </div>
 
           <div class="group-select">
             <label for="phonenumber"> Phone Number </label>
-            <input type="tel" class="form-control" placeholder="Enter your phone number" id="phonenumber" [(ngModel)]="phone"/>
+            <input type="tel" class="form-control" placeholder="Enter your phone number" id="phonenumber" [(ngModel)]="phone_"/>
           </div>
 
           <div class="group-select">
             <label for="date"> DueDate </label>
-            <input type="date" class="form-control" placeholder="Enter date" id="date" [min]="today" [(ngModel)]="DueDate" />
+            <input type="date" class="form-control" placeholder="Enter date" id="date" [min]="today_" [(ngModel)]="DueDate_" />
           </div>
 
           <!-- select case -->
@@ -58,10 +56,9 @@
             <label for="case"> Case </label>
             <ng-select
               [items]="Case"
-              bindLabel="Case"
+              bindLabel="label"
               bindValue="value"
-              [(ngModel)]="Case"
-              (change)="onCaseChange()"
+              [(ngModel)]="Case_"
               placeholder="Select a case">
             </ng-select>
           </div>
@@ -75,33 +72,30 @@
             <label for="case"> Part No. </label>
             <ng-select
               [items]="PartNo"
-              bindLabel="label"
-              bindValue="value"
-              [(ngModel)]="PartNo"
-              (ngModelChange)="onPartNoChange()"
+              bindLabel="PartNo"
+              [(ngModel)]="PartNo_"
+              [virtualScroll]="true"
               placeholder="Select  partNo">
             </ng-select>
           </div>
           <div class="group-select">
                 <label for="spec"> Spec </label>
                 <ng-select
-                  [items]="Div"
-                  bindLabel="label"
-                  bindValue="value"
-                  [ngModel]="spec_"
-                  (ngModelChange)="onDivChange($event)"
+                  [items]="spec"
+                  bindLabel="SPEC"
+                  [ngModel]="Spec_"
+                  [virtualScroll]="true"
                   placeholder="Select Spec">
                 </ng-select>
+                
               </div>
 
           <div class="group-select">
             <label for="process">Process</label>
             <ng-select
               [items]="Process"
-              bindLabel="label"
-              bindValue="value"
-              [(ngModel)]="Process"
-              (ngModelChange)="onProcessChange()"
+              bindLabel="Process"
+              [(ngModel)]="Process_"
               placeholder="Select process">
             </ng-select>
           </div>
@@ -111,7 +105,7 @@
               [items]="MachineType"
               bindLabel="label"
               bindValue="value"
-              [(ngModel)]="MachineType"
+              [(ngModel)]="MachineType_"
               placeholder="Select machineType">
             </ng-select>
           </div>
@@ -123,10 +117,10 @@
       <!--div input-req-->
       <!-- btn group -->
       <div class="btn-group-req">
-        <button class="btn-viewall" type="button" (click)="clearall()"> CLEARALL <i class="bi bi-list"></i></button>
+        <button class="btn-viewall" type="button" (click)="Clearall()"> CLEARALL <i class="bi bi-list"></i></button>
         <button class="btn-import" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal"
           data-bs-whatever="@getbootstrap"> IMPORT <i class="bi bi-download"></i></button>
-        <button class="btn-view" type="button" (click)="Setupview()"> VIEW <i class="bi bi-eye-fill"></i></button>
+        <button class="btn-view" type="button" > VIEW <i class="bi bi-eye-fill"></i></button>
 
       </div>
 
@@ -237,7 +231,7 @@
 
 
 
-    <button class="btn-sendrequest" type="button" (click)="addTocart()" ><i class="bi bi-cart-plus"></i> Add To Cart</button>
+    <button class="btn-sendrequest" type="button"  ><i class="bi bi-cart-plus"></i> Add To Cart</button>
   </div>
   <!--div box-main-->
 </div>

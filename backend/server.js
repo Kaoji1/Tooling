@@ -7,6 +7,7 @@ const app = express();
 const port = 3000; // Define the port number
 
 // Define the routes
+app.use(cors());
 app.use('/api', routes);
 
 // กำหนดเส้นทางหลัก

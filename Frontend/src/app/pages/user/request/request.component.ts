@@ -5,8 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
-import { MOCKDATA } from '../../../mock-data';
-import { RequestService, FilterRequest } from '../../../core/services/request.service';
+import { RequestService,  } from '../../../core/services/request.service';
 
 
 
@@ -26,177 +25,332 @@ import { RequestService, FilterRequest } from '../../../core/services/request.se
   styleUrl: './request.component.scss'
 })
 export class requestComponent {
-  // Dropdown data
-  Div: any[] = [];
-  Fac: any[] = [];
-  Case: any[] = [];
-  PartNo: any[] = [];
-  Process: any[] = [];
-  MachineType: any[] = [];
-  caseother: any[] = [];
-  spec_:any=[];
 
-  // Selected values
-  selectedDivision: number | null = null;
-  selectedFacility: number | null = null;
-  selectedCase: number | null = null;
-  selectedPartNo: number | null = null;
-  selectedProcess: number | null = null;
-  selectedMachineType: number | null = null;
+  // Dropdown data
+  Div_: any = [];
+  Fac_: any = [];
+  Case_: any = [];
+  PartNo_: any = [];
+  Process_: any = [];
+  MachineType_: any = [];
+  caseother: any = [];
+  Spec_:any=[];
+  
+
+  // option dropdown
+  spec:any=[];
+  Div:any=[];
+  Fac:any=[];
+  Case:any=[];
+  PartNo:any=[];
+  Process:any=[];
+  MachineType:any=[];
 
   // Form fields
-  phone: string = '';
-  DueDate: string = '';
-  today: string = '';
+  phone_: string = '';
+  DueDate_: string = '';
+  today_: string = '';
 
   // Table data
-  items: any[] = [];
+  items: any= [];// array เก่าวแปรสำหรับเก็บรายการข้อมูล (items) ที่มีอยู่แล้ว
+  item: any; //array ใหม่  ตัวแปรสำหรับเก็บข้อมูล item ใหม่
   selectedType: string = '';
   isSearched: boolean = false;
 
-  constructor(private requestService: RequestService) {
+  constructor( //โหลดทันทีที่รันที่จำเป็นต้องใช้ตอนเริ่มเว็ป
+    private api: RequestService
+  ) {
     // Set today's date for min date validation
-    this.today = new Date().toISOString().split('T')[0];
+    this.today_ = new Date().toISOString().split('T')[0];
+
+    // กำหนดตัวเลือกในdropdown
+    this.Div = [
+      { label: 'GM', value: 'GM' }, // ตัวเลือก Division ที่ 1
+      { label: 'PMC', value: 'PMC' }, // ตัวเลือก Division ที่ 2
+    ];
+
+    this.Fac = [
+      { label: '1', value: '1' }, // ตัวเลือก Fac ที่ 1
+      { label: '2', value: '2' }, // ตัวเลือก Fac ที่2
+      { label: '3', value: '3' },
+      { label: '4', value: '4' },
+      { label: '5', value: '5' },
+      { label: '6', value: '6' }, 
+    ];
+
+    this.Case = [
+      { label: 'Setup', value: 'Setup' }, // ตัวเลือก Division ที่ 1
+      { label: 'Other', value: 'Other' }, // ตัวเลือก Division ที่ 2
+    ];
   }
 
-  ngOnInit(): void {
-    this.loadInitialData();
+  async ngOnInit()  {
+    this.Get_SPEC();
+  }
+// เรียกใช้ตัวดึงapi
+  Get_SPEC() {
+    // เรียก API เพื่อดึงข้อมูล SPEC
+    this.api.getPARTNO().subscribe({
+      // ถ้าสำเร็จ จะทำการเก็บ response ลงใน spec
+      next: (response: any) => {
+        this.PartNo = response;
+        // แสดงผลลัพธ์ใน console
+        // console.log(this.PartNo);
+      },
+      // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+      error: (e: any) => console.error(e),
+    });
   }
 
-  loadInitialData(): void {
-    // Load divisions
-    this.requestService.getDivisions().subscribe({
-      next: (division) => {
-        this.Div = division;
-      },
-      error: (error) => {
-        console.error('Error loading divisions:', error);
-      }
-    });
-    
-
-    // Load cases
-    this.requestService.getCases().subscribe({
-      next: (cases) => {
-        this.Case = cases;
-      },
-      error: (error) => {
-        console.error('Error loading cases:', error);
-      }
-    });
-    // Load spec
-    this.requestService.getSPEC().subscribe({
-      next: (cases) => {
-        this.Case = cases;
-      },
-      error: (error) => {
-        console.error('Error loading cases:', error);
-      }
-    });
-
-    // Load case other
-    this.requestService.getCaseOther().subscribe({
-      next: (caseOther) => {
-        this.caseother = caseOther;
-      },
-      error: (error) => {
-        console.error('Error loading case other:', error);
-      }
-    });
+  async Post_PROCESS(event: { value: undefined; }) {
+    // console.log(event.value); // แสดงค่าที่ได้รับใน console
+    // เช็คว่า event.value มีค่าหรือไม่
+    if (event.value !== undefined) {
+      // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+      this.api.post_PROCESS(event.value).subscribe({
+        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
+        next: (response) => {
+          if (response.length > 0) {
+            this.Process = response[0];
+            // แสดงผลลัพธ์ใน console
+            console.log(response);
+          }
+        },
+        // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+        error: (e) => console.error(e),
+      });
+    }
   }
+
+
+
+// function add to cart
+AddToCart() {
+   // กรองรายการที่มีค่า MC_no และ Qty
+    const filteredItems = this.items.filter((item:any) => item.MC_no && item.Qty);
+    //console.log(filteredItems.length, this.items.length); // แสดงจำนวนรายการใน console
+    // เช็คว่ากรอก mc no และ qty ได้กรอกหมดทุกตัวไหม
+    if (filteredItems.length < this.items.length) {
+      //Swal.fire({}) ใช้สำหรับแสดง popup โดยใช้ SweetAlert2 ซึ่งเป็นไลบรารี
+      
+      return; // หยุดการดำเนินการถ้ายังไม่กรอกข้อมูลครบ
+    }
+
+    // สร้างอาเรย์ใหม่จากข้อมูลที่ถูกกรอง
+// สร้างอาเรย์ใหม่จากข้อมูลที่ถูกกรอง
+const newArray = filteredItems.map((item:any) => ({
+  Doc_no: null, // หมายเลขเอกสารเริ่มต้นเป็น null
+  Division: this.Div_.value, // ค่าจากฟอร์มสำหรับ Division
+  Factory: this.Fac_.value, // ค่าจากฟอร์มสำหรับ Factory
+  Date_of_Req: null, // วันที่ของการร้องขอเริ่มต้นเป็น null
+  Item_no: item.ITEMNO, // หมายเลขไอเทมจากรายการที่ถูกกรอง
+  Part_no: item.PARTNO, // หมายเลขชิ้นส่วนจากรายการที่ถูกกรอง
+  Process: item.PROCESS, // กระบวนการจากรายการที่ถูกกรอง
+  MC_type: item.MACHINETYPE, // ประเภทเครื่องจักรจากรายการที่ถูกกรอง
+  Spec: item.SPEC, // สเปคจากรายการที่ถูกกรอง
+  Usage: item.Usage_pcs, // การใช้งานจากรายการที่ถูกกรอง
+  MC_no: item.MC_no, // หมายเลขเครื่องจักรจากรายการที่ถูกกรอง
+  Qty: item.Qty, // จำนวนจากรายการที่ถูกกรอง
+  
+  Status: null, // สถานะเริ่มต้นเป็น null
+  Set_by: null, // ตั้งค่าโดยเริ่มต้นเป็น null
+  Local: 0, // ค่าท้องถิ่นเริ่มต้นเป็น 0
+  }));
+}
+
+
+
+// function clearall
+Clearall() {
+  // Delete select group
+  this.Div_=null;
+  this.Fac_=null;
+  this.DueDate_='';
+  this.Case_=null;
+  this.PartNo_=null;
+  this.Spec_=null
+  this.MachineType_=null;
+
+  // Delete items ค่าที่รวมที่จะส่งไปตะกร้า
+  this.items=null;
+
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // Clear all selections
+  // clearall(): void {
+  //   this.selectedDivision = null;
+  //   this.selectedFacility = null;
+  //   this.selectedCase = null;
+  //   this.selectedPartNo = null;
+  //   this.selectedProcess = null;
+  //   this.selectedMachineType = null;
+  //   this.phone = '';
+  //   this.DueDate = '';
+  //   this.items = [];
+  //   this.selectedType = '';
+  //   this.isSearched = false;
+
+  //   // Clear dependent dropdowns
+  //   this.Fac = [];
+  //   this.PartNo = [];
+  //   this.Process = [];
+  //   this.MachineType = [];
+  // }
+
+  // Add to cart
+//   addTocart(): void {
+//     const checkedItems = this.items.filter(item => item.checked);
+
+//     if (checkedItems.length === 0) {
+//       alert('Please select at least one item to add to cart.');
+//       return;
+//     }
+
+//     // Validate required fields
+//     if (!this.phone || !this.DueDate) {
+//       alert('Please fill in phone number and due date.');
+//       return;
+//     }
+
+//     // Process the selected items
+//     console.log('Adding to cart:', {
+//       division: this.selectedDivision,
+//       facility: this.selectedFacility,
+//       phone: this.phone,
+//       dueDate: this.DueDate,
+//       items: checkedItems
+//     });
+
+//     // Here you would typically send the data to your backend
+//     // this.requestService.addToCart(cartData).subscribe(...)
+
+//     alert('Items added to cart successfully!');
+//   }
+// }
+
 
   // Dropdown change handlers
-  onDivChange(divisionId: number): void {
-    this.selectedDivision = divisionId;
-    this.selectedFacility = null;
-    this.Fac = [];
+  // onDivChange(divisionId: number): void {
+  //   this.selectedDivision = divisionId;
+  //   this.selectedFacility = null;
+  //   this.Fac = [];
 
-    if (divisionId) {
-      this.requestService.getFacilities(divisionId).subscribe({
-        next: (facilities) => {
-          this.Fac = facilities;
-        },
-        error: (error) => {
-          console.error('Error loading facilities:', error);
-        }
-      });
-    }
-  }
+  //   if (divisionId) {
+  //     this.requestService.getFacilities(divisionId).subscribe({
+  //       next: (facilities) => {
+  //         this.Fac = facilities;
+  //       },
+  //       error: (error) => {
+  //         console.error('Error loading facilities:', error);
+  //       }
+  //     });
+  //   }
+  // }
+// onPartNoChange(): void {
+  //   this.selectedProcess = null;
+  //   this.selectedMachineType = null;
+  //   this.Process = [];
+  //   this.MachineType = [];
 
-  onFacChange(facilityId: number): void {
-    this.selectedFacility = facilityId;
-  }
+  //   if (this.selectedPartNo) {
+  //     this.requestService.getProcesses(this.selectedPartNo).subscribe({
+  //       next: (processes) => {
+  //         this.Process = processes;
+  //       },
+  //       error: (error) => {
+  //         console.error('Error loading processes:', error);
+  //       }
+  //     });
+  //   }
+  // }
 
-  onCaseChange(): void {
-    this.selectedPartNo = null;
-    this.selectedProcess = null;
-    this.selectedMachineType = null;
-    this.PartNo = [];
-    this.Process = [];
-    this.MachineType = [];
+  // onProcessChange(): void {
+  //   this.selectedMachineType = null;
+  //   this.MachineType = [];
 
-    // Determine selected type based on case
-    const selectedCaseItem = this.Case.find(c => c.value === this.selectedCase);
-    if (selectedCaseItem) {
-      this.selectedType = selectedCaseItem.Case.toLowerCase();
-    }
-
-    if (this.selectedCase) {
-      this.requestService.getParts(this.selectedCase).subscribe({
-        next: (parts) => {
-          this.PartNo = parts;
-        },
-        error: (error) => {
-          console.error('Error loading parts:', error);
-        }
-      });
-    }
-  }
-
-  onPartNoChange(): void {
-    this.selectedProcess = null;
-    this.selectedMachineType = null;
-    this.Process = [];
-    this.MachineType = [];
-
-    if (this.selectedPartNo) {
-      this.requestService.getProcesses(this.selectedPartNo).subscribe({
-        next: (processes) => {
-          this.Process = processes;
-        },
-        error: (error) => {
-          console.error('Error loading processes:', error);
-        }
-      });
-    }
-  }
-
-  onProcessChange(): void {
-    this.selectedMachineType = null;
-    this.MachineType = [];
-
-    if (this.selectedProcess) {
-      this.requestService.getMachineTypes(this.selectedProcess).subscribe({
-        next: (machineTypes) => {
-          this.MachineType = machineTypes;
-        },
-        error: (error) => {
-          console.error('Error loading machine types:', error);
-        }
-      });
-    }
-  }
+  //   if (this.selectedProcess) {
+  //     this.requestService.getMachineTypes(this.selectedProcess).subscribe({
+  //       next: (machineTypes) => {
+  //         this.MachineType = machineTypes;
+  //       },
+  //       error: (error) => {
+  //         console.error('Error loading machine types:', error);
+  //       }
+  //     });
+  //   }
+  // }
 
   // View button handler
-  Setupview(): void {
-    const filter: FilterRequest = {
-      divisionId: this.selectedDivision || undefined,
-      facilityId: this.selectedFacility || undefined,
-      caseId: this.selectedCase || undefined,
-      partId: this.selectedPartNo || undefined,
-      processId: this.selectedProcess || undefined,
-      machineTypeId: this.selectedMachineType || undefined
-    };
+  // Setupview(): void {
+  //   const filter: FilterRequest = {
+  //     divisionId: this.selectedDivision || undefined,
+  //     facilityId: this.selectedFacility || undefined,
+  //     caseId: this.selectedCase || undefined,
+  //     partId: this.selectedPartNo || undefined,
+  //     processId: this.selectedProcess || undefined,
+  //     machineTypeId: this.selectedMachineType || undefined
+  //   };
 
     // this.requestService.getItems(filter).subscribe({
     //   next: (items) => {
@@ -214,65 +368,38 @@ export class requestComponent {
     //     this.isSearched = true;
     //   }
     // });
-  }
-
-  // Clear all selections
-  clearall(): void {
-    this.selectedDivision = null;
-    this.selectedFacility = null;
-    this.selectedCase = null;
-    this.selectedPartNo = null;
-    this.selectedProcess = null;
-    this.selectedMachineType = null;
-    this.phone = '';
-    this.DueDate = '';
-    this.items = [];
-    this.selectedType = '';
-    this.isSearched = false;
-
-    // Clear dependent dropdowns
-    this.Fac = [];
-    this.PartNo = [];
-    this.Process = [];
-    this.MachineType = [];
-  }
-
-  // Add to cart
-  addTocart(): void {
-    const checkedItems = this.items.filter(item => item.checked);
-
-    if (checkedItems.length === 0) {
-      alert('Please select at least one item to add to cart.');
-      return;
-    }
-
-    // Validate required fields
-    if (!this.phone || !this.DueDate) {
-      alert('Please fill in phone number and due date.');
-      return;
-    }
-
-    // Process the selected items
-    console.log('Adding to cart:', {
-      division: this.selectedDivision,
-      facility: this.selectedFacility,
-      phone: this.phone,
-      dueDate: this.DueDate,
-      items: checkedItems
-    });
-
-    // Here you would typically send the data to your backend
-    // this.requestService.addToCart(cartData).subscribe(...)
-
-    alert('Items added to cart successfully!');
-  }
-}
 
 
+ // Determine selected type based on case
+    // const selectedCaseItem = this.Case.find(c => c.value === this.selectedCase);
+    // if (selectedCaseItem) {
+    //   this.selectedType = selectedCaseItem.Case.toLowerCase();
+    // }
 
+    // if (this.selectedCase) {
+    //   this.requestService.getParts(this.selectedCase).subscribe({
+    //     next: (parts) => {
+    //       this.PartNo = parts;
+    //     },
+    //     error: (error) => {
+    //       console.error('Error loading parts:', error);
+    //     }
+    //   });
+    // }
+// onFacChange(facilityId: number): void {
+  //   this.selectedFacility = facilityId;
+  // }
 
+  // onCaseChange(): void {
+  //   this.selectedPartNo = null;
+  //   this.selectedProcess = null;
+  //   this.selectedMachineType = null;
+  //   this.PartNo = [];
+  //   this.Process = [];
+  //   this.MachineType = [];
 
-
+   
+  // }
 
 
 
