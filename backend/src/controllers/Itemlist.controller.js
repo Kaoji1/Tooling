@@ -1,7 +1,7 @@
 const { connectDb, closeDb, poolPromise } = require("../config/database"); // นำเข้าฟังก์ชันสำหรับเชื่อมต่อกับฐานข้อมูล
 var Type = require("mssql").TYPES;// นำเข้า TYPE สำหรับใช้ในการกำหนดชนิดข้อมูล
 
-const Post_OPIST_PartNo = async function (req, res) {
+const Post_PARTNO = async function (req, res) {
   try {
     // console.log("Request Body:", req.body); // แสดงข้อมูลที่ได้รับจาก body
 
@@ -21,7 +21,7 @@ const Post_OPIST_PartNo = async function (req, res) {
 };
 
 // ฟังก์ชันเพื่อดึงข้อมูลตาม OPIST_PartNo
-const Post_OPIST_Process = async function (req, res) {
+const Post_PROCESS = async function (req, res) {
   try {
     // console.log("Request Params:", req.body); // แสดงข้อมูลที่ได้รับจาก body
 
@@ -246,8 +246,8 @@ const Get_list_table = async function (req, res) {
 
 
 module.exports = {
-  Post_OPIST_PartNo,
-  Post_OPIST_Process,
+  Post_PARTNO,
+  Post_PROCESS,
   OPIST_MC,
   Post_item_detail,
   Post_request_to_cart,

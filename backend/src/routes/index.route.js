@@ -6,8 +6,8 @@ const router = express.Router(); // สร้าง instance ของ Router
 const ItemlistController = require('../controllers/Itemlist.controller'); // คอนโทรลเลอร์สำหรับจัดการรายการไอเท็ม
 
 // กำหนดเส้นทาง request
-router.get('/get_part_no', ItemlistController.Post_OPIST_PartNo);
-router.post('/post_process', ItemlistController.Post_OPIST_Process); // POST request สำหรับส่งข้อมูล process
+router.get('/get_PARTNO', ItemlistController.Post_PARTNO);
+router.post('/post_PROCESS', ItemlistController.Post_PROCESS); // POST request สำหรับส่งข้อมูล process
 router.post('/post_machine_type', ItemlistController.OPIST_MC); // POST request สำหรับส่งประเภทเครื่องจักร
 router.post('/post_item_no', ItemlistController.Post_item_detail); // POST request สำหรับส่งรายละเอียดของ item
 router.post('/post_request_to_cart', ItemlistController.Post_request_to_cart); // POST request สำหรับส่งคำขอไปยังตะกร้า
