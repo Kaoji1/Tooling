@@ -4,6 +4,7 @@ import { SidebarComponent } from '../../../components/sidebar/sidebar.component'
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MOCKDATA } from '../../../mock-data';
+import { Router } from '@angular/router';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { machine } from 'os';
 
@@ -19,7 +20,9 @@ export class CartComponent implements OnInit {
   editingIndex: number | null = null;
   originalItem: any = null;
   items: any;
-  router: any;
+  
+
+constructor(private router: Router) {}
 
   ngOnInit() {
     this.loadCart();
@@ -87,6 +90,8 @@ Create_Doc() {
     const createdDocNo = 'DOC-' + new Date().getTime(); // สร้าง Doc_no จำลอง
     const itemsToSave = [...this.cartItems]; // สำเนาข้อมูลตะกร้าปัจจุบัน
 
+    sessionStorage.setItem('request', JSON.stringify(itemsToSave));
+
     const doc = {
       doc_no: createdDocNo,
       items: itemsToSave,  // เก็บข้อมูลตะกร้า ณ ตอนสร้าง doc
@@ -104,10 +109,16 @@ Create_Doc() {
     this.cartItems = [];
     sessionStorage.removeItem('cart');
 
+    this.router.navigate(['/requestlist']).then(() => {
+      // Clear cart after navigation
+      this.cartItems = [];
+      sessionStorage.removeItem('cart');
+    });
+    
     alert(`สร้างเอกสารเรียบร้อย!\nเลขที่: ${createdDocNo}`);
 
     // ไปหน้า History
-    this.router.navigate(['/pages/history']);
+    this.router.navigate(['/requestlist']);
   } else {
     // ถ้าไม่ตกลงสร้าง ก็ไม่ทำอะไร
   }
