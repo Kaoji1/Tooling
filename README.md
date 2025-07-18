@@ -1,4 +1,4 @@
-## Please read before doing project
+# Please read before doing project
 
 ## Introduction
 
@@ -35,3 +35,10 @@ Then install Angular
 Then verify installation
 
 - ng version
+
+## Project Structure
+
+Seperate 2 part
+Frontend folder: Handle UX/UI 
+
+Backend folder: Handle data and database

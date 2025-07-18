@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { AuthServices } from '../../core/services/auth.services';
+import { AuthServices } from '../../core/services/auth.service';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, FormsModule],
+  imports: [RouterOutlet, FormsModule, NgIf],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -24,8 +24,9 @@ export class LoginComponent {
     if (success) {
       const role = this.auth.getRole();
       if (role === 'role1') {
-        this.router.navigate(['/home']);
-      } else if (role === 'role2') {
+        this.router.navigate(['/request']);
+      }
+      else if (role === 'role2') {
         this.router.navigate(['/requestlist']);
       }
     } else {
