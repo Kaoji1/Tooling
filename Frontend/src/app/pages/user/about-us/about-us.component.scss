@@ -202,10 +202,45 @@ img{
 }
 
 .address {
-  width: 500px;           /* กำหนดความกว้าง */
+             /* กำหนดความกว้าง */
   word-wrap: break-word;  /* บังคับตัดคำถ้าจำเป็น */
   white-space: normal;    /* อนุญาตให้ขึ้นบรรทัดใหม่ */
   margin-left: 40px;
-
+  display: flex;
+  
 }
 
+.right img{
+ text-align: right;
+ width: 500;
+}
+
+.left {
+  text-align: left;
+  width: 500;
+}
+
+.right span{
+  text-align: left;
+}
+
+.phone {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.rightphone{
+  margin-right: 330px;
+}
+
+
+.mainphone {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.rightmain{
+  margin-right: 330px;
+}
