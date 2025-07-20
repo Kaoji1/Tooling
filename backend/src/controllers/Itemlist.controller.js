@@ -133,7 +133,6 @@ const Get_master_MCNO = async function (req, res) {
 const Post_request_to_cart = async (req, res) => {
   try {
     const {
-      Emp_Code ,
       Doc_no,
       Division,
       Factory,
@@ -164,7 +163,6 @@ const Post_request_to_cart = async (req, res) => {
     } = req.body; // ดึงข้อมูลจาก body
     const pool = await poolPromise;
     const result = pool.request()
-    .input('Emp_Code', Type.NVarChar, Emp_Code) // เพิ่มพารามิเตอร์ Emp_Code
     .input('Doc_no', Type.NVarChar, Doc_no) // เพิ่มพารามิเตอร์ Doc_no
     .input('Division', Type.NVarChar, Division) // เพิ่มพารามิเตอร์ Division
     .input('Factory', Type.Int, Factory) // เพิ่มพารามิเตอร์ Factory
@@ -189,7 +187,6 @@ const Post_request_to_cart = async (req, res) => {
     .input('MAIN_LOCATION', Type.NVarChar, MAIN_LOCATION)
     .input('Deliver_Items', Type.NVarChar, Deliver_Items)
     .input('Remark', Type.NVarChar, Remark)
-    .input('MATLOT', Type.NVarChar, MATLOT)
     .input('NAME_NAME', Type.NVarChar, NAME_NAME)
     .query(`
       EXEC [master].[stored_tb_Indirect_Expense_Detail_Request_Insert]

@@ -18,7 +18,7 @@ export class RequestService {
     private httpClient: HttpClient // เก็บ HttpClient สำหรับทำ HTTP requests
   ) { }
 
-  getPARTNO(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
+  get_PARTNO(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
     return this.httpClient.get(`${baseUrl}/get_PARTNO`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
   }
 
