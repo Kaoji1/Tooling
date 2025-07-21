@@ -217,7 +217,7 @@ img{
 }
 
 .rightphone{
-  margin-right: 405px;
+  margin-right: 460px;
 }
 
 
@@ -228,7 +228,7 @@ img{
 }
 
 .rightmain{
-  margin-right: 405px;
+  margin-right: 460px;
 }
 
 .address{
@@ -240,5 +240,13 @@ img{
 
 .right{
   margin-right: 176px;
+  
 }
 
+.info-row ,.left {
+  display: flex;
+  align-items: flex-start; /* ไอคอนและข้อความชิดบน */
+  gap: 12px;
+  
+  max-width: 500px;
+}
