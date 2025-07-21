@@ -4,17 +4,19 @@ const router = express.Router(); // สร้าง instance ของ Router
 
 // นำเข้าคอนโทรเลอร์
 const ItemlistController = require('../controllers/Itemlist.controller'); // คอนโทรลเลอร์สำหรับจัดการรายการไอเท็ม
+const test = require('node:test');
 
 // กำหนดเส้นทาง request
-router.get('/get_PARTNO', ItemlistController.Get_PARTNO);
+// router.get('/get_PARTNO', ItemlistController.Get_PARTNO);
 
-router.get('/get_SPEC', ItemlistController.Post_SPEC);
+// router.get('/get_SPEC', ItemlistController.Post_SPEC);
 
-router.post("/process", ItemlistController.Post_PROCESS);
-
-
+// router.post("/process", ItemlistController.Post_PROCESS);
 
 
+
+// Test
+router.get('/get_PARTNO', testcontroller.Get_PARTNO); // เส้นทางสำหรับดึงข้อมูล PartNo ทั้งหมด
 
 // ส่งออก router สำหรับใช้งานในที่อื่น
 module.exports = router;
