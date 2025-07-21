@@ -19,7 +19,7 @@ import { RequestService,  } from '../../../core/services/request.service';
     FormsModule,
     NgSelectModule,
     NotificationComponent,
-    
+
   ],
   templateUrl: './request.component.html',
   styleUrl: './request.component.scss'
@@ -46,7 +46,7 @@ export class requestComponent {
   PartNo:any=[];
   Process:any=[];
   MachineType:any=[];
-  
+
   // Form fields
   phone_: string = '';
   DueDate_: string = '';
@@ -76,8 +76,8 @@ export class requestComponent {
       { label: '3', value: '3' },
       { label: '4', value: '4' },
       { label: '5', value: '5' },
-      { label: '6', value: '6' }, 
-      { label: '7', value: '7' }, 
+      { label: '6', value: '6' },
+      { label: '7', value: '7' },
     ];
 
     this.Case = [
@@ -88,13 +88,13 @@ export class requestComponent {
 
   async ngOnInit()  {
     this.Get_PARTNO();
-    
-    
+
+
   }
 // เรียกใช้ตัวดึงapi
   Get_PARTNO() {
     // เรียก API เพื่อดึงข้อมูล SPEC
-    this.api.getPARTNO().subscribe({
+    this.api.get_PARTNO().subscribe({
       // ถ้าสำเร็จ จะทำการเก็บ response ลงใน spec
       next: (response: any) => {
         this.PartNo = response;
@@ -158,7 +158,7 @@ export class requestComponent {
         });
     }
   }
-  
+
 
 onTypechange() {
 
@@ -191,7 +191,7 @@ AddToCart() {
     //console.log(filteredItems.length, this.items.length); // แสดงจำนวนรายการใน console
     // เช็คว่ากรอก mc no และ qty ได้กรอกหมดทุกตัวไหม
     if (filteredItems.length < this.items.length) {
-      
+
       return; // หยุดการดำเนินการถ้ายังไม่กรอกข้อมูลครบ
     }
 
@@ -210,7 +210,7 @@ const newArray = filteredItems.map((item:any) => ({
   Usage: item.Usage_pcs, // การใช้งานจากรายการที่ถูกกรอง
   MC_no: item.MC_no, // หมายเลขเครื่องจักรจากรายการที่ถูกกรอง
   Qty: item.Qty, // จำนวนจากรายการที่ถูกกรอง
-  
+
   Status: null, // สถานะเริ่มต้นเป็น null
   Set_by: null, // ตั้งค่าโดยเริ่มต้นเป็น null
   Local: 0, // ค่าท้องถิ่นเริ่มต้นเป็น 0
@@ -457,7 +457,7 @@ Clearall() {
   //   this.Process = [];
   //   this.MachineType = [];
 
-   
+
   // }
 
 
