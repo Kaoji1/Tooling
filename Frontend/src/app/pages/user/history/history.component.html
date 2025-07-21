@@ -54,6 +54,9 @@
         </thead>
         <!-- ในตาราง -->
         <tbody>
+            <tr *ngIf="!docs || docs.length === 0">
+                            <td colspan="8" class="text-center text-muted">ยังไม่มีข้อมูล</td>
+            </tr>
             <tr *ngFor="let doc of docs; index as i">
               <td>{{ i + 1 }}</td>
               <td>{{ doc.doc_no }}</td>
@@ -67,9 +70,6 @@
               </td>
             </tr>
           </tbody>
-
-
-
       </table>
     </div>
     <!--table-->
