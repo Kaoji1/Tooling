@@ -7,9 +7,13 @@ const ItemlistController = require('../controllers/Itemlist.controller'); // ค
 
 // กำหนดเส้นทาง request
 router.get('/get_PARTNO', ItemlistController.Get_PARTNO);
-router.get('/get_SPEC', ItemlistController.Get_SPEC);
-router.get('/get_PROCESS', ItemlistController.Get_PROCESS);
-router.get('/get_MACHINETYPE', ItemlistController.Get_MACHINETYPE);
+
+router.get('/get_SPEC', ItemlistController.Post_SPEC);
+
+router.post("/process", ItemlistController.Post_PROCESS);
+
+
+
 
 
 // ส่งออก router สำหรับใช้งานในที่อื่น

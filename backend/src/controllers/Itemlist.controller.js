@@ -1,11 +1,14 @@
+const { error } = require("console");
 const { connectDb, closeDb, poolPromise } = require("../config/database");
 var Type = require("mssql").TYPES;
 
 // Get all PartNo
-const Get_PARTNO = async function (req, res) {
+exports.Get_PARTNO = async function (req, res) {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().query("EXEC dbo.stored_Item")
+    const result = await pool
+    .request()
+    .query("EXEC [dbo].[stored_Item]")
 
     res.json(result.recordset);
   }
@@ -15,33 +18,62 @@ const Get_PARTNO = async function (req, res) {
   }
 };
 
-// Get spec
-const Get_SPEC = async function (req, res) {
+// Get SPEC values based on selected PartNo
+exports.Post_SPEC = async function (req, res) {
   try {
+    const { PartNo } = req.body;
+
+    if (!PartNo) {
+      return res.status(400).json({ error: "PartNo is required" });
+    }
+
     const pool = await poolPromise;
-    const result = await pool.request().query("EXEC dbo.DetSpecByPartNo")
+    const result = await pool
+      .request()
+      .input("PartNo", Type.NVarChar, PartNo.trim())
+      .query("EXEC [dbo].[GetSpecByPartNo] @PartNo");
+
+    if (result.recordset.length === 0) {
+      res.status(404).json({ error: "No SPEC found for this Part Number" });
+    } 
+    else {
+      res.json(result.recordset);
+    }
+  }
+  catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Server Error", details: error.message });
+  }
+};
+
+
+// Get Process by PartNo
+exports.Post_PROCESS = async function (req, res) {
+  try {
+    const { PartNo } = req.body;
+
+    if (!PartNo) {
+      return res.status(400).json({ error:"PartNo is required"});
+    }
+
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("PartNo", sql.NVarChar, PartNo.trim())
+      .query("EXEC [dbo].[GetProcessByPartNo] @PartNo")
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ error: "No Process found for this PartNo"});
+    }
 
     res.json(result.recordset);
   }
   catch (error) {
     console.error("Error executing query:", error.stack);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    res.status(500).json({ error: "Server Error", details: error.message});
   }
 };
 
-
-module.exports = {
-  Get_PARTNO,
-  Get_SPEC
-  // Post_SPEC,            // New function for SPEC dropdown
-  // Post_PROCESS,         // Enhanced existing function
-  // Post_MACHINETYPE,     // Enhanced existing function
-  // Post_CASCADING_DATA,  // New function for efficient cascading
-  // Post_item_detail,     // Enhanced existing function
-  // Post_request_to_cart, // Enhanced existing function
-  // Get_list_table,       // Kept as is
-  // Get_master_MCNO       // Enhanced existing function
-};
 
 // // Get all unique Part Numbers for dropdown initialization
 // const Get_PARTNO = async function (req, res) {
