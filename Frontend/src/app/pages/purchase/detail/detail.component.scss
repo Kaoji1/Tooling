@@ -93,56 +93,61 @@
     }
 
     // พื้นที่ตารางข้อมูล
-    .table-responsive {
+    .table-responsive{
+    max-height: 470px;
+    max-width: 1290px;
+       table {
       width: 100%;
-      overflow-x: auto;
-      box-sizing: border-box;
+      border-collapse: collapse;
       margin-top: 20px;
-      padding-left: 15px;
-      padding-right: 15px;
+      color: #4a4949;
 
-      table {
-        width: 100%;
-        table-layout: auto;
-        border-collapse: collapse;
-
-        th, td {
-          padding: 8px 12px;
-          border: 1px solid #ccc;
-          text-align: center;
-          white-space: nowrap;
-        }
-
-        .Editicon {
-          border: none;
-        }
-
-        .Editicon img {
-          align-items: center;
-          background-color: none;
-          height: 20px;
-          width: 20px;
-        }
-
-        .more {
-          border: none;
-        }
-
-        .more img {
-          align-items: center;
-          background-color: none;
-          height: 20px;
-          width: 20px;
-        }
-
-        thead th {
-          position: sticky;
-          top: 0;
-          background-color: #E3E3E3;
-          z-index: 2;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
+      th,
+      td {
+        padding: 6px;
+        text-align: center;
+        border: 1px solid #D2D2D2;
       }
+
+      th {
+        background-color: #E3E3E3;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: 100;
+      }
+        // ปุ่มในตารางแต่ละปุ่ม
+        .Insert{
+          background-color: rgb(0, 6, 128);
+          padding: 3px;
+          border: none;
+          border-radius: 5px;
+          i {
+            font-size: 16px;
+            color: white;
+          }
+        }
+        .Editicon{
+          background-color: green;
+          padding: 5px;
+          border: none;
+          border-radius: 5px;
+          i {
+            font-size: 16px;
+            color: white;
+          }
+        }
+        .more {
+          background-color: transparent;
+          padding: 2px;
+          border: none;
+          border-radius: 5px;
+          i {
+            font-size: 25px;
+            color: rgb(11, 14, 196);
+          }
+        } 
+        
+      } //table
     }
 
     // แถบเปลี่ยนหน้าด้านล่าง

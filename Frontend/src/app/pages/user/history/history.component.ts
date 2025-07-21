@@ -4,13 +4,14 @@ import { RouterOutlet } from '@angular/router';
 import { DropdownSearchComponent } from '../../../components/dropdown-search/dropdown-search.component';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { NgForOf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 
 
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, DropdownSearchComponent, NotificationComponent, NgForOf],
+  imports: [RouterOutlet, SidebarComponent, DropdownSearchComponent, NotificationComponent, NgForOf,CommonModule],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss'
 })

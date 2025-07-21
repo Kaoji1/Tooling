@@ -46,6 +46,7 @@ export class requestComponent {
   PartNo:any=[];
   Process:any=[];
   MachineType:any=[];
+  Caseother:any=[];
   
   // Form fields
   phone_: string = '';
@@ -81,9 +82,27 @@ export class requestComponent {
     ];
 
     this.Case = [
-      { label: 'Setup', value: 'Setup' }, // ตัวเลือก Division ที่ 1
-      { label: 'Other', value: 'Other' }, // ตัวเลือก Division ที่ 2
+      { label: 'Setup', value: 'setup' }, // ตัวเลือก Division ที่ 1
+      { label: 'Other', value: 'other' }, // ตัวเลือก Division ที่ 2
     ];
+
+     this.Caseother = [
+        { Case: 'BRO', viewCase: 'BRO' }, // ตัวเลือกเคสที่ 1
+        { Case: 'BUR', viewCase: 'BUR' }, // ตัวเลือกเคสที่ 2
+        { Case: 'USA', viewCase: 'USA' }, // ตัวเลือกเคสที่ 3
+        { Case: 'HOL', viewCase: 'HOL' }, // ตัวเลือกเคสที่ 4
+        { Case: 'INV', viewCase: 'INV' }, // ตัวเลือกเคสที่ 5
+        { Case: 'MOD', viewCase: 'MOD' }, // ตัวเลือกเคสที่ 6
+        { Case: 'NON', viewCase: 'NON' }, // ตัวเลือกเคสที่ 7
+        { Case: 'RET', viewCase: 'RET' }, // ตัวเลือกเคสที่ 8
+        { Case: 'SPA', viewCase: 'SPA' }, // ตัวเลือกเคสที่ 9
+        { Case: 'STO', viewCase: 'STO' }, // ตัวเลือกเคสที่ 10
+        { Case: 'CHA', viewCase: 'CHA' }, // ตัวเลือกเคสที่ 11
+      ];
+
+
+
+
   }
 
   async ngOnInit()  {
@@ -94,7 +113,7 @@ export class requestComponent {
 // เรียกใช้ตัวดึงapi
   Get_PARTNO() {
     // เรียก API เพื่อดึงข้อมูล SPEC
-    this.api.getPARTNO().subscribe({
+    this.api.get_PARTNO().subscribe({
       // ถ้าสำเร็จ จะทำการเก็บ response ลงใน spec
       next: (response: any) => {
         this.PartNo = response;
@@ -162,17 +181,17 @@ export class requestComponent {
 
 onTypechange() {
 
-    if (this.selectedType === 'setup'){
+    if (this.Case_ === 'setup'){
       this.items = this.setupItem;
     }
-    else if (this.selectedType === 'other') {
+    else if (this.Case_ === 'other') {
   this.items = this.otherItem.map(item => ({
      ...(item as any),   // บอกว่า item เป็น any เพื่อให้ใช้ spread ได้
       qty: null,
       machineNoother:null,
       checked: true,
-      case: this.selectedType,
-      caseother: null
+      Case: this.selectedType,
+      Caseother: null
   }));
     }
     else {
@@ -182,7 +201,56 @@ onTypechange() {
 
 
 
+// ฟังก์ชั่นเรียกดูข้อมูลในตาราง
+// Setupview() {
+//   this.items = [];
 
+//   const division = this.Div_;
+//   const fac = this.Fac_;
+//   const partNo = this.PartNo_;
+//   const process = this.Process_;
+//   const machineType = this.MachineType_;
+//   const date = this.DueDate_;
+
+//   this.isSearched = true;
+
+//   if (
+//     partNo && partNo.trim() !== '' &&
+//     process && process.trim() !== '' &&
+//     machineType && machineType.trim() !== '' &&
+//     division && division.trim() !== '' &&
+//     fac && fac.trim() !== '' &&
+//     date && date.trim() !== ''
+//   ) {
+//     // เรียก API แทน mockData
+//     this.RequestService.getFilteredItems({
+//       partNo,
+//       process,
+//       machineType,
+//       division,
+//       fac,
+//       dueDate: date
+//     }).subscribe((response: any[]) => {
+//       if (response.length > 0) {
+//         this.items = response.map(item => ({
+//           ...item,
+//           qty: null,
+//           machineNoother: null,
+//           checked: true,
+//           case: this.selectedType
+//         }));
+//       } else {
+//         this.items = [];
+//         alert("ไม่พบข้อมูลที่ค้นหา");
+//       }
+//     }, (error: any) => {
+//       console.error("เกิดข้อผิดพลาดขณะดึงข้อมูลจาก API:", error);
+//       alert("เกิดข้อผิดพลาดในการดึงข้อมูล");
+//     });
+//   } else {
+//     alert("กรุณาเลือกข้อมูลให้ครบทุกช่องก่อนค้นหา");
+//   }
+// }
 
 // function add to cart
 AddToCart() {
@@ -218,7 +286,6 @@ const newArray = filteredItems.map((item:any) => ({
 }
 
 
-
 // function clearall
 Clearall() {
   // Delete select group
@@ -233,6 +300,15 @@ Clearall() {
   // Delete items ค่าที่รวมที่จะส่งไปตะกร้า
   this.items=null;
 
+  }
+  // upload file
+  selectedFileName: string = '';
+  onFileChosen(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFileName = file.name;
+      console.log('Selected file:', file.name);
+    }
   }
 }
 

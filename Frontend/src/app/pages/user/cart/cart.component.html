@@ -24,7 +24,7 @@
         </div>
             <!-- table -->
                 <div class="table-responsive">
-                <table class="table table-bordered text-center" *ngIf="cartItems.length > 0" >
+                <table class="table table-bordered text-center"  >
                     <thead>
                         <tr>
                             <th>#</th>
@@ -46,7 +46,9 @@
                         
                     </thead>
                     <tbody>
-                       
+                       <tr *ngIf="!cartItems || cartItems.length === 0">
+                            <td colspan="15" class="text-center text-muted">ยังไม่มีข้อมูล</td>
+                        </tr>
                        <tr *ngFor="let item of cartItems; let i = index">
                             <td>{{ i + 1 }}</td>
                             <td>{{ item.partNo }}</td>
@@ -101,9 +103,7 @@
                                     <button class="btn btn-success btn-sm px-1 py-0" type="button" (click)="saveEdit(i)">
                                         <i class="bi bi-check-lg"></i> Save
                                     </button>
-                                    <button class="btn btn-secondary btn-sm px-1 py-0" type="button" (click)="cancelEdit()">
-                                        <i class="bi bi-x-circle"></i> Cancel
-                                    </button>
+                                    
                                 </div>
                             </td>
 
