@@ -2,12 +2,16 @@ const { poolPromise } = require("../config/database");
 const Type = require("mssql").TYPES;
 
 // ดึงข้อมูล PartNo ทั้งหมด
-exports.Get_PARTNO = async (req, res) => {
+exports.Get_PartNo = async (req, res) => {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().query("EXEC [dbo].[stored_ToolDataset]");
+    const result = await pool
+    .request()
+    .query("EXEC [dbo].[stored_ToolDataset]");
+
     res.json(result.recordset);
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Error executing query:", error.stack);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
