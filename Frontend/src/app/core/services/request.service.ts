@@ -19,12 +19,12 @@ export class RequestService {
   ) { }
 
   get_PARTNO(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-    return this.httpClient.get(`${baseUrl}/PARTNO`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
+    return this.httpClient.get(`${baseUrl}/get_PARTNO`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
   }
 
-  get_SPEC(value: any): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-    return this.httpClient.get(`${baseUrl}/SPEC`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
-  }
+ get_SPEC(value: any): Observable<any> {
+  return this.httpClient.get(`${baseUrl}/get_SPEC/${value}`);
+}
 
   post_PROCESS(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
     return this.httpClient.post(`${baseUrl}/post_PROCESS`, data) // ส่ง HTTP POST request เพื่อส่งข้อมูล process
@@ -35,8 +35,4 @@ export class RequestService {
   }
 
 
-<<<<<<< Updated upstream
 }
-=======
-}
->>>>>>> Stashed changes

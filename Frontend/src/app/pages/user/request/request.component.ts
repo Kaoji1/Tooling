@@ -7,11 +7,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RequestService,  } from '../../../core/services/request.service';
 
-<<<<<<< Updated upstream
 
 
-=======
->>>>>>> Stashed changes
 @Component({
   selector: 'app-request',
   standalone: true,
@@ -28,7 +25,6 @@ import { RequestService,  } from '../../../core/services/request.service';
   styleUrl: './request.component.scss'
 })
 export class requestComponent {
-<<<<<<< Updated upstream
 
   // Dropdown data
   Div_: any = [];
@@ -42,20 +38,6 @@ export class requestComponent {
   setupItem = [];
   otherItem = [];
 
-=======
-  // Dropdown data
-  Div_: any = [];
-  Fac_: any = [];
-  Case_: any = [];
-  PartNo_: any = [];
-  Process_: any = [];
-  MachineType_: any = [];
-  caseother: any = [];
-  Spec_:any=[];
-  setupItem = [];
-  otherItem = [];
-
->>>>>>> Stashed changes
   // option dropdown
   spec:any=[];
   Div:any=[];
@@ -143,25 +125,18 @@ export class requestComponent {
     });
   }
 
-  async get_SPEC(event:any) {
-    console.log(event.value); // แสดงค่าที่ได้รับใน console
-    // เช็คว่า event.value มีค่าหรือไม่
-    if (event.value !== undefined) {
-      // เรียก API เพื่อส่งข้อมูลไปยัง SQL
-      this.api.get_SPEC(event.value).subscribe({
-        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
-        next: (response) => {
-          if (response.length > 0) {
-            this.spec= response[0];
-            // แสดงผลลัพธ์ใน console
-            console.log(response);
-          }
-        },
-        // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
-        error: (e) => console.error(e),
-      });
-    }
+  async get_SPEC(event: any) {
+  console.log('Selected PartNo:', event.value);
+  if (event.value) {
+    this.api.get_SPEC(event.value).subscribe({
+      next: (response) => {
+        console.log('Spec API response:', response);
+        this.spec = response; // เก็บทั้ง array 
+      },
+      error: (e) => console.error(e),
+    });
   }
+}
   // Process
   async post_PROCESS(event:any) {
     console.log(event.value); // แสดงค่าที่ได้รับใน console
@@ -350,7 +325,6 @@ Clearall() {
   }
 }
 
-<<<<<<< Updated upstream
 
 
 
@@ -898,5 +872,3 @@ Clearall() {
 // }
 
 // }
-=======
->>>>>>> Stashed changes

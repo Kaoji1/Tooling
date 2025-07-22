@@ -76,7 +76,7 @@
               bindLabel="PartNo"
               [(ngModel)]="PartNo_"
               [virtualScroll]="true"
-              (ngModelchange)="post_PROCESS($event)"
+              (ngModelchange)="get_SPEC($event)"
               placeholder="Select  partNo">
             </ng-select>
           </div>
@@ -89,6 +89,7 @@
                   [virtualScroll]="true"
                   placeholder="Select Spec">
                 </ng-select>
+                <pre>{{ spec | json}}</pre>
                 
               </div>
 
