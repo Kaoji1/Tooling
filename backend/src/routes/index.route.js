@@ -10,9 +10,12 @@ const test = require('node:test');
 // กำหนดเส้นทาง request
 router.get('/get_PartNo', ItemlistController.Get_PartNo);
 
-// router.get('/get_SPEC/:PartNo', ItemlistController.Get_SPEC);
+router.get('/get_SPEC/:PartNo', ItemlistController.Get_SPEC);
 
-// router.post("/process", ItemlistController.Post_PROCESS);
+router.post('/get_PROCESS', ItemlistController.Get_PROCESS);
+
+router.post('/get_MC', ItemlistController.Get_MC);
+
 
 
 

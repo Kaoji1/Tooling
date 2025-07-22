@@ -144,13 +144,19 @@ export class requestComponent {
       });
     }
   }
+
   // Process
   async get_PROCESS(event:any) {
     console.log(event); // แสดงค่าที่ได้รับใน console
     // เช็คว่า event.value มีค่าหรือไม่
     if (event.PartNo !== undefined) {
       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
-      this.api.get_PROCESS(event.value).subscribe({
+      const data = {
+        PartNo: event.PartNo,
+        Spec:event.SPEC
+      }
+      console.log(data);
+      this.api.get_PROCESS(data).subscribe({
         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
         next: (response) => {
           if (response.length > 0) {
@@ -165,39 +171,32 @@ export class requestComponent {
     }
   }
 
-// โดยใช้ Post_machine_type ที่ดึงมาจาก api.service.ts เพื่อเชื่อมต่อ API แล้วทำการส่งข้อมูล(post)ไป SQL
-  // เรียกใช้งาน api.post_machine_type โดยส่งค่าจาก event.value ไป
-  async post_MACHINETYPE(event:any) {
-    // console.log(event.value) // แสดงค่าที่ได้รับใน console
+  // MAchineType
+  async get_MC(event:any) {
+    console.log(event); // แสดงค่าที่ได้รับใน console
     // เช็คว่า event.value มีค่าหรือไม่
-    if (event.value !== undefined) {
-      // เก็บค่า OPIST_Process จาก event.value
-      const Process = event.value.Process;
-      // สร้างอ็อบเจ็กต์ data สำหรับส่งไปยัง API
+    if (event.PartNo !== undefined) {
+      // เรียก API เพื่อส่งข้อมูลไปยัง SQL
       const data = {
-        PartNo: this.PartNo.PartNo,
-        Process: Process,
-      };
-
-      // เรียก API เพื่อส่งข้อมูล machine type
-      this.api
-        .post_MACHINETYPE(data)
-        // console.log(event.value) // แสดงค่าที่ได้รับใน console
-        .subscribe({
-          // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_mc และ rev_
-          next: (response) => {
-            if (response.length > 0) {
-              this.MachineType_ = response[0];
-              // this.rev_ = response[0][0].OPIST_DwgRev;
-              // console.log(response, this.rev_, response[0][0].OPIST_DwgRev); // แสดงผลลัพธ์ใน console
-            }
-          },
-          // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
-          error: (e) => console.error(e),
-        });
+        PartNo: event.PartNo,
+        Spec: event.SPEC,
+        PROCESS: event.PROCESS
+      }
+      console.log(data);
+      this.api.post_MC(data).subscribe({
+        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_machinetype
+        next: (response) => {
+          if (response.length > 0) {
+            this.MachineType_ = response;
+            // แสดงผลลัพธ์ใน console
+            console.log(response);
+          }
+        },
+        // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+        error: (e) => console.error(e),
+      });
     }
   }
-
 
 onTypechange() {
 
