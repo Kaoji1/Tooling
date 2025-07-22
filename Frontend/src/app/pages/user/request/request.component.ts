@@ -146,7 +146,7 @@ export class requestComponent {
   }
 
   // Process
-  async get_PROCESS(event:any) {
+  async get_Process(event:any) {
     console.log(event); // แสดงค่าที่ได้รับใน console
     // เช็คว่า event.value มีค่าหรือไม่
     if (event.PartNo !== undefined) {
@@ -156,7 +156,7 @@ export class requestComponent {
         Spec:event.SPEC
       }
       console.log(data);
-      this.api.get_PROCESS(data).subscribe({
+      this.api.get_Process(data).subscribe({
         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
         next: (response) => {
           if (response.length > 0) {
@@ -180,14 +180,14 @@ export class requestComponent {
       const data = {
         PartNo: event.PartNo,
         Spec: event.SPEC,
-        PROCESS: event.PROCESS
+        Process: event.Process
       }
       console.log(data);
-      this.api.post_MC(data).subscribe({
+      this.api.get_MC(data).subscribe({
         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_machinetype
         next: (response) => {
           if (response.length > 0) {
-            this.MachineType_ = response;
+            this.MachineType = response;
             // แสดงผลลัพธ์ใน console
             console.log(response);
           }

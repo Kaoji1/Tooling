@@ -26,12 +26,12 @@ export class RequestService {
   return this.httpClient.get(`${baseUrl}/get_SPEC/${value}`);
 }
 
-  get_PROCESS(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
-    return this.httpClient.post(`${baseUrl}/get_PROCESS`,data) ;// ส่ง HTTP POST request เพื่อส่งข้อมูล process
+  get_Process(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
+    return this.httpClient.post(`${baseUrl}/get_Process`,data) ;// ส่ง HTTP POST request เพื่อส่งข้อมูล process
   }
 
-  post_MC(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
-    return this.httpClient.post(`${baseUrl}/post__MC`, data) // ส่ง HTTP POST request เพื่อส่งข้อมูล process
+  get_MC(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
+    return this.httpClient.post(`${baseUrl}/get_MC`, data) // ส่ง HTTP POST request เพื่อส่งข้อมูล process
   }
 
 

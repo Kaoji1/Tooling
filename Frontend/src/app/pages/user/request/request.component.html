@@ -28,7 +28,7 @@
                   placeholder="Select Division">
                 </ng-select>
               </div>
-              
+
 
               <div class="group-select">
                 <label for="Fac"> Fac </label>
@@ -87,30 +87,31 @@
                   bindLabel="SPEC"
                   [ngModel]="Spec_"
                   [virtualScroll]="true"
-                  (ngModelChange)="get_PROCESS($event)"
+                  (ngModelChange)="get_Process($event)"
                   placeholder="Select Spec">
                 </ng-select>
-                
-                
+
+
               </div>
 
           <div class="group-select">
-            <label for="process">Process</label>
+            <label for="process"> Process </label>
             <ng-select
               [items]="Process"
               bindLabel="Process"
               [(ngModel)]="Process_"
+              (ngModelChange)="get_MC($event)"
               placeholder="Select process">
             </ng-select>
           </div>
+
           <div class="group-select">
-            <label for="Machine No">Machine Type</label>
+            <label for="Machine No"> Machine Type </label>
             <ng-select
               [items]="MachineType"
-              bindLabel="label"
-              bindValue="value"
+              bindLabel="MC"
               [(ngModel)]="MachineType_"
-              placeholder="Select machineType">
+              placeholder="Select MachineType">
             </ng-select>
           </div>
 

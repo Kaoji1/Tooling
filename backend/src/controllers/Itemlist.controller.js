@@ -43,7 +43,7 @@ exports.Get_SPEC = async (req, res) => {
   }  
 };
 
-exports.Get_PROCESS = async (req, res) => {
+exports.Get_Process = async (req, res) => {
   console.log(req.body);
   try {
     const {PartNo, Spec }= req.body;
@@ -75,10 +75,10 @@ exports.Get_PROCESS = async (req, res) => {
   exports.Get_MC = async (req, res) => {
   console.log(req.body);
   try {
-    const {PartNo, Spec, PROCESS}= req.body;
-    console.log(PartNo, Spec, PROCESS);
+    const {PartNo, Spec, Process}= req.body;
+    console.log(PartNo, Spec, Process);
 
-    if (!PartNo || !Spec || !PROCESS) {
+    if (!PartNo || !Spec || !Process) {
       return res.status(400).json({ error: "Missing PartNo parameter" });
     }
 
@@ -87,7 +87,7 @@ exports.Get_PROCESS = async (req, res) => {
       .request()
       .input("PartNo", req.body.PartNo)
       .input("Spec", req.body.Spec)
-      .input("PROCESS", req.body.PROCESS)
+      .input("PROCESS", req.body.Process)
       .query("EXEC [dbo].[stored_ToolDataset] @PartNo, @Spec, @PROCESS");
 
     if (result.recordset.length === 0) {

@@ -12,7 +12,7 @@ router.get('/get_PartNo', ItemlistController.Get_PartNo);
 
 router.get('/get_SPEC/:PartNo', ItemlistController.Get_SPEC);
 
-router.post('/get_PROCESS', ItemlistController.Get_PROCESS);
+router.post('/get_Process', ItemlistController.Get_Process);
 
 router.post('/get_MC', ItemlistController.Get_MC);
 
