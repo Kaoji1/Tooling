@@ -115,9 +115,277 @@ export class RequestComponent implements OnInit, OnDestroy {
   displayedItems: CartItem[] = [];
 
   // Form fields
-  phoneNumber: string = '';
-  dueDate: string = '';
-  readonly todayDate: string = new Date().toISOString().split('T')[0];
+  phone_: string = '';
+  DueDate_: string = '';
+  today_: string = '';
+
+  // Table data
+  items: any= [];// array เก่าวแปรสำหรับเก็บรายการข้อมูล (items) ที่มีอยู่แล้ว
+  item: any; //array ใหม่  ตัวแปรสำหรับเก็บข้อมูล item ใหม่
+  selectedType: string = '';
+  isSearched: boolean = false;
+  RequestService: any;
+
+  constructor( //โหลดทันทีที่รันที่จำเป็นต้องใช้ตอนเริ่มเว็ป
+    private api: RequestService
+  ) {
+    // Set today's date for min date validation
+    this.today_ = new Date().toISOString().split('T')[0];
+
+    // กำหนดตัวเลือกในdropdown
+    this.Div = [
+      { label: 'GM', value: 'GM' }, // ตัวเลือก Division ที่ 1
+      { label: 'PMC', value: 'PMC' }, // ตัวเลือก Division ที่ 2
+    ];
+
+    this.Fac = [
+      { label: '1', value: '1' }, // ตัวเลือก Fac ที่ 1
+      { label: '2', value: '2' }, // ตัวเลือก Fac ที่2
+      { label: '3', value: '3' },
+      { label: '4', value: '4' },
+      { label: '5', value: '5' },
+      { label: '6', value: '6' },
+      { label: '7', value: '7' },
+    ];
+
+    this.Case = [
+      { label: 'Setup', value: 'setup' }, // ตัวเลือก Division ที่ 1
+      { label: 'Other', value: 'other' }, // ตัวเลือก Division ที่ 2
+    ];
+
+     this.Caseother = [
+        { Case: 'BRO', viewCase: 'BRO' }, // ตัวเลือกเคสที่ 1
+        { Case: 'BUR', viewCase: 'BUR' }, // ตัวเลือกเคสที่ 2
+        { Case: 'USA', viewCase: 'USA' }, // ตัวเลือกเคสที่ 3
+        { Case: 'HOL', viewCase: 'HOL' }, // ตัวเลือกเคสที่ 4
+        { Case: 'INV', viewCase: 'INV' }, // ตัวเลือกเคสที่ 5
+        { Case: 'MOD', viewCase: 'MOD' }, // ตัวเลือกเคสที่ 6
+        { Case: 'NON', viewCase: 'NON' }, // ตัวเลือกเคสที่ 7
+        { Case: 'RET', viewCase: 'RET' }, // ตัวเลือกเคสที่ 8
+        { Case: 'SPA', viewCase: 'SPA' }, // ตัวเลือกเคสที่ 9
+        { Case: 'STO', viewCase: 'STO' }, // ตัวเลือกเคสที่ 10
+        { Case: 'CHA', viewCase: 'CHA' }, // ตัวเลือกเคสที่ 11
+      ];
+
+  }
+
+  async ngOnInit()  {
+    this.Get_PARTNO();
+
+
+  }
+// เรียกใช้ตัวดึงapi
+  Get_PARTNO() {
+    // เรียก API เพื่อดึงข้อมูล SPEC
+    this.api.get_PARTNO().subscribe({
+      // ถ้าสำเร็จ จะทำการเก็บ response ลงใน spec
+      next: (response: any) => {
+        this.PartNo = response;
+        // แสดงผลลัพธ์ใน console
+        // console.log(this.PartNo);
+      },
+      // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+      error: (e: any) => console.error(e),
+    });
+  }
+
+  async get_SPEC(event:any) {
+    console.log(event.value); // แสดงค่าที่ได้รับใน console
+    // เช็คว่า event.value มีค่าหรือไม่
+    if (event.value !== undefined) {
+      // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+      this.api.get_SPEC(event.value).subscribe({
+        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
+        next: (response) => {
+          if (response.length > 0) {
+            this.spec= response[0];
+            // แสดงผลลัพธ์ใน console
+            console.log(response);
+          }
+        },
+        // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+        error: (e) => console.error(e),
+      });
+    }
+  }
+  // Process
+  async post_PROCESS(event:any) {
+    console.log(event.value); // แสดงค่าที่ได้รับใน console
+    // เช็คว่า event.value มีค่าหรือไม่
+    if (event.value !== undefined) {
+      // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+      this.api.post_PROCESS(event.value).subscribe({
+        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
+        next: (response) => {
+          if (response.length > 0) {
+            this.Process = response[0];
+            // แสดงผลลัพธ์ใน console
+            console.log(response);
+          }
+        },
+        // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+        error: (e) => console.error(e),
+      });
+    }
+  }
+
+// โดยใช้ Post_machine_type ที่ดึงมาจาก api.service.ts เพื่อเชื่อมต่อ API แล้วทำการส่งข้อมูล(post)ไป SQL
+  // เรียกใช้งาน api.post_machine_type โดยส่งค่าจาก event.value ไป
+  async post_MACHINETYPE(event:any) {
+    // console.log(event.value) // แสดงค่าที่ได้รับใน console
+    // เช็คว่า event.value มีค่าหรือไม่
+    if (event.value !== undefined) {
+      // เก็บค่า OPIST_Process จาก event.value
+      const Process = event.value.Process;
+      // สร้างอ็อบเจ็กต์ data สำหรับส่งไปยัง API
+      const data = {
+        PartNo: this.PartNo.PartNo,
+        Process: Process,
+      };
+
+      // เรียก API เพื่อส่งข้อมูล machine type
+      this.api
+        .post_MACHINETYPE(data)
+        // console.log(event.value) // แสดงค่าที่ได้รับใน console
+        .subscribe({
+          // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_mc และ rev_
+          next: (response) => {
+            if (response.length > 0) {
+              this.MachineType_ = response[0];
+              // this.rev_ = response[0][0].OPIST_DwgRev;
+              // console.log(response, this.rev_, response[0][0].OPIST_DwgRev); // แสดงผลลัพธ์ใน console
+            }
+          },
+          // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+          error: (e) => console.error(e),
+        });
+    }
+  }
+
+
+onTypechange() {
+
+    if (this.Case_ === 'setup'){
+      this.items = this.setupItem;
+    }
+    else if (this.Case_ === 'other') {
+  this.items = this.otherItem.map(item => ({
+     ...(item as any),   // บอกว่า item เป็น any เพื่อให้ใช้ spread ได้
+      qty: null,
+      machineNoother:null,
+      checked: true,
+      Case: this.selectedType,
+      Caseother: null
+  }));
+    }
+    else {
+      this.items=[];
+    }
+  }
+
+
+
+// ฟังก์ชั่นเรียกดูข้อมูลในตาราง
+Setupview() {
+
+  this.items = [];
+  const division = this.Div_;
+  const fac = this.Fac_;
+  const partNo = this.PartNo_;
+  const process = this.Process_;
+  const machineType = this.MachineType_;
+  const duedate = this.DueDate_;
+
+  this.isSearched = true;
+
+  if (
+    partNo && partNo.trim() !== '' &&
+    process && process.trim() !== '' &&
+    machineType && machineType.trim() !== '' &&
+    division && division.trim() !== '' &&
+    fac && fac.trim() !== '' &&
+    duedate && duedate.trim() !== ''
+  ) {
+    // เรียก API แทน mockData
+    this.RequestService.getFilteredItems({
+      partNo,
+      process,
+      machineType,
+      division,
+      fac,
+      dueDate: Date
+    }).subscribe((response: any[]) => {
+      if (response.length > 0) {
+        this.items = response.map(item => ({
+          ...item,
+          qty: null,
+          machineNoother: null,
+          checked: true,
+          case: this.selectedType
+        }));
+      } else {
+        this.items = [];
+        alert("ไม่พบข้อมูลที่ค้นหา");
+      }
+    }, (error: any) => {
+      console.error("เกิดข้อผิดพลาดขณะดึงข้อมูลจาก API:", error);
+      alert("เกิดข้อผิดพลาดในการดึงข้อมูล");
+    });
+  } else {
+    alert("กรุณาเลือกข้อมูลให้ครบทุกช่องก่อนค้นหา");
+  }
+}
+
+// function add to cart
+AddToCart() {
+   // กรองรายการที่มีค่า MC_no และ Qty
+    const filteredItems = this.items.filter((item:any) => item.MC_no && item.Qty);
+    //console.log(filteredItems.length, this.items.length); // แสดงจำนวนรายการใน console
+    // เช็คว่ากรอก mc no และ qty ได้กรอกหมดทุกตัวไหม
+    if (filteredItems.length < this.items.length) {
+
+      return; // หยุดการดำเนินการถ้ายังไม่กรอกข้อมูลครบ
+    }
+
+    // สร้างอาเรย์ใหม่จากข้อมูลที่ถูกกรอง
+// สร้างอาเรย์ใหม่จากข้อมูลที่ถูกกรอง
+const newArray = filteredItems.map((item:any) => ({
+  Doc_no: null, // หมายเลขเอกสารเริ่มต้นเป็น null
+  Division: this.Div_.value, // ค่าจากฟอร์มสำหรับ Division
+  Factory: this.Fac_.value, // ค่าจากฟอร์มสำหรับ Factory
+  Date_of_Req: null, // วันที่ของการร้องขอเริ่มต้นเป็น null
+  Item_no: item.ITEMNO, // หมายเลขไอเทมจากรายการที่ถูกกรอง
+  Part_no: item.PARTNO, // หมายเลขชิ้นส่วนจากรายการที่ถูกกรอง
+  Process: item.PROCESS, // กระบวนการจากรายการที่ถูกกรอง
+  MC_type: item.MACHINETYPE, // ประเภทเครื่องจักรจากรายการที่ถูกกรอง
+  Spec: item.SPEC, // สเปคจากรายการที่ถูกกรอง
+  Usage: item.Usage_pcs, // การใช้งานจากรายการที่ถูกกรอง
+  MC_no: item.MC_no, // หมายเลขเครื่องจักรจากรายการที่ถูกกรอง
+  Qty: item.Qty, // จำนวนจากรายการที่ถูกกรอง
+
+  Status: null, // สถานะเริ่มต้นเป็น null
+  Set_by: null, // ตั้งค่าโดยเริ่มต้นเป็น null
+  Local: 0, // ค่าท้องถิ่นเริ่มต้นเป็น 0
+  }));
+}
+
+
+// function clearall
+Clearall() {
+  // Delete select group
+  this.Div_=null;
+  this.Fac_=null;
+  this.DueDate_='';
+  this.Case_=null;
+  this.PartNo_=null;
+  this.Spec_=null
+  this.MachineType_=null;
+
+  // Delete items ค่าที่รวมที่จะส่งไปตะกร้า
+  this.items=null;
+
+  }
+  // upload file
   selectedFileName: string = '';
 
   // UI state
