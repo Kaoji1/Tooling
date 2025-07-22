@@ -22,7 +22,7 @@ export class RequestService {
     return this.httpClient.get(`${baseUrl}/PARTNO`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
   }
 
-  get_SPEC(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
+  get_SPEC(value: any): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
     return this.httpClient.get(`${baseUrl}/SPEC`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
   }
 

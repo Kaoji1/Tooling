@@ -125,6 +125,26 @@ export class requestComponent {
     });
   }
 
+  async get_SPEC(event:any) {
+    console.log(event.value); // แสดงค่าที่ได้รับใน console
+    // เช็คว่า event.value มีค่าหรือไม่
+    if (event.value !== undefined) {
+      // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+      this.api.get_SPEC(event.value).subscribe({
+        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
+        next: (response) => {
+          if (response.length > 0) {
+            this.spec= response[0];
+            // แสดงผลลัพธ์ใน console
+            console.log(response);
+          }
+        },
+        // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+        error: (e) => console.error(e),
+      });
+    }
+  }
+  // Process
   async post_PROCESS(event:any) {
     console.log(event.value); // แสดงค่าที่ได้รับใน console
     // เช็คว่า event.value มีค่าหรือไม่
@@ -147,16 +167,16 @@ export class requestComponent {
 
 // โดยใช้ Post_machine_type ที่ดึงมาจาก api.service.ts เพื่อเชื่อมต่อ API แล้วทำการส่งข้อมูล(post)ไป SQL
   // เรียกใช้งาน api.post_machine_type โดยส่งค่าจาก event.value ไป
-  async Post_MACHINETYPE(event:any) {
+  async post_MACHINETYPE(event:any) {
     // console.log(event.value) // แสดงค่าที่ได้รับใน console
     // เช็คว่า event.value มีค่าหรือไม่
     if (event.value !== undefined) {
       // เก็บค่า OPIST_Process จาก event.value
-      const Process = event.value.OPIST_Process;
+      const Process = event.value.Process;
       // สร้างอ็อบเจ็กต์ data สำหรับส่งไปยัง API
       const data = {
-        OPIST_PartNo: this.PartNo.OPIST_PartNo,
-        OPIST_Process: Process,
+        PartNo: this.PartNo.PartNo,
+        Process: Process,
       };
 
       // เรียก API เพื่อส่งข้อมูล machine type
