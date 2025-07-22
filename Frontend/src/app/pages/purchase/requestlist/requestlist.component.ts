@@ -15,10 +15,14 @@ import { Router } from '@angular/router';
   styleUrl: './requestlist.component.scss'
 })
 export class RequestlistComponent implements OnInit {
+    item = {
+    inputDate: new Date()
+  };
   requestItems: any[] = [];
 
   constructor(private router: Router) {}
 
+  
   ngOnInit() {
     this.loadRequest();
   }
