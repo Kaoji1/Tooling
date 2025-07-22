@@ -58,6 +58,7 @@ export class requestComponent {
   item: any; //array ใหม่  ตัวแปรสำหรับเก็บข้อมูล item ใหม่
   selectedType: string = '';
   isSearched: boolean = false;
+  RequestService: any;
 
   constructor( //โหลดทันทีที่รันที่จำเป็นต้องใช้ตอนเริ่มเว็ป
     private api: RequestService
@@ -99,9 +100,6 @@ export class requestComponent {
         { Case: 'STO', viewCase: 'STO' }, // ตัวเลือกเคสที่ 10
         { Case: 'CHA', viewCase: 'CHA' }, // ตัวเลือกเคสที่ 11
       ];
-
-
-
 
   }
 
@@ -222,55 +220,55 @@ onTypechange() {
 
 
 // ฟังก์ชั่นเรียกดูข้อมูลในตาราง
-// Setupview() {
-//   this.items = [];
+Setupview() {
+  
+  this.items = [];
+  const division = this.Div_;
+  const fac = this.Fac_;
+  const partNo = this.PartNo_;
+  const process = this.Process_;
+  const machineType = this.MachineType_;
+  const duedate = this.DueDate_;
 
-//   const division = this.Div_;
-//   const fac = this.Fac_;
-//   const partNo = this.PartNo_;
-//   const process = this.Process_;
-//   const machineType = this.MachineType_;
-//   const date = this.DueDate_;
+  this.isSearched = true;
 
-//   this.isSearched = true;
-
-//   if (
-//     partNo && partNo.trim() !== '' &&
-//     process && process.trim() !== '' &&
-//     machineType && machineType.trim() !== '' &&
-//     division && division.trim() !== '' &&
-//     fac && fac.trim() !== '' &&
-//     date && date.trim() !== ''
-//   ) {
-//     // เรียก API แทน mockData
-//     this.RequestService.getFilteredItems({
-//       partNo,
-//       process,
-//       machineType,
-//       division,
-//       fac,
-//       dueDate: date
-//     }).subscribe((response: any[]) => {
-//       if (response.length > 0) {
-//         this.items = response.map(item => ({
-//           ...item,
-//           qty: null,
-//           machineNoother: null,
-//           checked: true,
-//           case: this.selectedType
-//         }));
-//       } else {
-//         this.items = [];
-//         alert("ไม่พบข้อมูลที่ค้นหา");
-//       }
-//     }, (error: any) => {
-//       console.error("เกิดข้อผิดพลาดขณะดึงข้อมูลจาก API:", error);
-//       alert("เกิดข้อผิดพลาดในการดึงข้อมูล");
-//     });
-//   } else {
-//     alert("กรุณาเลือกข้อมูลให้ครบทุกช่องก่อนค้นหา");
-//   }
-// }
+  if (
+    partNo && partNo.trim() !== '' &&
+    process && process.trim() !== '' &&
+    machineType && machineType.trim() !== '' &&
+    division && division.trim() !== '' &&
+    fac && fac.trim() !== '' &&
+    duedate && duedate.trim() !== ''
+  ) {
+    // เรียก API แทน mockData
+    this.RequestService.getFilteredItems({
+      partNo,
+      process,
+      machineType,
+      division,
+      fac,
+      dueDate: Date
+    }).subscribe((response: any[]) => {
+      if (response.length > 0) {
+        this.items = response.map(item => ({
+          ...item,
+          qty: null,
+          machineNoother: null,
+          checked: true,
+          case: this.selectedType
+        }));
+      } else {
+        this.items = [];
+        alert("ไม่พบข้อมูลที่ค้นหา");
+      }
+    }, (error: any) => {
+      console.error("เกิดข้อผิดพลาดขณะดึงข้อมูลจาก API:", error);
+      alert("เกิดข้อผิดพลาดในการดึงข้อมูล");
+    });
+  } else {
+    alert("กรุณาเลือกข้อมูลให้ครบทุกช่องก่อนค้นหา");
+  }
+}
 
 // function add to cart
 AddToCart() {
