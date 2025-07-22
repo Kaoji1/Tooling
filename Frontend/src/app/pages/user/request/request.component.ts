@@ -7,8 +7,11 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RequestService,  } from '../../../core/services/request.service';
 
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
 @Component({
   selector: 'app-request',
   standalone: true,
@@ -25,6 +28,7 @@ import { RequestService,  } from '../../../core/services/request.service';
   styleUrl: './request.component.scss'
 })
 export class requestComponent {
+<<<<<<< Updated upstream
 
   // Dropdown data
   Div_: any = [];
@@ -38,6 +42,20 @@ export class requestComponent {
   setupItem = [];
   otherItem = [];
 
+=======
+  // Dropdown data
+  Div_: any = [];
+  Fac_: any = [];
+  Case_: any = [];
+  PartNo_: any = [];
+  Process_: any = [];
+  MachineType_: any = [];
+  caseother: any = [];
+  Spec_:any=[];
+  setupItem = [];
+  otherItem = [];
+
+>>>>>>> Stashed changes
   // option dropdown
   spec:any=[];
   Div:any=[];
@@ -332,6 +350,7 @@ Clearall() {
   }
 }
 
+<<<<<<< Updated upstream
 
 
 
@@ -879,3 +898,5 @@ Clearall() {
 // }
 
 // }
+=======
+>>>>>>> Stashed changes

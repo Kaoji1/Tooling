@@ -35,4 +35,8 @@ export class RequestService {
   }
 
 
+<<<<<<< Updated upstream
 }
+=======
+}
+>>>>>>> Stashed changes
