@@ -1,3 +1,4 @@
+<html lang="th">
 <!-- จัดเรียงsidebarและหน้าทั้งหน้า -->
 <div class="layout">
   <!-- sidebarฝั่งuser -->
@@ -17,7 +18,7 @@
       <div class="form-input">
         <div class="group-select">
           <label for="datesetup">Date</label>
-          <input type="date" id="datesetup">
+          <input type="date" dateFormat="dd/mm/yy">
         </div>
         <h6>TO</h6>
         <div class="group-select">
@@ -54,12 +55,10 @@
         <thead>
           <tr>
             <th>Part No.</th>
-            <th>Item No.</th>
-            <th>Content/Spec</th>
+            <th>SPEC</th>
             <th>Process</th>
             <th>Case</th>
             <th>QTY.</th>
-            <th>Input Date</th>
             <th>Detail</th>
           </tr>
         </thead>
@@ -71,12 +70,10 @@
           </tr>
           <tr *ngFor="let item of requestItems">
             <td>{{ item.partNo }}</td>
-            <td>{{ item.itemNo }}</td>
             <td>{{ item.Spec }}</td>
             <td>{{ item.Process }}</td>
             <td>{{ item.case === 'setup' ? 'SET UP' : (item.caseother || '-') }}</td>
             <td>{{ item.qty }}</td>
-            <td>{{ item.inputDate | date:'yyyy-MM-dd' }}</td>
             <td>
               <button (click)="viewDetail(item)" class="detailicon">
                 <i class="bi bi-eye-fill" style="font-size: 20px;"></i>
@@ -102,3 +99,4 @@
     </div> -->
   </div>
 </div>
+</html>
