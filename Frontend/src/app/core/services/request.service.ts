@@ -26,8 +26,8 @@ export class RequestService {
   return this.httpClient.get(`${baseUrl}/get_SPEC/${value}`);
 }
 
-  post_PROCESS(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
-    return this.httpClient.post(`${baseUrl}/post_PROCESS`, data) // ส่ง HTTP POST request เพื่อส่งข้อมูล process
+  get_PROCESS(value: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
+    return this.httpClient.get(`${baseUrl}/post_PROCESS/${value}`) ;// ส่ง HTTP POST request เพื่อส่งข้อมูล process
   }
 
   post_MACHINETYPE(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process

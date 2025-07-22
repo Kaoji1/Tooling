@@ -125,29 +125,36 @@ export class requestComponent {
     });
   }
 
-  async get_SPEC(event: any) {
-  console.log('Selected PartNo:', event.value);
-  if (event.value) {
-    this.api.get_SPEC(event.value).subscribe({
-      next: (response) => {
-        console.log('Spec API response:', response);
-        this.spec = response; // เก็บทั้ง array 
-      },
-      error: (e) => console.error(e),
-    });
-  }
-}
-  // Process
-  async post_PROCESS(event:any) {
-    console.log(event.value); // แสดงค่าที่ได้รับใน console
+  async get_SPEC(event:any) {
+    console.log(event); // แสดงค่าที่ได้รับใน console
     // เช็คว่า event.value มีค่าหรือไม่
-    if (event.value !== undefined) {
+    if (event.PartNo !== undefined) {
       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
-      this.api.post_PROCESS(event.value).subscribe({
+      this.api.get_SPEC(event.PartNo).subscribe({
+        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน spec
+        next: (response) => {
+          if (response.length > 0) {
+            this.spec= response;
+            // แสดงผลลัพธ์ใน console
+            console.log(response);
+          }
+        },
+        // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+        error: (e) => console.error(e),
+      });
+    }
+  }
+  // Process
+  async get_PROCESS(event:any) {
+    console.log(event); // แสดงค่าที่ได้รับใน console
+    // เช็คว่า event.value มีค่าหรือไม่
+    if (event.PartNo !== undefined) {
+      // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+      this.api.get_PROCESS(event.value).subscribe({
         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
         next: (response) => {
           if (response.length > 0) {
-            this.Process = response[0];
+            this.Process = response;
             // แสดงผลลัพธ์ใน console
             console.log(response);
           }
