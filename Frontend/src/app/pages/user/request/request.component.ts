@@ -39,9 +39,8 @@ export class requestComponent {
   otherItem = [];
 
   // option dropdown
- 
   spec:any=[];
-  Div:any=[];
+  Division:any=[];
   Fac:any=[];
   Case:any=[];
   PartNo:any=[];
@@ -67,7 +66,7 @@ export class requestComponent {
     this.today_ = new Date().toISOString().split('T')[0];
 
     // กำหนดตัวเลือกในdropdown
-  
+    
 
     this.Fac = [
       { label: '1', value: '1' }, // ตัวเลือก Fac ที่ 1
@@ -108,13 +107,13 @@ export class requestComponent {
 
 
   }
-// เรียกใช้ตัวดึงapi
-  Get_Division() {
+  // เรียกใช้ตัวดึงapi
+ Get_Division() {
     // เรียก API เพื่อดึงข้อมูล SPEC
     this.api.get_Division().subscribe({
       // ถ้าสำเร็จ จะทำการเก็บ response ลงใน spec
       next: (response: any) => {
-        this.Div= response;
+        this.Division = response;
         // แสดงผลลัพธ์ใน console
         // console.log(this.PartNo);
       },
@@ -122,12 +121,13 @@ export class requestComponent {
       error: (e: any) => console.error(e),
     });
   }
-async post_PARTNO(event:any) {
-    console.log(event); // แสดงค่าที่ได้รับใน console
+// เรียกใช้ตัวดึงapi
+  async get_PARTNO(event:any) {
+    console.log(event.Division); // แสดงค่าที่ได้รับใน console
     // เช็คว่า event.value มีค่าหรือไม่
-    if (event.PartNo !== undefined) {
+    if (event.Division !== undefined) {
       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
-      this.api.post_PARTNO(event.division).subscribe({
+      this.api.get_PARTNO(event).subscribe({
         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน spec
         next: (response) => {
           if (response.length > 0) {
@@ -141,18 +141,35 @@ async post_PARTNO(event:any) {
       });
     }
   }
-
-
-  async get_SPEC(event:any) {
+  //   Get_PARTNO() {
+  //   // เรียก API เพื่อดึงข้อมูล SPEC
+  //   this.api.get_PARTNO().subscribe({
+  //     // ถ้าสำเร็จ จะทำการเก็บ response ลงใน spec
+  //     next: (response: any) => {
+  //       this.PartNo = response;
+  //       // แสดงผลลัพธ์ใน console
+  //       // console.log(this.PartNo);
+  //     },
+  //     // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+  //     error: (e: any) => console.error(e),
+  //   });
+  // }
+async get_SPEC(event:any) {
     console.log(event); // แสดงค่าที่ได้รับใน console
     // เช็คว่า event.value มีค่าหรือไม่
     if (event.PartNo !== undefined) {
       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
-      this.api.get_SPEC(event.PartNo).subscribe({
-        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน spec
+      const data = {
+        Division:event.Division,
+        PartNo: event.PartNo
+        
+      }
+      console.log(data);
+      this.api.get_SPEC(data).subscribe({
+        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
         next: (response) => {
           if (response.length > 0) {
-            this.spec= response;
+            this.spec = response;
             // แสดงผลลัพธ์ใน console
             console.log(response);
           }
@@ -162,6 +179,25 @@ async post_PARTNO(event:any) {
       });
     }
   }
+  // async get_SPEC(event:any) {
+  //   console.log(event); // แสดงค่าที่ได้รับใน console
+  //   // เช็คว่า event.value มีค่าหรือไม่
+  //   if (event.PartNo !== undefined) {
+  //     // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+  //     this.api.get_SPEC(event.PartNo).subscribe({
+  //       // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน spec
+  //       next: (response) => {
+  //         if (response.length > 0) {
+  //           this.spec= response;
+  //           // แสดงผลลัพธ์ใน console
+  //           console.log(response);
+  //         }
+  //       },
+  //       // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+  //       error: (e) => console.error(e),
+  //     });
+  //   }
+  // }
 
   // Process
   async get_Process(event:any) {
@@ -170,6 +206,7 @@ async post_PARTNO(event:any) {
     if (event.PartNo !== undefined) {
       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
       const data = {
+        Division:event.Division,
         PartNo: event.PartNo,
         Spec:event.SPEC
       }
@@ -196,6 +233,7 @@ async post_PARTNO(event:any) {
     if (event.PartNo !== undefined) {
       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
       const data = {
+        Division:event.Division,
         PartNo: event.PartNo,
         Spec: event.SPEC,
         Process: event.Process
@@ -216,22 +254,24 @@ async post_PARTNO(event:any) {
     }
   }
 
+
+
 Setview() {
-  const division = this.Div_;
+  const Division = this.Div_?.Division || this.Div_;
   const factory = this.Fac_;
   const PartNo = this.PartNo_?.PartNo || this.PartNo_;
   const Spec = this.Spec_?.SPEC|| this.Spec_;
   const Process = this.Process_?.Process || this.Process_;
   const MC = this.MachineType_?.MC || this.MachineType_;
-  console.log('division:', division);
+  console.log('division:', Division);
   console.log('factory:', factory);
   console.log('PartNo:', PartNo);
   console.log('Spec:', Spec);
   console.log('Process:', Process);
   console.log('MC:', MC);
 
-  if (PartNo && Process && MC && division && factory !== undefined) {
-    const data = { PartNo, Spec ,Process, MC };
+  if (PartNo && Process && MC && Division && factory !== undefined) {
+    const data = { Division, PartNo, Spec ,Process, MC };
 
     this.api.post_ITEMNO(data).subscribe({
       next: (response) => {

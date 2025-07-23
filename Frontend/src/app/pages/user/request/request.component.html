@@ -21,13 +21,14 @@
           <div class="group-select">
                 <label > Division </label>
                 <ng-select
-                  [items]="Div"
-                  bindLabel="Div"
+                  [items]="Division"
+                  bindLabel="Division"
                   [(ngModel)]="Div_"
+                  (ngModelChange)="get_PARTNO($event)"
                   [virtualScroll]="true"
                   placeholder="Select Division">
                 </ng-select>
-                
+                <!-- 7122 = GM 71DZ=PMC -->
               </div>
 
 
@@ -91,10 +92,7 @@
                   (ngModelChange)="get_Process($event)"
                   placeholder="Select Spec">
                 </ng-select>
-
-
-              </div>
-
+          </div>
           <div class="group-select">
             <label> Process </label>
             <ng-select

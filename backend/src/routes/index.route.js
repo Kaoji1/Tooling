@@ -8,9 +8,11 @@ const testController = require('../controllers/test.controller') // คอนโ
 const test = require('node:test');
 
 // กำหนดเส้นทาง request
-router.get('/get_PartNo', ItemlistController.Get_PartNo);
+router.get('/get_Division', ItemlistController.Get_Division);
 
-router.get('/get_SPEC/:PartNo', ItemlistController.Get_SPEC);
+router.post('/get_PARTNO', ItemlistController.Get_PartNo);
+
+router.post('/get_SPEC', ItemlistController.Get_SPEC);
 
 router.post('/get_Process', ItemlistController.Get_Process);
 
