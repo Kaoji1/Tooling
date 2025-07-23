@@ -94,6 +94,8 @@
 
               width: 180px;
               border-radius: 20px;
+              font-size:16px;
+              
             }
 
             input {
@@ -117,7 +119,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin: 20px;
+        margin: 5px;
         .btn-viewall {
           width: 120px;
           height: 45px;
@@ -159,7 +161,7 @@
     //.group-req
     //ตารางในbox-main
     .table-responsive {
-      max-height: 405px;
+      max-height: 390px;
       max-width: 1290px;
 
       table {
@@ -173,6 +175,7 @@
           padding: 6px;
           text-align: center;
           border: 1px solid #D2D2D2;
+          font-size: 14px;
           
           .yoyu {
             width: 50px;

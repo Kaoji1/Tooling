@@ -27,18 +27,19 @@ import { RequestService,  } from '../../../core/services/request.service';
 export class requestComponent {
 
   // Dropdown data
-  Div_: any = [];
-  Fac_: any = [];
-  Case_: any = [];
-  PartNo_: any = [];
-  Process_: any = [];
-  MachineType_: any = [];
-  caseother: any = [];
-  Spec_:any=[];
+  Div_: any ;
+  Fac_: any;
+  Case_: any = null;
+  PartNo_: any = null;
+  Process_: any = null;
+  MachineType_: any = null;
+  caseother: any = null;
+  Spec_:any=null;
   setupItem = [];
   otherItem = [];
 
   // option dropdown
+ 
   spec:any=[];
   Div:any=[];
   Fac:any=[];
@@ -66,10 +67,7 @@ export class requestComponent {
     this.today_ = new Date().toISOString().split('T')[0];
 
     // กำหนดตัวเลือกในdropdown
-    this.Div = [
-      { label: 'GM', value: 'GM' }, // ตัวเลือก Division ที่ 1
-      { label: 'PMC', value: 'PMC' }, // ตัวเลือก Division ที่ 2
-    ];
+  
 
     this.Fac = [
       { label: '1', value: '1' }, // ตัวเลือก Fac ที่ 1
@@ -106,17 +104,17 @@ export class requestComponent {
   }
 
   async ngOnInit()  {
-    this.Get_PARTNO();
+    this.Get_Division();
 
 
   }
 // เรียกใช้ตัวดึงapi
-  Get_PARTNO() {
+  Get_Division() {
     // เรียก API เพื่อดึงข้อมูล SPEC
-    this.api.get_PARTNO().subscribe({
+    this.api.get_Division().subscribe({
       // ถ้าสำเร็จ จะทำการเก็บ response ลงใน spec
       next: (response: any) => {
-        this.PartNo = response;
+        this.Div= response;
         // แสดงผลลัพธ์ใน console
         // console.log(this.PartNo);
       },
@@ -124,6 +122,26 @@ export class requestComponent {
       error: (e: any) => console.error(e),
     });
   }
+async post_PARTNO(event:any) {
+    console.log(event); // แสดงค่าที่ได้รับใน console
+    // เช็คว่า event.value มีค่าหรือไม่
+    if (event.PartNo !== undefined) {
+      // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+      this.api.post_PARTNO(event.division).subscribe({
+        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน spec
+        next: (response) => {
+          if (response.length > 0) {
+            this.PartNo= response;
+            // แสดงผลลัพธ์ใน console
+            console.log(response);
+          }
+        },
+        // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+        error: (e) => console.error(e),
+      });
+    }
+  }
+
 
   async get_SPEC(event:any) {
     console.log(event); // แสดงค่าที่ได้รับใน console
@@ -198,78 +216,55 @@ export class requestComponent {
     }
   }
 
-onTypechange() {
+Setview() {
+  const division = this.Div_;
+  const factory = this.Fac_;
+  const PartNo = this.PartNo_?.PartNo || this.PartNo_;
+  const Spec = this.Spec_?.SPEC|| this.Spec_;
+  const Process = this.Process_?.Process || this.Process_;
+  const MC = this.MachineType_?.MC || this.MachineType_;
+  console.log('division:', division);
+  console.log('factory:', factory);
+  console.log('PartNo:', PartNo);
+  console.log('Spec:', Spec);
+  console.log('Process:', Process);
+  console.log('MC:', MC);
 
-    if (this.Case_ === 'setup'){
-      this.items = this.setupItem;
-    }
-    else if (this.Case_ === 'other') {
-  this.items = this.otherItem.map(item => ({
-     ...(item as any),   // บอกว่า item เป็น any เพื่อให้ใช้ spread ได้
-      qty: null,
-      machineNoother:null,
-      checked: true,
-      Case: this.selectedType,
-      Caseother: null
-  }));
-    }
-    else {
-      this.items=[];
-    }
+  if (PartNo && Process && MC && division && factory !== undefined) {
+    const data = { PartNo, Spec ,Process, MC };
+
+    this.api.post_ITEMNO(data).subscribe({
+      next: (response) => {
+        //  กรณี selectedType คือ 'setup'
+        if (this.Case_ === 'setup') {
+          this.items = response.map((item: any) => ({
+            ...item,
+            checked: true,
+            qty: null,
+          }));
+        }
+
+        //  กรณี selectedType คือ 'other'
+        else if (this.Case_=== 'other') {
+          this.items = response.map((item: any) => ({
+            ...item,
+            checked: true,
+            qty: null,
+            machineNoother: '',
+            selectCaseother: null
+          }));
+        }
+
+        console.log('ข้อมูลที่โหลด:', this.items);
+      },
+      error: (e) => console.error('API Error:', e),
+    });
+  } else {
+    console.warn('กรุณาเลือกข้อมูลให้ครบก่อน');
+    alert("กรุณาเลือกข้อมูลให้ครบทุกช่องก่อนค้นหา");
   }
+}
 
-
-
-// ฟังก์ชั่นเรียกดูข้อมูลในตาราง
-// Setupview() {
-//   this.items = [];
-
-//   const division = this.Div_;
-//   const fac = this.Fac_;
-//   const partNo = this.PartNo_;
-//   const process = this.Process_;
-//   const machineType = this.MachineType_;
-//   const date = this.DueDate_;
-
-//   this.isSearched = true;
-
-//   if (
-//     partNo && partNo.trim() !== '' &&
-//     process && process.trim() !== '' &&
-//     machineType && machineType.trim() !== '' &&
-//     division && division.trim() !== '' &&
-//     fac && fac.trim() !== '' &&
-//     date && date.trim() !== ''
-//   ) {
-//     // เรียก API แทน mockData
-//     this.RequestService.getFilteredItems({
-//       partNo,
-//       process,
-//       machineType,
-//       division,
-//       fac,
-//       dueDate: date
-//     }).subscribe((response: any[]) => {
-//       if (response.length > 0) {
-//         this.items = response.map(item => ({
-//           ...item,
-//           qty: null,
-//           machineNoother: null,
-//           checked: true,
-//           case: this.selectedType
-//         }));
-//       } else {
-//         this.items = [];
-//         alert("ไม่พบข้อมูลที่ค้นหา");
-//       }
-//     }, (error: any) => {
-//       console.error("เกิดข้อผิดพลาดขณะดึงข้อมูลจาก API:", error);
-//       alert("เกิดข้อผิดพลาดในการดึงข้อมูล");
-//     });
-//   } else {
-//     alert("กรุณาเลือกข้อมูลให้ครบทุกช่องก่อนค้นหา");
-//   }
-// }
 
 // function add to cart
 AddToCart() {
@@ -311,13 +306,13 @@ Clearall() {
   this.Div_=null;
   this.Fac_=null;
   this.DueDate_='';
-  this.Case_=null;
+  
   this.PartNo_=null;
   this.Spec_=null
   this.MachineType_=null;
-
+  this.Process_=null
   // Delete items ค่าที่รวมที่จะส่งไปตะกร้า
-  this.items=null;
+  this.items=[];
 
   }
   // upload file
@@ -330,6 +325,7 @@ Clearall() {
     }
   }
 }
+
 
 
 

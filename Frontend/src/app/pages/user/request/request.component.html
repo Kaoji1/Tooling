@@ -19,24 +19,25 @@
         <div class="req-row1">
           <!-- รวม label,select ของ division,fac,phon,date -->
           <div class="group-select">
-                <label for="division"> Division </label>
+                <label > Division </label>
                 <ng-select
                   [items]="Div"
-                  bindLabel="label"
-                  bindValue="value"
-                  [ngModel]="Div_"
+                  bindLabel="Div"
+                  [(ngModel)]="Div_"
+                  [virtualScroll]="true"
                   placeholder="Select Division">
                 </ng-select>
+                
               </div>
 
 
               <div class="group-select">
-                <label for="Fac"> Fac </label>
+                <label > Fac </label>
                 <ng-select
                   [items]="Fac"
                   bindLabel="label"
                   bindValue="value"
-                  [ngModel]="Fac_"
+                  [(ngModel)]="Fac_"
                   placeholder="Select a Fac">
                 </ng-select>
             </div>
@@ -53,13 +54,13 @@
 
           <!-- select case -->
           <div class="group-select" style="width: 180px;">
-            <label for="case"> Case </label>
+            <label > Case </label>
             <ng-select
               [items]="Case"
               bindLabel="label"
               bindValue="value"
               [(ngModel)]="Case_"
-              (change)="onTypechange()"
+              [virtualScroll]="true"
               placeholder="Select a case">
             </ng-select>
           </div>
@@ -70,9 +71,9 @@
           <!-- group รวม label,select -->
           <div class="group-select">
 
-            <label for="case"> Part No. </label>
+            <label > Part No. </label>
             <ng-select
-              [items]="PartNo"
+              [items]="PartNo"                                      
               bindLabel="PartNo"
               [(ngModel)]="PartNo_"
               [virtualScroll]="true"
@@ -81,11 +82,11 @@
             </ng-select>
           </div>
           <div class="group-select">
-                <label for="spec"> Spec </label>
-                <ng-select
+                <label > Spec </label>
+                <ng-select style="width: 280px;"
                   [items]="spec"
                   bindLabel="SPEC"
-                  [ngModel]="Spec_"
+                  [(ngModel)]="Spec_"
                   [virtualScroll]="true"
                   (ngModelChange)="get_Process($event)"
                   placeholder="Select Spec">
@@ -95,7 +96,7 @@
               </div>
 
           <div class="group-select">
-            <label for="process"> Process </label>
+            <label> Process </label>
             <ng-select
               [items]="Process"
               bindLabel="Process"
@@ -106,7 +107,7 @@
           </div>
 
           <div class="group-select">
-            <label for="Machine No"> Machine Type </label>
+            <label > Machine Type </label>
             <ng-select
               [items]="MachineType"
               bindLabel="MC"
@@ -125,7 +126,7 @@
         <button class="btn-viewall" type="button" (click)="Clearall()"> CLEARALL <i class="bi bi-list"></i></button>
         <button class="btn-import" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal"
           data-bs-whatever="@getbootstrap"> IMPORT <i class="bi bi-download"></i></button>
-        <button class="btn-view" type="button" > VIEW <i class="bi bi-eye-fill"></i></button>
+        <button class="btn-view" type="button" (click)="Setview()" > VIEW <i class="bi bi-eye-fill"></i></button>
 
       </div>
 
@@ -133,101 +134,73 @@
     <!--div grop-req-->
     <!-- table setup-->
     <div class="table-responsive">
+  <table class="table table-bordered text-center">
+    <!-- หัวตารางแสดงเสมอ -->
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Part No.</th>
+        <th>Item No.</th>
+        <th>Spec</th>
+        <th>Process</th>
+        <th>Machine Type</th>
+        <th>FacilityName</th>
+        <th>On Hand</th>
+        <th>Usage</th>
+        <th>QTY</th>
+        <th>Case</th>
+      </tr>
+    </thead>
 
-      <table *ngIf="selectedType === 'setup'" class="table table-bordered text-center">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Part No.</th>
-            <th>Item No.</th>
-            <th>Spec</th>
-            <th>Process</th>
-            <th>Machine Type</th>
-            <th>Machine No.</th>
-            <th>On Hand</th>
-            <th>Usage</th>
-            <th>QTY</th>
-            <th>Case</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngIf="items.length === 0">
-            <td colspan="11" class="text-center text-muted">ยังไม่มีข้อมูล</td>
-          </tr>
-          <tr *ngFor="let item of items">
-            <td><input type="checkbox"  [(ngModel)]="item.checked " ></td>
-            <td>{{ item.partNo }}</td>
-            <td>{{ item.itemNo }}</td>
-            <td>{{ item.spec }}</td>
-            <td>{{ item.process }}</td>
-            <td>{{ item.machineType }}</td>
-            <td>{{ item.machineNo }}</td>
-            <td>{{ item.onHand }}</td>
-            <td>{{ item.usage }}</td>
-            <td><input class="yoyu" type="number" [(ngModel)]="item.qty"min="0"></td>
-            <td>SET UP</td>
-          </tr>
-        </tbody>
-      </table>
-      <!-- <div *ngIf="items.length === 0 && isSearched" class="alert alert-warning mt-2">
-        ไม่พบข้อมูล
-      </div> -->
-    </div>
+    <tbody *ngIf="!Case_ || items.length === 0">
+      <tr>
+        <td colspan="11" class="text-center text-muted">ยังไม่มีข้อมูล</td>
+      </tr>
+    </tbody>
 
+    <tbody *ngIf="Case_ === 'setup' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.ON_HAND }}</td>
+        <td>{{ item.Usage_pcs }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.qty" min="0" /></td>
+        <td>SET UP</td>
+      </tr>
+    </tbody>
 
-
-
-    <!-- table other-->
-    <div class="table-responsive">
-
-      <table *ngIf="selectedType === 'other' && items.length > 0"class="table table-bordered text-center">
-        <thead>
-          <tr>
-            <th>
-              #
-            </th>
-            <th>Part No.</th>
-            <th>Item No.</th>
-            <th>Spec</th>
-            <th>Process</th>
-            <th>Machine Type</th>
-            <th>Machine No.</th>
-            <th>On Hand</th>
-            <th>Usage</th>
-            <th>QTY</th>
-            <th>Case</th>
-
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of items ">
-            <td><input type="checkbox"  [(ngModel)]="item.checked " ></td>
-            <td>{{ item.partNo }}</td>
-            <td>{{ item.itemNo }}</td>
-            <td>{{ item.spec }}</td>
-            <td>{{ item.process }}</td>
-            <td>{{ item.machineType }}</td>
-            <td><input class="yoyu" type="text" [(ngModel)]="item.machineNoother" ></td>
-            <td>{{ item.onHand }}</td>
-            <td>{{ item.usage }}</td>
-            <td><input class="yoyu" type="number"  [(ngModel)]="item.qty"min="0" ></td>
-            <td>
-             <ng-select
-              [items]="Caseother"
-              bindLabel="viewCase"
-              bindValue="Case"
-              [(ngModel)]="item.selectCaseother"
-              [appendTo]="'body'"
-              placeholder="Select a case">
-            </ng-select>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <!-- <div *ngIf="items.length === 0 && isSearched" class="alert alert-warning mt-2">
-        ไม่พบข้อมูล
-      </div> -->
-    </div>
+    <tbody *ngIf="Case_ === 'other' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.ON_HAND }}</td>
+        <td>{{ item.Usage_pcs }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.qty" min="0" /></td>
+        <td>
+          <ng-select
+            [items]="Caseother"
+            bindLabel="viewCase"
+            bindValue="Case"
+            [(ngModel)]="item.selectCaseother"
+            [appendTo]="'body'"
+            placeholder="Select a case"
+          >
+          </ng-select>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 
 

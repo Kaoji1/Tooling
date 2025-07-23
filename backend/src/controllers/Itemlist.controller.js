@@ -1,6 +1,7 @@
 const { poolPromise } = require("../config/database");
 const Type = require("mssql").TYPES;
 
+
 // ดึงข้อมูล PartNo ทั้งหมด
 exports.Get_PartNo = async (req, res) => {
   try {
@@ -101,3 +102,66 @@ exports.Get_Process = async (req, res) => {
   }  
 
 };
+exports.Post_ITEMNO = async (req, res) => {
+  console.log(req.body);
+  try {
+    const {PartNo, Spec, Process, MC}= req.body;
+    console.log(PartNo, Spec, Process, MC);
+
+    if (!PartNo || !Spec || !Process || !MC) {
+      return res.status(400).json({ error: "Missing PartNo parameter" });
+    }
+
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("PartNo", req.body.PartNo)
+      .input("Spec", req.body.Spec)
+      .input("PROCESS", req.body.Process)
+      .input("MC", req.body.MC)
+      .query("EXEC [dbo].[stored_ToolDataset] @PartNo, @Spec, @PROCESS, @MC");
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ message: "Spec not found for this PartNo" });
+    } else {
+      res.json(result.recordset);
+    }    
+  } catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }  
+
+};
+
+
+// exports.Post_ITEMNO = async (req, res) => {
+//   console.log(req.body);
+//   try {
+//     const { PartNo, Spec, Process, MC } = req.body;
+//     console.log(PartNo, Spec, Process, MC); // ดึงข้อมูลจาก body
+
+//     if (!PartNo || !Spec || !Process || !MC) {
+//       return res.status(400).json({ error: "Missing PartNo parameter" });
+//     }
+//     const pool = await poolPromise; // รอการเชื่อมต่อกับฐานข้อมูล
+//     const result = await pool
+//       .request()
+//       .input("PartNo", req.body.PartNo) // เพิ่มพารามิเตอร์ OPIST_PartNo
+//       .input("Spec", req.body.Spec)
+//       .input("Process", req.body.Process) // เพิ่มพารามิเตอร์ OPIST_Process
+//       .input("MC", req.body.MC) // เพิ่มพารามิเตอร์ OPIST_MC
+//       .query(
+//         "EXEC [dbo].[stored_ToolDataset] @PartNo, @Spec, @PROCESS, @MC" // เรียกใช้ stored procedure
+//       );
+
+//     // ตรวจสอบผลลัพธ์
+//     if (result.recordset.length === 0) {
+//       res.status(404).json({ error: "Part Number not found" }); // ถ้าไม่มีข้อมูล ส่งสถานะ 404
+//     } else {
+//       res.json(result.recordsets); // ส่งผลลัพธ์กลับไปยังผู้เรียก
+//     }
+//   } catch (error) {
+//     // console.error("Error executing query:", error.stack); // แสดงข้อผิดพลาด
+//     res.status(500).json({ error: " Server Error", details: error.message }); // ส่งสถานะ 500 พร้อมข้อความข้อผิดพลาด
+//   }
+// };

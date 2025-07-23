@@ -16,6 +16,7 @@ router.post('/get_Process', ItemlistController.Get_Process);
 
 router.post('/get_MC', ItemlistController.Get_MC);
 
+router.post('/post_ITEMNO', ItemlistController.Post_ITEMNO);
 
 
 
