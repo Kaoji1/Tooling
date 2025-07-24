@@ -12,15 +12,7 @@
                 <p>all your request in here</p>
         <div class="masterform-group">
 
-            <div class="form-group">
-                <label for="division" style="width: 100px; margin-right: 10px;">Division:</label>
-                <input id="division" type="text" class="form-control" style="flex: 1;" [value]="cartItems[0]?.division" readonly>
-            </div>
-
-            <div class="form-group ">
-                <label for="factory" style="width: 100px; margin-right: 10px;">Fac:</label>
-                <input id="factory" type="text" class="form-control" style="flex: 1;" [value]="cartItems[0]?.factory" readonly>
-            </div>
+           
         </div>
             <!-- table -->
                 <div class="table-responsive">
@@ -33,8 +25,8 @@
                             <th>Spec</th>
                             <th>Process</th>
                             <th>Machine Type</th>
-                            <th>Machine No.</th>
-                            <th>Usage</th>
+                            <th>FreshQty</th>
+                            <th>ReuseQty</th>
                             <th>QTY.</th>
                             <th>Case</th>
                             <th>Input Date</th>
@@ -51,24 +43,25 @@
                         </tr>
                        <tr *ngFor="let item of cartItems; let i = index">
                             <td>{{ i + 1 }}</td>
-                            <td>{{ item.partNo }}</td>
-                            <td>{{ item.itemNo }}</td>
-                            <td>{{ item.Spec }}</td>
+                            <td>{{ item.PartNo }}</td>
+                            <td>{{ item.ItemNo }}</td>
+                            <td>{{ item.SPEC }}</td>
                             <td>{{ item.Process }}</td>
-                            <td>{{ item.MachineType }}</td>
-                            <td>{{ item.case === 'setup' ? item.machineNo : (item.machineNoother)  }}</td>
-                            <td>{{ item.usage }}</td>
+                            <td>{{ item.MC }}</td>
+                            <td>{{ item.FreshQty }}</td>
+                            <td>{{ item.ReuseQty }}</td>
+                            
 
                             <!-- QTY -->
                             <td>
                                 <ng-container *ngIf="editingIndex === i; else showQty">
                                 <input [(ngModel)]="item.qty" type="number" min="1" class="form-control" />
                                 </ng-container>
-                                <ng-template #showQty>{{ item.qty }}</ng-template>
+                                <ng-template #showQty>{{ item.QTY }}</ng-template>
                             </td>
 
                            <td>
-                            {{ item.case === 'setup' ? 'SET UP' : (item.caseother || '-') }}
+                            {{ item.Case_ }}
                             </td>
 
                             <td>{{ item.setupDate }}</td>
@@ -119,7 +112,7 @@
                 </table>
             </div> <!--table-->
             <!-- button sendrequest -->
-            <button class="btn-sendrequest" type="button" (click)="Create_Doc()" >
+            <button class="btn-sendrequest" type="button"  >
                     <i class="bi bi-send-fill" ></i>Send Request
             </button>
 

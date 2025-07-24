@@ -22,7 +22,7 @@
                 <label > Division </label>
                 <ng-select
                   [items]="Division"
-                  bindLabel="Division"
+                  bindLabel="DivisionName"
                   [(ngModel)]="Div_"
                   (ngModelChange)="get_PARTNO($event)"
                   [virtualScroll]="true"
@@ -143,8 +143,8 @@
         <th>Process</th>
         <th>Machine Type</th>
         <th>FacilityName</th>
-        <th>On Hand</th>
-        <th>Usage</th>
+        <th>FreshQty</th>
+        <th>ReuseQty</th>
         <th>QTY</th>
         <th>Case</th>
       </tr>
@@ -165,14 +165,14 @@
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
         <td>{{ item.FacilityName }}</td>
-        <td>{{ item.ON_HAND }}</td>
-        <td>{{ item.Usage_pcs }}</td>
-        <td><input type="number" class="yoyu" [(ngModel)]="item.qty" min="0" /></td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty  }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
         <td>SET UP</td>
       </tr>
     </tbody>
 
-    <tbody *ngIf="Case_ === 'other' && items.length > 0">
+    <tbody *ngIf="Case_ === 'BRO' && items.length > 0">
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
@@ -181,20 +181,170 @@
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
         <td>{{ item.FacilityName }}</td>
-        <td>{{ item.ON_HAND }}</td>
-        <td>{{ item.Usage_pcs }}</td>
-        <td><input type="number" class="yoyu" [(ngModel)]="item.qty" min="0" /></td>
-        <td>
-          <ng-select
-            [items]="Caseother"
-            bindLabel="viewCase"
-            bindValue="Case"
-            [(ngModel)]="item.selectCaseother"
-            [appendTo]="'body'"
-            placeholder="Select a case"
-          >
-          </ng-select>
-        </td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td> BRO</td>
+      </tr>
+    </tbody>
+
+     <tbody *ngIf="Case_ === 'BUR' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td> BUR</td>
+      </tr>
+    </tbody>
+
+     <tbody *ngIf="Case_ === 'USA' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td> USA </td>
+      </tr>
+    </tbody>
+
+     <tbody *ngIf="Case_ === 'HOL' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td> HOL </td>
+      </tr>
+    </tbody>
+
+     <tbody *ngIf="Case_ === 'JIG' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td> JIG </td>
+      </tr>
+    </tbody>
+
+    <tbody *ngIf="Case_ === 'MOD' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td> MOD </td>
+      </tr>
+    </tbody>
+
+    <tbody *ngIf="Case_ === 'N/G' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td> N/G </td>
+      </tr>
+    </tbody>
+
+    <tbody *ngIf="Case_ === 'F/A' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td> F/A </td>
+      </tr>
+    </tbody>
+
+     <tbody *ngIf="Case_ === 'CHA' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td> CHA </td>
+      </tr>
+    </tbody>
+
+     <tbody *ngIf="Case_ === 'P/P' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td> P/P </td>
+      </tr>
+    </tbody>
+
+     <tbody *ngIf="Case_ === 'REC' && items.length > 0">
+      <tr *ngFor="let item of items">
+        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td>{{ item.PartNo }}</td>
+        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.SPEC }}</td>
+        <td>{{ item.Process }}</td>
+        <td>{{ item.MC }}</td>
+        <td>{{ item.FacilityName }}</td>
+        <td>{{ item.FreshQty }}</td>
+        <td>{{ item.ReuseQty }}</td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td> REC </td>
       </tr>
     </tbody>
   </table>
@@ -205,7 +355,7 @@
 
 
 
-    <button class="btn-sendrequest" type="button"  ><i class="bi bi-cart-plus"></i> Add To Cart</button>
+    <button class="btn-sendrequest" type="button" (click)="AddToCart()" ><i class="bi bi-cart-plus" ></i> Add To Cart</button>
   </div>
   <!--div box-main-->
 </div>

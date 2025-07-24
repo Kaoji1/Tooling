@@ -8,7 +8,7 @@ exports.Get_Division = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
     .request()
-    .query("EXEC [dbo].[stored_ToolDataset]");
+    .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset]");
 
     res.json(result.recordset);
   } 
@@ -33,7 +33,7 @@ exports.Get_PartNo = async (req, res) => {
     const result = await pool
       .request()
       .input("Division", req.body.Division)
-      .query("EXEC [dbo].[stored_ToolDataset] @Division");
+      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset] @Division");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -50,7 +50,7 @@ exports.Get_PartNo = async (req, res) => {
 //     const pool = await poolPromise;
 //     const result = await pool
 //     .request()
-//     .query("EXEC [dbo].[stored_ToolDataset]");
+//     .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset]");
 
 //     res.json(result.recordset);
 //   } 
@@ -77,7 +77,7 @@ exports.Get_SPEC = async (req, res) => {
       .request()
       .input("Division", req.body.Division)
       .input("PartNo", req.body.PartNo)
-      .query("EXEC [dbo].[stored_ToolDataset] @Division, @PartNo");
+      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset] @Division, @PartNo");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -106,7 +106,7 @@ exports.Get_Process = async (req, res) => {
       .input("Division", req.body.Division)
       .input("PartNo", req.body.PartNo)
       .input("Spec", req.body.Spec)
-      .query("EXEC [dbo].[stored_ToolDataset] @Division, @PartNo, @Spec");
+      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset] @Division, @PartNo, @Spec");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -137,7 +137,7 @@ exports.Get_Process = async (req, res) => {
       .input("PartNo", req.body.PartNo)
       .input("Spec", req.body.Spec)
       .input("PROCESS", req.body.Process)
-      .query("EXEC [dbo].[stored_ToolDataset] @Division, @PartNo, @Spec, @PROCESS");
+      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset] @Division, @PartNo, @Spec, @PROCESS");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -169,7 +169,7 @@ exports.Post_ITEMNO = async (req, res) => {
       .input("Spec", req.body.Spec)
       .input("PROCESS", req.body.Process)
       .input("MC", req.body.MC)
-      .query("EXEC [dbo].[stored_ToolDataset]  @Division,@PartNo, @Spec, @PROCESS, @MC ");
+      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset]  @Division,@PartNo, @Spec, @PROCESS, @MC ");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -200,7 +200,7 @@ exports.Post_ITEMNO = async (req, res) => {
 //       .input("Process", req.body.Process) // เพิ่มพารามิเตอร์ OPIST_Process
 //       .input("MC", req.body.MC) // เพิ่มพารามิเตอร์ OPIST_MC
 //       .query(
-//         "EXEC [dbo].[stored_ToolDataset] @PartNo, @Spec, @PROCESS, @MC" // เรียกใช้ stored procedure
+//         "EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset] @PartNo, @Spec, @PROCESS, @MC" // เรียกใช้ stored procedure
 //       );
 
 //     // ตรวจสอบผลลัพธ์
