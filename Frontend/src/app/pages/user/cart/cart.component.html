@@ -19,21 +19,21 @@
                 <table class="table table-bordered text-center"  >
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Part No.</th>
-                            <th>Item No.</th>
-                            <th>Spec</th>
-                            <th>Process</th>
-                            <th>Machine Type</th>
-                            <th>FreshQty</th>
-                            <th>ReuseQty</th>
-                            <th>QTY.</th>
-                            <th>Case</th>
-                            <th>Input Date</th>
-                            <th>Due Date</th>
-                            <th>Insert</th>
-                            <th>Edit</th>
-                            <th>Del</th>
+                            <th style="width: 20px;">#</th>
+                            <th style="width: 150px;">Part No.</th>
+                            <!-- <th style="width: 150px;">Item No.</th> -->
+                            <th style="width: 280px;">Spec</th>
+                            <th style="width: 150px;">Process</th>
+                            <th style="width: 150px;" >Machine Type</th>
+                            <th style="width: 80px;">FreshQty</th>
+                            <th style="width: 80px;" >ReuseQty</th>
+                            <th style="width: 80px;" >QTY.</th>
+                            <th style="width: 100px;" >Case</th>
+                            
+                            <th style="width: 150px;">Due Date</th>
+                            <th style="width: 80px;" >Insert</th>
+                            <th style="width: 80px;">Edit</th>
+                            <th style="width: 80px;">Del</th>
                         </tr>
                         
                     </thead>
@@ -44,7 +44,7 @@
                        <tr *ngFor="let item of cartItems; let i = index">
                             <td>{{ i + 1 }}</td>
                             <td>{{ item.PartNo }}</td>
-                            <td>{{ item.ItemNo }}</td>
+                            <!-- <td>{{ item.ITEM_NO }}</td> -->
                             <td>{{ item.SPEC }}</td>
                             <td>{{ item.Process }}</td>
                             <td>{{ item.MC }}</td>
@@ -64,7 +64,7 @@
                             {{ item.Case_ }}
                             </td>
 
-                            <td>{{ item.InputDate_ }}</td>
+                          
 
                             <!-- Due Date -->
                             <td>
@@ -93,7 +93,7 @@
 
                                 <!-- ปุ่ม Save + Cancel -->
                                 <div *ngIf="editingIndex === i" class="d-flex gap-1">
-                                    <button class="btn btn-success btn-sm px-1 py-0" type="button" (click)="saveEdit(i)" style="height: 45px;">
+                                    <button class="btn btn-success btn-sm px-1 py-0" type="button" (click)="saveEdit(i)" style="height: 35px;">
                                         <i class="bi bi-check-lg"></i> Save
                                     </button>
                                     

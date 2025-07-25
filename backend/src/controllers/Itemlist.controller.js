@@ -1,14 +1,14 @@
 const { poolPromise } = require("../config/database");
 const Type = require("mssql").TYPES;
 
-//division
+//เรียกdivisionจากSQL 
 exports.Get_Division = async (req, res) => {
   console.log(req.body)
   try {
     const pool = await poolPromise;
     const result = await pool
     .request()
-    .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset]");
+    .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset]");
 
     res.json(result.recordset);
   } 
@@ -18,7 +18,7 @@ exports.Get_Division = async (req, res) => {
   }
 };
 
-// ดึงข้อมูล PartNo ทั้งหมด
+// ดึงข้อมูล PartNo กรองจาก Division
 exports.Get_PartNo = async (req, res) => {
   console.log(req);
   try {
@@ -33,7 +33,7 @@ exports.Get_PartNo = async (req, res) => {
     const result = await pool
       .request()
       .input("Division", req.body.Division)
-      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset] @Division");
+      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset] @Division");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -45,23 +45,7 @@ exports.Get_PartNo = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };
-// exports.Get_PartNo = async (req, res) => {
-//   try {
-//     const pool = await poolPromise;
-//     const result = await pool
-//     .request()
-//     .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset]");
-
-//     res.json(result.recordset);
-//   } 
-//   catch (error) {
-//     console.error("Error executing query:", error.stack);
-//     res.status(500).json({ error: "Internal Server Error", details: error.message });
-//   }
-// };
-
-
-// ดึง Spec ตาม PartNo
+// ดึง Spec ตาม PartNo,Division
 exports.Get_SPEC = async (req, res) => {
   console.log(req);
   try {
@@ -77,7 +61,7 @@ exports.Get_SPEC = async (req, res) => {
       .request()
       .input("Division", req.body.Division)
       .input("PartNo", req.body.PartNo)
-      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset] @Division, @PartNo");
+      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset] @Division, @PartNo");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -89,7 +73,7 @@ exports.Get_SPEC = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };
-
+// ดึวข้อมูลprocess จาก division partno spec
 exports.Get_Process = async (req, res) => {
   console.log(req.body);
   try {
@@ -106,7 +90,7 @@ exports.Get_Process = async (req, res) => {
       .input("Division", req.body.Division)
       .input("PartNo", req.body.PartNo)
       .input("Spec", req.body.Spec)
-      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset] @Division, @PartNo, @Spec");
+      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset] @Division, @PartNo, @Spec");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -137,7 +121,7 @@ exports.Get_Process = async (req, res) => {
       .input("PartNo", req.body.PartNo)
       .input("Spec", req.body.Spec)
       .input("PROCESS", req.body.Process)
-      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset] @Division, @PartNo, @Spec, @PROCESS");
+      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset] @Division, @PartNo, @Spec, @PROCESS");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -150,14 +134,14 @@ exports.Get_Process = async (req, res) => {
   }  
 
 };
-
+// ดึงItemno จาก division partno process mc
 exports.Post_ITEMNO = async (req, res) => {
   console.log(req.body);
   try {
-    const { Division, PartNo, Spec, Process, MC }= req.body;
-    console.log( Division,PartNo, Spec, Process, MC );
+    const { Division, PartNo, Process, MC }= req.body;
+    console.log( Division,PartNo, Process, MC );
 
-    if (!Division || !PartNo || !Spec || !Process || !MC ) {
+    if (!Division || !PartNo  || !Process || !MC ) {
       return res.status(400).json({ error: "Missing PartNo parameter" });
     }
 
@@ -169,7 +153,7 @@ exports.Post_ITEMNO = async (req, res) => {
       .input("Spec", req.body.Spec)
       .input("PROCESS", req.body.Process)
       .input("MC", req.body.MC)
-      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset]  @Division,@PartNo, @Spec, @PROCESS, @MC ");
+      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset_QTY]  @Division,@PartNo, @Spec, @PROCESS, @MC ");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -182,6 +166,49 @@ exports.Post_ITEMNO = async (req, res) => {
   }
 };
 
+// ตัวอย่างข้อมูลที่ใช้ในการดึง แบบget
+// exports.Get_PartNo = async (req, res) => {
+//   try {
+//     const pool = await poolPromise;
+//     const result = await pool
+//     .request()
+//     .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset]");
+
+//     res.json(result.recordset);
+//   } 
+//   catch (error) {
+//     console.error("Error executing query:", error.stack);
+//     res.status(500).json({ error: "Internal Server Error", details: error.message });
+//   }
+// };
+
+// ดึงข้อมูลแบบ รับข้อมูลลงมาด้วย
+// exports.Get_PartNo = async (req, res) => {
+//   console.log(req);
+//   try {
+//     const { Division }= req.body;
+//     console.log( Division );
+
+//     if (!Division) {
+//       return res.status(400).json({ error: "Missing PartNo parameter" });
+//     }
+
+//     const pool = await poolPromise;
+//     const result = await pool
+//       .request()
+//       .input("Division", req.body.Division)
+//       .query("EXEC [dbo].[stored_IssueCuttingTool_ToolsDataset] @Division");
+
+//     if (result.recordset.length === 0) {
+//       return res.status(404).json({ message: "Spec not found for this PartNo" });
+//     } else {
+//       res.json(result.recordset);
+//     }    
+//   } catch (error) {
+//     console.error("Error executing query:", error.stack);
+//     res.status(500).json({ error: "Internal Server Error", details: error.message });
+//   }
+// };
 
 // exports.Post_ITEMNO = async (req, res) => {
 //   console.log(req.body);

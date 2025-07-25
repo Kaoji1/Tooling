@@ -62,7 +62,8 @@
       border-collapse: collapse;
       margin-top: 20px;
       color: #4a4949;
-
+      table-layout:fixed;
+      font-size: 14px;
       th,
       td {
         padding: 6px;
@@ -76,24 +77,43 @@
         font-size: 16px;
         font-weight: 100;
       }
+       input[type="number"]
+         {
+          height: 30px;                // ลดความสูง
+          font-size: 12px;             // ลดขนาดตัวอักษร
+          padding: 2px 4px;            // ลด padding
+          width: 50px;                 // ให้เต็ม cell
+          box-sizing: border-box;  
+           margin-left: 10px;    // ป้องกันล้น cell
+        }
+        input[type="date"]
+        {
+          height: 30px;                // ลดความสูง
+          font-size: 12px;             // ลดขนาดตัวอักษร
+          padding: 2px 4px;            // ลด padding
+          width: 105px;                 // ให้เต็ม cell
+          box-sizing: border-box;  
+          margin-left: 20px;    // ป้องกันล้น cell
+        }
         // ปุ่มในตารางแต่ละปุ่ม
         .Insert{
           background-color: rgb(0, 6, 128);
-          padding: 3px;
+          padding: 4px;
           border: none;
           border-radius: 5px;
           i {
             font-size: 16px;
             color: white;
+            padding: 5px;
           }
         }
         .edit{
           background-color: green;
-          padding: 3px;
+          padding: 2px;
           border: none;
           border-radius: 5px;
           i {
-            font-size: 16px;
+            font-size: 12px;
             color: white;
           }
         }
@@ -107,6 +127,7 @@
             color: white;
           }
         } 
+       
         
       } //table
     }

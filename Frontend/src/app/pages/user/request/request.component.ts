@@ -50,8 +50,9 @@ export class requestComponent {
 
   // Form fields
   phone_: string = '';
-  DueDate_: string = '';
+  DueDate_: any=[];
   today_: string = '';
+  InputDate_:string='';
 
   // Table data
   items: any= [];// array เก่าวแปรสำหรับเก็บรายการข้อมูล (items) ที่มีอยู่แล้ว
@@ -162,32 +163,32 @@ async get_PARTNO(event: any) {
   //     error: (e: any) => console.error(e),
   //   });
   // }
-async get_SPEC(event:any) {
-    console.log(event); // แสดงค่าที่ได้รับใน console
-    // เช็คว่า event.value มีค่าหรือไม่
-    if (event.PartNo !== undefined) {
-      // เรียก API เพื่อส่งข้อมูลไปยัง SQL
-      const data = {
-        Division:event.Division,
-        PartNo: event.PartNo
+// async get_SPEC(event:any) {
+//     console.log(event); // แสดงค่าที่ได้รับใน console
+//     // เช็คว่า event.value มีค่าหรือไม่
+//     if (event.PartNo !== undefined) {
+//       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+//       const data = {
+//         Division:event.Division,
+//         PartNo: event.PartNo
         
-      }
-      console.log(data);
-      this.api.get_SPEC(data).subscribe({
-        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
-        next: (response) => {
-          if (response.length > 0) {
-            this.spec = response;
+//       }
+//       console.log(data);
+//       this.api.get_SPEC(data).subscribe({
+//         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
+//         next: (response) => {
+//           if (response.length > 0) {
+//             this.spec = response;
             
-            // แสดงผลลัพธ์ใน console
-            console.log(response);
-          }
-        },
-        // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
-        error: (e) => console.error(e),
-      });
-    }
-  }
+//             // แสดงผลลัพธ์ใน console
+//             console.log(response);
+//           }
+//         },
+//         // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+//         error: (e) => console.error(e),
+//       });
+//     }
+//   }
   // async get_SPEC(event:any) {
   //   console.log(event); // แสดงค่าที่ได้รับใน console
   //   // เช็คว่า event.value มีค่าหรือไม่
@@ -222,16 +223,15 @@ async get_SPEC(event:any) {
       console.log(data);
       this.api.get_Process(data).subscribe({
         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
-        next: (response) => {
-          if (response.length > 0) {
-            this.Process = response;
-            // แสดงผลลัพธ์ใน console
-            console.log(response);
-          }
-        },
-        // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
-        error: (e) => console.error(e),
-      });
+      next: (response: any[]) => {
+        // กรอง PartNo ไม่ให้ซ้ำ
+        this.Process = response.filter((item, index, self) =>
+          index === self.findIndex(obj => obj.Process === item.Process)
+        );
+        console.log(this.Process);
+      },
+      error: (e) => console.error(e),
+    });
     }
   }
 
@@ -250,16 +250,15 @@ async get_SPEC(event:any) {
       console.log(data);
       this.api.get_MC(data).subscribe({
         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_machinetype
-        next: (response) => {
-          if (response.length > 0) {
-            this.MachineType = response;
-            // แสดงผลลัพธ์ใน console
-            console.log(response);
-          }
-        },
-        // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
-        error: (e) => console.error(e),
-      });
+       next: (response: any[]) => {
+        // กรอง PartNo ไม่ให้ซ้ำ
+        this.MachineType = response.filter((item, index, self) =>
+          index === self.findIndex(obj => obj.MachineType === item.MachineType)
+        );
+        console.log(this.MachineType);
+      },
+      error: (e) => console.error(e),
+    });
     }
   }
 
@@ -280,7 +279,7 @@ Setview() {
   console.log('MC:', MC);
 
   if (PartNo && Process && MC && Division !== undefined) {
-    const data = { Division, PartNo, Spec ,Process, MC };
+    const data = { Division, PartNo, Process, MC };
 
     this.api.post_ITEMNO(data).subscribe({
       next: (response) => {
@@ -420,14 +419,13 @@ AddToCart() {
     alert('กรุณากรอกข้อมูลให้ครบในรายการที่เลือก');
     return; // หยุดถ้ายังกรอกไม่ครบ
   }
-
+const InputDate_ = new Date().toISOString().split('T')[0];
   // สร้างอาเรย์ใหม่จากข้อมูลที่กรองแล้ว
 const newArray = filteredItems.map((item:any) => ({
   Doc_no: null,
   Division: this.Div_,
   Factory: this.Fac_,
-  Date_of_Req: null,
-  ItemNo : item.ItemNo ,
+  ITEM_NO : item.ITEM_NO ,
   PartNo: item.PartNo,
   Process: item.Process,
   Case_:this.Case_,
@@ -435,6 +433,8 @@ const newArray = filteredItems.map((item:any) => ({
   SPEC: item.SPEC,
   Usage_pcs: item.Usage_pcs,
   QTY: item.QTY,
+  InputDate_:InputDate_,
+  DueDate_:this.DueDate_,
   ReuseQty :item.ReuseQty ,
   FreshQty:item.FreshQty,
   Status: null,
@@ -444,6 +444,8 @@ const newArray = filteredItems.map((item:any) => ({
 
   // ส่งข้อมูลไปเก็บใน CartService
   this.cartService.addItems(newArray);
+  alert('เพิ่มข้อมูลลงในตะกร้าแล้ว');
+  this.Clearall();
 }
 
 // function clearall

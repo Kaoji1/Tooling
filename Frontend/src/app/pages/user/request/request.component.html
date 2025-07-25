@@ -78,11 +78,11 @@
               bindLabel="PartNo"
               [(ngModel)]="PartNo_"
               [virtualScroll]="true"
-              (ngModelChange)="get_SPEC($event)"
+              (ngModelChange)="get_Process($event)"
               placeholder="Select  partNo">
             </ng-select>
           </div>
-          <div class="group-select">
+          <!-- <div class="group-select">
                 <label > Spec </label>
                 <ng-select style="width: 280px;"
                   [items]="spec"
@@ -92,7 +92,7 @@
                   (ngModelChange)="get_Process($event)"
                   placeholder="Select Spec">
                 </ng-select>
-          </div>
+          </div> -->
           <div class="group-select">
             <label> Process </label>
             <ng-select
@@ -142,7 +142,7 @@
         <th>Spec</th>
         <th>Process</th>
         <th>Machine Type</th>
-        <th>FacilityName</th>
+     
         <th>FreshQty</th>
         <th>ReuseQty</th>
         <th>QTY</th>
@@ -158,13 +158,13 @@
 
     <tbody *ngIf="Case_ === 'setup' && items.length > 0">
       <tr *ngFor="let item of items">
-        <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
+        <td><input type="checkbox" [(ngModel)]="item.checked"  /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+       
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty  }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
@@ -176,11 +176,11 @@
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+       
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
@@ -192,11 +192,11 @@
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+      
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
@@ -208,11 +208,11 @@
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+      
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
@@ -224,11 +224,11 @@
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+      
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
@@ -240,11 +240,11 @@
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+     
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
@@ -256,11 +256,11 @@
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+       
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
@@ -272,11 +272,11 @@
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+     
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
@@ -288,11 +288,11 @@
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+       
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
@@ -304,11 +304,11 @@
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+        
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
@@ -320,11 +320,11 @@
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+       
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
@@ -336,11 +336,11 @@
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked" /></td>
         <td>{{ item.PartNo }}</td>
-        <td>{{ item.ItemNo }}</td>
+        <td>{{ item.ITEM_NO }}</td>
         <td>{{ item.SPEC }}</td>
         <td>{{ item.Process }}</td>
         <td>{{ item.MC }}</td>
-        <td>{{ item.FacilityName }}</td>
+        
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty }}</td>
         <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
