@@ -42,13 +42,7 @@ export class CartComponent implements OnInit {
     alert('บันทึกข้อมูลเรียบร้อยแล้ว');
   }
 
-  cancelEdit() {
-    if (this.editingIndex !== null && this.originalItem) {
-      this.cartItems[this.editingIndex] = { ...this.originalItem };
-      this.editingIndex = null;
-      this.originalItem = null;
-    }
-  }
+
 
   removeItem(index: number) {
     const confirmed = confirm('ต้องการลบรายการนี้หรือไม่?');

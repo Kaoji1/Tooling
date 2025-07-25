@@ -55,7 +55,7 @@
                             <!-- QTY -->
                             <td>
                                 <ng-container *ngIf="editingIndex === i; else showQty">
-                                <input [(ngModel)]="item.qty" type="number" min="1" class="form-control" />
+                                <input [(ngModel)]="item.QTY" type="number" min="1" class="form-control" />
                                 </ng-container>
                                 <ng-template #showQty>{{ item.QTY }}</ng-template>
                             </td>
@@ -64,14 +64,14 @@
                             {{ item.Case_ }}
                             </td>
 
-                            <td>{{ item.setupDate }}</td>
+                            <td>{{ item.InputDate_ }}</td>
 
                             <!-- Due Date -->
                             <td>
                                 <ng-container *ngIf="editingIndex === i; else showDueDate">
-                                <input [(ngModel)]="item.inputDate" type="date" class="form-control" />
+                                <input [(ngModel)]="item.DueDate_" type="date" class="form-control" />
                                 </ng-container>
-                                <ng-template #showDueDate>{{ item.inputDate | date:'yyyy-MM-dd' }}</ng-template>
+                                <ng-template #showDueDate>{{ item.DueDate_ | date:'yyyy-MM-dd' }}</ng-template>
                             </td>
 
                             <!-- Insert -->
@@ -93,7 +93,7 @@
 
                                 <!-- ปุ่ม Save + Cancel -->
                                 <div *ngIf="editingIndex === i" class="d-flex gap-1">
-                                    <button class="btn btn-success btn-sm px-1 py-0" type="button" (click)="saveEdit(i)">
+                                    <button class="btn btn-success btn-sm px-1 py-0" type="button" (click)="saveEdit(i)" style="height: 45px;">
                                         <i class="bi bi-check-lg"></i> Save
                                     </button>
                                     

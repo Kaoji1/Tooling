@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';  // <-- เพิ่มตรงนี้
-
+import { CartService } from '../../core/services/cart.service';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -11,15 +11,19 @@ import { CommonModule } from '@angular/common';  // <-- เพิ่มตรง
   styleUrls: ['./sidebar.component.scss']
 })
 export class SidebarComponent implements OnInit { // เพิ่ม implements OnInit
-  constructor(private router: Router) {}
+  constructor(private router: Router,
+    private cartService: CartService
+  ) {}
 
   imagePath = 'assets/images/1.png';
 
   cartCount: number = 0;
 
-  ngOnInit() {
-    this.updateCartCount();
-  }
+ ngOnInit() {
+  this.cartService.cartCount$.subscribe(count => {
+    this.cartCount = count;
+  });
+}
 
   updateCartCount() {
   const cartData = sessionStorage.getItem('cart');

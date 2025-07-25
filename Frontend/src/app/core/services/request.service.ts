@@ -25,21 +25,22 @@ export class RequestService {
     return this.httpClient.post(`${baseUrl}/get_PARTNO`, data); // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
   }
 
-  get_SPEC(data: any): Observable<any> {
-    return this.httpClient.post(`${baseUrl}/get_SPEC`, data);
-  }
+
 
   get_Process(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
     return this.httpClient.post(`${baseUrl}/get_Process`, data) ;// ส่ง HTTP POST request เพื่อส่งข้อมูล process
   }
 
   get_MC(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
-    return this.httpClient.post(`${baseUrl}/get_MC`, data); // ส่ง HTTP POST request เพื่อส่งข้อมูล process
+    return this.httpClient.post(`${baseUrl}/get_MC`, data) ;// ส่ง HTTP POST request เพื่อส่งข้อมูล process
   }
+ 
 
   post_ITEMNO(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
     return this.httpClient.post(`${baseUrl}/post_ITEMNO`, data); // ส่ง HTTP POST request เพื่อส่งข้อมูล process
   }
 
-  
+    // get_SPEC(data: any): Observable<any> {
+  //   return this.httpClient.post(`${baseUrl}/get_SPEC`, data);
+  // }
 }

@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
-
+import { BehaviorSubject } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
   private items: any[] = [];
+  private cartCountSubject = new BehaviorSubject<number>(0);
+  cartCount$ = this.cartCountSubject.asObservable();
 
   constructor() {
     // โหลดข้อมูลจาก sessionStorage ถ้ามี
@@ -16,11 +18,11 @@ export class CartService {
     return this.items;
   }
 
-  addItems(newItems: any[]) {
-    // เพิ่มข้อมูลใหม่เข้า items
-    this.items = [...this.items, ...newItems];
-    this.saveToSession();
-  }
+ addItems(newItems: any[]) {
+  this.items = [...this.items, ...newItems];
+  this.saveToSession();
+  this.cartCountSubject.next(this.items.length); 
+}
 
   removeItem(index: number) {
     this.items.splice(index, 1);
