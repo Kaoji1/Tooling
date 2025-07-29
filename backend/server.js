@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser')
-const routes = require('./src/routes/index.route.js'); // Import the routes
+const routes = require('./src/routes/Request.route.js'); // Import the routes
 
 // Create Instance and Express application
 const app = express();
