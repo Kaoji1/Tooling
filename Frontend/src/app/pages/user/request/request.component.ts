@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RequestService,  } from '../../../core/services/request.service';
-import { CartService } from '../../../core/services/cart.service';
+import { CartService, RequestItemGroup } from '../../../core/services/cart.service';
 
 
 @Component({
@@ -410,41 +410,50 @@ Setview() {
 
 // function add to cart
 AddToCart() {
-  // กรองเฉพาะรายการที่ถูกเลือก (checked) และกรอก Qty
   const checkedItems = this.items.filter((item: { checked: any; }) => item.checked);
   const filteredItems = checkedItems.filter((item: { QTY: any; }) => item.QTY);
 
-  // เช็คว่ากรอก Qty ครบทุกตัวที่เลือกไว้หรือไม่
   if (filteredItems.length < checkedItems.length) {
     alert('กรุณากรอกข้อมูลให้ครบในรายการที่เลือก');
-    return; // หยุดถ้ายังกรอกไม่ครบ
+    return;
   }
-const InputDate_ = new Date().toISOString().split('T')[0];
-  // สร้างอาเรย์ใหม่จากข้อมูลที่กรองแล้ว
-const newArray = filteredItems.map((item:any) => ({
-  Doc_no: null,
-  Division: this.Div_,
-  Factory: this.Fac_,
-  ITEM_NO : item.ITEM_NO ,
-  PartNo: item.PartNo,
-  Process: item.Process,
-  Case_:this.Case_,
-  MC: item.MC,
-  SPEC: item.SPEC,
-  Usage_pcs: item.Usage_pcs,
-  QTY: item.QTY,
-  InputDate_:InputDate_,
-  DueDate_:this.DueDate_,
-  ReuseQty :item.ReuseQty ,
-  FreshQty:item.FreshQty,
-  Status: null,
-  Set_by: null,
-  Local: 0,
-}));
 
-  // ส่งข้อมูลไปเก็บใน CartService
-  this.cartService.addItems(newArray);
-  alert('เพิ่มข้อมูลลงในตะกร้าแล้ว');
+  const InputDate_ = new Date().toISOString().split('T')[0];
+
+  const itemList = filteredItems.map((item: any) => ({
+    Doc_no: null,
+    Division: this.Div_,
+    Factory: this.Fac_,
+    ITEM_NO: item.ITEM_NO,
+    PartNo: item.PartNo,
+    Process: item.Process,
+    Case_: this.Case_,
+    MC: item.MC,
+    SPEC: item.SPEC,
+    Usage_pcs: item.Usage_pcs,
+    QTY: item.QTY,
+    InputDate_: InputDate_,
+    DueDate_: this.DueDate_,
+    ReuseQty: item.ReuseQty,
+    FreshQty: item.FreshQty,
+    Status: null,
+    Set_by: null,
+    Local: 0,
+  }));
+
+  //  กลุ่มใหม่
+  const group: RequestItemGroup = {
+    id: Date.now().toString(), // หรือ UUID ก็ได้
+    Division: this.Div_,
+    Factory: this.Fac_,
+    Case_: this.Case_,
+    DueDate_: this.DueDate_,
+    items: itemList
+  };
+
+  //  ส่งกลุ่มเดียวไปเก็บ
+  this.cartService.addGroup(group);
+  alert('เพิ่มข้อมูลเป็นกลุ่มลงในตะกร้าแล้ว');
   this.Clearall();
 }
 

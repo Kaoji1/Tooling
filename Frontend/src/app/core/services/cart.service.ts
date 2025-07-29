@@ -1,45 +1,62 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+
+export interface RequestItemGroup {
+  id: string;
+  Division: string;
+  Factory: string;
+  Case_: string;
+  DueDate_: string;
+  items: any[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  private items: any[] = [];
+  private groups: RequestItemGroup[] = [];
   private cartCountSubject = new BehaviorSubject<number>(0);
   cartCount$ = this.cartCountSubject.asObservable();
 
   constructor() {
-    // โหลดข้อมูลจาก sessionStorage ถ้ามี
     const saved = sessionStorage.getItem('cart');
-    this.items = saved ? JSON.parse(saved) : [];
+    this.groups = saved ? JSON.parse(saved) : [];
+    this.cartCountSubject.next(this.groups.length); // count = จำนวนกลุ่ม
   }
 
-  getItems() {
-    return this.items;
+  /** ดึงรายการทั้งหมดเป็นกลุ่ม */
+  getGroups(): RequestItemGroup[] {
+    return this.groups;
   }
 
- addItems(newItems: any[]) {
-  this.items = [...this.items, ...newItems];
-  this.saveToSession();
-  this.cartCountSubject.next(this.items.length); 
-}
+  /**เพิ่มกลุ่มใหม่ */
+  addGroup(newGroup: RequestItemGroup) {
+    this.groups.push(newGroup);
+    this.saveToSession();
+    this.cartCountSubject.next(this.groups.length);
+  }
 
-  removeItem(index: number) {
-    this.items.splice(index, 1);
+  /**ลบกลุ่มตาม index */
+  removeGroup(index: number) {
+    this.groups.splice(index, 1);
+    this.saveToSession();
+    this.cartCountSubject.next(this.groups.length);
+  }
+
+  /** อัปเดตกลุ่ม */
+  updateGroup(index: number, group: RequestItemGroup) {
+    this.groups[index] = group;
     this.saveToSession();
   }
 
-  updateItem(index: number, item: any) {
-    this.items[index] = item;
-    this.saveToSession();
-  }
-
+  /**ล้างตะกร้าทั้งหมด */
   clearCart() {
-    this.items = [];
+    this.groups = [];
     this.saveToSession();
+    this.cartCountSubject.next(0);
   }
 
   private saveToSession() {
-    sessionStorage.setItem('cart', JSON.stringify(this.items));
+    sessionStorage.setItem('cart', JSON.stringify(this.groups));
   }
 }
