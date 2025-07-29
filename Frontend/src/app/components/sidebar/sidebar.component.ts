@@ -20,9 +20,9 @@ export class SidebarComponent implements OnInit { // เพิ่ม implements 
   cartCount: number = 0;
 
  ngOnInit() {
-  this.cartService.cartCount$.subscribe(count => {
-    this.cartCount = count;
-  });
+  // this.cartService.cartCount$.subscribe(count => {
+  //   this.cartCount = count;
+  // });
 }
 
   updateCartCount() {

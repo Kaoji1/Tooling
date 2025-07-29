@@ -4,42 +4,46 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class CartService {
-  private items: any[] = [];
-  private cartCountSubject = new BehaviorSubject<number>(0);
-  cartCount$ = this.cartCountSubject.asObservable();
+  private groupedCart: { [case_: string]: any[] } = {};
 
   constructor() {
-    // โหลดข้อมูลจาก sessionStorage ถ้ามี
-    const saved = sessionStorage.getItem('cart');
-    this.items = saved ? JSON.parse(saved) : [];
+    const saved = sessionStorage.getItem('groupedCart');
+    this.groupedCart = saved ? JSON.parse(saved) : {};
   }
 
-  getItems() {
-    return this.items;
+  getGroupedCart() {
+    return this.groupedCart;
   }
 
- addItems(newItems: any[]) {
-  this.items = [...this.items, ...newItems];
-  this.saveToSession();
-  this.cartCountSubject.next(this.items.length); 
-}
-
-  removeItem(index: number) {
-    this.items.splice(index, 1);
-    this.saveToSession();
+  addGroupedItems(newGroups: { [case_: string]: any[] }) {
+    for (const caseKey in newGroups) {
+      if (!this.groupedCart[caseKey]) {
+        this.groupedCart[caseKey] = [];
+      }
+      this.groupedCart[caseKey].push(...newGroups[caseKey]);
+    }
+    this.save();
   }
 
-  updateItem(index: number, item: any) {
-    this.items[index] = item;
-    this.saveToSession();
+  removeItem(case_: string, index: number) {
+    this.groupedCart[case_].splice(index, 1);
+    if (this.groupedCart[case_].length === 0) {
+      delete this.groupedCart[case_];
+    }
+    this.save();
   }
 
-  clearCart() {
-    this.items = [];
-    this.saveToSession();
+  updateItem(case_: string, index: number, newItem: any) {
+    this.groupedCart[case_][index] = newItem;
+    this.save();
   }
 
-  private saveToSession() {
-    sessionStorage.setItem('cart', JSON.stringify(this.items));
+  clearAll() {
+    this.groupedCart = {};
+    sessionStorage.removeItem('groupedCart');
+  }
+
+  private save() {
+    sessionStorage.setItem('groupedCart', JSON.stringify(this.groupedCart));
   }
 }

@@ -15,42 +15,31 @@ import { Router } from '@angular/router';
   styleUrl: './cart.component.scss'
 })
 export class CartComponent implements OnInit {
-  cartItems: any[] = [];
-  editingIndex: number | null = null;
-  originalItem: any = null;
+  groupedCart: { [case_: string]: any[] } = {};
+  editingIndex: { [case_: string]: number | null } = {};
 
-  constructor(private cartService: CartService, private router: Router) {}
+  constructor(private cartService: CartService) {}
 
-  ngOnInit() {
-    this.loadCart();
-  }
-
-  loadCart() {
-    // ดึงข้อมูลตะกร้าจาก CartService
-    this.cartItems = this.cartService.getItems();
-  }
-
-  startEdit(index: number) {
-    this.editingIndex = index;
-    this.originalItem = { ...this.cartItems[index] };
-  }
-
-  saveEdit(index: number) {
-    this.editingIndex = null;
-    this.originalItem = null;
-    this.cartService.updateItem(index, this.cartItems[index]);
-    alert('บันทึกข้อมูลเรียบร้อยแล้ว');
-  }
-
-
-
-  removeItem(index: number) {
-    const confirmed = confirm('ต้องการลบรายการนี้หรือไม่?');
-    if (confirmed) {
-      this.cartService.removeItem(index);
-      this.loadCart();
-      alert('ลบรายการเรียบร้อยแล้ว');
+  ngOnInit(): void {
+    this.groupedCart = this.cartService.getGroupedCart();
+    for (const case_ in this.groupedCart) {
+      this.editingIndex[case_] = null;
     }
+  }
+
+  startEdit(case_: string, index: number) {
+    this.editingIndex[case_] = index;
+  }
+
+  saveEdit(case_: string, index: number) {
+    const item = this.groupedCart[case_][index];
+    this.cartService.updateItem(case_, index, item);
+    this.editingIndex[case_] = null;
+  }
+
+  removeItem(case_: string, index: number) {
+    this.cartService.removeItem(case_, index);
+    this.groupedCart = this.cartService.getGroupedCart();
   }
 }
 // เทสสร้างDoc

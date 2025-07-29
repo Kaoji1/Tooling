@@ -10,107 +10,96 @@
       </div>
                 
                 <p>all your request in here</p>
-        <div class="masterform-group">
+        
+             <!-- table -->
+                 <div class="table-responsive">
+  <table class="table table-bordered text-center">
+    <!-- ✅ thead ตัวเดียว -->
+    <thead class="table-dark sticky-top">
+      <tr>
+        <th>#</th>
+        <th>Part No.</th>
+        <th>Spec</th>
+        <th>Process</th>
+        <th>MC</th>
+        <th>FreshQty</th>
+        <th>ReuseQty</th>
+        <th>QTY</th>
+        <th>Due Date</th>
+        <th>Insert</th>
+        <th>Edit</th>
+        <th>Del</th>
+      </tr>
+    </thead>
 
-           
-        </div>
-            <!-- table -->
-                <div class="table-responsive">
-                <table class="table table-bordered text-center"  >
-                    <thead>
-                        <tr>
-                            <th style="width: 20px;">#</th>
-                            <th style="width: 150px;">Part No.</th>
-                            <!-- <th style="width: 150px;">Item No.</th> -->
-                            <th style="width: 280px;">Spec</th>
-                            <th style="width: 150px;">Process</th>
-                            <th style="width: 150px;" >Machine Type</th>
-                            <th style="width: 80px;">FreshQty</th>
-                            <th style="width: 80px;" >ReuseQty</th>
-                            <th style="width: 80px;" >QTY.</th>
-                            <th style="width: 100px;" >Case</th>
-                            
-                            <th style="width: 150px;">Due Date</th>
-                            <th style="width: 80px;" >Insert</th>
-                            <th style="width: 80px;">Edit</th>
-                            <th style="width: 80px;">Del</th>
-                        </tr>
-                        
-                    </thead>
-                    <tbody>
-                       <tr *ngIf="!cartItems || cartItems.length === 0">
-                            <td colspan="15" class="text-center text-muted">ยังไม่มีข้อมูล</td>
-                        </tr>
-                       <tr *ngFor="let item of cartItems; let i = index">
-                            <td>{{ i + 1 }}</td>
-                            <td>{{ item.PartNo }}</td>
-                            <!-- <td>{{ item.ITEM_NO }}</td> -->
-                            <td>{{ item.SPEC }}</td>
-                            <td>{{ item.Process }}</td>
-                            <td>{{ item.MC }}</td>
-                            <td>{{ item.FreshQty }}</td>
-                            <td>{{ item.ReuseQty }}</td>
-                            
+    <!-- ✅ tbody เดียว ใช้ ng-container วนกลุ่ม -->
+    <tbody>
+      <ng-container *ngFor="let caseKey of (groupedCart | keyvalue)">
+        <!-- ✅ แสดงหัวกลุ่ม Case -->
+        <tr class="table-secondary">
+          <td colspan="12" class="text-start fw-bold">Case: {{ caseKey.key }}</td>
+        </tr>
 
-                            <!-- QTY -->
-                            <td>
-                                <ng-container *ngIf="editingIndex === i; else showQty">
-                                <input [(ngModel)]="item.QTY" type="number" min="1" class="form-control" />
-                                </ng-container>
-                                <ng-template #showQty>{{ item.QTY }}</ng-template>
-                            </td>
+        <!-- ✅ แสดงรายการแต่ละกลุ่ม -->
+        <tr *ngFor="let item of caseKey.value; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ item.PartNo }}</td>
+          <td>{{ item.SPEC }}</td>
+          <td>{{ item.Process }}</td>
+          <td>{{ item.MC }}</td>
+          <td>{{ item.FreshQty }}</td>
+          <td>{{ item.ReuseQty }}</td>
 
-                           <td>
-                            {{ item.Case_ }}
-                            </td>
+          <!-- QTY -->
+          <td>
+            <ng-container *ngIf="editingIndex[caseKey.key] === i; else showQty">
+              <input [(ngModel)]="item.QTY" type="number" class="form-control" />
+            </ng-container>
+            <ng-template #showQty>{{ item.QTY }}</ng-template>
+          </td>
 
-                          
+          <!-- Due Date -->
+          <td>
+            <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDueDate">
+              <input [(ngModel)]="item.DueDate_" type="date" class="form-control" />
+            </ng-container>
+            <ng-template #showDueDate>
+              {{ item.DueDate_ ? (item.DueDate_ | date:'yyyy-MM-dd') : '-' }}
+            </ng-template>
+          </td>
 
-                            <!-- Due Date -->
-                            <td>
-                                <ng-container *ngIf="editingIndex === i; else showDueDate">
-                                <input [(ngModel)]="item.DueDate_" type="date" class="form-control" />
-                                </ng-container>
-                                <ng-template #showDueDate>{{ item.DueDate_ | date:'yyyy-MM-dd' }}</ng-template>
-                            </td>
+          <!-- Insert -->
+          <td>
+            <button class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-arrow-down-left-square"></i>
+            </button>
+          </td>
 
-                            <!-- Insert -->
-                            <td>
-                                <button class="Insert btn btn-outline-primary btn-sm" type="button">
-                                <i class="bi bi-arrow-down-left-square"></i>
-                                </button>
-                            </td>
+          <!-- Edit / Save -->
+          <td>
+            <button *ngIf="editingIndex[caseKey.key] !== i"
+                    class="btn btn-primary btn-sm"
+                    (click)="startEdit(caseKey.key, i)">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            <button *ngIf="editingIndex[caseKey.key] === i"
+                    class="btn btn-success btn-sm"
+                    (click)="saveEdit(caseKey.key, i)">
+              <i class="bi bi-check-lg"></i>
+            </button>
+          </td>
 
-                            <!-- Edit / Save / Cancel -->
-                            <td>
-                                <!-- ปุ่ม Edit -->
-                                <button *ngIf="editingIndex !== i"
-                                        class="btn btn-primary btn-sm"
-                                        type="button"
-                                        (click)="startEdit(i)">
-                                <i class="bi bi-pencil-square"></i>
-                                </button>
-
-                                <!-- ปุ่ม Save + Cancel -->
-                                <div *ngIf="editingIndex === i" class="d-flex gap-1">
-                                    <button class="btn btn-success btn-sm px-1 py-0" type="button" (click)="saveEdit(i)" style="height: 35px;">
-                                        <i class="bi bi-check-lg"></i> Save
-                                    </button>
-                                    
-                                </div>
-                            </td>
-
-                            <!-- Delete -->
-                            <td>
-                                <button class="btn btn-danger btn-sm" type="button" (click)="removeItem(i)">
-                                <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-
-                    </tbody>
-                </table>
-            </div> <!--table-->
+          <!-- Delete -->
+          <td>
+            <button class="btn btn-danger btn-sm" (click)="removeItem(caseKey.key, i)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</div>
             <!-- button sendrequest -->
             <button class="btn-sendrequest" type="button"  >
                     <i class="bi bi-send-fill" ></i>Send Request

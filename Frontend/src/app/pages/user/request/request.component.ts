@@ -428,44 +428,48 @@ Setview() {
 
 // function add to cart
 AddToCart() {
-  // กรองเฉพาะรายการที่ถูกเลือก (checked) และกรอก Qty
-  const checkedItems = this.items.filter((item: { checked: any; }) => item.checked);
-  const filteredItems = checkedItems.filter((item: { QTY: any; }) => item.QTY);
+  const checkedItems = this.items.filter((item: any) => item.checked);
+  const filteredItems = checkedItems.filter((item: any) => item.QTY);
 
-  // เช็คว่ากรอก Qty ครบทุกตัวที่เลือกไว้หรือไม่
   if (filteredItems.length < checkedItems.length) {
     alert('กรุณากรอกข้อมูลให้ครบในรายการที่เลือก');
-    return; // หยุดถ้ายังกรอกไม่ครบ
+    return;
   }
-const InputDate_ = new Date().toISOString().split('T')[0];
-  // สร้างอาเรย์ใหม่จากข้อมูลที่กรองแล้ว
-const newArray = filteredItems.map((item:any) => ({
-  Doc_no: null,
-  Division: this.Div_,
-  Factory: this.Fac_,
-  ITEM_NO : item.ITEM_NO ,
-  PartNo: item.PartNo,
-  Process: item.Process,
-  Case_:this.Case_,
-  MC: item.MC,
-  SPEC: item.SPEC,
-  Usage_pcs: item.Usage_pcs,
-  QTY: item.QTY,
-  InputDate_:InputDate_,
-  DueDate_:this.DueDate_,
-  ReuseQty :item.ReuseQty ,
-  FreshQty:item.FreshQty,
-  Status: null,
-  Set_by: null,
-  Local: 0,
-}));
 
-  // ส่งข้อมูลไปเก็บใน CartService
-  this.cartService.addItems(newArray);
+  const InputDate_ = new Date().toISOString().split('T')[0];
+
+  const groupedByCase = filteredItems.reduce((acc: any, item: any) => {
+    const caseKey = item.Case_ || this.Case_;
+    if (!acc[caseKey]) acc[caseKey] = [];
+
+    acc[caseKey].push({
+      Doc_no: null,
+      Division: this.Div_,
+      Factory: this.Fac_,
+      ITEM_NO: item.ITEM_NO,
+      PartNo: item.PartNo,
+      Process: item.Process,
+      Case_: caseKey,
+      MC: item.MC,
+      SPEC: item.SPEC,
+      Usage_pcs: item.Usage_pcs,
+      QTY: item.QTY,
+      InputDate_: InputDate_,
+      DueDate_: this.DueDate_,
+      ReuseQty: item.ReuseQty,
+      FreshQty: item.FreshQty,
+      Status: null,
+      Set_by: null,
+      Local: 0,
+    });
+    return acc;
+  }, {});
+
+  // ส่งไปยัง cartService
+  this.cartService.addGroupedItems(groupedByCase);
   alert('เพิ่มข้อมูลลงในตะกร้าแล้ว');
   this.Clearall();
 }
-
 // function clearall
 Clearall() {
   // Delete select group
