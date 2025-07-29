@@ -1,0 +1,147 @@
+// ทั้งหน้า
+.cart-layout {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  background-color: rgb(255, 255, 255);
+    // ทั้งหน้าเเละตัวข้อมูล
+    .main{
+    width: 100%;
+    height: 100%;
+    display: block;
+    flex-direction: column;
+    align-items: start;
+    padding: 20px;
+    background-color: white;
+    
+    .masterform-group {
+      display: flex;
+      .form-group {
+        display: block;
+        justify-content: space-around;
+        margin: 10px;
+        
+      }
+    }
+
+   .header {
+      display: flex;
+      justify-content: space-between;
+      flex-direction: row;
+      
+
+      h4 {
+        margin-bottom: 5px;
+
+      }
+
+      .lol {
+        border: none;
+        background-color: white;
+
+        i {
+          color: #000000;
+          font-size: 25px;
+          margin-right: 10px;
+
+        }
+
+      }
+    }
+    p{
+      color: rgb(16, 3, 114);
+      margin-bottom: 20px;
+    }
+    // ตาราง
+   .table-responsive{
+    max-height: 520px;
+    max-width: 1290px;
+       table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      color: #4a4949;
+      table-layout:fixed;
+      font-size: 14px;
+      th,
+      td {
+        padding: 6px;
+        text-align: center;
+        border: 1px solid #D2D2D2;
+      }
+
+      th {
+        background-color: #E3E3E3;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: 100;
+      }
+       input[type="number"]
+         {
+          height: 30px;                // ลดความสูง
+          font-size: 12px;             // ลดขนาดตัวอักษร
+          padding: 2px 4px;            // ลด padding
+          width: 50px;                 // ให้เต็ม cell
+          box-sizing: border-box;  
+           margin-left: 10px;    // ป้องกันล้น cell
+        }
+        input[type="date"]
+        {
+          height: 30px;                // ลดความสูง
+          font-size: 12px;             // ลดขนาดตัวอักษร
+          padding: 2px 4px;            // ลด padding
+          width: 105px;                 // ให้เต็ม cell
+          box-sizing: border-box;  
+          margin-left: 20px;    // ป้องกันล้น cell
+        }
+        // ปุ่มในตารางแต่ละปุ่ม
+        .Insert{
+          background-color: rgb(0, 6, 128);
+          padding: 4px;
+          border: none;
+          border-radius: 5px;
+          i {
+            font-size: 16px;
+            color: white;
+            padding: 5px;
+          }
+        }
+        .edit{
+          background-color: green;
+          padding: 2px;
+          border: none;
+          border-radius: 5px;
+          i {
+            font-size: 12px;
+            color: white;
+          }
+        }
+        .del {
+          background-color: red;
+          padding: 2px;
+          border: none;
+          border-radius: 5px;
+          i {
+            font-size: 16px;
+            color: white;
+          }
+        } 
+       
+        
+      } //table
+    }
+      
+      .btn-sendrequest {
+        margin:20px;
+        background-color: rgb(235, 51, 51);
+        color: white;
+        justify-self:end ;
+        display: block;
+        border: none;
+        border-radius: 20px;
+        font-size: 22px;
+        padding: 12px;
+      }
+    }//main  
+}
