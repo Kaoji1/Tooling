@@ -11,7 +11,9 @@ router.get('/get_Division', ItemlistController.Get_Division);
 
 router.post('/get_PARTNO', ItemlistController.Get_PartNo);
 
-router.post('/get_SPEC', ItemlistController.Get_SPEC);
+router.post('/get_Fac', ItemlistController.Get_Fac);
+
+// router.post('/get_SPEC', ItemlistController.Get_SPEC);
 
 router.post('/get_Process', ItemlistController.Get_Process);
 

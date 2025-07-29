@@ -36,8 +36,8 @@
                 <label > Fac </label>
                 <ng-select
                   [items]="Fac"
-                  bindLabel="label"
-                  bindValue="value"
+                  bindLabel="Fac"
+                  (ngModelChange)="get_Process($event)"
                   [(ngModel)]="Fac_"
                   placeholder="Select a Fac">
                 </ng-select>
@@ -78,7 +78,7 @@
               bindLabel="PartNo"
               [(ngModel)]="PartNo_"
               [virtualScroll]="true"
-              (ngModelChange)="get_Process($event)"
+              (ngModelChange)="get_Fac($event)"
               placeholder="Select  partNo">
             </ng-select>
           </div>

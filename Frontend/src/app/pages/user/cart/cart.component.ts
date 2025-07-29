@@ -4,7 +4,7 @@ import { SidebarComponent } from '../../../components/sidebar/sidebar.component'
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NotificationComponent } from '../../../components/notification/notification.component';
-import { CartService, RequestItemGroup } from '../../../core/services/cart.service';
+import { CartService } from '../../../core/services/cart.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -15,81 +15,42 @@ import { Router } from '@angular/router';
   styleUrl: './cart.component.scss'
 })
 export class CartComponent implements OnInit {
-  groups: RequestItemGroup[] = [];
-  editingGroupIndex: number | null = null;
-  editingItemIndex: number | null = null;
-  editedQty: number | null = null;
+  cartItems: any[] = [];
+  editingIndex: number | null = null;
+  originalItem: any = null;
 
-  constructor(private cartService: CartService) {}
+  constructor(private cartService: CartService, private router: Router) {}
 
   ngOnInit() {
-    this.loadGroups();
+    this.loadCart();
   }
 
-  loadGroups() {
-    this.groups = this.cartService.getGroups();
+  loadCart() {
+    // ดึงข้อมูลตะกร้าจาก CartService
+    this.cartItems = this.cartService.getItems();
   }
 
-  startEditQty(groupIndex: number, itemIndex: number) {
-    this.editingGroupIndex = groupIndex;
-    this.editingItemIndex = itemIndex;
-    this.editedQty = this.groups[groupIndex].items[itemIndex].QTY;
+  startEdit(index: number) {
+    this.editingIndex = index;
+    this.originalItem = { ...this.cartItems[index] };
   }
 
-  saveEditQty() {
-    if (this.editedQty === null || this.editedQty <= 0) {
-      alert('กรุณากรอกจำนวนที่ถูกต้อง');
-      return;
-    }
-    if (this.editingGroupIndex === null || this.editingItemIndex === null) return;
-
-    this.groups[this.editingGroupIndex].items[this.editingItemIndex].QTY = this.editedQty;
-    this.cartService.updateGroup(this.editingGroupIndex, this.groups[this.editingGroupIndex]);
-
-    this.cancelEditQty();
-    alert('บันทึกจำนวนเรียบร้อยแล้ว');
+  saveEdit(index: number) {
+    this.editingIndex = null;
+    this.originalItem = null;
+    this.cartService.updateItem(index, this.cartItems[index]);
+    alert('บันทึกข้อมูลเรียบร้อยแล้ว');
   }
 
-  cancelEditQty() {
-    this.editingGroupIndex = null;
-    this.editingItemIndex = null;
-    this.editedQty = null;
-  }
 
-  removeItem(groupIndex: number, itemIndex: number) {
+
+  removeItem(index: number) {
     const confirmed = confirm('ต้องการลบรายการนี้หรือไม่?');
-    if (!confirmed) return;
-
-    this.groups[groupIndex].items.splice(itemIndex, 1);
-
-    // ถ้ากลุ่มไม่มีรายการแล้ว ให้ลบกลุ่มด้วย
-    if (this.groups[groupIndex].items.length === 0) {
-      this.groups.splice(groupIndex, 1);
+    if (confirmed) {
+      this.cartService.removeItem(index);
+      this.loadCart();
+      alert('ลบรายการเรียบร้อยแล้ว');
     }
-
-    this.cartService.clearCart();
-    this.groups.forEach(g => this.cartService.addGroup(g)); // อัพเดตใหม่ทั้งหมด
-    this.loadGroups();
-
-    alert('ลบรายการเรียบร้อยแล้ว');
-  }
-
-  removeGroup(groupIndex: number) {
-    const confirmed = confirm('ต้องการลบกลุ่มนี้หรือไม่?');
-    if (!confirmed) return;
-
-    this.cartService.removeGroup(groupIndex);
-    this.loadGroups();
-    alert('ลบกลุ่มเรียบร้อยแล้ว');
-  }
-
-  clearAll() {
-    const confirmed = confirm('ต้องการล้างตะกร้าทั้งหมดหรือไม่?');
-    if (!confirmed) return;
-
-    this.cartService.clearCart();
-    this.loadGroups();
-    alert('ล้างตะกร้าทั้งหมดเรียบร้อยแล้ว');
   }
 }
 // เทสสร้างDoc

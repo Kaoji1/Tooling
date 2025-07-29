@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RequestService,  } from '../../../core/services/request.service';
-import { CartService, RequestItemGroup } from '../../../core/services/cart.service';
+import { CartService } from '../../../core/services/cart.service';
 
 
 @Component({
@@ -70,15 +70,7 @@ export class requestComponent {
     // กำหนดตัวเลือกในdropdown
     
 
-    this.Fac = [
-      { label: '1', value: '1' }, // ตัวเลือก Fac ที่ 1
-      { label: '2', value: '2' }, // ตัวเลือก Fac ที่2
-      { label: '3', value: '3' },
-      { label: '4', value: '4' },
-      { label: '5', value: '5' },
-      { label: '6', value: '6' },
-      { label: '7', value: '7' },
-    ];
+    
 
     this.Case = [
       { label: 'SET', value: 'setup' }, // ตัวเลือก Division ที่ 1
@@ -150,6 +142,31 @@ async get_PARTNO(event: any) {
     });
   }
 }
+  async get_Fac(event:any) {
+    console.log(event); // แสดงค่าที่ได้รับใน console
+    // เช็คว่า event.value มีค่าหรือไม่
+    if (event.PartNo !== undefined) {
+      // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+      const data = {
+        Division:event.Division,
+        PartNo: event.PartNo,
+        
+      }
+      console.log(data);
+      this.api.get_Fac(data).subscribe({
+        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
+      next: (response: any[]) => {
+        // กรอง PartNo ไม่ให้ซ้ำ
+        this.Fac = response.filter((item, index, self) =>
+          index === self.findIndex(obj => obj.Fac === item.Fac)
+        );
+        console.log(this.Fac);
+      },
+      error: (e) => console.error(e),
+    });
+    }
+  }
+
   //   Get_PARTNO() {
   //   // เรียก API เพื่อดึงข้อมูล SPEC
   //   this.api.get_PARTNO().subscribe({
@@ -218,7 +235,7 @@ async get_PARTNO(event: any) {
       const data = {
         Division:event.Division,
         PartNo: event.PartNo,
-        Spec:event.SPEC
+        Fac:event.Fac
       }
       console.log(data);
       this.api.get_Process(data).subscribe({
@@ -244,6 +261,7 @@ async get_PARTNO(event: any) {
       const data = {
         Division:event.Division,
         PartNo: event.PartNo,
+        Fac: event.Fac,
         Spec: event.SPEC,
         Process: event.Process
       }
@@ -266,20 +284,20 @@ async get_PARTNO(event: any) {
 
 Setview() {
   const Division = this.Div_?.Division || this.Div_;
-  const factory = this.Fac_;
+  const Fac = this.Fac_?.Fac|| this.Fac_;
   const PartNo = this.PartNo_?.PartNo || this.PartNo_;
   const Spec = this.Spec_?.SPEC|| this.Spec_;
   const Process = this.Process_?.Process || this.Process_;
   const MC = this.MachineType_?.MC || this.MachineType_;
   console.log('division:', Division);
-  console.log('factory:', factory);
+  console.log('factory:', Fac);
   console.log('PartNo:', PartNo);
   console.log('Spec:', Spec);
   console.log('Process:', Process);
   console.log('MC:', MC);
 
-  if (PartNo && Process && MC && Division !== undefined) {
-    const data = { Division, PartNo, Process, MC };
+  if (PartNo && Fac && Process && MC && Division  !== undefined) {
+    const data = { Division, PartNo, Fac, Process, MC };
 
     this.api.post_ITEMNO(data).subscribe({
       next: (response) => {
@@ -410,50 +428,41 @@ Setview() {
 
 // function add to cart
 AddToCart() {
+  // กรองเฉพาะรายการที่ถูกเลือก (checked) และกรอก Qty
   const checkedItems = this.items.filter((item: { checked: any; }) => item.checked);
   const filteredItems = checkedItems.filter((item: { QTY: any; }) => item.QTY);
 
+  // เช็คว่ากรอก Qty ครบทุกตัวที่เลือกไว้หรือไม่
   if (filteredItems.length < checkedItems.length) {
     alert('กรุณากรอกข้อมูลให้ครบในรายการที่เลือก');
-    return;
+    return; // หยุดถ้ายังกรอกไม่ครบ
   }
+const InputDate_ = new Date().toISOString().split('T')[0];
+  // สร้างอาเรย์ใหม่จากข้อมูลที่กรองแล้ว
+const newArray = filteredItems.map((item:any) => ({
+  Doc_no: null,
+  Division: this.Div_,
+  Factory: this.Fac_,
+  ITEM_NO : item.ITEM_NO ,
+  PartNo: item.PartNo,
+  Process: item.Process,
+  Case_:this.Case_,
+  MC: item.MC,
+  SPEC: item.SPEC,
+  Usage_pcs: item.Usage_pcs,
+  QTY: item.QTY,
+  InputDate_:InputDate_,
+  DueDate_:this.DueDate_,
+  ReuseQty :item.ReuseQty ,
+  FreshQty:item.FreshQty,
+  Status: null,
+  Set_by: null,
+  Local: 0,
+}));
 
-  const InputDate_ = new Date().toISOString().split('T')[0];
-
-  const itemList = filteredItems.map((item: any) => ({
-    Doc_no: null,
-    Division: this.Div_,
-    Factory: this.Fac_,
-    ITEM_NO: item.ITEM_NO,
-    PartNo: item.PartNo,
-    Process: item.Process,
-    Case_: this.Case_,
-    MC: item.MC,
-    SPEC: item.SPEC,
-    Usage_pcs: item.Usage_pcs,
-    QTY: item.QTY,
-    InputDate_: InputDate_,
-    DueDate_: this.DueDate_,
-    ReuseQty: item.ReuseQty,
-    FreshQty: item.FreshQty,
-    Status: null,
-    Set_by: null,
-    Local: 0,
-  }));
-
-  //  กลุ่มใหม่
-  const group: RequestItemGroup = {
-    id: Date.now().toString(), // หรือ UUID ก็ได้
-    Division: this.Div_,
-    Factory: this.Fac_,
-    Case_: this.Case_,
-    DueDate_: this.DueDate_,
-    items: itemList
-  };
-
-  //  ส่งกลุ่มเดียวไปเก็บ
-  this.cartService.addGroup(group);
-  alert('เพิ่มข้อมูลเป็นกลุ่มลงในตะกร้าแล้ว');
+  // ส่งข้อมูลไปเก็บใน CartService
+  this.cartService.addItems(newArray);
+  alert('เพิ่มข้อมูลลงในตะกร้าแล้ว');
   this.Clearall();
 }
 
