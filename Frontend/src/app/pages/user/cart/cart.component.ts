@@ -46,59 +46,47 @@ export class CartComponent implements OnInit {
     this.groupedCart = this.cartService.getGroupedCart();
   }
 
-CreateDocByCase() {
+ async CreateDocByCase() {
   if (!this.groupedCart || Object.keys(this.groupedCart).length === 0) {
     alert('ไม่มีรายการในตะกร้า');
     return;
   }
-  const allItemsToSend:any[]=[];
+
+  const allItemsToSend: any[] = [];
   const createdDocs: string[] = [];
-  let docCounter = 1;
 
   for (const caseKey in this.groupedCart) {
     const groupItems = this.groupedCart[caseKey];
     if (groupItems.length === 0) continue;
 
     const firstItem = groupItems[0];
-    const casePart = (firstItem.Case_ || 'XXX').substring(0, 3).toUpperCase();
-    const processPart = (firstItem.Process || 'YYY').substring(0, 3).toUpperCase();
-    const runningNo = docCounter.toString().padStart(3, '0');
-    const docNo = `${casePart}${processPart}${runningNo}`; //สร้าง Doc_no เช่น BURTUR001
+    const case_ = firstItem.Case_;
+    const process = firstItem.Process;
 
-    // ใส่ Doc_no ให้กับทุก item ในกลุ่มนี้
-    groupItems.forEach((item: any) => {
-    item.Doc_no = docNo;
-    item.Division=item.Division.Division;
-    item.Factory=item.Factory.Fac || 0;
-    allItemsToSend.push(item); //รวมทุก item ไว้ในอาร์เรย์เดียว
-  });
+    await this.sendrequestService.GenerateNewDocNo(case_, process).toPromise().then((res) => {
+      const docNo = res.DocNo;
 
-    console.log("send api:",groupItems);
-    //  ส่งข้อมูลไป API ทีละกลุ่ม
-    this.sendrequestService.SendRequest(groupItems).subscribe({
-      next: () => {
-        console.log(` ส่ง ${docNo} สำเร็จ`);
-      },
-      error: (err) => {
-        console.error(` ส่ง ${docNo} ไม่สำเร็จ:, err`);
-      }
+      groupItems.forEach((item: any) => {
+        item.Doc_no = docNo;
+        item.Division = item.Division.Division;
+        item.Factory = item.Factory.Fac || 0;
+        allItemsToSend.push(item);
+      });
+
+      this.sendrequestService.SendRequest(groupItems).subscribe({
+        next: () => console.log(`ส่ง ${docNo} สำเร็จ`),
+        error: (err) => console.error(`ส่ง ${docNo} ไม่สำเร็จ, err`)
+      });
+
+      createdDocs.push(`📄 ${docNo} | ${groupItems.length} รายการ`);
     });
-
-    createdDocs.push(`📄 ${docNo} | รายการ ${groupItems.length} รายการ`);
-    docCounter++;
   }
 
-  //  ล้างตะกร้า
+  //  ล้างตะกร้าหลังส่งเสร็จ
   this.cartService.clearAll();
   this.groupedCart = {};
 
-  // แสดง popup รายชื่อเอกสาร
-  alert(' สร้างและส่งเอกสารแยกตามเคสสำเร็จ:\n\n' + createdDocs.join('\n'));
-}
+  alert('สร้างและส่งเอกสารแยกตามเคสสำเร็จ:\n\n' + createdDocs.join('\n'));
 }
 
-
-
-
-
-
+}

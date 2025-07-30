@@ -121,7 +121,7 @@ exports.Get_Process = async (req, res) => {
       return res.status(400).json({ error: "Missing PartNo parameter" });
     }
 
-    const facInt = parseInt(Fac); // ✅ แปลงตรงนี้
+    const facInt = parseInt(Fac); //  แปลงตรงนี้
 
     if (isNaN(facInt)) {
       return res.status(400).json({ error: "Fac must be a number" });
@@ -156,7 +156,7 @@ exports.Get_Process = async (req, res) => {
     if ( !Division || !PartNo || !Spec || !Process || !Fac) {
       return res.status(400).json({ error: "Missing PartNo parameter" });
     }
-    const facInt = parseInt(Fac); // ✅ แปลงตรงนี้
+    const facInt = parseInt(Fac); //  แปลงตรงนี้
 
     if (isNaN(facInt)) {
       return res.status(400).json({ error: "Fac must be a number" });

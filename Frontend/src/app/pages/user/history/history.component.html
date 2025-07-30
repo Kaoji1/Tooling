@@ -15,62 +15,67 @@
       <div class="form-input">
         <div class="group-select">
           <label for="datesetup">Date </label>
-          <input type="date" id="datesetup">
+          <input type="date" [(ngModel)]="fromDate" placeholder="From Date">
         </div>
         <h6>TO</h6>
         <div class="group-select">
           <label for="duedate">Date</label>
-          <input type="date" id="duedate">
+          <input type="date" [(ngModel)]="toDate" placeholder="To Date">
         </div>
         <div class="group-select">
           <label for="satus">Status</label>
           <app-dropdown-search></app-dropdown-search>
         </div>
-        <div class="group-select">
-          <label for="filter">PartNo</label>
-          <app-dropdown-search></app-dropdown-search>
+      <div class="group-select">
+          <label>PartNo</label>
+          <ng-select
+            [items]="partNoList"
+            bindLabel="label"
+            bindValue="value"
+            [(ngModel)]="selectedPartNo"
+            [virtualScroll]="true"
+            placeholder="Select a PartNo">
+          </ng-select>
         </div>
       </div>
       <div class="btn-group-req">
-        <button class="btn-sort" type="submit"> Sort <i class="bi bi-sort-down"></i></button>
+        <button class="btn-sort" type="button" (click)="onSort()" > Sort <i class="bi bi-sort-down"></i></button>
       </div>
     </div>
     <!-- ตารางที่รับค่ามาจากการกดsend request -->
     <div class="table-responsive">
-      <table class="table table-bordered text-center">
-        <!-- หัวตาราง -->
-        <thead>
-          <tr>
-            <th>No.</th>
-            <th>Doc_Name</th>
-            <th>Division</th>
-            <th>Fac</th>
-            <th>Date</th>
-            <th>Process</th>
-            <th>Status</th>
-            <th>Detail</th>
-
+      <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Doc No</th>
+              <th>Division</th>
+              <th>Fac</th>
+              <th>Part No</th>
+              <th>Process</th>
+              <th>QTY</th>
+              <th>Status</th>
+              <th>Date Request</th>
+            </tr>
+          </thead>
+          <tbody>
+           <tr *ngFor="let item of requests; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ item.DocNo }}</td>
+            <td [ngSwitch]="item.Division">
+              <span *ngSwitchCase="'7122'">GM</span>
+              <span *ngSwitchCase="'71DZ'">PMC</span>
+              <span *ngSwitchDefault>{{ item.Division }}</span>
+            </td>
+            <td>{{ item.Fac }}</td>
+            <td>{{ item.PartNo }}</td>
+            <td>{{ item.Process }}</td>
+            <td>{{ item.QTY }}</td>
+            <td>{{ item.Status }}</td>
+            <td>{{ item.DateRequest | date:'dd/MM/yyyy' }}</td>
           </tr>
-        </thead>
-        <!-- ในตาราง -->
-        <tbody>
-            <tr *ngIf="!docs || docs.length === 0">
-                            <td colspan="8" class="text-center text-muted">ยังไม่มีข้อมูล</td>
-            </tr>
-            <tr *ngFor="let doc of docs; index as i">
-              <td>{{ i + 1 }}</td>
-              <td>{{ doc.doc_no }}</td>
-              <td>{{ doc.division || '-' }}</td>
-              <td>{{ doc.fac || '-' }}</td>
-              <td>{{ doc.date || (doc.createdDate || '-') }}</td>
-              <td>{{ doc.process || 'Waiting' }}</td>
-              <td>{{ doc.status || 'Pending' }}</td>
-              <td>
-                <button class="btn btn-sm btn-outline-primary" >View</button>
-              </td>
-            </tr>
           </tbody>
-      </table>
+        </table>
     </div>
     <!--table-->
 

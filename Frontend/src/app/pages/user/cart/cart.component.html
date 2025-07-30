@@ -8,18 +8,17 @@
         <h4>Cart</h4>
         <app-notification class="noti"></app-notification>
       </div>
-                
-                <p>all your request in here</p>
+      <p>all your request in here</p>
         
-             <!-- table -->
-                 <div class="table-responsive">
-  <table class="table table-bordered text-center">
-    <!-- ✅ thead ตัวเดียว -->
-    <thead class="table-dark sticky-top">
+<!-- table -->
+  <div class="table-responsive">
+    <table class="table table-bordered text-center" >
+    <!--  thead ตัวเดียว -->
+      <thead class="table-dark sticky-top" >
       <tr>
-        <th>#</th>
-        <th>Part No.</th>
-        <th>Spec</th>
+        <th style="width: 50px;">No.</th>
+        <th style="width: 150px;">Part No.</th>
+        <th style="width: 200px;">Spec</th>
         <th>Process</th>
         <th>MC</th>
         <th>FreshQty</th>
@@ -32,15 +31,15 @@
       </tr>
     </thead>
 
-    <!-- ✅ tbody เดียว ใช้ ng-container วนกลุ่ม -->
+    <!--  tbody เดียว ใช้ ng-container วนกลุ่ม -->
     <tbody>
       <ng-container *ngFor="let caseKey of (groupedCart | keyvalue)">
-        <!-- ✅ แสดงหัวกลุ่ม Case -->
+        <!--  แสดงหัวกลุ่ม Case -->
         <tr class="table-secondary">
-          <td colspan="12" class="text-start fw-bold">Case: {{ caseKey.key }}</td>
+          <td colspan="12" class="text-start fw-bold"> <input type="checkbox" style="transform: scale(1.2); " /> Case: {{ caseKey.key }}  </td>
         </tr>
 
-        <!-- ✅ แสดงรายการแต่ละกลุ่ม -->
+        <!--  แสดงรายการแต่ละกลุ่ม -->
         <tr *ngFor="let item of caseKey.value; let i = index">
           <td>{{ i + 1 }}</td>
           <td>{{ item.PartNo }}</td>

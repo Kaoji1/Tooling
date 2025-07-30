@@ -1,8 +1,12 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser')
-const routes = require('./src/routes/Request.route.js'); // Import the routes
-const SendRequestRoutes = require('./src/routes/SendRequest.route.js')
+const bodyParser = require('body-parser');
+ //นำเข้าroutesทุกroutesที่ใช้ในการรับส่งข้อมูล
+const routes = require('./src/routes/Request.route.js'); 
+const SendRequestRoutes = require('./src/routes/SendRequest.route.js');
+const UserHistory = require('./src/routes/UserHistory.route.js');
+const PurchaseRequest = require('./src/routes/Purchaserequest.route.js');
+
 // Create Instance and Express application
 const app = express();
 const port = 3000; // Define the port number
@@ -13,8 +17,11 @@ app.use(bodyParser.urlencoded({ limit: '900mb', extended: true}))
 app.use(bodyParser.json({ limit: '9000mb'}))
 app.use(bodyParser.raw())
 
+// นำเข้าpathของrouterทุกหน้า
 app.use('/api', routes);
 app.use('/api',SendRequestRoutes);
+app.use('/api',UserHistory);
+app.use('/api',PurchaseRequest);
 
 // กำหนดเส้นทางหลัก
 app.get('/', (req, res) => {

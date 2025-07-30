@@ -92,7 +92,7 @@
 
 
               }
-              select,input{
+              input{
                 padding: 6px;
                 border: 1px solid #b9b6b6;
                 border-radius: 8px;
@@ -102,18 +102,19 @@
 
 
               }
-
+              
             }
           }
 }
       .table-responsive {
       max-height: 405px;
       max-width: 1290px;
+      margin-top: 30px;
 
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 20px;
+        
         color: #4a4949;
 
         th,

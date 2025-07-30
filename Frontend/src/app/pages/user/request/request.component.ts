@@ -441,7 +441,7 @@ AddToCart() {
   const groupedByCase = filteredItems.reduce((acc: any, item: any) => {
     const caseKey = item.Case_ || this.Case_;
     if (!acc[caseKey]) acc[caseKey] = [];
-
+    
     acc[caseKey].push({
       Doc_no: null,
       Division: this.Div_,
@@ -465,11 +465,19 @@ AddToCart() {
     return acc;
   }, {});
 
-  // ส่งไปยัง cartService
+  // ✅ ตรวจสอบว่ามีข้อมูลใน groupedByCase หรือไม่
+  if (Object.keys(groupedByCase).length === 0) {
+    alert('ไม่มีรายการที่เลือกไว้สำหรับเพิ่มลงตะกร้า');
+    return;
+  }
+
+  // ส่งข้อมูลไปยังตะกร้าหรือ service ตามต้องการ
   this.cartService.addGroupedItems(groupedByCase);
-  alert('เพิ่มข้อมูลลงในตะกร้าแล้ว');
+  alert('เพิ่มรายการลงในตะกร้าเรียบร้อย');
   this.Clearall();
 }
+
+  
 // function clearall
 Clearall() {
   // Delete select group
