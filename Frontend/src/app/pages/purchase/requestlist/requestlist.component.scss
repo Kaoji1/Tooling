@@ -134,7 +134,10 @@
         color: black;
       }
     }
-
+.table-responsive {
+      max-height: 405px;
+      max-width: 1290px;
+      margin-top: 30px;
     table {
       width: 100%;
       border-collapse: collapse;
@@ -163,6 +166,7 @@
         }
       }
     }
+  }
 
     .pagination-wrapper {
       position: fixed;

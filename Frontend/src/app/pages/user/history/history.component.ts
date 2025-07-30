@@ -28,13 +28,22 @@ export class HistoryComponent {
   partNoList: { label: string, value: string }[] = [];
   selectedPartNo: string | null = null;
   filteredRequests: any[] = [];  // ข้อมูลที่กรองแล้ว
+  Status:any;
   fromDate: string = '';         // เก็บค่าวันเริ่ม
-  toDate: string = '';           // เก็บค่าวันสิ้นสุด
+  toDate: string = ''; 
+  Status_:any[]=[];          // เก็บค่าวันสิ้นสุด
   
    constructor( //โหลดทันทีที่รันที่จำเป็นต้องใช้ตอนเริ่มเว็ป
       private userhistory: UserHistoryService,
       
-    ) {}
+    ) {
+      this.Status = [
+        { label: 'Compelet', value: 'compelet' }, // ตัวเลือกเคสที่ 1
+        { label: 'Process', value: 'Process' }, // ตัวเลือกเคสที่ 2
+        { label: 'USA', value: 'USA' }, // ตัวเลือกเคสที่ 3
+        
+      ];
+    }
      ngOnInit()  {
       this.User_History();
       

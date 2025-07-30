@@ -36,7 +36,7 @@
       <ng-container *ngFor="let caseKey of (groupedCart | keyvalue)">
         <!--  แสดงหัวกลุ่ม Case -->
         <tr class="table-secondary">
-          <td colspan="12" class="text-start fw-bold"> <input type="checkbox" style="transform: scale(1.2); " /> Case: {{ caseKey.key }}  </td>
+          <td colspan="12" class="text-start fw-bold"> <input type="checkbox" style="transform: scale(1.2); " /> Case: {{ caseKey.key }} | Fac: {{ caseKey.value[0]?.Factory?.Fac || '-' }} </td>
         </tr>
 
         <!--  แสดงรายการแต่ละกลุ่ม -->
@@ -49,17 +49,23 @@
           <td>{{ item.FreshQty }}</td>
           <td>{{ item.ReuseQty }}</td>
 
-          <!-- QTY -->
-          <td>
-            <ng-container *ngIf="editingIndex[caseKey.key] === i; else showQty">
-              <input [(ngModel)]="item.QTY" type="number" class="form-control" />
-            </ng-container>
-            <ng-template #showQty>{{ item.QTY }}</ng-template>
-          </td>
+         <!-- QTY -->
+            <td>
+              <ng-container *ngIf="editingIndex[caseKey.key] === i; else showQty">
+                <input [(ngModel)]="item.QTY" type="number" class="form-control" />
+              </ng-container>
+              <ng-template #showQty>{{ item.QTY }}</ng-template>
+            </td>
 
-          <!-- Due Date -->
-          <td>{{ item.DueDate_ ? (item.DueDate_ | date: 'yyyy-MM-dd') : '-' }}</td>
-
+            <!-- Due Date -->
+            <td>
+              <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDate">
+                <input [(ngModel)]="item.DueDate_" type="date" class="form-control" />
+              </ng-container>
+              <ng-template #showDate>
+                {{ item.DueDate_ ? (item.DueDate_ | date: 'yyyy-MM-dd') : '-' }}
+              </ng-template>
+            </td>
           <!-- Insert -->
           <td>
             <button class="btn btn-outline-primary btn-sm">

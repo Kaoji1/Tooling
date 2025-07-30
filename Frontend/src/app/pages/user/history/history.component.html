@@ -24,7 +24,14 @@
         </div>
         <div class="group-select">
           <label for="satus">Status</label>
-          <app-dropdown-search></app-dropdown-search>
+            <ng-select
+              [items]="Status"
+              bindLabel="label"
+              bindValue="value"
+              [(ngModel)]="Status_"
+              
+              placeholder="Select a Status">
+            </ng-select>
         </div>
       <div class="group-select">
           <label>PartNo</label>

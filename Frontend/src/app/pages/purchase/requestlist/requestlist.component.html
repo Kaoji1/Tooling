@@ -55,7 +55,7 @@
         <thead>
           <tr>
             <th>Part No.</th>
-            <th>SPEC</th>
+            <th>ItemNo</th>
             <th>Process</th>
             <th>Case</th>
             <th>QTY.</th>
@@ -65,17 +65,17 @@
 
         <!-- ในตาราง -->
         <tbody>
-          <tr *ngIf="requestItems.length === 0">
+          <tr *ngIf="request.length === 0">
             <td colspan="15" class="text-center text-muted">ยังไม่มีข้อมูล ( No Data )</td>
           </tr>
-          <tr *ngFor="let item of requestItems">
-            <td>{{ item.partNo }}</td>
-            <td>{{ item.Spec }}</td>
+          <tr *ngFor="let item of request">
+            <td>{{ item.PartNo }}</td>
+            <td>{{ item.ItemNo }}</td>
             <td>{{ item.Process }}</td>
-            <td>{{ item.case === 'setup' ? 'SET UP' : (item.caseother || '-') }}</td>
-            <td>{{ item.qty }}</td>
+            <td>{{ item.CASE }}</td>
+            <td>{{ item.QTY }}</td>
             <td>
-              <button (click)="viewDetail(item)" class="detailicon">
+              <button  class="detailicon">
                 <i class="bi bi-eye-fill" style="font-size: 20px;"></i>
               </button>
             </td>

@@ -136,7 +136,7 @@
     <!-- หัวตารางแสดงเสมอ -->
     <thead>
       <tr>
-        <th>#</th>
+        <th><input type="checkbox" /></th>
         <th>Part No.</th>
         <th>Item No.</th>
         <th>Spec</th>
@@ -152,7 +152,7 @@
 
     <tbody *ngIf="!Case_ || items.length === 0">
       <tr>
-        <td colspan="11" class="text-center text-muted">ยังไม่มีข้อมูล</td>
+        <td colspan="11" class="text-center text-muted">กรุณากรอกข้อมูล</td>
       </tr>
     </tbody>
 
