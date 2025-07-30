@@ -8,7 +8,7 @@ const baseUrl = 'http://localhost:3000/api';
   providedIn: 'root' // ระบุว่า service นี้จะถูกให้บริการใน root module
 })
 
-export class RequestService {
+export class SendrequestService {
   public user: any; // ตัวแปรสำหรับเก็บข้อมูลผู้ใช้
 
   constructor( // คอนสตรัคเตอร์ของ service

@@ -59,14 +59,7 @@
           </td>
 
           <!-- Due Date -->
-          <td>
-            <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDueDate">
-              <input [(ngModel)]="item.DueDate_" type="date" class="form-control" />
-            </ng-container>
-            <ng-template #showDueDate>
-              {{ item.DueDate_ ? (item.DueDate_ | date:'yyyy-MM-dd') : '-' }}
-            </ng-template>
-          </td>
+          <td>{{ item.DueDate_ ? (item.DueDate_ | date: 'yyyy-MM-dd') : '-' }}</td>
 
           <!-- Insert -->
           <td>
@@ -101,7 +94,7 @@
   </table>
 </div>
             <!-- button sendrequest -->
-            <button class="btn-sendrequest" type="button"  >
+            <button class="btn-sendrequest" type="button"(click)=CreateDocByCase() >
                     <i class="bi bi-send-fill" ></i>Send Request
             </button>
 

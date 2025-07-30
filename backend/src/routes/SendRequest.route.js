@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router(); // สร้าง instance ของ Router
 
 // นำเข้าคอนโทรเลอร์
-const SendRequest = require('../controllers/Itemlist.controller');
+const SendRequest = require('../controllers/SendRequest.controller')
 const test = require('node:test');
 
 // กำหนดเส้นทาง request

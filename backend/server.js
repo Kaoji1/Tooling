@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser')
 const routes = require('./src/routes/Request.route.js'); // Import the routes
-
+const SendRequestRoutes = require('./src/routes/SendRequest.route.js')
 // Create Instance and Express application
 const app = express();
 const port = 3000; // Define the port number
@@ -14,6 +14,7 @@ app.use(bodyParser.json({ limit: '9000mb'}))
 app.use(bodyParser.raw())
 
 app.use('/api', routes);
+app.use('/api',SendRequestRoutes);
 
 // กำหนดเส้นทางหลัก
 app.get('/', (req, res) => {

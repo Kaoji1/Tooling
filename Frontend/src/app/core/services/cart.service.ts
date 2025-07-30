@@ -23,7 +23,9 @@ export class CartService {
       this.groupedCart[caseKey].push(...newGroups[caseKey]);
     }
     this.save();
+    
   }
+
 
   removeItem(case_: string, index: number) {
     this.groupedCart[case_].splice(index, 1);
