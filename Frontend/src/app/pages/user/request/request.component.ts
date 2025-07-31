@@ -74,7 +74,6 @@ export class requestComponent {
 
     this.Case = [
       { label: 'SET', value: 'setup' }, // ตัวเลือก Division ที่ 1
-     
       { label: 'USA', value: 'USA' }, // ตัวเลือกเคสที่ 1
       { label: 'BRO', value: 'BRO' }, // ตัวเลือกเคสที่ 2
       { label: 'BUR', value: 'BUR' }, // ตัวเลือกเคสที่ 3
@@ -88,20 +87,19 @@ export class requestComponent {
       { label: 'REC', value: 'REC' }, // ตัวเลือกเคสที่ 11
     ];
 
-     this.Caseother = [
-        { Case: 'BRO', viewCase: 'BRO' }, // ตัวเลือกเคสที่ 1
-        { Case: 'BUR', viewCase: 'BUR' }, // ตัวเลือกเคสที่ 2
-        { Case: 'USA', viewCase: 'USA' }, // ตัวเลือกเคสที่ 3
-        { Case: 'HOL', viewCase: 'HOL' }, // ตัวเลือกเคสที่ 4
-        { Case: 'INV', viewCase: 'INV' }, // ตัวเลือกเคสที่ 5
-        { Case: 'MOD', viewCase: 'MOD' }, // ตัวเลือกเคสที่ 6
-        { Case: 'NON', viewCase: 'NON' }, // ตัวเลือกเคสที่ 7
-        { Case: 'RET', viewCase: 'RET' }, // ตัวเลือกเคสที่ 8
-        { Case: 'SPA', viewCase: 'SPA' }, // ตัวเลือกเคสที่ 9
-        { Case: 'STO', viewCase: 'STO' }, // ตัวเลือกเคสที่ 10
-        { Case: 'CHA', viewCase: 'CHA' }, // ตัวเลือกเคสที่ 11
-      ];
+    this.Fac = [
+      {label: '1',value: '1'},
+      {label: '2',value: '2'},
+      {label: '3',value: '3'},
+      {label: '4',value: '4'},
+      {label: '5',value: '5'},
+      {label: '6',value: '6'},
+      {label: '7',value: '7'},
+      {label: '8',value: '8'},
+      {label: '9',value: '9'},
+    ];
 
+    
 
 
 
@@ -112,6 +110,13 @@ export class requestComponent {
 
 
   }
+selectAllChecked: boolean = true;
+
+toggleAllCheckboxes() {
+  for (const item of this.items) {
+    item.checked = this.selectAllChecked;
+  }
+}
 // เรียกใช้ตัวดึงapi
 Get_Division() {
   this.api.get_Division().subscribe({
@@ -142,89 +147,32 @@ async get_PARTNO(event: any) {
     });
   }
 }
-  async get_Fac(event:any) {
-    console.log(event); // แสดงค่าที่ได้รับใน console
-    // เช็คว่า event.value มีค่าหรือไม่
-    if (event.PartNo !== undefined) {
-      // เรียก API เพื่อส่งข้อมูลไปยัง SQL
-      const data = {
-        Division:event.Division,
-        PartNo: event.PartNo,
-        
-      }
-      console.log(data);
-      this.api.get_Fac(data).subscribe({
-        // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
-      next: (response: any[]) => {
-        // กรอง PartNo ไม่ให้ซ้ำ
-        this.Fac = response.filter((item, index, self) =>
-          index === self.findIndex(obj => obj.Fac === item.Fac)
-        );
-        console.log(this.Fac);
-      },
-      error: (e) => console.error(e),
-    });
-    }
-  }
-
-  //   Get_PARTNO() {
-  //   // เรียก API เพื่อดึงข้อมูล SPEC
-  //   this.api.get_PARTNO().subscribe({
-  //     // ถ้าสำเร็จ จะทำการเก็บ response ลงใน spec
-  //     next: (response: any) => {
-  //       this.PartNo = response;
-  //       // แสดงผลลัพธ์ใน console
-  //       // console.log(this.PartNo);
-  //     },
-  //     // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
-  //     error: (e: any) => console.error(e),
-  //   });
-  // }
-// async get_SPEC(event:any) {
-//     console.log(event); // แสดงค่าที่ได้รับใน console
-//     // เช็คว่า event.value มีค่าหรือไม่
-//     if (event.PartNo !== undefined) {
-//       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
-//       const data = {
-//         Division:event.Division,
-//         PartNo: event.PartNo
-        
-//       }
-//       console.log(data);
-//       this.api.get_SPEC(data).subscribe({
-//         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
-//         next: (response) => {
-//           if (response.length > 0) {
-//             this.spec = response;
-            
-//             // แสดงผลลัพธ์ใน console
-//             console.log(response);
-//           }
-//         },
-//         // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
-//         error: (e) => console.error(e),
-//       });
-//     }
-//   }
-  // async get_SPEC(event:any) {
+  // async get_Fac(event:any) {
   //   console.log(event); // แสดงค่าที่ได้รับใน console
   //   // เช็คว่า event.value มีค่าหรือไม่
   //   if (event.PartNo !== undefined) {
   //     // เรียก API เพื่อส่งข้อมูลไปยัง SQL
-  //     this.api.get_SPEC(event.PartNo).subscribe({
-  //       // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน spec
-  //       next: (response) => {
-  //         if (response.length > 0) {
-  //           this.spec= response;
-  //           // แสดงผลลัพธ์ใน console
-  //           console.log(response);
-  //         }
-  //       },
-  //       // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
-  //       error: (e) => console.error(e),
-  //     });
+  //     const data = {
+  //       Division:event.Division,
+  //       PartNo: event.PartNo,
+        
+  //     }
+  //     console.log(data);
+  //     this.api.get_Fac(data).subscribe({
+  //       // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
+  //     next: (response: any[]) => {
+  //       // กรอง PartNo ไม่ให้ซ้ำ
+  //       this.Fac = response.filter((item, index, self) =>
+  //         index === self.findIndex(obj => obj.Fac === item.Fac)
+  //       );
+  //       console.log(this.Fac);
+  //     },
+  //     error: (e) => console.error(e),
+  //   });
   //   }
   // }
+
+  
 
   // Process
   async get_Process(event:any) {
@@ -235,7 +183,7 @@ async get_PARTNO(event: any) {
       const data = {
         Division:event.Division,
         PartNo: event.PartNo,
-        Fac:event.Fac
+        
       }
       console.log(data);
       this.api.get_Process(data).subscribe({
@@ -261,7 +209,7 @@ async get_PARTNO(event: any) {
       const data = {
         Division:event.Division,
         PartNo: event.PartNo,
-        Fac: event.Fac,
+        
         Spec: event.SPEC,
         Process: event.Process
       }
@@ -279,12 +227,13 @@ async get_PARTNO(event: any) {
     });
     }
   }
+  
 
 
 
 Setview() {
   const Division = this.Div_?.Division || this.Div_;
-  const Fac = this.Fac_?.Fac|| this.Fac_;
+  const Fac = this.Fac_//?.Fac|| this.Fac_;
   const PartNo = this.PartNo_?.PartNo || this.PartNo_;
   const Spec = this.Spec_?.SPEC|| this.Spec_;
   const Process = this.Process_?.Process || this.Process_;
@@ -297,7 +246,7 @@ Setview() {
   console.log('MC:', MC);
 
   if (PartNo && Fac && Process && MC && Division  !== undefined) {
-    const data = { Division, PartNo, Fac, Process, MC };
+    const data = { Division, PartNo, Process, MC };
 
     this.api.post_ITEMNO(data).subscribe({
       next: (response) => {
@@ -445,7 +394,7 @@ AddToCart() {
     acc[caseKey].push({
       Doc_no: null,
       Division: this.Div_,
-      Factory: this.Fac_,
+      Factory: this.Fac_?.Fac || this.Fac_,
       ITEM_NO: item.ITEM_NO,
       PartNo: item.PartNo,
       Process: item.Process,
@@ -458,19 +407,19 @@ AddToCart() {
       DueDate_: this.DueDate_,
       ReuseQty: item.ReuseQty,
       FreshQty: item.FreshQty,
-      Status: null,
+      Status: null,                                                                                    
       Set_by: null,
       Local: 0,
     });
     return acc;
   }, {});
 
-  // ✅ ตรวจสอบว่ามีข้อมูลใน groupedByCase หรือไม่
+  //  ตรวจสอบว่ามีข้อมูลใน groupedByCase หรือไม่
   if (Object.keys(groupedByCase).length === 0) {
     alert('ไม่มีรายการที่เลือกไว้สำหรับเพิ่มลงตะกร้า');
     return;
   }
-
+ console.log('ข้อมูลที่ส่งตะกร้า:',groupedByCase)
   // ส่งข้อมูลไปยังตะกร้าหรือ service ตามต้องการ
   this.cartService.addGroupedItems(groupedByCase);
   alert('เพิ่มรายการลงในตะกร้าเรียบร้อย');
@@ -507,3 +456,61 @@ Clearall() {
 
 
 
+//   Get_PARTNO() {
+  //   // เรียก API เพื่อดึงข้อมูล SPEC
+  //   this.api.get_PARTNO().subscribe({
+  //     // ถ้าสำเร็จ จะทำการเก็บ response ลงใน spec
+  //     next: (response: any) => {
+  //       this.PartNo = response;
+  //       // แสดงผลลัพธ์ใน console
+  //       // console.log(this.PartNo);
+  //     },
+  //     // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+  //     error: (e: any) => console.error(e),
+  //   });
+  // }
+// async get_SPEC(event:any) {
+//     console.log(event); // แสดงค่าที่ได้รับใน console
+//     // เช็คว่า event.value มีค่าหรือไม่
+//     if (event.PartNo !== undefined) {
+//       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+//       const data = {
+//         Division:event.Division,
+//         PartNo: event.PartNo
+        
+//       }
+//       console.log(data);
+//       this.api.get_SPEC(data).subscribe({
+//         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
+//         next: (response) => {
+//           if (response.length > 0) {
+//             this.spec = response;
+            
+//             // แสดงผลลัพธ์ใน console
+//             console.log(response);
+//           }
+//         },
+//         // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+//         error: (e) => console.error(e),
+//       });
+//     }
+//   }
+  // async get_SPEC(event:any) {
+  //   console.log(event); // แสดงค่าที่ได้รับใน console
+  //   // เช็คว่า event.value มีค่าหรือไม่
+  //   if (event.PartNo !== undefined) {
+  //     // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+  //     this.api.get_SPEC(event.PartNo).subscribe({
+  //       // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน spec
+  //       next: (response) => {
+  //         if (response.length > 0) {
+  //           this.spec= response;
+  //           // แสดงผลลัพธ์ใน console
+  //           console.log(response);
+  //         }
+  //       },
+  //       // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
+  //       error: (e) => console.error(e),
+  //     });
+  //   }
+  // }

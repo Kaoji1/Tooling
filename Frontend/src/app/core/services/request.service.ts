@@ -42,7 +42,7 @@ export class RequestService {
     return this.httpClient.post(`${baseUrl}/get_SPEC`, data);
   }
 
-  get_Fac(data: any): Observable<any> {
-    return this.httpClient.post(`${baseUrl}/get_Fac`, data);
-  }
+  // get_Fac(data: any): Observable<any> {
+  //   return this.httpClient.post(`${baseUrl}/get_Fac`, data);
+  // }
 }

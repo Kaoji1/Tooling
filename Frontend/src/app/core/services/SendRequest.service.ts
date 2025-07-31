@@ -19,8 +19,8 @@ export class SendrequestService {
   SendRequest(data: any): Observable<any> {
     return this.httpClient.post(`${baseUrl}/Send_Request`, data)
   }
-  GenerateNewDocNo(case_: string, process: string): Observable<any> {
-  return this.httpClient.post(`${baseUrl}/GenerateNewDocNo`, { case_, process });
+  GenerateNewDocNo(case_: string, process: string, factory: string): Observable<any> {
+  return this.httpClient.post(`${baseUrl}/GenerateNewDocNo`, { case_, process, factory });
 }
 
 }

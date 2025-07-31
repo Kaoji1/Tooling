@@ -1,58 +1,58 @@
-import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { NotificationComponent } from '../../../components/notification/notification.component';
-import { CartService } from '../../../core/services/cart.service';
-import { Router } from '@angular/router';
+// import { Component, OnInit } from '@angular/core';
+// import { RouterOutlet } from '@angular/router';
+// import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
+// import { FormsModule } from '@angular/forms';
+// import { CommonModule } from '@angular/common';
+// import { NotificationComponent } from '../../../components/notification/notification.component';
+// import { CartService } from '../../../core/services/cart.service';
+// import { Router } from '@angular/router';
 
-@Component({
-  selector: 'app-cart',
-  standalone: true,
-  imports: [RouterOutlet, SidebarComponent, FormsModule, CommonModule, NotificationComponent],
-  templateUrl: './cart.component.html',
-  styleUrl: './cart.component.scss'
-})
-export class CartComponent implements OnInit {
-  cartItems: any[] = [];
-  editingIndex: number | null = null;
-  originalItem: any = null;
+// @Component({
+//   selector: 'app-cart',
+//   standalone: true,
+//   imports: [RouterOutlet, SidebarComponent, FormsModule, CommonModule, NotificationComponent],
+//   templateUrl: './cart.component.html',
+//   styleUrl: './cart.component.scss'
+// })
+// export class CartComponent implements OnInit {
+//   cartItems: any[] = [];
+//   editingIndex: number | null = null;
+//   originalItem: any = null;
 
-  constructor(private cartService: CartService, private router: Router) {}
+//   constructor(private cartService: CartService, private router: Router) {}
 
-  ngOnInit() {
-    this.loadCart();
-  }
+//   ngOnInit() {
+//     this.loadCart();
+//   }
 
-  loadCart() {
-    // ดึงข้อมูลตะกร้าจาก CartService
-    this.cartItems = this.cartService.getItems();
-  }
+//   loadCart() {
+//     // ดึงข้อมูลตะกร้าจาก CartService
+//     this.cartItems = this.cartService.getItems();
+//   }
 
-  startEdit(index: number) {
-    this.editingIndex = index;
-    this.originalItem = { ...this.cartItems[index] };
-  }
+//   startEdit(index: number) {
+//     this.editingIndex = index;
+//     this.originalItem = { ...this.cartItems[index] };
+//   }
 
-  saveEdit(index: number) {
-    this.editingIndex = null;
-    this.originalItem = null;
-    this.cartService.updateItem(index, this.cartItems[index]);
-    alert('บันทึกข้อมูลเรียบร้อยแล้ว');
-  }
+//   saveEdit(index: number) {
+//     this.editingIndex = null;
+//     this.originalItem = null;
+//     this.cartService.updateItem(index, this.cartItems[index]);
+//     alert('บันทึกข้อมูลเรียบร้อยแล้ว');
+//   }
 
 
 
-  removeItem(index: number) {
-    const confirmed = confirm('ต้องการลบรายการนี้หรือไม่?');
-    if (confirmed) {
-      this.cartService.removeItem(index);
-      this.loadCart();
-      alert('ลบรายการเรียบร้อยแล้ว');
-    }
-  }
-}
+//   removeItem(index: number) {
+//     const confirmed = confirm('ต้องการลบรายการนี้หรือไม่?');
+//     if (confirmed) {
+//       this.cartService.removeItem(index);
+//       this.loadCart();
+//       alert('ลบรายการเรียบร้อยแล้ว');
+//     }
+//   }
+// }
 // เทสสร้างDoc
 
 // Create_Doc() {

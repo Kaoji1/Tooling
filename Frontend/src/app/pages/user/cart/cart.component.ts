@@ -18,6 +18,7 @@ import { SendrequestService } from '../../../core/services/SendRequest.service';
 export class CartComponent implements OnInit {
   groupedCart: { [case_: string]: any[] } = {};
   editingIndex: { [case_: string]: number | null } = {};
+ checkedCases: { [caseKey: string]: boolean } = {};
 
   constructor(
     private cartService: CartService,
@@ -46,7 +47,7 @@ export class CartComponent implements OnInit {
     this.groupedCart = this.cartService.getGroupedCart();
   }
 
- async CreateDocByCase() {
+async CreateDocByCase() {
   if (!this.groupedCart || Object.keys(this.groupedCart).length === 0) {
     alert('ไม่มีรายการในตะกร้า');
     return;
@@ -56,20 +57,25 @@ export class CartComponent implements OnInit {
   const createdDocs: string[] = [];
 
   for (const caseKey in this.groupedCart) {
+    //  ตรวจว่ามีการติ๊กเคสไว้หรือไม่
+    if (!this.checkedCases[caseKey]) continue;
+
     const groupItems = this.groupedCart[caseKey];
     if (groupItems.length === 0) continue;
 
     const firstItem = groupItems[0];
     const case_ = firstItem.Case_;
     const process = firstItem.Process;
+    const factory = firstItem.Factory?.Fac || firstItem.Factory || ''; 
+    console.log('ส่งไปback:',{case_,process,factory});
 
-    await this.sendrequestService.GenerateNewDocNo(case_, process).toPromise().then((res) => {
+    await this.sendrequestService.GenerateNewDocNo(case_, process,factory).toPromise().then((res) => {
       const docNo = res.DocNo;
 
       groupItems.forEach((item: any) => {
         item.Doc_no = docNo;
         item.Division = item.Division.Division;
-        item.Factory = item.Factory.Fac || 0;
+        item.Factory = factory;
         allItemsToSend.push(item);
       });
 
@@ -82,11 +88,20 @@ export class CartComponent implements OnInit {
     });
   }
 
-  //  ล้างตะกร้าหลังส่งเสร็จ
-  this.cartService.clearAll();
-  this.groupedCart = {};
+  this.clearSelectedCases();
+  // this.groupedCart = {};
+  this.checkedCases = {}; // ล้าง checkbox หลังส่ง
 
-  alert('สร้างและส่งเอกสารแยกตามเคสสำเร็จ:\n\n' + createdDocs.join('\n'));
+  alert('สร้างและส่งเอกสารเฉพาะเคสที่เลือกสำเร็จ:\n\n' + createdDocs.join('\n'));
+}
+clearSelectedCases() {
+  for (const caseKey in this.checkedCases) {
+    if (this.checkedCases[caseKey]) {
+      delete this.groupedCart[caseKey]; // ลบเฉพาะเคสที่ติ๊ก
+    }
+  }
+  sessionStorage.setItem('groupedCart', JSON.stringify(this.groupedCart)); // อัปเดต sessionStorage
+  this.checkedCases = {}; // เคลียร์ checkbox ที่ติ๊กไว้
 }
 
 }

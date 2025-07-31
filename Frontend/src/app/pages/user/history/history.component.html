@@ -62,7 +62,7 @@
               <th>Process</th>
               <th>QTY</th>
               <th>Status</th>
-              <th>Date Request</th>
+              <th>DueDate</th>
             </tr>
           </thead>
           <tbody>
@@ -79,7 +79,7 @@
             <td>{{ item.Process }}</td>
             <td>{{ item.QTY }}</td>
             <td>{{ item.Status }}</td>
-            <td>{{ item.DateRequest | date:'dd/MM/yyyy' }}</td>
+            <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
           </tr>
           </tbody>
         </table>

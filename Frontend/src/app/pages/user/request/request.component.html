@@ -36,8 +36,9 @@
                 <label > Fac </label>
                 <ng-select
                   [items]="Fac"
-                  bindLabel="Fac"
-                  (ngModelChange)="get_Process($event)"
+                  bindLabel="label"
+                  bindValue="value"
+                 
                   [(ngModel)]="Fac_"
                   placeholder="Select a Fac">
                 </ng-select>
@@ -78,7 +79,7 @@
               bindLabel="PartNo"
               [(ngModel)]="PartNo_"
               [virtualScroll]="true"
-              (ngModelChange)="get_Fac($event)"
+              (ngModelChange)="get_Process($event)"
               placeholder="Select  partNo">
             </ng-select>
           </div>
@@ -136,7 +137,7 @@
     <!-- หัวตารางแสดงเสมอ -->
     <thead>
       <tr>
-        <th><input type="checkbox" /></th>
+        <th><input type="checkbox"[(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"/></th>
         <th>Part No.</th>
         <th>Item No.</th>
         <th>Spec</th>

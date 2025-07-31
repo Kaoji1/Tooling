@@ -36,7 +36,12 @@
       <ng-container *ngFor="let caseKey of (groupedCart | keyvalue)">
         <!--  แสดงหัวกลุ่ม Case -->
         <tr class="table-secondary">
-          <td colspan="12" class="text-start fw-bold"> <input type="checkbox" style="transform: scale(1.2); " /> Case: {{ caseKey.key }} | Fac: {{ caseKey.value[0]?.Factory?.Fac || '-' }} </td>
+          <td colspan="12" class="text-start fw-bold">
+            <input type="checkbox"
+                  [(ngModel)]="checkedCases[caseKey.key]"
+                  style="transform: scale(1.2);" />
+            Case: {{ caseKey.key }} | Fac: {{ caseKey.value[0]?.Factory || '-' }}
+          </td>
         </tr>
 
         <!--  แสดงรายการแต่ละกลุ่ม -->
