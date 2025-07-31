@@ -387,13 +387,14 @@ AddToCart() {
 
   const InputDate_ = new Date().toISOString().split('T')[0];
 
+  //  จัดกลุ่มรายการตาม Case_
   const groupedByCase = filteredItems.reduce((acc: any, item: any) => {
     const caseKey = item.Case_ || this.Case_;
     if (!acc[caseKey]) acc[caseKey] = [];
-    
+
     acc[caseKey].push({
       Doc_no: null,
-      Division: this.Div_,
+      Division: this.Div_?.Division || this.Div_,
       Factory: this.Fac_?.Fac || this.Fac_,
       ITEM_NO: item.ITEM_NO,
       PartNo: item.PartNo,
@@ -407,22 +408,33 @@ AddToCart() {
       DueDate_: this.DueDate_,
       ReuseQty: item.ReuseQty,
       FreshQty: item.FreshQty,
-      Status: null,                                                                                    
+      Status: null,
       Set_by: null,
       Local: 0,
     });
+
     return acc;
   }, {});
 
-  //  ตรวจสอบว่ามีข้อมูลใน groupedByCase หรือไม่
+  //  ตรวจสอบว่ามีรายการหรือไม่
   if (Object.keys(groupedByCase).length === 0) {
     alert('ไม่มีรายการที่เลือกไว้สำหรับเพิ่มลงตะกร้า');
     return;
   }
- console.log('ข้อมูลที่ส่งตะกร้า:',groupedByCase)
-  // ส่งข้อมูลไปยังตะกร้าหรือ service ตามต้องการ
+
+  //  เก็บใน memory (เช่น ใช้ดูในหน้าตะกร้า)
   this.cartService.addGroupedItems(groupedByCase);
-  alert('เพิ่มรายการลงในตะกร้าเรียบร้อย');
+
+  //  แปลงจาก grouped object เป็น array ธรรมดาเพื่อส่งไป backend
+  const allItemsToSend = Object.values(groupedByCase).flat();
+
+  //  เรียก Service เพื่อส่งข้อมูลไปเก็บ MSSQL
+  this.cartService.addCartToDB(allItemsToSend).subscribe({
+    next: () => alert(' เพิ่มรายการลงตะกร้าและบันทึกลงฐานข้อมูลเรียบร้อย'),
+    error: () => alert(' บันทึกลงฐานข้อมูลล้มเหลว'),
+  });
+
+  //  ล้างค่าหลังจากเพิ่มสำเร็จ
   this.Clearall();
 }
 

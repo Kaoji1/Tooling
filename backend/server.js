@@ -6,6 +6,7 @@ const routes = require('./src/routes/Request.route.js');
 const SendRequestRoutes = require('./src/routes/SendRequest.route.js');
 const UserHistory = require('./src/routes/UserHistory.route.js');
 const PurchaseRequest = require('./src/routes/Purchaserequest.route.js');
+const Cart = require('./src/routes/Cart.route.js')
 
 // Create Instance and Express application
 const app = express();
@@ -22,6 +23,7 @@ app.use('/api', routes);
 app.use('/api',SendRequestRoutes);
 app.use('/api',UserHistory);
 app.use('/api',PurchaseRequest);
+app.use('/api',Cart);
 
 // กำหนดเส้นทางหลัก
 app.get('/', (req, res) => {

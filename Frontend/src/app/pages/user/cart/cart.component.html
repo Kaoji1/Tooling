@@ -40,7 +40,7 @@
             <input type="checkbox"
                   [(ngModel)]="checkedCases[caseKey.key]"
                   style="transform: scale(1.2);" />
-            Case: {{ caseKey.key }} | Fac: {{ caseKey.value[0]?.Factory || '-' }}
+            Case: {{ caseKey.key }} | Fac: {{ caseKey.value[0]?.Fac || '-' }}
           </td>
         </tr>
 
@@ -50,9 +50,9 @@
           <td>{{ item.PartNo }}</td>
           <td>{{ item.SPEC }}</td>
           <td>{{ item.Process }}</td>
-          <td>{{ item.MC }}</td>
-          <td>{{ item.FreshQty }}</td>
-          <td>{{ item.ReuseQty }}</td>
+          <td>{{ item.MCType }}</td>
+          <td>{{ item.Fresh_QTY }}</td>
+          <td>{{ item.Reuse_QTY }}</td>
 
          <!-- QTY -->
             <td>
@@ -65,10 +65,10 @@
             <!-- Due Date -->
             <td>
               <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDate">
-                <input [(ngModel)]="item.DueDate_" type="date" class="form-control" />
+                <input [(ngModel)]="item.Due_Date" type="date" class="form-control" />
               </ng-container>
               <ng-template #showDate>
-                {{ item.DueDate_ ? (item.DueDate_ | date: 'yyyy-MM-dd') : '-' }}
+                {{ item.Due_Date ? (item.Due_Date | date: 'yyyy-MM-dd') : '-' }}
               </ng-template>
             </td>
           <!-- Insert -->

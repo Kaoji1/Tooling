@@ -18,7 +18,7 @@ import { SendrequestService } from '../../../core/services/SendRequest.service';
 export class CartComponent implements OnInit {
   groupedCart: { [case_: string]: any[] } = {};
   editingIndex: { [case_: string]: number | null } = {};
- checkedCases: { [caseKey: string]: boolean } = {};
+  checkedCases: { [case_: string]: boolean } = {};
 
   constructor(
     private cartService: CartService,
@@ -26,10 +26,32 @@ export class CartComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.groupedCart = this.cartService.getGroupedCart();
-    for (const case_ in this.groupedCart) {
-      this.editingIndex[case_] = null;
-    }
+    this.loadCartFromDB();
+  }
+
+  loadCartFromDB() {
+    this.cartService.getCartFromDB().subscribe({
+      next: (data) => {
+        this.groupedCart = this.groupItemsByCase(data);
+        for (const case_ in this.groupedCart) {
+          this.editingIndex[case_] = null;
+        }
+      },
+      error: (err) => {
+        console.error('โหลดข้อมูล Cart ล้มเหลว:', err);
+        alert('ไม่สามารถโหลดรายการตะกร้าได้');
+      }
+    });
+  }
+
+  groupItemsByCase(items: any[]): { [case_: string]: any[] } {
+    const grouped: { [case_: string]: any[] } = {};
+    items.forEach((item) => {
+      const caseKey = item.CASE || 'ไม่ระบุ';
+      if (!grouped[caseKey]) grouped[caseKey] = [];
+      grouped[caseKey].push(item);
+    });
+    return grouped;
   }
 
   startEdit(case_: string, index: number) {
@@ -38,70 +60,100 @@ export class CartComponent implements OnInit {
 
   saveEdit(case_: string, index: number) {
     const item = this.groupedCart[case_][index];
-    this.cartService.updateItem(case_, index, item);
-    this.editingIndex[case_] = null;
+    this.cartService.updateItemInDB(item).subscribe({
+      next: () => {
+        alert('บันทึกข้อมูลเรียบร้อย');
+        this.editingIndex[case_] = null;
+      },
+      error: () => alert('เกิดข้อผิดพลาดในการบันทึก'),
+    });
   }
 
-  removeItem(case_: string, index: number) {
-    this.cartService.removeItem(case_, index);
-    this.groupedCart = this.cartService.getGroupedCart();
+removeItem(case_: string, index: number) {
+  const item = this.groupedCart[case_][index];
+  const id = item.ID_Cart || item.id || item.ItemID;
+
+  console.log(' ลบ ID:', id); // เช็คว่าเป็น undefined หรือเปล่า
+
+  if (!id) {
+    alert('ไม่พบรหัส ID_Cart สำหรับลบ');
+    return;
   }
 
-async CreateDocByCase() {
+  this.cartService.removeItemFromDB(id).subscribe({
+    next: () => {
+      this.groupedCart[case_].splice(index, 1);
+      if (this.groupedCart[case_].length === 0) {
+        delete this.groupedCart[case_];
+      }
+    },
+    error: (err) => {
+      console.error('ลบไม่สำเร็จ:', err);
+      alert('ลบไม่สำเร็จ');
+    }
+  });
+}
+
+  async CreateDocByCase() {
   if (!this.groupedCart || Object.keys(this.groupedCart).length === 0) {
     alert('ไม่มีรายการในตะกร้า');
     return;
   }
 
-  const allItemsToSend: any[] = [];
   const createdDocs: string[] = [];
 
   for (const caseKey in this.groupedCart) {
-    //  ตรวจว่ามีการติ๊กเคสไว้หรือไม่
     if (!this.checkedCases[caseKey]) continue;
 
     const groupItems = this.groupedCart[caseKey];
     if (groupItems.length === 0) continue;
 
     const firstItem = groupItems[0];
-    const case_ = firstItem.Case_;
+    const case_ = firstItem.CASE;
     const process = firstItem.Process;
-    const factory = firstItem.Factory?.Fac || firstItem.Factory || ''; 
-    console.log('ส่งไปback:',{case_,process,factory});
+    const factory = firstItem.Fac  || '';
+    
 
-    await this.sendrequestService.GenerateNewDocNo(case_, process,factory).toPromise().then((res) => {
+    // ตรวจสอบค่าว่าง
+    if (!case_ || !process || !factory) {
+      alert(`ข้อมูลไม่ครบ กรุณาตรวจสอบ Case: ${case_} | Process: ${process} | Factory: ${factory}`);
+      continue;
+    }
+
+    try {
+      const res = await this.sendrequestService.GenerateNewDocNo(case_, process, factory).toPromise();
       const docNo = res.DocNo;
 
-      groupItems.forEach((item: any) => {
-        item.Doc_no = docNo;
-        item.Division = item.Division.Division;
-        item.Factory = factory;
-        allItemsToSend.push(item);
-      });
+      groupItems.forEach((item: any) => item.Doc_no = docNo);
 
-      this.sendrequestService.SendRequest(groupItems).subscribe({
-        next: () => console.log(`ส่ง ${docNo} สำเร็จ`),
-        error: (err) => console.error(`ส่ง ${docNo} ไม่สำเร็จ, err`)
-      });
-
+      await this.sendrequestService.SendRequest(groupItems).toPromise();
+      await this.cartService.deleteItemsByCase(case_).toPromise();
       createdDocs.push(`📄 ${docNo} | ${groupItems.length} รายการ`);
-    });
-  }
 
-  this.clearSelectedCases();
-  // this.groupedCart = {};
-  this.checkedCases = {}; // ล้าง checkbox หลังส่ง
+      //  ลบออกจาก groupedCart ทันที
+      delete this.groupedCart[caseKey];
+      delete this.checkedCases[caseKey];
 
-  alert('สร้างและส่งเอกสารเฉพาะเคสที่เลือกสำเร็จ:\n\n' + createdDocs.join('\n'));
-}
-clearSelectedCases() {
-  for (const caseKey in this.checkedCases) {
-    if (this.checkedCases[caseKey]) {
-      delete this.groupedCart[caseKey]; // ลบเฉพาะเคสที่ติ๊ก
+    } catch (err) {
+      console.error(` ส่ง ${case_} ล้มเหลว, err`);
+      alert( `ส่ง ${case_} ล้มเหลว`);
+  
     }
   }
-  sessionStorage.setItem('groupedCart', JSON.stringify(this.groupedCart)); // อัปเดต sessionStorage
-  this.checkedCases = {}; // เคลียร์ checkbox ที่ติ๊กไว้
+ if (createdDocs.length > 0) {
+    alert('สร้างและส่งเอกสารสำเร็จ:\n\n' + createdDocs.join('\n'));
+  } else {
+    alert('ไม่มีเอกสารใดถูกสร้าง');
+  }
+ 
 }
 
+  clearSelectedCases() {
+    for (const caseKey in this.checkedCases) {
+      if (this.checkedCases[caseKey]) {
+        delete this.groupedCart[caseKey];
+      }
+    }
+    this.checkedCases = {};
+  }
 }
