@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login.component';
+import { AuthGuard } from './auth/auth.guard';
 
 // User pages
 import { requestComponent } from './pages/user/request/request.component';
@@ -18,8 +19,24 @@ import path from 'path';
 
 export const routes: Routes = [
 
+  {
+    path: 'production/request',
+    component: requestComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'purchase/requestlist',
+    component: RequestlistComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'login',
+    component: LoginComponent
+  },
+
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
+
 
   // Production role
   {
@@ -46,6 +63,8 @@ export const routes: Routes = [
   { path: 'purchase-dashboard', redirectTo: 'purchase/requestlist', pathMatch: 'full' },
 
   { path: '**', redirectTo: 'login' }
+
+
 
 
   // {path: '',redirectTo: 'login', pathMatch: 'full'},

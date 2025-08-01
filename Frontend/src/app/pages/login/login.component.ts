@@ -24,6 +24,11 @@ export class LoginComponent {
     const credentials = {Username: this.Username, Password: this.Password};
     this.LoginService.login(credentials).subscribe({
       next: (res) => {
+
+        // Keep token from backend
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(res.user));
+
         console.log('Login response:', res);
         // ถ้าเข้าสู่ระบบสำเร็จ ให้เปลี่ยนเส้นทางไปยังหน้า dashboard
         if (res.user.Role === 'production') {
