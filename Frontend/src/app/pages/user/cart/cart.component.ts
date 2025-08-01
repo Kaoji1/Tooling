@@ -7,6 +7,7 @@ import { NotificationComponent } from '../../../components/notification/notifica
 import { CartService } from '../../../core/services/cart.service';
 import { Router } from '@angular/router';
 import { SendrequestService } from '../../../core/services/SendRequest.service';
+import bootstrap from '../../../../main.server';
 
 @Component({
   selector: 'app-cart',
@@ -158,6 +159,16 @@ removeItem(case_: string, index: number) {
     this.checkedCases = {};
   }
 
-  
+  selectedItem: any; // ตัวที่ถูกเลือกตอนอัปโหลด
+selectedFile!: File;
+noteText: string = '';
+openUploadModal(item: any): void {
+  this.selectedItem = item; // เก็บรายการที่คลิกไว้
+}
+
+onFileSelected(event: any): void {
+  this.selectedFile = event.target.files[0];
+}
+
 
 }
