@@ -2,38 +2,43 @@
 <div class="history-layout">
   <!-- sidebarฝั่งuser -->
   <app-sidebar></app-sidebar>
+
   <!-- ข้อมูลในหน้านี้ไม่รวมsidebar -->
   <div class="main">
     <div class="header">
-        <h4>History</h4>
-        <app-notification class="noti"></app-notification>
-      </div>
+      <h4>History</h4>
+      <app-notification class="noti"></app-notification>
+    </div>
 
     <p>Requset History</p>
-    <!-- ฝั่งdropdownรับค่า -->
+
+    <!-- ฝั่ง dropdown รับค่า -->
     <div class="box-input">
       <div class="form-input">
         <div class="group-select">
           <label for="datesetup">Date </label>
           <input type="date" [(ngModel)]="fromDate" placeholder="From Date">
         </div>
+
         <h6>TO</h6>
+
         <div class="group-select">
           <label for="duedate">Date</label>
           <input type="date" [(ngModel)]="toDate" placeholder="To Date">
         </div>
-        <div class="group-select">
+
+        <!-- <div class="group-select">
           <label for="satus">Status</label>
-            <ng-select
-              [items]="Status"
-              bindLabel="label"
-              bindValue="value"
-              [(ngModel)]="Status_"
-              
-              placeholder="Select a Status">
-            </ng-select>
-        </div>
-      <div class="group-select">
+          <ng-select
+            [items]="Status"
+            bindLabel="label"
+            bindValue="value"
+            [(ngModel)]="Status_"
+            placeholder="Select a Status">
+          </ng-select>
+        </div> -->
+
+        <div class="group-select">
           <label>PartNo</label>
           <ng-select
             [items]="partNoList"
@@ -45,28 +50,33 @@
           </ng-select>
         </div>
       </div>
+
+      <!--  ปุ่ม Filter และ Sort -->
       <div class="btn-group-req">
-        <button class="btn-sort" type="button" (click)="onSort()" > Sort <i class="bi bi-sort-down"></i></button>
+        <button class="btn-sort me-2" type="button" (click)="onFilter()">Filter</button>
+        <button class="btn-sort" type="button" (click)="onSort()">Sort ↓</button>
       </div>
+      
     </div>
-    <!-- ตารางที่รับค่ามาจากการกดsend request -->
+
+    <!-- ตารางที่รับค่ามาจากการกด send request -->
     <div class="table-responsive">
       <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>No.</th>
-              <th>Doc No</th>
-              <th>Division</th>
-              <th>Fac</th>
-              <th>Part No</th>
-              <th>Process</th>
-              <th>QTY</th>
-              <th>Status</th>
-              <th>DueDate</th>
-            </tr>
-          </thead>
-          <tbody>
-           <tr *ngFor="let item of requests; let i = index">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Doc No</th>
+            <th>Division</th>
+            <th>Fac</th>
+            <th>Part No</th>
+            <th>Process</th>
+            <th>QTY</th>
+            <th>Status</th>
+            <th>DueDate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredRequests; let i = index">
             <td>{{ i + 1 }}</td>
             <td>{{ item.DocNo }}</td>
             <td [ngSwitch]="item.Division">
@@ -81,10 +91,9 @@
             <td>{{ item.Status }}</td>
             <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
           </tr>
-          </tbody>
-        </table>
+        </tbody>
+      </table>
     </div>
     <!--table-->
-
   </div>
 </div>

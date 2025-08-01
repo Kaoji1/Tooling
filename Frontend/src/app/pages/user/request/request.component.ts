@@ -50,9 +50,10 @@ export class requestComponent {
 
   // Form fields
   phone_: string = '';
-  DueDate_: any=[];
+  DueDate_: string = '';
   today_: string = '';
   InputDate_:string='';
+  MCQTY_:string='';
 
   // Table data
   items: any= [];// array เก่าวแปรสำหรับเก็บรายการข้อมูล (items) ที่มีอยู่แล้ว
@@ -68,12 +69,8 @@ export class requestComponent {
     this.today_ = new Date().toISOString().split('T')[0];
 
     // กำหนดตัวเลือกในdropdown
-    
-
-    
-
     this.Case = [
-      { label: 'SET', value: 'setup' }, // ตัวเลือก Division ที่ 1
+      { label: 'SET', value: 'SET' }, // ตัวเลือก Division ที่ 1
       { label: 'USA', value: 'USA' }, // ตัวเลือกเคสที่ 1
       { label: 'BRO', value: 'BRO' }, // ตัวเลือกเคสที่ 2
       { label: 'BUR', value: 'BUR' }, // ตัวเลือกเคสที่ 3
@@ -95,21 +92,12 @@ export class requestComponent {
       {label: '5',value: '5'},
       {label: '6',value: '6'},
       {label: '7',value: '7'},
-      {label: '8',value: '8'},
-      {label: '9',value: '9'},
     ];
-
-    
-
-
-
   }
-
   async ngOnInit()  {
     this.Get_Division();
-
-
   }
+
 selectAllChecked: boolean = true;
 
 toggleAllCheckboxes() {
@@ -147,33 +135,6 @@ async get_PARTNO(event: any) {
     });
   }
 }
-  // async get_Fac(event:any) {
-  //   console.log(event); // แสดงค่าที่ได้รับใน console
-  //   // เช็คว่า event.value มีค่าหรือไม่
-  //   if (event.PartNo !== undefined) {
-  //     // เรียก API เพื่อส่งข้อมูลไปยัง SQL
-  //     const data = {
-  //       Division:event.Division,
-  //       PartNo: event.PartNo,
-        
-  //     }
-  //     console.log(data);
-  //     this.api.get_Fac(data).subscribe({
-  //       // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
-  //     next: (response: any[]) => {
-  //       // กรอง PartNo ไม่ให้ซ้ำ
-  //       this.Fac = response.filter((item, index, self) =>
-  //         index === self.findIndex(obj => obj.Fac === item.Fac)
-  //       );
-  //       console.log(this.Fac);
-  //     },
-  //     error: (e) => console.error(e),
-  //   });
-  //   }
-  // }
-
-  
-
   // Process
   async get_Process(event:any) {
     console.log(event); // แสดงค่าที่ได้รับใน console
@@ -233,25 +194,40 @@ async get_PARTNO(event: any) {
 
 Setview() {
   const Division = this.Div_?.Division || this.Div_;
-  const Fac = this.Fac_//?.Fac|| this.Fac_;
+  const Fac = this.Fac_;
   const PartNo = this.PartNo_?.PartNo || this.PartNo_;
   const Spec = this.Spec_?.SPEC|| this.Spec_;
   const Process = this.Process_?.Process || this.Process_;
   const MC = this.MachineType_?.MC || this.MachineType_;
+  const DueDate_ = this.DueDate_;
+// แจ้งเตือนกรอกไม่ครบ
+  const missingFields:string[] = [];
+  if (!Division) missingFields.push("Division");
+  if (!Fac) missingFields.push("Fac");
+  if (!PartNo) missingFields.push("PartNo");
+  if (!Process) missingFields.push("Process");
+  if (!MC) missingFields.push("MC");
+  if (!DueDate_) missingFields.push("DueDate");
+
+  if (missingFields.length>0){
+    alert("กรุณากรอกข้อมูลต่อไปนี้ให้ครบ:\n" + missingFields.join("\n"));
+    return;
+  }
   console.log('division:', Division);
   console.log('factory:', Fac);
   console.log('PartNo:', PartNo);
   console.log('Spec:', Spec);
   console.log('Process:', Process);
   console.log('MC:', MC);
+  console.log('DueDate_',DueDate_);
 
-  if (PartNo && Fac && Process && MC && Division  !== undefined) {
+  if (PartNo && Fac && Process && MC && Division && DueDate_  !== undefined) {
     const data = { Division, PartNo, Process, MC };
 
     this.api.post_ITEMNO(data).subscribe({
       next: (response) => {
         //  กรณี selectedType คือ 'setup'
-        if (this.Case_ === 'setup') {
+        if (this.Case_ === 'SET') {
           this.items = response.map((item: any) => ({
             ...item,
             checked: true,
@@ -374,7 +350,6 @@ Setview() {
   }
 }
 
-
 // function add to cart
 AddToCart() {
   const checkedItems = this.items.filter((item: any) => item.checked);
@@ -384,10 +359,10 @@ AddToCart() {
     alert('กรุณากรอกข้อมูลให้ครบในรายการที่เลือก');
     return;
   }
-
+  // ตั้งค่าการส่งเป็นวันนี้
   const InputDate_ = new Date().toISOString().split('T')[0];
 
-  //  จัดกลุ่มรายการตาม Case_
+  //  จัดกลุ่มรายการตาม Case_ เก็บค่าที่เลือกไว้ก่อนส่งไปหน้าตะกร้า
   const groupedByCase = filteredItems.reduce((acc: any, item: any) => {
     const caseKey = item.Case_ || this.Case_;
     if (!acc[caseKey]) acc[caseKey] = [];
@@ -412,7 +387,6 @@ AddToCart() {
       Set_by: null,
       Local: 0,
     });
-
     return acc;
   }, {});
 
@@ -421,13 +395,8 @@ AddToCart() {
     alert('ไม่มีรายการที่เลือกไว้สำหรับเพิ่มลงตะกร้า');
     return;
   }
-
-  //  เก็บใน memory (เช่น ใช้ดูในหน้าตะกร้า)
-  this.cartService.addGroupedItems(groupedByCase);
-
   //  แปลงจาก grouped object เป็น array ธรรมดาเพื่อส่งไป backend
   const allItemsToSend = Object.values(groupedByCase).flat();
-
   //  เรียก Service เพื่อส่งข้อมูลไปเก็บ MSSQL
   this.cartService.addCartToDB(allItemsToSend).subscribe({
     next: () => alert(' เพิ่มรายการลงตะกร้าและบันทึกลงฐานข้อมูลเรียบร้อย'),
@@ -437,22 +406,19 @@ AddToCart() {
   //  ล้างค่าหลังจากเพิ่มสำเร็จ
   this.Clearall();
 }
-
-  
 // function clearall
 Clearall() {
   // Delete select group
   this.Div_=null;
   this.Fac_=null;
   this.DueDate_='';
-  
+  this.Case_=null;
   this.PartNo_=null;
   this.Spec_=null
   this.MachineType_=null;
   this.Process_=null
   // Delete items ค่าที่รวมที่จะส่งไปตะกร้า
   this.items=[];
-
   }
   // upload file
   selectedFileName: string = '';
@@ -462,6 +428,10 @@ Clearall() {
       this.selectedFileName = file.name;
       console.log('Selected file:', file.name);
     }
+  }
+  onPartNoChange(){
+    this.Process_=null;
+    this.MachineType_=null;
   }
 }
 
@@ -524,5 +494,30 @@ Clearall() {
   //       // ถ้ามีข้อผิดพลาดในการเรียก API จะแสดงข้อผิดพลาดใน console
   //       error: (e) => console.error(e),
   //     });
+  //   }
+  // }
+// กรณีใช้facจากdatabase
+  // async get_Fac(event:any) {
+  //   console.log(event); // แสดงค่าที่ได้รับใน console
+  //   // เช็คว่า event.value มีค่าหรือไม่
+  //   if (event.PartNo !== undefined) {
+  //     // เรียก API เพื่อส่งข้อมูลไปยัง SQL
+  //     const data = {
+  //       Division:event.Division,
+  //       PartNo: event.PartNo,
+        
+  //     }
+  //     console.log(data);
+  //     this.api.get_Fac(data).subscribe({
+  //       // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
+  //     next: (response: any[]) => {
+  //       // กรอง PartNo ไม่ให้ซ้ำ
+  //       this.Fac = response.filter((item, index, self) =>
+  //         index === self.findIndex(obj => obj.Fac === item.Fac)
+  //       );
+  //       console.log(this.Fac);
+  //     },
+  //     error: (e) => console.error(e),
+  //   });
   //   }
   // }

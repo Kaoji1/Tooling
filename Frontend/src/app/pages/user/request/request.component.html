@@ -80,6 +80,7 @@
               [(ngModel)]="PartNo_"
               [virtualScroll]="true"
               (ngModelChange)="get_Process($event)"
+              (change)="onPartNoChange()"
               placeholder="Select  partNo">
             </ng-select>
           </div>
@@ -114,6 +115,7 @@
               placeholder="Select MachineType">
             </ng-select>
           </div>
+          
 
         </div>
         <!--div row2-->
@@ -157,7 +159,7 @@
       </tr>
     </tbody>
 
-    <tbody *ngIf="Case_ === 'setup' && items.length > 0">
+    <tbody *ngIf="Case_ === 'SET' && items.length > 0">
       <tr *ngFor="let item of items">
         <td><input type="checkbox" [(ngModel)]="item.checked"  /></td>
         <td>{{ item.PartNo }}</td>

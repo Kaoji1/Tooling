@@ -46,69 +46,7 @@ exports.Get_PartNo = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };
-// exports.Get_Fac = async (req, res) => {
-//   console.log("Request:", req.body);
 
-//   try {
-//     const { Division, PartNo, Fac } = req.body;
-
-//     if (!Division || !PartNo) {
-//       return res.status(400).json({ error: "Missing Division or PartNo parameter" });
-//     }
-
-//     const facInt = Fac !== undefined && Fac !== null ? parseInt(Fac) : null;
-
-//     if (Fac !== undefined && isNaN(facInt)) {
-//       return res.status(400).json({ error: "Fac must be a number" });
-//     }
-
-//     const pool = await poolPromise;
-//     const result = await pool
-//       .request()
-//       .input("Division", Division)
-//       .input("PartNo", PartNo)
-//       .input("Fac", facInt) // <-- สำคัญมาก ต้องส่งเข้าไป
-//       .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset] @Division, @Fac, @PartNo");
-
-//     if (result.recordset.length === 0) {
-//       return res.status(404).json({ message: "No data found" });
-//     }
-
-//     res.json(result.recordset);
-
-//   } catch (error) {
-//     console.error("Error executing query:", error.stack);
-//     res.status(500).json({ error: "Internal Server Error", details: error.message });
-//   }
-// };
-// ดึง Spec ตาม PartNo,Division
-// exports.Get_SPEC = async (req, res) => {
-//   console.log(req);
-//   try {
-//     const { Division, PartNo }= req.body;
-//     console.log( Division, PartNo );
-
-//     if ( !Division || !PartNo ) {
-//       return res.status(400).json({ error: "Missing PartNo parameter" });
-//     }
-
-//     const pool = await poolPromise;
-//     const result = await pool
-//       .request()
-//       .input("Division", req.body.Division)
-//       .input("PartNo", req.body.PartNo)
-//       .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset] @Division, @PartNo");
-
-//     if (result.recordset.length === 0) {
-//       return res.status(404).json({ message: "Spec not found for this PartNo" });
-//     } else {
-//       res.json(result.recordset);
-//     }    
-//   } catch (error) {
-//     console.error("Error executing query:", error.stack);
-//     res.status(500).json({ error: "Internal Server Error", details: error.message });
-//   }
-// };
 // ดึวข้อมูลprocess จาก division partno spec
 exports.Get_Process = async (req, res) => {
   console.log(req.body);
@@ -150,11 +88,6 @@ exports.Get_Process = async (req, res) => {
     if ( !Division || !PartNo || !Spec || !Process ) {
       return res.status(400).json({ error: "Missing PartNo parameter" });
     }
-    // const facInt = parseInt(Fac); //  แปลงตรงนี้
-
-    // if (isNaN(facInt)) {
-    //   return res.status(400).json({ error: "Fac must be a number" });
-    // }
     const pool = await poolPromise;
     const result = await pool
       .request()
@@ -206,6 +139,14 @@ exports.Post_ITEMNO = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };
+
+
+
+
+
+
+
+
 
 // ตัวอย่างข้อมูลที่ใช้ในการดึง แบบget
 // exports.Get_PartNo = async (req, res) => {
@@ -280,5 +221,69 @@ exports.Post_ITEMNO = async (req, res) => {
 //   } catch (error) {
 //     // console.error("Error executing query:", error.stack); // แสดงข้อผิดพลาด
 //     res.status(500).json({ error: " Server Error", details: error.message }); // ส่งสถานะ 500 พร้อมข้อความข้อผิดพลาด
+//   }
+// };
+
+// exports.Get_Fac = async (req, res) => {
+//   console.log("Request:", req.body);
+
+//   try {
+//     const { Division, PartNo, Fac } = req.body;
+
+//     if (!Division || !PartNo) {
+//       return res.status(400).json({ error: "Missing Division or PartNo parameter" });
+//     }
+
+//     const facInt = Fac !== undefined && Fac !== null ? parseInt(Fac) : null;
+
+//     if (Fac !== undefined && isNaN(facInt)) {
+//       return res.status(400).json({ error: "Fac must be a number" });
+//     }
+
+//     const pool = await poolPromise;
+//     const result = await pool
+//       .request()
+//       .input("Division", Division)
+//       .input("PartNo", PartNo)
+//       .input("Fac", facInt) // <-- สำคัญมาก ต้องส่งเข้าไป
+//       .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset] @Division, @Fac, @PartNo");
+
+//     if (result.recordset.length === 0) {
+//       return res.status(404).json({ message: "No data found" });
+//     }
+
+//     res.json(result.recordset);
+
+//   } catch (error) {
+//     console.error("Error executing query:", error.stack);
+//     res.status(500).json({ error: "Internal Server Error", details: error.message });
+//   }
+// };
+// ดึง Spec ตาม PartNo,Division
+// exports.Get_SPEC = async (req, res) => {
+//   console.log(req);
+//   try {
+//     const { Division, PartNo }= req.body;
+//     console.log( Division, PartNo );
+
+//     if ( !Division || !PartNo ) {
+//       return res.status(400).json({ error: "Missing PartNo parameter" });
+//     }
+
+//     const pool = await poolPromise;
+//     const result = await pool
+//       .request()
+//       .input("Division", req.body.Division)
+//       .input("PartNo", req.body.PartNo)
+//       .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset] @Division, @PartNo");
+
+//     if (result.recordset.length === 0) {
+//       return res.status(404).json({ message: "Spec not found for this PartNo" });
+//     } else {
+//       res.json(result.recordset);
+//     }    
+//   } catch (error) {
+//     console.error("Error executing query:", error.stack);
+//     res.status(500).json({ error: "Internal Server Error", details: error.message });
 //   }
 // };

@@ -42,8 +42,6 @@ exports.AddCartItems = async (req, res) => {
   }
 };
 
-
-
 //  ดึงรายการทั้งหมดในตะกร้าจากฐานข้อมูล
 exports.GetCartItems = async (req, res) => {
   try {
@@ -55,7 +53,6 @@ exports.GetCartItems = async (req, res) => {
     res.status(500).json({ error: 'ไม่สามารถโหลดรายการตะกร้าได้' });
   }
 };
-
 
 // ลบรายการตาม id หรือรหัสเฉพาะ
 exports.DeleteItem = async (req, res) => {
@@ -82,7 +79,6 @@ exports.DeleteItem = async (req, res) => {
   }
 };
 
-
 //  ลบรายการทั้งหมดในตะกร้า
 exports.ClearAllItems = async (req, res) => {
   try {
@@ -94,6 +90,8 @@ exports.ClearAllItems = async (req, res) => {
     res.status(500).json({ error: 'ไม่สามารถล้างตะกร้าได้' });
   }
 };
+
+// updateรายการ
 exports.UpdateCartItem = async (req, res) => {
   try {
     const item = req.body;
@@ -117,9 +115,12 @@ exports.UpdateCartItem = async (req, res) => {
   }
 };
 
+// ลบรายการตามcaseที่กดsendแล้ว
 exports.DeleteCartItemsByCase = async (req, res) => {
+  
   try {
-    const case_ = req.params.case_;
+    const rawCase = req.params.case_;
+    const case_ = decodeURIComponent(rawCase);
     const pool = await poolPromise;
 
     await pool.request()

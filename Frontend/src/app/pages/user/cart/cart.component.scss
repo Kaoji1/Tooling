@@ -133,7 +133,22 @@
         
       } //table
     }
-      
+    
+    // .btn-send {
+    //   display: flex;
+    //   justify-content: space-between;
+    //   .btn-sendfile
+    //   {
+    //     margin:20px;
+    //     background-color: rgb(11, 122, 28);
+    //     color: white;
+    //     justify-self:end ;
+    //     display: block;
+    //     border: none;
+    //     border-radius: 20px;
+    //     font-size: 22px;
+    //     padding: 12px;
+    //   }
       .btn-sendrequest {
         margin:20px;
         background-color: rgb(235, 51, 51);
@@ -145,5 +160,6 @@
         font-size: 22px;
         padding: 12px;
       }
+    // }
     }//main  
 }
