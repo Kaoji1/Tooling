@@ -72,11 +72,11 @@
               </ng-template>
             </td>
           <!-- Insert -->
-          <td>
-            <button class="btn btn-outline-primary btn-sm">
-              <i class="bi bi-arrow-down-left-square"></i>
-            </button>
-          </td>
+         <td>
+        <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#Insert">
+          <i class="bi bi-arrow-down-left-square"></i>
+        </button>
+      </td>
 
           <!-- Edit / Save -->
           <td>
@@ -93,19 +93,58 @@
           </td>
 
           <!-- Delete -->
-          <td>
-            <button class="btn btn-danger btn-sm" (click)="removeItem(caseKey.key, i)">
+            <td>
+              <button class="btn btn-danger btn-sm" (click)="removeItem(caseKey.key, i)">
               <i class="bi bi-trash"></i>
-            </button>
-          </td>
-        </tr>
-      </ng-container>
-    </tbody>
-  </table>
+              </button>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+  <!-- button sendrequest -->
+   <!-- <div class="btn-send"> -->
+      <!-- <button class="btn-sendfile" type="button" >
+      <i class="bi bi-box-arrow-in-down"></i>  UploadFile
+      </button> -->
+      <button class="btn-sendrequest" type="button"(click)=CreateDocByCase() >
+      <i class="bi bi-send-fill" ></i>Send Request
+      </button>
+  <!-- </div> -->
 </div>
-            <!-- button sendrequest -->
-            <button class="btn-sendrequest" type="button"(click)=CreateDocByCase() >
-                    <i class="bi bi-send-fill" ></i>Send Request
-            </button>
 
+
+<!-- test -->
+
+<div class="modal fade" id="Insert" tabindex="-1" aria-labelledby="Insert" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="Insert">Upload File</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="fileInput" class="form-label">Choose Excel File:</label>
+            <input type="file"
+                   class="form-control"
+                   id="fileInput"
+                   accept="*/*">
+                  
+          </div>
+
+          <div class="mb-3">
+            <label for="message-text" class="col-form-label">Note:</label>
+            <textarea class="form-control" id="message-text"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save File</button>
+      </div>
+    </div>
+  </div>
 </div>

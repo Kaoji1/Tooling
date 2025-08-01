@@ -23,8 +23,6 @@ export class RequestService {
     return this.httpClient.post(`${baseUrl}/get_PARTNO`, data); // ส่ง HTTP Post partno  เพื่อส่งข้อมูล 
   }
 
-
-
   get_Process(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
     return this.httpClient.post(`${baseUrl}/get_Process`, data) ;// ส่ง HTTP POST Process เพื่อส่งข้อมูล process
   }

@@ -9,7 +9,5 @@ const test = require('node:test');
 // กำหนดเส้นทาง request
 router.get('/Purchase_Request', PurchaseRequest.Purchase_Request);
 
-
-
 // ส่งออก router สำหรับใช้งานในที่อื่น
 module.exports = router;

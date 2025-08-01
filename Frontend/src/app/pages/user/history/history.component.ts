@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { RouterOutlet } from '@angular/router';
 import { DropdownSearchComponent } from '../../../components/dropdown-search/dropdown-search.component';
@@ -23,61 +23,72 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss'
 })
-export class HistoryComponent {
-  requests:any[]=[];
+export class HistoryComponent implements OnInit {
+  requests: any[] = [];
+  filteredRequests: any[] = [];
+
   partNoList: { label: string, value: string }[] = [];
   selectedPartNo: string | null = null;
-  filteredRequests: any[] = [];  // ข้อมูลที่กรองแล้ว
-  Status:any;
-  fromDate: string = '';         // เก็บค่าวันเริ่ม
-  toDate: string = ''; 
-  Status_:any[]=[];          // เก็บค่าวันสิ้นสุด
-  
-   constructor( //โหลดทันทีที่รันที่จำเป็นต้องใช้ตอนเริ่มเว็ป
-      private userhistory: UserHistoryService,
-      
-    ) {
-      this.Status = [
-        { label: 'Compelet', value: 'compelet' }, // ตัวเลือกเคสที่ 1
-        { label: 'Process', value: 'Process' }, // ตัวเลือกเคสที่ 2
-        { label: 'USA', value: 'USA' }, // ตัวเลือกเคสที่ 3
-        
-      ];
-    }
-     ngOnInit()  {
-      this.User_History();
-      
+
+  fromDate: string = '';
+  toDate: string = '';
+  Status_: string | null = null;
+
+  Status: { label: string, value: string }[] = [];
+
+  constructor(private userhistory: UserHistoryService) {
+    this.Status = [
+      { label: 'Complete', value: 'Complete' },
+      { label: 'InProcess', value: 'In Process' },
+      { label: 'USA', value: 'USA' }
+    ];
   }
 
- User_History() {
-  this.userhistory.User_History().subscribe({
-    next: (response: any[]) => {
-      this.requests = [...this.requests, ...response];//เรียงข้อมูลต่อล่าง
+  ngOnInit() {
+    this.User_History();
+  }
 
-      // สร้างรายการ PartNo ที่ไม่ซ้ำ
-      const uniquePartNo = [...new Set(this.requests.map(r => r.PartNo))];
+  User_History() {
+    this.userhistory.User_History().subscribe({
+      next: (response: any[]) => {
+        this.requests = [...response];
+        this.filteredRequests = [...this.requests]; // แสดงทั้งหมดก่อน
+        const uniquePartNo = [...new Set(this.requests.map(r => r.PartNo))];
+        this.partNoList = uniquePartNo.map(p => ({
+          label: p,
+          value: p
+        }));
+      },
+      error: (e: any) => console.error(e),
+    });
+  }
 
-      this.partNoList = uniquePartNo.map(p => ({
-        label: p,
-        value: p
-      }));
-    },
-    error: (e: any) => console.error(e),
-  });
-}
-onSort() {
-  this.filteredRequests = this.requests.filter(item => {
-    const itemDate = new Date(item.DateRequest);
+  //  กรองตามช่วงวันที่, PartNo, Status
+  onFilter() {
+    this.filteredRequests = this.requests.filter(item => {
+      const itemDate = new Date(item.DateRequest || item.DueDate);
 
-    const matchDate =
-      (!this.fromDate || itemDate >= new Date(this.fromDate)) &&
-      (!this.toDate || itemDate <= new Date(this.toDate));
+      const matchDate =
+        (!this.fromDate || itemDate >= new Date(this.fromDate)) &&
+        (!this.toDate || itemDate <= new Date(this.toDate));
 
-    const matchPartNo =
-      !this.selectedPartNo || item.PartNo === this.selectedPartNo;
+      const matchPartNo =
+        !this.selectedPartNo || item.PartNo === this.selectedPartNo;
 
-    return matchDate && matchPartNo;
-  });
-}
+      const matchStatus =
+        !this.Status_ || item.Status === this.Status_;
+
+      return matchDate && matchPartNo && matchStatus;
+    });
+  }
+
+  //  เรียงลำดับจาก DueDate ล่าสุด -> เก่าสุด
+  onSort() {
+    this.filteredRequests.sort((a, b) => {
+      const dateA = new Date(a.DueDate).getTime();
+      const dateB = new Date(b.DueDate).getTime();
+      return dateA - dateB; // เรียงจากใหม่ -> เก่า
+    });
+  }
 }
 

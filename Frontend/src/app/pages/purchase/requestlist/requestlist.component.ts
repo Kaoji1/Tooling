@@ -25,10 +25,11 @@ export class RequestlistComponent   {
 
   constructor( //โหลดทันทีที่รันที่จำเป็นต้องใช้ตอนเริ่มเว็ป
       private purchaserequest: PurchaseRequestService,
-     
-    ) {}
-  
-    
+     private router: Router
+    ) {
+      
+    }
+
 async ngOnInit()  {
     this.Purchase_Request();
   }
@@ -44,10 +45,7 @@ Purchase_Request() {
     error: (e: any) => console.error(e),
   });
 }  
-
-
 }
-
 
 // item = {
 //     inputDate: new Date()

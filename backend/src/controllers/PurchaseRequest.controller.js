@@ -9,7 +9,7 @@ exports.Purchase_Request = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
     .request()
-    .query("SELECT * FROM tb_IssueCuttingTool_Request_Document");
+    .query("SELECT * FROM View_IssueCuttingTool_Requestlist");
 
     res.json(result.recordset);
   } 

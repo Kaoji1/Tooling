@@ -7,6 +7,7 @@ import { NotificationComponent } from '../../../components/notification/notifica
 import { CartService } from '../../../core/services/cart.service';
 import { Router } from '@angular/router';
 import { SendrequestService } from '../../../core/services/SendRequest.service';
+import bootstrap from '../../../../main.server';
 
 @Component({
   selector: 'app-cart',
@@ -113,6 +114,7 @@ removeItem(case_: string, index: number) {
     const process = firstItem.Process;
     const factory = firstItem.Fac  || '';
     
+    console.log("case:",case_);
 
     // ตรวจสอบค่าว่าง
     if (!case_ || !process || !factory) {
@@ -143,7 +145,7 @@ removeItem(case_: string, index: number) {
  if (createdDocs.length > 0) {
     alert('สร้างและส่งเอกสารสำเร็จ:\n\n' + createdDocs.join('\n'));
   } else {
-    alert('ไม่มีเอกสารใดถูกสร้าง');
+    alert('ไม่มีเอกสารใดถูกสร้าง กรุณาติ๊กก่อนส่ง');
   }
  
 }
@@ -156,4 +158,17 @@ removeItem(case_: string, index: number) {
     }
     this.checkedCases = {};
   }
+
+  selectedItem: any; // ตัวที่ถูกเลือกตอนอัปโหลด
+selectedFile!: File;
+noteText: string = '';
+openUploadModal(item: any): void {
+  this.selectedItem = item; // เก็บรายการที่คลิกไว้
+}
+
+onFileSelected(event: any): void {
+  this.selectedFile = event.target.files[0];
+}
+
+
 }
