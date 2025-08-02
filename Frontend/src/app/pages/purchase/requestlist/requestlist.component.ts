@@ -21,13 +21,17 @@ import { PurchaseRequestService } from '../../../core/services/PurchaseRequest.s
 export class RequestlistComponent   {
 
   request:any[]=[];
+  // router: any;
 
   constructor( //โหลดทันทีที่รันที่จำเป็นต้องใช้ตอนเริ่มเว็ป
-      private purchaserequest: PurchaseRequestService,
-     private router: Router
-    ) {
+      private purchaserequest: PurchaseRequestService, 
+      private router: Router
+     
+    ) {}
 
-    }
+  goToDetail() {
+  this.router.navigate(['/purchase/detail']); // ใส่ path ที่ต้องการลิงก์ไป
+  }
 
 async ngOnInit()  {
     this.Purchase_Request();

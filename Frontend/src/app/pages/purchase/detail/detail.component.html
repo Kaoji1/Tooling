@@ -19,65 +19,47 @@
     </div>
   </div>
 
-
-
-
       <!-- กล่อง item no -->
       <div class="Box-itemNo">
         <h1>Item No : ##</h1>
       </div>
       <!-- ตาราง -->
+       
       <div class="table-responsive">
         <table class="table table-bordered text-center">
-          <!-- หัวตาราง -->
-          <thead>
-            <tr>
+          
+      <thead>
+        <!-- <th><input type="checkbox"[(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"/></th> -->
+            <tr class="text-center align-middle">
+              <th><input type="checkbox" /></th>
               <th>Document</th>
-              <th>Item No.</th>
-              <th>Item Name</th>
+              <th>Requester</th> 
               <th>Part No.</th>
               <th>Spec</th>
               <th>Process</th>
-              <th>Mac Type</th>
-              <th>Mac QTY.</th>
-              <th>Case</th>
-              <th>On hand</th>
-              <th>QTY.</th>
-              <th>Reg</th>
-              <th>Status</th>
-              <th>Fac.</th>
-              <th>Input Date</th>
+              <th>MC Type</th>
+              <th>MC QTY</th>
+              <th>Fac</th>
+              <th>DWG</th>
+              <th>Fresh-QTY</th>
+              <th>Reuse-QTY</th>
+              <th>On Hand</th>
+              <th>QTY</th>
+              <th>Issue Date</th>
               <th>Due Date</th>
+              <th>Case</th>
+              <th>Status</th>
               <th>Remark</th>
-              <th>Check</th>
               <th>Edit</th>
-              <th>More Item</th>
             </tr>
-          </thead>
+    </thead>
+
           <!-- ในตาราง -->
           <tbody>
+            
             <!-- row -->
-            <tr>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>
-                <input type="checkbox" id="selectAll">
-              </td>
+            <!-- <tr>
+
               <td>
                 <button onclick="window.location.href='#'" class="Editicon">
                     <i class="bi bi-pencil-square"></i>
@@ -88,7 +70,7 @@
                     <i class="bi bi-plus-circle-fill"></i>
                   </button>
               </td>
-            </tr>
+            </tr> -->
            
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

@@ -2,6 +2,7 @@
 <div class="layout">
   <!-- sidebarฝั่งuser -->
   <app-sidebarpurchase></app-sidebarpurchase>
+  <router-outlet></router-outlet>
 
   <!-- ข้อมูลในหน้านี้ไม่รวมsidebar -->
   <div class="content">
@@ -69,9 +70,12 @@
             <td>{{ item.CASE }}</td>
             <td>{{ item.Total }}</td>
             <td>
-              <button  class="detailicon" type="button">
+              <!-- <button  class="detailicon" type="button">
                 <i class="bi bi-eye-fill" style="font-size: 20px;"></i>
-              </button>
+              </button> -->
+           <button class="goToDetail" type="button" (click)="goToDetail()">Detail
+            <i class="bi bi-eye-fill" style="font-size: 20px;"></i></button>
+
              </td>
           </tr>
         </tbody>
