@@ -10,16 +10,16 @@ import { PurchaseRequestService } from '../../../core/services/PurchaseRequest.s
 @Component({
   selector: 'app-requestlist',
   standalone: true,
-  imports: [RouterOutlet, 
-    SidebarPurchaseComponent, 
-    NotificationComponent, 
-    FormsModule, 
+  imports: [RouterOutlet,
+    SidebarPurchaseComponent,
+    NotificationComponent,
+    FormsModule,
     CommonModule],
   templateUrl: './requestlist.component.html',
   styleUrl: './requestlist.component.scss'
 })
 export class RequestlistComponent   {
-  
+
   request:any[]=[];
   // router: any;
 
@@ -43,11 +43,11 @@ Purchase_Request() {
       this.request = [...this.request, ...response];//เรียงข้อมูลต่อล่าง
 
       // สร้างรายการ PartNo ที่ไม่ซ้ำ
-     
+
     },
     error: (e: any) => console.error(e),
   });
-}  
+}
 }
 
 // item = {
@@ -57,7 +57,7 @@ Purchase_Request() {
 
 //   constructor(private router: Router) {}
 
-  
+
 //   ngOnInit() {
 //     this.loadRequest();
 //   }
