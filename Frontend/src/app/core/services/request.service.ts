@@ -16,11 +16,11 @@ export class RequestService {
   ) { }
 
   get_Division(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-    return this.httpClient.get(`${baseUrl}/get_Division`); // ส่ง HTTP GET Division 
+    return this.httpClient.get(`${baseUrl}/get_Division`); // ส่ง HTTP GET Division
   }
 
-  get_PARTNO(data: any): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-    return this.httpClient.post(`${baseUrl}/get_PARTNO`, data); // ส่ง HTTP Post partno  เพื่อส่งข้อมูล 
+  get_PartNo(data: any): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
+    return this.httpClient.post(`${baseUrl}/get_PartNo`, data); // ส่ง HTTP Post partno  เพื่อส่งข้อมูล
   }
 
   get_Process(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
@@ -30,10 +30,10 @@ export class RequestService {
   get_MC(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
     return this.httpClient.post(`${baseUrl}/get_MC`, data) ;// ส่ง HTTP POST request เพื่อส่งข้อมูล process
   }
- 
 
-  post_ITEMNO(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
-    return this.httpClient.post(`${baseUrl}/post_ITEMNO`, data); // ส่ง HTTP POST request เพื่อส่งข้อมูล process
+
+  post_ItemNo(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
+    return this.httpClient.post(`${baseUrl}/post_ItemNo`, data); // ส่ง HTTP POST request เพื่อส่งข้อมูล process
   }
 
   get_SPEC(data: any): Observable<any> {

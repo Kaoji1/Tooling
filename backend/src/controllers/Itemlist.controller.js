@@ -19,7 +19,7 @@ exports.Get_Division = async (req, res) => {
 };
 
 // ดึงข้อมูล PartNo กรองจาก Division
-exports.Get_PartNo = async (req, res) => {
+exports.get_PartNo = async (req, res) => {
   console.log(req);
   try {
     const { Division }= req.body;
@@ -109,7 +109,7 @@ exports.Get_Process = async (req, res) => {
 
 };
 // ดึงItemno จาก division partno process mc
-exports.Post_ITEMNO = async (req, res) => {
+exports.post_ItemNo = async (req, res) => {
   console.log(req.body);
   try {
     const { Division, PartNo, Process, MC }= req.body;
@@ -149,7 +149,7 @@ exports.Post_ITEMNO = async (req, res) => {
 
 
 // ตัวอย่างข้อมูลที่ใช้ในการดึง แบบget
-// exports.Get_PartNo = async (req, res) => {
+// exports.get_PartNo = async (req, res) => {
 //   try {
 //     const pool = await poolPromise;
 //     const result = await pool
@@ -165,7 +165,7 @@ exports.Post_ITEMNO = async (req, res) => {
 // };
 
 // ดึงข้อมูลแบบ รับข้อมูลลงมาด้วย
-// exports.Get_PartNo = async (req, res) => {
+// exports.get_PartNo = async (req, res) => {
 //   console.log(req);
 //   try {
 //     const { Division }= req.body;
@@ -192,7 +192,7 @@ exports.Post_ITEMNO = async (req, res) => {
 //   }
 // };
 
-// exports.Post_ITEMNO = async (req, res) => {
+// exports.post_ItemNo = async (req, res) => {
 //   console.log(req.body);
 //   try {
 //     const { PartNo, Spec, Process, MC } = req.body;

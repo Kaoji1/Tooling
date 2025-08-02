@@ -120,10 +120,10 @@ Get_Division() {
   });
 }
 // เรียกใช้ตัวดึงapi
-async get_PARTNO(event: any) {
+async get_PartNo(event: any) {
   const division = event.Division ?? event;
   if (division) {
-    this.api.get_PARTNO({ Division: division }).subscribe({
+    this.api.get_PartNo({ Division: division }).subscribe({
       next: (response: any[]) => {
         // กรอง PartNo ไม่ให้ซ้ำ
         this.PartNo = response.filter((item, index, self) =>
@@ -144,7 +144,7 @@ async get_PARTNO(event: any) {
       const data = {
         Division:event.Division,
         PartNo: event.PartNo,
-        
+
       }
       console.log(data);
       this.api.get_Process(data).subscribe({
@@ -170,7 +170,7 @@ async get_PARTNO(event: any) {
       const data = {
         Division:event.Division,
         PartNo: event.PartNo,
-        
+
         Spec: event.SPEC,
         Process: event.Process
       }
@@ -188,7 +188,7 @@ async get_PARTNO(event: any) {
     });
     }
   }
-  
+
 
 
 
@@ -224,7 +224,7 @@ Setview() {
   if (PartNo && Fac && Process && MC && Division && DueDate_  !== undefined) {
     const data = { Division, PartNo, Process, MC };
 
-    this.api.post_ITEMNO(data).subscribe({
+    this.api.post_ItemNo(data).subscribe({
       next: (response) => {
         //  กรณี selectedType คือ 'setup'
         if (this.Case_ === 'SET') {
@@ -241,7 +241,7 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
          else if (this.Case_=== 'BRO') {
@@ -249,7 +249,7 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
          else if (this.Case_=== 'BUR') {
@@ -257,7 +257,7 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
          else if (this.Case_=== 'CHA') {
@@ -265,7 +265,7 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
         else if (this.Case_=== 'F/A') {
@@ -273,7 +273,7 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
          else if (this.Case_=== 'HOL') {
@@ -281,7 +281,7 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
         else if (this.Case_=== 'INV') {
@@ -289,7 +289,7 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
         else if (this.Case_=== 'RET') {
@@ -297,7 +297,7 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
          else if (this.Case_=== 'JIG') {
@@ -305,7 +305,7 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
          else if (this.Case_=== 'MOD') {
@@ -313,7 +313,7 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
          else if (this.Case_=== 'N/G') {
@@ -321,15 +321,15 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
-        }  
+        }
         else if (this.Case_=== 'P/P') {
           this.items = response.map((item: any) => ({
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
           else if (this.Case_=== 'REC') {
@@ -337,7 +337,7 @@ Setview() {
             ...item,
             checked: true,
             qty: null,
-            
+
           }));
         }
         console.log('ข้อมูลที่โหลด:', this.items);
@@ -438,9 +438,9 @@ Clearall() {
 
 
 
-//   Get_PARTNO() {
+//   get_PartNo() {
   //   // เรียก API เพื่อดึงข้อมูล SPEC
-  //   this.api.get_PARTNO().subscribe({
+  //   this.api.get_PartNo().subscribe({
   //     // ถ้าสำเร็จ จะทำการเก็บ response ลงใน spec
   //     next: (response: any) => {
   //       this.PartNo = response;
@@ -459,7 +459,7 @@ Clearall() {
 //       const data = {
 //         Division:event.Division,
 //         PartNo: event.PartNo
-        
+
 //       }
 //       console.log(data);
 //       this.api.get_SPEC(data).subscribe({
@@ -467,7 +467,7 @@ Clearall() {
 //         next: (response) => {
 //           if (response.length > 0) {
 //             this.spec = response;
-            
+
 //             // แสดงผลลัพธ์ใน console
 //             console.log(response);
 //           }
@@ -505,7 +505,7 @@ Clearall() {
   //     const data = {
   //       Division:event.Division,
   //       PartNo: event.PartNo,
-        
+
   //     }
   //     console.log(data);
   //     this.api.get_Fac(data).subscribe({

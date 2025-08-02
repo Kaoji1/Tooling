@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPurchase.component';
 import { NotificationComponent } from '../../../components/notification/notification.component';
-import { MOCKDATA } from '../../../mock-data';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -11,23 +10,23 @@ import { PurchaseRequestService } from '../../../core/services/PurchaseRequest.s
 @Component({
   selector: 'app-requestlist',
   standalone: true,
-  imports: [RouterOutlet, 
-    SidebarPurchaseComponent, 
-    NotificationComponent, 
-    FormsModule, 
+  imports: [RouterOutlet,
+    SidebarPurchaseComponent,
+    NotificationComponent,
+    FormsModule,
     CommonModule],
   templateUrl: './requestlist.component.html',
   styleUrl: './requestlist.component.scss'
 })
 export class RequestlistComponent   {
-  
+
   request:any[]=[];
 
   constructor( //โหลดทันทีที่รันที่จำเป็นต้องใช้ตอนเริ่มเว็ป
       private purchaserequest: PurchaseRequestService,
      private router: Router
     ) {
-      
+
     }
 
 async ngOnInit()  {
@@ -40,11 +39,11 @@ Purchase_Request() {
       this.request = [...this.request, ...response];//เรียงข้อมูลต่อล่าง
 
       // สร้างรายการ PartNo ที่ไม่ซ้ำ
-     
+
     },
     error: (e: any) => console.error(e),
   });
-}  
+}
 }
 
 // item = {
@@ -54,7 +53,7 @@ Purchase_Request() {
 
 //   constructor(private router: Router) {}
 
-  
+
 //   ngOnInit() {
 //     this.loadRequest();
 //   }
