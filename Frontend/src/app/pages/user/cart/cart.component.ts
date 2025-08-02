@@ -8,6 +8,8 @@ import { CartService } from '../../../core/services/cart.service';
 import { Router } from '@angular/router';
 import { SendrequestService } from '../../../core/services/SendRequest.service';
 import bootstrap from '../../../../main.server';
+import { FileUploadSerice } from '../../../core/services/FileUpload.service';
+import { response } from 'express';
 
 @Component({
   selector: 'app-cart',
@@ -23,7 +25,8 @@ export class CartComponent implements OnInit {
 
   constructor(
     private cartService: CartService,
-    private sendrequestService: SendrequestService
+    private sendrequestService: SendrequestService,
+    private FileUploadSerice : FileUploadSerice
   ) {}
 
   ngOnInit(): void {
@@ -129,6 +132,7 @@ removeItem(case_: string, index: number) {
       groupItems.forEach((item: any) => item.Doc_no = docNo);
 
       await this.sendrequestService.SendRequest(groupItems).toPromise();
+      await this.uploadFile(caseKey)
       await this.cartService.deleteItemsByCase(case_).toPromise();
       createdDocs.push(`📄 ${docNo} | ${groupItems.length} รายการ`);
 
@@ -149,26 +153,64 @@ removeItem(case_: string, index: number) {
   }
  
 }
+selectedFiles: { [caseKey: string]: File | null } = {};
+uploadStatusMap: { [caseKey: string]: string } = {};
+uploadStatus = '';
 
-  clearSelectedCases() {
-    for (const caseKey in this.checkedCases) {
-      if (this.checkedCases[caseKey]) {
-        delete this.groupedCart[caseKey];
-      }
-    }
-    this.checkedCases = {};
+
+// ฟังก์ชันเลือกไฟล์แบบแยก Case
+onFileSelected(event: Event, caseKey: string): void {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    this.selectedFiles[caseKey] = input.files[0];
+    console.log(`Selected file for ${caseKey}:`, this.selectedFiles[caseKey]);
+  }
+}
+
+ // อัปโหลดไฟล์ของเคสเดียว
+ uploadFile(caseKey: string): void {
+  const file = this.selectedFiles[caseKey];
+
+  console.log(' เริ่มอัปโหลดเคส:', caseKey);
+  console.log(' ไฟล์ที่เลือก:', file);
+
+  if (!file) {
+    this.uploadStatus = `กรุณาเลือกไฟล์สำหรับเคส ${caseKey} ก่อนอัปโหลด`;
+    console.warn(` ไม่พบไฟล์สำหรับเคส: ${caseKey}`);
+    return;
   }
 
-  selectedItem: any; // ตัวที่ถูกเลือกตอนอัปโหลด
-selectedFile!: File;
-noteText: string = '';
-openUploadModal(item: any): void {
-  this.selectedItem = item; // เก็บรายการที่คลิกไว้
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('caseKey', caseKey);
+
+  console.log(' FormData ที่จะส่ง:', {
+    fileName: file.name,
+    caseKey: caseKey
+  });
+
+  this.FileUploadSerice.FileUpload(formData).subscribe({
+    next: () => {
+      console.log(` อัปโหลดสำเร็จสำหรับเคส: ${caseKey}`);
+      this.uploadStatus = `อัปโหลดไฟล์สำเร็จสำหรับเคส ${caseKey}`;
+      this.selectedFiles[caseKey] = null;
+    },
+    error: (err: { message: any }) => {
+      console.error(` อัปโหลดล้มเหลวสำหรับเคส: ${caseKey}`, err);
+      this.uploadStatus = `อัปโหลดล้มเหลวสำหรับเคส ${caseKey}: ${err.message || 'Unknown error'}`;
+    }
+  });
 }
 
-onFileSelected(event: any): void {
-  this.selectedFile = event.target.files[0];
-}
+
+clearSelectedCases() {
+  for (const caseKey in this.checkedCases) {
+    if (this.checkedCases[caseKey]) {
+       delete this.groupedCart[caseKey];
+    }
+  }
+    this.checkedCases = {};
+  }
 
 
 }

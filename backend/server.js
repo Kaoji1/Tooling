@@ -7,8 +7,8 @@ const SendRequestRoutes = require('./src/routes/SendRequest.route.js');
 const UserHistory = require('./src/routes/UserHistory.route.js');
 const PurchaseRequest = require('./src/routes/Purchaserequest.route.js');
 const Cart = require('./src/routes/Cart.route.js');
-const Login = require('./src/routes/Login.route.js')
-
+const Login = require('./src/routes/Login.route.js');
+const Upload = require('./src/routes/FileUpload.route.js');
 
 // Create Instance and Express application
 const app = express();
@@ -27,6 +27,8 @@ app.use('/api', UserHistory);
 app.use('/api', PurchaseRequest);
 app.use('/api', Cart);
 app.use('/api', Login)
+app.use('/api', Upload)
+
 
 // กำหนดเส้นทางหลัก
 app.get('/', (req, res) => {

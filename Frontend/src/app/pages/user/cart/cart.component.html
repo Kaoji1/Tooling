@@ -21,11 +21,11 @@
         <th style="width: 200px;">Spec</th>
         <th>Process</th>
         <th>MC</th>
-        <th>FreshQty</th>
-        <th>ReuseQty</th>
+        <th>Fresh_Qty</th>
+        <th>Reuse_Qty</th>
         <th>QTY</th>
         <th>Due Date</th>
-        <th>Insert</th>
+        <!-- <th>Insert</th> -->
         <th>Edit</th>
         <th>Del</th>
       </tr>
@@ -36,12 +36,30 @@
       <ng-container *ngFor="let caseKey of (groupedCart | keyvalue)">
         <!--  แสดงหัวกลุ่ม Case -->
         <tr class="table-secondary">
-          <td colspan="12" class="text-start fw-bold">
-            <input type="checkbox"
-                  [(ngModel)]="checkedCases[caseKey.key]"
-                  style="transform: scale(1.2);" />
-            Case: {{ caseKey.key }} | Fac: {{ caseKey.value[0]?.Fac || '-' }}
-          </td>
+          <td colspan="11" class="text-start fw-bold">
+              <input type="checkbox"
+                    [(ngModel)]="checkedCases[caseKey.key]"
+                    style="transform: scale(1.2);" />
+              Case: {{ caseKey.key }} | Fac: {{ caseKey.value[0]?.Fac || '-' }}
+              
+              <div class="file-upload-container">
+                <label [for]="'file-upload-' + caseKey.key" class="custom-file-upload">
+                  <i class="pi pi-upload"></i> Upload File
+                </label>
+                <input
+                  [id]="'file-upload-' + caseKey.key"
+                  type="file" 
+                  (change)="onFileSelected($event, caseKey.key)"
+                  multiple  
+                  />
+                
+               
+              </div>
+               <button class="btn btn-sm btn-success"
+            (click)="uploadFile(caseKey.key)">
+                Upload
+              </button>
+            </td>
         </tr>
 
         <!--  แสดงรายการแต่ละกลุ่ม -->
@@ -72,11 +90,11 @@
               </ng-template>
             </td>
           <!-- Insert -->
-         <td>
+         <!-- <td>
         <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#Insert">
           <i class="bi bi-arrow-down-left-square"></i>
         </button>
-      </td>
+      </td> -->
 
           <!-- Edit / Save -->
           <td>

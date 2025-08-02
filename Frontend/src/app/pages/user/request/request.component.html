@@ -115,6 +115,10 @@
               placeholder="Select MachineType">
             </ng-select>
           </div>
+          <div class="group-select">
+            <label for="phonenumber"> MC QTY </label>
+            <input type="text" class="form-control" placeholder="Enter your MC QTY" id="phonenumber" [(ngModel)]="MCQTY_"/>
+          </div>
 
 
         </div>
@@ -125,8 +129,8 @@
       <!-- btn group -->
       <div class="btn-group-req">
         <button class="btn-viewall" type="button" (click)="Clearall()"> CLEARALL <i class="bi bi-list"></i></button>
-        <button class="btn-import" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal"
-          data-bs-whatever="@getbootstrap"> IMPORT <i class="bi bi-download"></i></button>
+        <!-- <button class="btn-import" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal"
+          data-bs-whatever="@getbootstrap"> IMPORT <i class="bi bi-download"></i></button> -->
         <button class="btn-view" type="button" (click)="Setview()" > VIEW <i class="bi bi-eye-fill"></i></button>
 
       </div>
@@ -146,8 +150,8 @@
         <th>Process</th>
         <th>Machine Type</th>
 
-        <th>FreshQty</th>
-        <th>ReuseQty</th>
+        <th>Fresh_Qty</th>
+        <th>Reuse_Qty</th>
         <th>QTY</th>
         <th>Case</th>
       </tr>
