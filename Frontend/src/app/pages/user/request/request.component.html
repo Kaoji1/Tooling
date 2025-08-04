@@ -115,9 +115,9 @@
               placeholder="Select MachineType">
             </ng-select>
           </div>
-          <div class="group-select">
-            <label for="phonenumber"> MC QTY </label>
-            <input type="text" class="form-control" placeholder="Enter your MC QTY" id="phonenumber" [(ngModel)]="MCQTY_"/>
+          <div class="group-select"  *ngIf="Case_ === 'SET' ">
+            <label for="MCQTY"> MC QTY </label>
+            <input type="text" class="form-control" placeholder="Enter your MC QTY" id="MCQTY" [(ngModel)]="MCQTY_"/>
           </div>
 
 

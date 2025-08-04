@@ -5,5 +5,6 @@ const router = express.Router();
 const FileUploadController = require('../controllers/FileUpload.controller');
 
 router.post('/FileUpload', FileUploadController.FileUpload);
+router.get('/GetImage/:caseKey',FileUploadController.GetImage);
 
 module.exports = router;

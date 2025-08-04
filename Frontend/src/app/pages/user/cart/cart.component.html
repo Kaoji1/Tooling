@@ -1,168 +1,170 @@
 <!-- ฝั่งด้านแสดงข้อมูลไม่เกี่ยวกับsidebar -->
 <div class="cart-layout">
-    <!-- เพิ่มsidebarเข้ามา -->
-    <app-sidebar></app-sidebar>
-         <!--รวมข้อมูลในหน้าทั้งหมด  -->
-        <div class="main">
-            <div class="header">
-        <h4>Cart</h4>
-        <app-notification class="noti"></app-notification>
-      </div>
-      <p>all your request in here</p>
-        
-<!-- table -->
-  <div class="table-responsive">
-    <table class="table table-bordered text-center" >
-    <!--  thead ตัวเดียว -->
-      <thead class="table-dark sticky-top" >
-      <tr>
-        <th style="width: 50px;">No.</th>
-        <th style="width: 150px;">Part No.</th>
-        <th style="width: 200px;">Spec</th>
-        <th>Process</th>
-        <th>MC</th>
-        <th>Fresh_Qty</th>
-        <th>Reuse_Qty</th>
-        <th>QTY</th>
-        <th>Due Date</th>
-        <!-- <th>Insert</th> -->
-        <th>Edit</th>
-        <th>Del</th>
-      </tr>
-    </thead>
+  <!-- เพิ่มsidebarเข้ามา -->
+  <app-sidebar></app-sidebar>
+  <!--รวมข้อมูลในหน้าทั้งหมด  -->
+  <div class="main">
+    <div class="header">
+      <h4>Cart</h4>
+      <app-notification class="noti"></app-notification>
+    </div>
+    <p>all your request in here</p>
 
-    <!--  tbody เดียว ใช้ ng-container วนกลุ่ม -->
-    <tbody>
-      <ng-container *ngFor="let caseKey of (groupedCart | keyvalue)">
-        <!--  แสดงหัวกลุ่ม Case -->
-        <tr class="table-secondary">
-          <td colspan="11" class="text-start fw-bold">
-              <input type="checkbox"
-                    [(ngModel)]="checkedCases[caseKey.key]"
-                    style="transform: scale(1.2);" />
-              Case: {{ caseKey.key }} | Fac: {{ caseKey.value[0]?.Fac || '-' }}
-              
-              <div class="file-upload-container">
-                <label [for]="'file-upload-' + caseKey.key" class="custom-file-upload">
-                  <i class="pi pi-upload"></i> Upload File
-                </label>
-                <input
-                  [id]="'file-upload-' + caseKey.key"
-                  type="file" 
-                  (change)="onFileSelected($event, caseKey.key)"
-                  multiple  
-                  />
-                
-               
-              </div>
-               <button class="btn btn-sm btn-success"
-            (click)="uploadFile(caseKey.key)">
-                Upload
-              </button>
-            </td>
-        </tr>
+    <!-- table -->
+    <div class="table-responsive">
+      <table class="table table-bordered text-center">
+        <!--  thead ตัวเดียว -->
+        <thead class="table-dark sticky-top">
+          <tr>
+            <th style="width: 50px;">No.</th>
+            <th style="width: 150px;">Part No.</th>
+            <th style="width: 200px;">Spec</th>
+            <th>Process</th>
+            <th>MC</th>
+            <th>Fresh_Qty</th>
+            <th>Reuse_Qty</th>
+            <th>QTY</th>
+            <th>Due Date</th>
+            <!-- <th>Insert</th> -->
+            <th>Edit</th>
+            <th>Del</th>
+          </tr>
+        </thead>
 
-        <!--  แสดงรายการแต่ละกลุ่ม -->
-        <tr *ngFor="let item of caseKey.value; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td>{{ item.PartNo }}</td>
-          <td>{{ item.SPEC }}</td>
-          <td>{{ item.Process }}</td>
-          <td>{{ item.MCType }}</td>
-          <td>{{ item.Fresh_QTY }}</td>
-          <td>{{ item.Reuse_QTY }}</td>
+        <!--  tbody เดียว ใช้ ng-container วนกลุ่ม -->
+        <tbody>
+          <ng-container *ngFor="let caseKey of (groupedCart | keyvalue)">
+            <!--  แสดงหัวกลุ่ม Case -->
+            <tr class="table-secondary">
+              <td colspan="11" class="text-start fw-bold">
+                <input type="checkbox" [(ngModel)]="checkedCases[caseKey.key]" style="transform: scale(1.2);" />
+                Case: {{ caseKey.key }} | Fac: {{ caseKey.value[0]?.Fac || '-' }}
 
-         <!-- QTY -->
-            <td>
-              <ng-container *ngIf="editingIndex[caseKey.key] === i; else showQty">
-                <input [(ngModel)]="item.QTY" type="number" class="form-control" />
-              </ng-container>
-              <ng-template #showQty>{{ item.QTY }}</ng-template>
-            </td>
+                <div class="file-upload-container">
+                  <label [for]="'file-upload-' + caseKey.key" class="custom-file-upload">
+                    <i class="pi pi-upload"></i> UploadFileDrwg
+                  </label>
+                  <input [id]="'file-upload-' + caseKey.key" type="file" (change)="onFileSelected($event, caseKey.key)"
+                    multiple accept="application/pdf" />
 
-            <!-- Due Date -->
-            <td>
-              <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDate">
-                <input [(ngModel)]="item.Due_Date" type="date" class="form-control" />
-              </ng-container>
-              <ng-template #showDate>
-                {{ item.Due_Date ? (item.Due_Date | date: 'yyyy-MM-dd') : '-' }}
-              </ng-template>
-            </td>
-          <!-- Insert -->
-         <!-- <td>
+
+                </div>
+                <button class="btn btn-sm btn-success" type="button" (click)="uploadFile(caseKey.key)">
+                  Upload
+                </button>
+
+
+                <!--  ตำแหน่งที่จะแสดงภาพ -->
+                <div *ngIf="imageMap[caseKey.key]">
+                  <span style="cursor: pointer; color: blue; text-decoration: underline;"
+                    (click)="loadPdf(caseKey.key)">
+                    {{ imageMap[caseKey.key].fileName }}
+
+                  </span>
+
+                  <i class="bi bi-x" style="margin-left: 3px; "></i>
+                </div>
+
+
+              </td>
+            </tr>
+
+            <!--  แสดงรายการแต่ละกลุ่ม -->
+            <tr *ngFor="let item of caseKey.value; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ item.PartNo }}</td>
+              <td>{{ item.SPEC }}</td>
+              <td>{{ item.Process }}</td>
+              <td>{{ item.MCType }}</td>
+              <td>{{ item.Fresh_QTY }}</td>
+              <td>{{ item.Reuse_QTY }}</td>
+
+              <!-- QTY -->
+              <td>
+                <ng-container *ngIf="editingIndex[caseKey.key] === i; else showQty">
+                  <input [(ngModel)]="item.QTY" type="number" class="form-control" />
+                </ng-container>
+                <ng-template #showQty>{{ item.QTY }}</ng-template>
+              </td>
+
+              <!-- Due Date -->
+              <td>
+                <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDate">
+                  <input [(ngModel)]="item.Due_Date" type="date" class="form-control" />
+                </ng-container>
+                <ng-template #showDate>
+                  {{ item.Due_Date ? (item.Due_Date | date: 'yyyy-MM-dd') : '-' }}
+                </ng-template>
+              </td>
+              <!-- Insert -->
+              <!-- <td>
         <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#Insert">
           <i class="bi bi-arrow-down-left-square"></i>
         </button>
       </td> -->
 
-          <!-- Edit / Save -->
-          <td>
-            <button *ngIf="editingIndex[caseKey.key] !== i"
-                    class="btn btn-primary btn-sm"
-                    (click)="startEdit(caseKey.key, i)">
-              <i class="bi bi-pencil-square"></i>
-            </button>
-            <button *ngIf="editingIndex[caseKey.key] === i"
-                    class="btn btn-success btn-sm"
-                    (click)="saveEdit(caseKey.key, i)">
-              <i class="bi bi-check-lg"></i>
-            </button>
-          </td>
+              <!-- Edit / Save -->
+              <td>
+                <button *ngIf="editingIndex[caseKey.key] !== i" class="btn btn-primary btn-sm"
+                  (click)="startEdit(caseKey.key, i)">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button *ngIf="editingIndex[caseKey.key] === i" class="btn btn-success btn-sm"
+                  (click)="saveEdit(caseKey.key, i)">
+                  <i class="bi bi-check-lg"></i>
+                </button>
+              </td>
 
-          <!-- Delete -->
-            <td>
-              <button class="btn btn-danger btn-sm" (click)="removeItem(caseKey.key, i)">
-              <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>
-        </ng-container>
-      </tbody>
-    </table>
-  </div>
-  <!-- button sendrequest -->
-   <!-- <div class="btn-send"> -->
-      <!-- <button class="btn-sendfile" type="button" >
+              <!-- Delete -->
+              <td>
+                <button class="btn btn-danger btn-sm" (click)="removeItem(caseKey.key, i)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <!-- button sendrequest -->
+    <!-- <div class="btn-send"> -->
+    <!-- <button class="btn-sendfile" type="button" >
       <i class="bi bi-box-arrow-in-down"></i>  UploadFile
       </button> -->
-      <button class="btn-sendrequest" type="button"(click)=CreateDocByCase() >
-      <i class="bi bi-send-fill" ></i>Send Request
-      </button>
-  <!-- </div> -->
-</div>
+    <button class="btn-sendrequest" type="button" (click)=CreateDocByCase()>
+      <i class="bi bi-send-fill"></i>Send Request
+    </button>
+    <!-- </div> -->
+  </div>
 
 
-<!-- test -->
+  <!-- test -->
 
-<div class="modal fade" id="Insert" tabindex="-1" aria-labelledby="Insert" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="Insert">Upload File</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form>
-          <div class="mb-3">
-            <label for="fileInput" class="form-label">Choose Excel File:</label>
-            <input type="file"
-                   class="form-control"
-                   id="fileInput"
-                   accept="*/*">
-                  
-          </div>
+  <div class="modal fade" id="Insert" tabindex="-1" aria-labelledby="Insert" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="Insert">Upload File</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label for="fileInput" class="form-label">Choose Excel File:</label>
+              <input type="file" class="form-control" id="fileInput" accept="image/png, image/jpeg">
 
-          <div class="mb-3">
-            <label for="message-text" class="col-form-label">Note:</label>
-            <textarea class="form-control" id="message-text"></textarea>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save File</button>
+            </div>
+
+            <div class="mb-3">
+              <label for="message-text" class="col-form-label">Note:</label>
+              <textarea class="form-control" id="message-text"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save File</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
