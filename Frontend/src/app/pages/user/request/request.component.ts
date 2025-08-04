@@ -386,6 +386,7 @@ AddToCart() {
       Status: null,
       Set_by: null,
       Local: 0,
+      MCQTY_:this.MCQTY_,
     });
     return acc;
   }, {});
