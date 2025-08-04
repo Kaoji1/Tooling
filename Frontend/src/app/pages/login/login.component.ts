@@ -25,9 +25,9 @@ export class LoginComponent {
     this.LoginService.login(credentials).subscribe({
       next: (res) => {
 
-        // Keep token from backend
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('user', JSON.stringify(res.user));
+        // // Keep token from backend
+        sessionStorage.setItem('token', res.token);
+        sessionStorage.setItem('user', JSON.stringify(res.user));
 
         console.log('Login response:', res);
         // ถ้าเข้าสู่ระบบสำเร็จ ให้เปลี่ยนเส้นทางไปยังหน้า dashboard
