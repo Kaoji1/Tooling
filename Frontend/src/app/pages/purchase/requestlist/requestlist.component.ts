@@ -19,19 +19,25 @@ import { PurchaseRequestService } from '../../../core/services/PurchaseRequest.s
   styleUrl: './requestlist.component.scss'
 })
 export class RequestlistComponent   {
-
   request:any[]=[];
+
+   selectedCase: string = '';
+   data:any[]=[];
   // router: any;
 
+  
   constructor( //โหลดทันทีที่รันที่จำเป็นต้องใช้ตอนเริ่มเว็ป
       private purchaserequest: PurchaseRequestService, 
       private router: Router
      
     ) {}
 
-  goToDetail() {
-  this.router.navigate(['/purchase/detail']); // ใส่ path ที่ต้องการลิงก์ไป
-  }
+    goToDetail(itemNo: string) {
+  console.log('Going to detail for ItemNo:', itemNo); // debug
+  this.router.navigate(['/purchase/detail', itemNo], {
+    state: { items: this.request }
+  });
+}
 
 async ngOnInit()  {
     this.Purchase_Request();

@@ -21,7 +21,15 @@
 
       <!-- กล่อง item no -->
       <div class="Box-itemNo">
-        <h1>Item No : ##</h1>
+        <tr>
+        <h4>ItemNo: {{ itemNo }}</h4>
+        <p *ngIf="displayIndex > 0">ลำดับที่: {{ displayIndex }} จากทั้งหมด {{ items.length }}</p>
+        <p *ngIf="displayIndex === -1" style="color:red;">ไม่พบรายการนี้</p>
+        <!-- <tr *ngFor="let item of items"> -->
+          <!-- <td>{{ getDisplayNumber(item.ItemNo) }}</td>
+          <td>{{ item.name }}</td> -->
+        </tr>
+
       </div>
       <!-- ตาราง -->
        

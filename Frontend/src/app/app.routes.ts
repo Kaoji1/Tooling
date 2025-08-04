@@ -54,7 +54,8 @@ export const routes: Routes = [
     path: 'purchase',
     children: [
       { path: 'requestlist', component: RequestlistComponent },
-      { path: 'detail', component: DetailComponent },
+      // { path: 'detail', component: DetailComponent },
+      { path: 'detail/:itemNo', component: DetailComponent },
       { path: 'history-request', component: HistoryRequestComponent }
     ],
   },
