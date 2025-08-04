@@ -22,15 +22,16 @@ exports.AddCartItems = async (req, res) => {
         .input('Fresh_QTY', sql.Int, item.FreshQty)
         .input('Reuse_QTY', sql.Int, item.ReuseQty)
         .input('QTY', sql.Int, item.QTY)
+        .input('MCQTY', sql.Int, item.MCQTY_)
         .input('Due_Date', sql.Date, item.DueDate_)
         .query(`
             INSERT INTO tb_IssueCuttingTool_SendToCart (
             Division, Fac, PartNo, Process, [CASE],
-            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, Due_Date
+            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCQTY, Due_Date
             )
             VALUES (
             @Division, @Fac, @PartNo, @Process, @CASE,
-            @MCType,@ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @Due_Date
+            @MCType,@ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCQTY, @Due_Date
             )
         `);
     }
