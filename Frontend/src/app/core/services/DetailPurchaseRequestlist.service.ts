@@ -16,7 +16,7 @@ export class DetailPurchaseRequestlistService {
   ) { }
 
   Detail_Request(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-      return this.httpClient.get(`${baseUrl}/Purchase_Detail`); // ส่ง HTTP GET Division 
+      return this.httpClient.get(`${baseUrl}/Detail_Purchase`); // ส่ง HTTP GET Division 
     }
     
 }

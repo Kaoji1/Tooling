@@ -7,7 +7,7 @@ const DetailPurchaseRequestlist = require('../controllers/DetailPurchaseRequestl
 const test = require('node:test');
 
 // กำหนดเส้นทาง request
-router.get('/Purchase_Request', PurchaseRequest.Purchase_Request);
+router.get('/Detail_Purchase', DetailPurchaseRequestlist.Detail_Purchase);
 
 // ส่งออก router สำหรับใช้งานในที่อื่น
 module.exports = router;

@@ -4,13 +4,18 @@ import { NotificationComponent } from '../../../components/notification/notifica
 import { RouterOutlet } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { CommonModule } from '@angular/common';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
 
 
 @Component({
   selector: 'app-detail',
   standalone: true,
-  imports: [SidebarPurchaseComponent, RouterOutlet,NotificationComponent,NgSelectModule],
+  imports: [SidebarPurchaseComponent,
+    CommonModule, 
+    RouterOutlet,
+    NotificationComponent,
+    NgSelectModule],
   templateUrl: './detail.component.html',
   styleUrl: './detail.component.scss'
 })
@@ -23,9 +28,13 @@ export class DetailComponent implements OnInit {
   items: any[] = [];
 
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(
+    private route: ActivatedRoute, 
+    private router: Router,
+    private DetailPurchase : DetailPurchaseRequestlistService) {}
 
-  ngOnInit(): void {
+
+  async ngOnInit() {
     this.itemNo = this.route.snapshot.paramMap.get('itemNo') || '';
 
     const navigation = this.router.getCurrentNavigation();
@@ -33,9 +42,25 @@ export class DetailComponent implements OnInit {
 
     const index = this.items.findIndex(item => item.ItemNo === this.itemNo);
     this.displayIndex = index >= 0 ? index + 1 : -1;
+
+    
+    this.Detail_Purchase();
   }
-  
+
+
+Detail_Purchase() {
+  this.DetailPurchase.Detail_Request().subscribe({
+    next: (response: any[]) => {
+      this.request = [...this.request, ...response];//เรียงข้อมูลต่อล่าง
+
+      // สร้างรายการ PartNo ที่ไม่ซ้ำ
+
+    },
+    error: (e: any) => console.error(e),
+  });
 }
+}
+
 // export class DetailComponent implements OnInit{
 //   itemNo!: string;
 //   displayIndex!: number;

@@ -23,8 +23,6 @@
       <div class="Box-itemNo">
         <tr>
         <h4>ItemNo: {{ itemNo }}</h4>
-        <p *ngIf="displayIndex > 0">ลำดับที่: {{ displayIndex }} จากทั้งหมด {{ items.length }}</p>
-        <p *ngIf="displayIndex === -1" style="color:red;">ไม่พบรายการนี้</p>
         <!-- <tr *ngFor="let item of items"> -->
           <!-- <td>{{ getDisplayNumber(item.ItemNo) }}</td>
           <td>{{ item.name }}</td> -->
@@ -38,8 +36,8 @@
           
       <thead>
         <!-- <th><input type="checkbox"[(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"/></th> -->
-            <tr class="text-center align-middle">
-              <th><input type="checkbox" /></th>
+             <tr>
+              <th></th>
               <th>Document</th>
               <th>Requester</th> 
               <th>Part No.</th>
@@ -64,8 +62,33 @@
 
           <!-- ในตาราง -->
           <tbody>
-            
-            <!-- row -->
+            <tr *ngIf="request.length === 0">
+              <td colspan="15" class="text-center text-muted">ยังไม่มีข้อมูล ( No Data )</td>
+            </tr>
+            <tr *ngFor="let item of request">
+              <td><input type="checkbox" /></td>
+              <td>{{ item.DocNo }}</td>
+              <td>{{ item.Requester }}</td>
+              <td>{{ item.PartNo }}</td>
+              <td>{{ item.SPEC }}</td>
+              <td>{{ item.Process }}</td>
+              <td>{{ item.MCType }}</td>
+              <td>{{ item.MCQTY }}</td>
+              <td>{{ item.Fac }}</td>
+              <td>{{ item.DwgRev }}</td>
+              <td>{{ item.FreshQty }}</td>
+              <td>{{ item.ReuseQty }}</td>
+              <td>{{ item.StoreQTY }}</td>
+              <td>{{ item.Req_QTY }}</td>
+              <td>{{ item.DateTime_Record }}</td>
+              <td>{{ item.DueDate }}</td>
+              <td>{{ item.Case }}</td>
+              <td>{{ item.Status }}</td>
+              <td>{{ item.Remark }}</td>
+              <button class="Editicon">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <!-- row -->
             <!-- <tr>
 
               <td>
@@ -81,8 +104,9 @@
             </tr> -->
            
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <!-- <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr> -->
+          </tr>
           </tbody>
         </table>
       </div>

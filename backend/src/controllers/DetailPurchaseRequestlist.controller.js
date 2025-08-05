@@ -3,7 +3,7 @@ const Type = require("mssql").TYPES;
 const sql = require("mssql");
 
 
-exports.Purchase_Request = async (req, res) => {
+exports.Detail_Purchase = async (req, res) => {
   console.log(req.body)
   try {
     const pool = await poolPromise;
