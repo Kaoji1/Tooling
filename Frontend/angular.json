@@ -58,10 +58,9 @@
               "node_modules/@ng-select/ng-select/themes/default.theme.css",
               "./node_modules/bootstrap/dist/css/bootstrap-grid.min.css",
               "./node_modules/bootstrap-icons/font/bootstrap-icons.css",
-              "node_modules/@ng-select/ng-select/themes/default.theme.css"
-
-
-
+              "node_modules/@ng-select/ng-select/themes/default.theme.css",
+              "node_modules/@ng-select/ng-select/themes/default.theme.css",
+              "src/styles.scss"
 
             ],
             "scripts": [],
