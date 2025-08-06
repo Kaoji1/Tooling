@@ -6,59 +6,63 @@
       <!-- ข้อความข้างบน   -->
       <div class="toptext">
         <h1>Detail</h1>
-      <p>detail item request</p>
+        <p>detail item request</p>
       </div>
 
-    <div class="top-right-icons">
-    <button onclick="history.back()" class="back-btn">
-      <img src="back arrow.png" alt="Back">
-    </button>
+      <div class="top-right-icons">
+        <button onclick="history.back()" class="back-btn">
+          <img src="back arrow.png" alt="Back">
+        </button>
 
-    <div class="bell-container">
-      <app-notification class="noti"></app-notification>
-    </div>
-  </div>
+        <div class="bell-container">
+          <app-notification class="noti"></app-notification>
+        </div>
+      </div>
 
+      <div class="group-header">
+
+        <div class="Box-itemNo">
+          <tr>
+            <h4>ItemNo: {{ itemNo }}</h4>
+          </tr>
+        </div>
+        <div class="button">
+          <button class="btn-sort " type="button">
+            <i class="bi bi-sort-down">Sort</i>
+          </button>
+        </div>
+      </div>
       <!-- กล่อง item no -->
-      <div class="Box-itemNo">
-        <tr>
-        <h4>ItemNo: {{ itemNo }}</h4>
-        <!-- <tr *ngFor="let item of items"> -->
-          <!-- <td>{{ getDisplayNumber(item.ItemNo) }}</td>
-          <td>{{ item.name }}</td> -->
-        </tr>
-
-      </div>
       <!-- ตาราง -->
-       
+
       <div class="table-responsive">
         <table class="table table-bordered text-center">
-          
-      <thead>
-        <!-- <th><input type="checkbox"[(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"/></th> -->
-             <tr>
+
+          <thead>
+            <!-- <th><input type="checkbox"[(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"/></th> -->
+            <tr>
               <th></th>
               <th>Document</th>
-              <th>Requester</th> 
-              <th>Part No.</th>
+              <th>Requester</th>
+              <th style="white-space: nowrap;">Part No.</th>
               <th>Spec</th>
               <th>Process</th>
-              <th>MC Type</th>
-              <th>MC QTY</th>
+              <!-- <th>ItemNo</th> chaeck itemno -->
+              <th style="white-space: nowrap;">MC Type</th>
+              <th style="white-space: nowrap;">MC QTY</th>
               <th>Fac</th>
               <th>DWG</th>
-              <th>Fresh-QTY</th>
-              <th>Reuse-QTY</th>
-              <th>On Hand</th>
+              <th style="white-space: nowrap;">Fresh-QTY</th>
+              <th style="white-space: nowrap;">Reuse-QTY</th>
+              <th style="white-space: nowrap;">On Hand</th>
               <th>QTY</th>
-              <th>Issue Date</th>
-              <th>Due Date</th>
+              <th style="white-space: nowrap;">Due Date</th>
               <th>Case</th>
               <th>Status</th>
               <th>Remark</th>
               <th>Edit</th>
             </tr>
-    </thead>
+          </thead>
 
           <!-- ในตาราง -->
           <tbody>
@@ -69,9 +73,10 @@
               <td><input type="checkbox" /></td>
               <td>{{ item.DocNo }}</td>
               <td>{{ item.Requester }}</td>
-              <td>{{ item.PartNo }}</td>
-              <td>{{ item.SPEC }}</td>
+              <td class="PartNo-column">{{ item.PartNo }}</td>
+              <td class="spec-column">{{ item.SPEC }}</td>
               <td>{{ item.Process }}</td>
+              <!-- <td>{{ item.ItemNo }}</td> chaeck itemno -->
               <td>{{ item.MCType }}</td>
               <td>{{ item.MCQTY }}</td>
               <td>{{ item.Fac }}</td>
@@ -80,16 +85,18 @@
               <td>{{ item.ReuseQty }}</td>
               <td>{{ item.StoreQTY }}</td>
               <td>{{ item.Req_QTY }}</td>
-              <td>{{ item.DateTime_Record }}</td>
               <td>{{ item.DueDate }}</td>
-              <td>{{ item.Case }}</td>
+              <td>{{ item.CASE }}</td>
               <td>{{ item.Status }}</td>
               <td>{{ item.Remark }}</td>
-              <button class="Editicon">
+              <td></td>
+
+              <!-- <button class="Editicon">
                 <i class="bi bi-pencil-square"></i>
-              </button>
+              </button> -->
+
               <!-- row -->
-            <!-- <tr>
+              <!-- <tr>
 
               <td>
                 <button onclick="window.location.href='#'" class="Editicon">
@@ -102,15 +109,15 @@
                   </button>
               </td>
             </tr> -->
-           
 
-            <!-- <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+
+              <!-- <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr> -->
-          </tr>
+            </tr>
           </tbody>
         </table>
       </div>
-    <!-- เลือกหน้าๅ -->
+      <!-- เลือกหน้าๅ -->
       <!-- <div class="pagination-wrapper">
     <nav aria-label="Page navigation example">
       <ul class="pagination">
@@ -124,4 +131,3 @@
     </div> -->
     </div>
   </div>
-
