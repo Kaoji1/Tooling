@@ -33,14 +33,6 @@
           <input type="date" id="duedate">
         </div>
 
-        <div class="group-select">
-          <label for="case">Case</label>
-          <select class="form-select" id="status" required>
-            <option value="" disabled selected hidden>Select a case</option>
-            <option value="1">Set up</option>
-            <option value="2">Other</option>
-          </select>
-        </div>
 
         <!--ปุ่ม Export to AS400-->
         <div class="export-btn">
@@ -93,7 +85,40 @@
         <table class="table table-bordered text-center">
           <thead>
             <tr>
+
               <th>Document</th>
+              <th>Requester</th>
+              <th style="white-space: nowrap;">Part No.</th>
+              <th>Spec</th>
+              <th>Process</th>
+              <!-- <th>ItemNo</th> chaeck itemno -->
+              <th style="white-space: nowrap;">MC Type</th>
+              <th style="white-space: nowrap;">MC QTY</th>
+              <th>Fac</th>
+              <th>DWG</th>
+              <th style="white-space: nowrap;">Fresh-QTY</th>
+              <th style="white-space: nowrap;">Reuse-QTY</th>
+              <th style="white-space: nowrap;">On Hand</th>
+              <th>QTY</th>
+              <th style="white-space: nowrap;">Due Date</th>
+              <th>Status</th>
+              <!--only complete-->
+              <th>Remark</th>
+              <th>Edit</th>
+            </tr>
+          </thead>
+          <tbody>
+
+          <tbody>
+  
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- <th>Document</th>
               <th>Item Name</th>
               <th>Part No.</th>
               <th>Spec</th>
@@ -107,206 +132,16 @@
               <th>New</th>
               <th>Non</th>
               <th>Con.</th>
-              <!-- //con คืออะไร// -->
-              <th>Status</th>
+              //con คืออะไร//
               <th>Fac.</th>
               <th>Status Export</th>
               <th>Remark</th>
-              <th>Export Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Rows ซ้ำ 8 แถว -->
-            <tr>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>
-                <input type="checkbox" id="selectAll">
-              </td>
-              <td>1</td>
-              <td>1</td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>
-                <input type="checkbox" id="selectAll">
-              </td>
-              <td>1</td>
-              <td>1</td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>
-                <input type="checkbox" id="selectAll">
-              </td>
-              <td>1</td>
-              <td>1</td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>
-                <input type="checkbox" id="selectAll">
-              </td>
-              <td>1</td>
-              <td>1</td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>
-                <input type="checkbox" id="selectAll">
-              </td>
-              <td>1</td>
-              <td>1</td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>
-                <input type="checkbox" id="selectAll">
-              </td>
-              <td>1</td>
-              <td>1</td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>
-                <input type="checkbox" id="selectAll">
-              </td>
-              <td>1</td>
-              <td>1</td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>1</td>
-              <td>
-                <input type="checkbox" id="selectAll">
-              </td>
-              <td>1</td>
-              <td>1</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              <th>Export Date</th> -->
+  <!-- Rows ซ้ำ 8 แถว -->
 
-      <!-- Pagination -->
-      <!-- <div class="pagination-wrapper">
+
+  <!-- Pagination -->
+  <!-- <div class="pagination-wrapper">
         <nav aria-label="Page navigation example">
           <ul class="pagination">
             <li class="page-item"><a class="page-link" href="#">Previous</a></li>
@@ -317,6 +152,3 @@
           </ul>
         </nav>
       </div> -->
-
-    </div>
-  </div>

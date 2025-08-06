@@ -47,19 +47,42 @@ export class DetailComponent implements OnInit {
     this.Detail_Purchase();
   }
 
-
 Detail_Purchase() {
   this.DetailPurchase.Detail_Request().subscribe({
     next: (response: any[]) => {
-      this.request = [...this.request, ...response];//เรียงข้อมูลต่อล่าง
-
-      // สร้างรายการ PartNo ที่ไม่ซ้ำ
-
+      // กรองเฉพาะข้อมูลที่ ItemNo ตรงกับ itemNo จาก route
+      const filtered = response.filter(item => item.ItemNo === this.itemNo);
+      this.request = [...this.request, ...filtered];
     },
     error: (e: any) => console.error(e),
   });
 }
 }
+
+// Detail_Purchase() {
+//   this.DetailPurchase.Detail_Request().subscribe({
+//     next: (response: any[]) => {
+//       // กรองข้อมูลตาม itemNo ที่ได้จาก route
+//       this.request = response.filter(item => item.ItemNo === this.itemNo);
+//     },
+//     error: (e: any) => console.error(e),
+//   });
+// }
+// }
+
+
+  // groupItemsByCase(items: any[]): { [case_: string]: any[] } {
+  //   const grouped: { [case_: string]: any[] } = {};
+  //   items.forEach((item) => {
+  //     const caseKey = item.CASE || 'ไม่ระบุ';
+  //     if (!grouped[caseKey]) grouped[caseKey] = [];
+  //     grouped[caseKey].push(item);
+  //   });
+  //   return grouped;
+  // }
+
+
+
 
 // export class DetailComponent implements OnInit{
 //   itemNo!: string;

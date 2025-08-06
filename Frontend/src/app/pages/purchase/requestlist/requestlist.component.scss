@@ -202,6 +202,20 @@
           i {
             color: #0066B3;
           }
+          .goToDetail {
+  background-color: #ffffff;  /* สีฟ้า Bootstrap */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.goToDetail:hover {
+  background-color: #dbdbdb;  /* สีฟ้าเข้มตอน hover */
+  transform: scale(1.05);     /* ขยายเล็กน้อย */
+}
         }
       }
     }

@@ -30,6 +30,13 @@
       }
     }
 
+    .group-header{
+      display: flex;
+      justify-content: space-between;
+      flex-direction: row;
+      margin-top: 50px;
+      margin-right: 50px;
+    }
     // กล่องแสดงหมายเลขรายการ
     .Box-itemNo {
       width: fit-content;
@@ -39,12 +46,37 @@
       border: 3px solid #0065bd;
       border-radius: 14px;
       color: black;
+       
+      .button {
+        width: 100px;
+        display: flex;
+        align-content: center;
+        justify-content: center;
 
-      h1 {
+
+
+        .btn-sort {
+          width: 120px;
+          height: 45px;
+          background-color: #4db6b6;
+          color: white;
+          border: none;
+          border-radius: 10px;
+          font-size: 18px;
+          align-content: center;
+          justify-content: flex-end;
+
+        }
+      }
+            h1 {
         font-size: 30px;
         margin: 0;
+
       }
+
     }
+
+
 
     // กลุ่มปุ่มย้อนกลับ และไอคอนแจ้งเตือนมุมขวาบน
     .top-right-icons {
@@ -92,62 +124,101 @@
       }
     }
 
+      .button {
+        width: 100px;
+        display: flex;
+        align-content: center;
+        justify-content: center;
+
+
+
+        .btn-sort {
+          width: 120px;
+          height: 45px;
+          background-color: #4db6b6;
+          color: white;
+          border: none;
+          border-radius: 10px;
+          font-size: 18px;
+          align-content: center;
+          justify-content: flex-end;
+
+        }
+      }
+
     // พื้นที่ตารางข้อมูล
-    .table-responsive{
-    max-height: 470px;
-    max-width: 1290px;
-       table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      color: #4a4949;
+    .table-responsive {
+      max-height: 470px;
+      max-width: 1290px;
 
-      th,
-      td {
-        padding: 6px;
-        text-align: center;
-        border: 1px solid #D2D2D2;
-      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        margin-left: 23px;
+        color: #4a4949;
 
-      th {
-        background-color: #E3E3E3;
-        padding: 15px;
-        font-size: 16px;
-        font-weight: 100;
-      }
+        th,
+        td {
+          padding: 6px;
+          text-align: center;
+          border: 1px solid #D2D2D2;
+        }
+
+        th {
+          background-color: #E3E3E3;
+          padding: 15px;
+          font-size: 16px;
+          font-weight: 100;
+        }
+
+        .nowrap {
+          white-space: nowrap;
+        }
+
+        .PartNo-column {
+          font-size: 12px;
+          line-height: 1.2;
+          white-space: pre-line;
+          /* รองรับขึ้นบรรทัดใหม่ */
+        }
+
+        .spec-column {
+          font-size: 12px;
+          line-height: 1.2;
+          white-space: pre-line;
+          /* รองรับขึ้นบรรทัดใหม่ */
+        }
+
         // ปุ่มในตารางแต่ละปุ่ม
-        .Insert{
+        .Insert {
           background-color: rgb(0, 6, 128);
           padding: 3px;
           border: none;
           border-radius: 5px;
+
           i {
             font-size: 16px;
             color: white;
           }
         }
-        .Editicon{
-          background-color: green;
-          padding: 5px;
-          border: none;
-          border-radius: 5px;
-          i {
-            font-size: 16px;
-            color: white;
-          }
-        }
+
+        //
         .more {
           background-color: transparent;
           padding: 2px;
           border: none;
           border-radius: 5px;
+
           i {
             font-size: 25px;
             color: rgb(11, 14, 196);
           }
-        } 
-        
-      } //table
+        }
+
+      }
+
+      //table
     }
 
     // แถบเปลี่ยนหน้าด้านล่าง
