@@ -3,13 +3,13 @@ const Type = require("mssql").TYPES;
 const sql = require("mssql");
 
 
-exports.Purchase_Request = async (req, res) => {
+exports.Detail_Purchase = async (req, res) => {
   console.log(req.body)
   try {
     const pool = await poolPromise;
     const result = await pool
     .request()
-    .query("SELECT * FROM View_IssueCuttingTool_Requestlist");
+    .query("SELECT * FROM View_IssueCuttingTool_Detail_Requeslist");
 
     res.json(result.recordset);
   } 

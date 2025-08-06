@@ -10,7 +10,7 @@ import { NotificationComponent } from './components/notification/notification.co
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, SidebarComponent,DropdownSearchComponent,SidebarPurchaseComponent,NotificationComponent],
+  imports: [RouterOutlet, CommonModule, SidebarComponent, DropdownSearchComponent, SidebarPurchaseComponent, NotificationComponent],
   templateUrl: './app.component.html',
 })
 
