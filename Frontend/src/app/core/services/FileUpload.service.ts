@@ -33,5 +33,11 @@ export class FileUploadSerice {
       `${baseUrl}/GetImage/${caseKey}`
     );
   }
+  loadPdfFromPath(filePath: string): Observable<{ fileName: string, imageData: string }> {
+  return this.httpClient.post<{ fileName: string, imageData: string }>(
+   ` ${baseUrl}/loadPdfFromPath`,
+    { filePath }, // ← ส่ง path ที่มาจาก database
+  );
+}
  }
  
