@@ -24,7 +24,7 @@
             <th>Fresh_Qty</th>
             <th>Reuse_Qty</th>
             <th>QTY</th>
-            <th>Path</th>
+            <th style="width: 200px;">Path</th>
             <th>Due Date</th>
             <!-- <th>Insert</th> -->
             <th>Edit</th>
@@ -102,12 +102,24 @@
                 </ng-container>
                 <ng-template #showQty>{{ item.QTY }}</ng-template>
               </td>
-              <td>
-                <ng-container *ngIf="editingIndex[caseKey.key] === i; else showPath">
-                  <input [(ngModel)]="item.Path" type="text" class="form-control" />
-                </ng-container>
-                <ng-template #showPath>{{ item.Path }}</ng-template>
-              </td>
+            <td>
+              <ng-container *ngIf="editingIndex[caseKey.key] === i; else showPath">
+                <input [(ngModel)]="item.Path" type="text" class="form-control" />
+              </ng-container>
+
+              <ng-template #showPath>
+                <!-- แสดงชื่อ Path -->
+                <div class="text-break">{{ item.Path }}</div>
+
+                <!-- ปุ่มเปิด PDF -->
+                <button
+                  *ngIf="item.Path"
+                  class="btn btn-link btn-sm text-primary p-0 mt-1"
+                  (click)="openPdfFromPath(item.Path)">
+                  <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                </button>
+              </ng-template>
+            </td>
 
               <!-- Due Date -->
               <td>

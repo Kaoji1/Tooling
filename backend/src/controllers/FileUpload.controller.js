@@ -82,6 +82,25 @@ exports.GetImage = async (req, res) => {
   }
 };
 
+exports.loadPdfFromPath = async (req, res) => {
+  try {
+    const filePath = req.body.filePath; // <<== ได้ path จาก Angular
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'ไม่พบไฟล์ที่ระบุ' });
+    }
+
+    const fileData = fs.readFileSync(filePath);
+    const base64Pdf = Buffer.from(fileData).toString('base64');
+    const pdfUrl = `data:application/pdf;base64,${base64Pdf}`;
+
+    res.json({ imageData: pdfUrl, fileName: path.basename(filePath) });
+  } catch (err) {
+    console.error('loadPdfFromPath error:', err);
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอ่านไฟล์' });
+  }
+};
+
 // // ฟังก์ชันนี้จะถูกใช้หลัง multer ทำงานแล้ว (req.file พร้อมใช้งาน)
 // exports.FileUpload = async (req, res) => {
 //   try {

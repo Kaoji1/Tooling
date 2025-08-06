@@ -77,7 +77,7 @@ groupItemsByCase(items: any[]): { [case_: string]: any[] } {
       i.Process === item.Process &&
       i.Fac === item.Fac &&
       i.ITEM_NO === item.ITEM_NO &&
-      i.Spec === item.Spec
+      i.SPEC === item.SPEC
     );
 
     if (existingItem) {
@@ -203,6 +203,7 @@ onFileSelected(event: Event, caseKey: string): void {
   if (input.files && input.files.length > 0) {
     this.selectedFiles[caseKey] = input.files[0];
     console.log(`Selected file for ${caseKey}:`, this.selectedFiles[caseKey]);
+    
   }
 }
 
@@ -271,6 +272,27 @@ clearSelectedCases() {
   }
     this.checkedCases = {};
   }
+openPdfFromPath(filePath: string) {
+  if (!filePath) {
+    alert('ไม่พบพาธของไฟล์');
+    return;
+  }
+
+  this.FileUploadSerice.loadPdfFromPath(filePath).subscribe({
+    next: (res) => {
+      const pdfWindow = window.open();
+      if (pdfWindow) {
+        pdfWindow.document.write(`
+          <iframe width="100%" height="100%" src="${res.imageData}"></iframe>
+        `);
+      }
+    },
+    error: () => {
+      alert('ไม่สามารถโหลด PDF จาก Path ได้');
+    }
+  });
+}
+
 }
 
  // อัปโหลดไฟล์ของเคสเดียว

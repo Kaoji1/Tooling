@@ -55,6 +55,8 @@ export const routes: Routes = [
   // Purchase role
   {
     path: 'purchase',
+    canActivate: [AuthGuard],
+    canActivateChild: [AuthGuard],
     children: [
       { path: 'requestlist', component: RequestlistComponent },
       // { path: 'detail', component: DetailComponent },
