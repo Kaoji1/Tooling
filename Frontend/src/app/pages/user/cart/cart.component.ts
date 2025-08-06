@@ -61,15 +61,36 @@ export class CartComponent implements OnInit {
       return true;
     }
 
-  groupItemsByCase(items: any[]): { [case_: string]: any[] } {
-    const grouped: { [case_: string]: any[] } = {};
-    items.forEach((item) => {
-      const caseKey = item.CASE || 'ไม่ระบุ';
-      if (!grouped[caseKey]) grouped[caseKey] = [];
+groupItemsByCase(items: any[]): { [case_: string]: any[] } {
+  const grouped: { [case_: string]: any[] } = {};
+
+  items.forEach((item) => {
+    const caseKey = item.CASE || 'ไม่ระบุ';
+
+    if (!grouped[caseKey]) {
+      grouped[caseKey] = [];
+    }
+
+    // เงื่อนไขซ้ำ: ต้องตรงกันทุกฟิลด์เหล่านี้
+    const existingItem = grouped[caseKey].find(i =>
+      i.PartNo === item.PartNo &&
+      i.Process === item.Process &&
+      i.Fac === item.Fac &&
+      i.ITEM_NO === item.ITEM_NO &&
+      i.Spec === item.Spec
+    );
+
+    if (existingItem) {
+      // ถ้าซ้ำ → รวม QTY เข้าด้วยกัน
+      existingItem.QTY += item.QTY;
+    } else {
+      // ถ้าไม่ซ้ำ → เพิ่มใหม่
       grouped[caseKey].push(item);
-    });
-    return grouped;
-  }
+    }
+  });
+
+  return grouped;
+}
 
   startEdit(case_: string, index: number) {
     this.editingIndex[case_] = index;

@@ -24,7 +24,8 @@ export class LoginComponent {
     const credentials = {Username: this.Username, Password: this.Password};
     this.LoginService.login(credentials).subscribe({
       next: (res) => {
-
+        console.log('login res:',res);
+        console.log('Token:',res.token);
         // Keep token from backend
         sessionStorage.setItem('token', res.token);
         sessionStorage.setItem('user', JSON.stringify(res.user));

@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login.component';
-import { AuthGuard } from './auth/auth.guard';
+import { AuthGuard } from './core/guards/auth.guard';
 
 // User pages
 import { requestComponent } from './pages/user/request/request.component';
@@ -39,15 +39,17 @@ export const routes: Routes = [
 
 
   // Production role
-  {
-    path: 'production',
-    children: [
-      { path: 'request', component: requestComponent },
-      { path: 'cart', component: CartComponent },
-      { path: 'history', component: HistoryComponent },
-      { path: 'about-us', component: AboutUsComponent }
-    ],
-  },
+{
+  path: 'production',
+  canActivate: [AuthGuard],
+  canActivateChild: [AuthGuard], // <--- เพิ่มอันนี้ถ้ามี child routes
+  children: [
+    { path: 'request', component: requestComponent },
+    { path: 'cart', component: CartComponent },
+    { path: 'history', component: HistoryComponent },
+    { path: 'about-us', component: AboutUsComponent }
+  ]
+},
 
   // Purchase role
   {

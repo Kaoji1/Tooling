@@ -37,6 +37,7 @@ export class requestComponent {
   Spec_:any=null;
   setupItem = [];
   otherItem = [];
+  PathDwg_:any;
 
   // option dropdown
   spec:any=[];
@@ -387,6 +388,7 @@ AddToCart() {
       Set_by: null,
       Local: 0,
       MCQTY_:this.MCQTY_,
+      PathDwg_:this.PathDwg_,
     });
     return acc;
   }, {});
@@ -420,6 +422,7 @@ Clearall() {
   this.Process_=null
   // Delete items ค่าที่รวมที่จะส่งไปตะกร้า
   this.items=[];
+  this.PathDwg_=null;
   }
   // upload file
   selectedFileName: string = '';

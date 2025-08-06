@@ -115,11 +115,15 @@
               placeholder="Select MachineType">
             </ng-select>
           </div>
+          
+          <div class="group-select">
+            <label for="PathDwg">Path Dwg </label>
+            <input type="text" class="form-control" placeholder="Enter your Path" id="Path" [(ngModel)]="PathDwg_"/>
+          </div>
           <div class="group-select"  *ngIf="Case_ === 'SET' ">
             <label for="MCQTY"> MC QTY </label>
             <input type="text" class="form-control" placeholder="Enter your MC QTY" id="MCQTY" [(ngModel)]="MCQTY_"/>
           </div>
-
 
         </div>
         <!--div row2-->

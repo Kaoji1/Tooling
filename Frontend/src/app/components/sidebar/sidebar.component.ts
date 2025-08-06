@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';  // <-- เพิ่มตรงนี้
 import { CartService } from '../../core/services/cart.service';
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -10,7 +11,8 @@ import { CartService } from '../../core/services/cart.service';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent implements OnInit { // เพิ่ม implements OnInit
+export class SidebarComponent implements OnInit {
+  Employee_Name: any; // เพิ่ม implements OnInit
   constructor(private router: Router,
     private cartService: CartService
   ) {}
@@ -19,11 +21,13 @@ export class SidebarComponent implements OnInit { // เพิ่ม implements 
 
   cartCount: number = 0;
 
- ngOnInit() {
-  // this.cartService.cartCount$.subscribe(count => {
-  //   this.cartCount = count;
-  // });
-}
+ ngOnInit(): void {
+    const userData = sessionStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      this.Employee_Name = user.Employee_Name || 'Guest'; // ← ใช้ชื่อที่มาจาก DB
+    }
+  }
 
   updateCartCount() {
   const cartData = sessionStorage.getItem('cart');

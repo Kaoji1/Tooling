@@ -21,12 +21,14 @@ exports.Send_Request = async (req, res) => {
         PartNo,
         DwgRev = '0',          
         Process,
+        MCQTY,
         MCType,                     
         QTY,
         Due_Date,               
         Status = 'In Progress',    
         FileData,
-        FileName  
+        FileName,
+        Path,  
       } = item;
       console.log(" Factory ที่รับมา:", Fac, "| typeof:", typeof Fac);
 
@@ -43,11 +45,13 @@ exports.Send_Request = async (req, res) => {
         .input('DwgRev', sql.NVarChar(50), DwgRev)
         .input('Process', sql.NVarChar(50), Process)
         .input('MCType', sql.NVarChar(50), MCType)
+        .input('MCQTY',sql.Int,MCQTY)
         .input('Req_QTY', sql.Int, QTY)
         .input('DueDate', sql.DateTime,new Date(Due_Date))
         .input('Status', sql.NVarChar(50), Status)
         .input('FileData',sql.VarBinary(sql.MAX),FileData? Buffer.from(FileData.split(',')[1],'base64'):null)
         .input('FileName',sql.NVarChar(255),FileName)
+        .input('Path',sql.NVarChar(255),Path)
         .execute('[dbo].[stored_IssueCuttingTool_SendRequest]');
     }
 

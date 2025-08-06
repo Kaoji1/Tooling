@@ -4,28 +4,28 @@
         <img src="logominebea.png" width="205px" />
      <ul class="nav-links">
         <li routerLinkActive="active">
-          <a routerLink="/request"> <i class="bi bi-newspaper"></i> Request </a>
+          <a routerLink="/production/request"> <i class="bi bi-newspaper"></i> Request </a>
         </li>
+
         <li routerLinkActive="active">
-          <a routerLink="/cart">
-
+          <a routerLink="/production/cart">
             <i class="bi bi-cart"></i>
-
-          Cart <span class="cartCount" *ngIf="cartCount > 0" class="cart-count">{{ cartCount }}</span>
+            Cart <span class="cartCount" *ngIf="cartCount > 0" class="cart-count">{{ cartCount }}</span>
           </a>
         </li>
 
         <li routerLinkActive="active">
-         <a routerLink="/history"> <i class="bi bi-clock-history"></i> History </a>
+          <a routerLink="/production/history"> <i class="bi bi-clock-history"></i> History </a>
         </li>
+
         <li routerLinkActive="active">
-          <a routerLink="/about-us"> About Us </a>
+          <a routerLink="/production/about-us"> About Us </a>
         </li>
       </ul>
   </div>
   <!-- ฝั่งแสดงแถบUsernameและปุ่มlogout -->
   <div class="bottom">
-    <div class="user-info">Username</div>
+    <div class="user-info"> {{ Employee_Name }} </div>
     <button (click)="logout()" class="logout-btn"><i class="bi bi-box-arrow-right"></i></button>
   </div>
 </nav>

@@ -27,16 +27,16 @@
           <input type="date" [(ngModel)]="toDate" placeholder="To Date">
         </div>
 
-        <!-- <div class="group-select">
+        <div class="group-select">
           <label for="satus">Status</label>
           <ng-select
-            [items]="Status"
+            [items]="statussList"
             bindLabel="label"
             bindValue="value"
             [(ngModel)]="Status_"
             placeholder="Select a Status">
           </ng-select>
-        </div> -->
+        </div>
 
         <div class="group-select">
           <label>PartNo</label>
@@ -73,6 +73,7 @@
             <th>QTY</th>
             <th>Status</th>
             <th>DueDate</th>
+            <th>ReqDate</th>
           </tr>
         </thead>
         <tbody>
@@ -87,9 +88,10 @@
             <td>{{ item.Fac }}</td>
             <td>{{ item.PartNo }}</td>
             <td>{{ item.Process }}</td>
-            <td>{{ item.QTY }}</td>
+            <td>{{ item.Req_QTY }}</td>
             <td>{{ item.Status }}</td>
             <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
+            <td>{{ item.DateTime_Record | date:'dd/MM/yyyy' }} </td>
           </tr>
         </tbody>
       </table>

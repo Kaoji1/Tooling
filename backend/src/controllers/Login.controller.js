@@ -19,8 +19,16 @@ exports.Login = (req, res) => {
 
   .then(result => {
     if (result.recordset.length > 0) {
+      const user = result.recordset[0];
+
+      const rawData = `${user.Username}-${user.Role}-${Date.now()}`;
+      const token = Buffer.from(rawData).toString('base64');
       // หากพบผู้ใช้ ให้ส่งข้อมูลผู้ใช้กลับ
-      res.status(200).json({ message: 'Sign in sucessfull', user: result.recordset[0] });
+      res.status(200).json({ 
+        message: 'Sign in sucessfull',
+        user: result.recordset[0] ,
+        token:token
+      });
     } else {
       // หากไม่พบผู้ใช้ ให้ส่งข้อความผิดพลาด
       res.status(401).json({ message: 'Username or Password invalid please check again' });

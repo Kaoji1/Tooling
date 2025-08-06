@@ -24,14 +24,15 @@ exports.AddCartItems = async (req, res) => {
         .input('QTY', sql.Int, item.QTY)
         .input('MCQTY', sql.Int, item.MCQTY_)
         .input('Due_Date', sql.Date, item.DueDate_)
+        .input('Path',sql.NVarChar,item.PathDwg_)
         .query(`
             INSERT INTO tb_IssueCuttingTool_SendToCart (
             Division, Fac, PartNo, Process, [CASE],
-            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCQTY, Due_Date
+            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCQTY, Due_Date, Path
             )
             VALUES (
             @Division, @Fac, @PartNo, @Process, @CASE,
-            @MCType,@ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCQTY, @Due_Date
+            @MCType,@ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCQTY, @Due_Date, @Path
             )
         `);
     }
@@ -101,10 +102,12 @@ exports.UpdateCartItem = async (req, res) => {
     await pool.request()
       .input('ID_Cart', sql.Int, item.ID_Cart) // หรือเปลี่ยนเป็น id ที่คุณใช้
       .input('QTY', sql.Int, item.QTY)
+      .input('Path',sql.NVarChar,item.Path)
       .input('Due_Date', sql.Date, item.DueDate_)
       .query(`
         UPDATE tb_IssueCuttingTool_SendToCart
         SET QTY = @QTY,
+            Path = @Path,
             Due_Date = @Due_Date
         WHERE ID_Cart = @ID_Cart
       `);

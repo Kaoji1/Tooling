@@ -26,7 +26,7 @@ import { FormsModule } from '@angular/forms';
 export class HistoryComponent implements OnInit {
   requests: any[] = [];
   filteredRequests: any[] = [];
-
+  statussList:{ label: string, value: string }[] = [];
   partNoList: { label: string, value: string }[] = [];
   selectedPartNo: string | null = null;
 
@@ -34,14 +34,10 @@ export class HistoryComponent implements OnInit {
   toDate: string = '';
   Status_: string | null = null;
 
-  Status: { label: string, value: string }[] = [];
+
 
   constructor(private userhistory: UserHistoryService) {
-    this.Status = [
-      { label: 'Complete', value: 'Complete' },
-      { label: 'InProcess', value: 'In Process' },
-      { label: 'USA', value: 'USA' }
-    ];
+   
   }
 
   ngOnInit() {
@@ -57,6 +53,11 @@ export class HistoryComponent implements OnInit {
         this.partNoList = uniquePartNo.map(p => ({
           label: p,
           value: p
+        }));
+        const uniqueStatus = [...new Set(this.requests.map(r => r.Status))];
+        this.statussList = uniqueStatus.map(s => ({
+          label: s,
+          value: s
         }));
       },
       error: (e: any) => console.error(e),

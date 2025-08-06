@@ -24,6 +24,7 @@
             <th>Fresh_Qty</th>
             <th>Reuse_Qty</th>
             <th>QTY</th>
+            <th>Path</th>
             <th>Due Date</th>
             <!-- <th>Insert</th> -->
             <th>Edit</th>
@@ -36,36 +37,51 @@
           <ng-container *ngFor="let caseKey of (groupedCart | keyvalue)">
             <!--  แสดงหัวกลุ่ม Case -->
             <tr class="table-secondary">
-              <td colspan="11" class="text-start fw-bold">
-                <input type="checkbox" [(ngModel)]="checkedCases[caseKey.key]" style="transform: scale(1.2);" />
-                Case: {{ caseKey.key }} | Fac: {{ caseKey.value[0]?.Fac || '-' }}
+              <td colspan="12" class="text-start fw-bold bg-light p-3 rounded border">
+                <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
 
-                <div class="file-upload-container">
-                  <label [for]="'file-upload-' + caseKey.key" class="custom-file-upload">
-                    <i class="pi pi-upload"></i> UploadFileDrwg
-                  </label>
-                  <input [id]="'file-upload-' + caseKey.key" type="file" (change)="onFileSelected($event, caseKey.key)"
-                    multiple accept="application/pdf" />
+                  <!-- Checkbox & Label -->
+                  <div>
+                    <input type="checkbox" [(ngModel)]="checkedCases[caseKey.key]" style="transform: scale(1.2);" />
+                    <span class="ms-2">Case: <strong>{{ caseKey.key }}</strong> | Fac: <strong>{{ caseKey.value[0]?.Fac || '-' }}</strong></span>
+                  </div>
 
+                  <!-- File Upload + Button -->
+                  <div class="d-flex flex-column flex-sm-row align-items-start gap-2">
+                    <!-- ปุ่ม UploadFile -->
+                    <label [for]="'file-upload-' + caseKey.key" class="btn btn-outline-primary btn-sm">
+                      <i class="bi bi-upload"></i> UploadFile
+                    </label>
+                    <!-- Input type="file" ซ่อนไว้ -->
+                  <div class="inputfile" style="display: block;">
+                    <input
+                      [id]="'file-upload-' + caseKey.key"
+                      type="file"
+                      (change)="onFileSelected($event, caseKey.key)"
+                      multiple
+                      accept="application/pdf"
+                      readonly
+                      style="display: none;"
+                    />
+                    <span class="file-name">{{ selectedFiles[caseKey.key]?.name || 'No file chosen' }}</span>
+                  </div>
 
+                    <!-- ปุ่ม upload ไปยัง server -->
+                    <button class="btn btn-success btn-sm" type="button" (click)="uploadFile(caseKey.key)">
+                      <i class="bi bi-cloud-arrow-up-fill"></i> Upload
+                    </button>
+                  </div>
+
+                  <!-- แสดงชื่อไฟล์ที่อัปโหลดแล้ว -->
+                  <div *ngIf="imageMap[caseKey.key]">
+                    <span
+                      style="cursor: pointer; color: blue; text-decoration: underline;"
+                      (click)="loadPdf(caseKey.key)"
+                    >
+                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> {{ imageMap[caseKey.key].fileName }}
+                    </span>
+                  </div>
                 </div>
-                <button class="btn btn-sm btn-success" type="button" (click)="uploadFile(caseKey.key)">
-                  Upload
-                </button>
-
-
-                <!--  ตำแหน่งที่จะแสดงภาพ -->
-                <div *ngIf="imageMap[caseKey.key]">
-                  <span style="cursor: pointer; color: blue; text-decoration: underline;"
-                    (click)="loadPdf(caseKey.key)">
-                    {{ imageMap[caseKey.key].fileName }}
-
-                  </span>
-
-                  <i class="bi bi-x" style="margin-left: 3px; "></i>
-                </div>
-
-
               </td>
             </tr>
 
@@ -85,6 +101,12 @@
                   <input [(ngModel)]="item.QTY" type="number" class="form-control" />
                 </ng-container>
                 <ng-template #showQty>{{ item.QTY }}</ng-template>
+              </td>
+              <td>
+                <ng-container *ngIf="editingIndex[caseKey.key] === i; else showPath">
+                  <input [(ngModel)]="item.Path" type="text" class="form-control" />
+                </ng-container>
+                <ng-template #showPath>{{ item.Path }}</ng-template>
               </td>
 
               <!-- Due Date -->
