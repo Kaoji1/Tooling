@@ -26,7 +26,7 @@ exports.Update_Status_Purchase = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
     .request()
-    .query("EXEC dbo.tb_IssueCuttingTool_Request_Document");
+    .query("SELECT * FROM View_CuttingTool_RequestList");
 
     res.json(result.recordset);
   } 

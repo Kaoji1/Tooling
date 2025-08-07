@@ -33,7 +33,7 @@
           <input type="date" id="duedate">
         </div>
 
-        
+
 
         <!--ปุ่ม Export to AS400-->
         <div class="export-btn">
@@ -109,11 +109,27 @@
 
             </tr>
           </thead>
-          <tbody>
 
           <tbody>
-  
-
+            <tr *ngFor="let item of filteredRequests; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ item.DocNo }}</td>
+              <td>{{ item.Requester }}</td>
+              <td>{{ item.PartNo }}</td>
+              <td>{{ item.SPEC }}</td>              
+              <td>{{ item.Process }}</td>
+              <td>{{ item.MCType }}</td>
+              <td>{{ item.MCQTY }}</td>
+              <td>{{ item.Fac }}</td>
+              <td>{{ item.DwgRev }}</td>
+              <td>{{ item.FreshQTY }}</td>
+              <td>{{ item.ReuseQTY }}</td>
+              <td>{{ item.ON_HAND }}</td>
+              <td>{{ item.Req_QTY }}</td>
+              <td>{{ item.DueDate }}</td>
+              <td>{{ item.Status }}</td>
+              <td>{{ item.Remark }}</td>
+            </tr>
           </tbody>
         </table>
       </div>

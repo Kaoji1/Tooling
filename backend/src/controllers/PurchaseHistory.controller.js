@@ -8,7 +8,7 @@ exports.Purchase_History = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
     .request()
-    .query("SELECT * FROM Stored_Update_tb_CuttingTool_Status");
+    .query("SELECT * FROM View_CuttingTool_RequestList");
 
     res.json(result.recordset);
   } 

@@ -9,7 +9,7 @@ exports.Purchase_Request = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
     .request()
-    .query("SELECT * FROM View_IssueCuttingTool_Requestlist");
+    .query("SELECT * FROM View_CuttingTool_RequestList");
 
     res.json(result.recordset);
   } 
