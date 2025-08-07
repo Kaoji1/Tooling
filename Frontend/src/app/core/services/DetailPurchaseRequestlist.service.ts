@@ -18,8 +18,12 @@ export class DetailPurchaseRequestlistService {
   Detail_Request(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
       return this.httpClient.get(`${baseUrl}/Detail_Purchase`); // ส่ง HTTP GET Division 
     }
-  updateStatusToComplete(items: any[]) {
-  return this.httpClient.put(`${baseUrl}/Detail_Purchase/update-status`, items);
+  
+updateStatusToComplete(ID_Request: number, Status: string): Observable<any> {
+  return this.httpClient.post(`${baseUrl}/Update_Status_Purchase`, {
+    ID_Request,
+    Status
+  });
 }
 
     

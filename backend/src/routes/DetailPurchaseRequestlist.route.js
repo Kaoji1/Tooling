@@ -8,7 +8,7 @@ const test = require('node:test');
 
 // กำหนดเส้นทาง request
 router.get('/Detail_Purchase', DetailPurchaseRequestlist.Detail_Purchase);
-router.post('/Detail_Purchase/update-status', DetailPurchaseRequestlist.Detail_Purchase);
+router.post('/Update_Status_Purchase', DetailPurchaseRequestlist.Update_Status_Purchase);
 
 
 // ส่งออก router สำหรับใช้งานในที่อื่น
