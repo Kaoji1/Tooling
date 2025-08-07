@@ -5,6 +5,7 @@ import { RouterOutlet } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
 
 
@@ -12,7 +13,8 @@ import { DetailPurchaseRequestlistService } from '../../../core/services/DetailP
   selector: 'app-detail',
   standalone: true,
   imports: [SidebarPurchaseComponent,
-    CommonModule, 
+    CommonModule,
+    FormsModule, 
     RouterOutlet,
     NotificationComponent,
     NgSelectModule],
@@ -51,10 +53,42 @@ Detail_Purchase() {
   this.DetailPurchase.Detail_Request().subscribe({
     next: (response: any[]) => {
       // กรองเฉพาะข้อมูลที่ ItemNo ตรงกับ itemNo จาก route
-      const filtered = response.filter(item => item.ItemNo === this.itemNo);
+      const filtered = response.filter(item => item.ItemNo === this.itemNo)
+      .map(item => ({
+        ...item,
+        Selection: false,
+      }));
       this.request = [...this.request, ...filtered];
     },
     error: (e: any) => console.error(e),
+  });
+}
+
+// เพิ่มฟังก์ชันเมื่อกดปุ่ม “Complete”
+completeSelected() {
+  const selectedItems = this.request.filter(item => item.Selection);
+console.log('hello',selectedItems)
+  if (selectedItems.length === 0) {
+    alert('กรุณาเลือกข้อมูลที่ต้องการ');
+    return;
+  }
+
+  // เปลี่ยนสถานะเป็น 'Complete'
+  selectedItems.forEach(item => item.Status = 'Complete');
+
+  // เรียก service เพื่ออัปเดต
+  const docNos = selectedItems.map(item => item.DocNo);
+  console.log('test',docNos)
+  this.DetailPurchase.updateStatusToComplete(docNos).subscribe({
+    next: () => {
+      // ลบรายการที่เลือกออกจาก list บนหน้า UI
+      this.request = this.request.filter(item => !item.Selection);
+    },
+    error: err => {
+      console.error('เกิดข้อผิดพลาด:', err);
+      alert('ไม่สามารถอัปเดตข้อมูลได้');
+    
+    }
   });
 }
 }

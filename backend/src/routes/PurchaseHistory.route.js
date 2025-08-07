@@ -3,13 +3,11 @@ const express = require('express');
 const router = express.Router(); // สร้าง instance ของ Router
 
 // นำเข้าคอนโทรเลอร์
-const DetailPurchaseRequestlist = require('../controllers/DetailPurchaseRequestlist.controller');
+const PurchaseHistory = require('../controllers/purchasehistory.controller');
 const test = require('node:test');
 
-// กำหนดเส้นทาง request
-router.get('/Detail_Purchase', DetailPurchaseRequestlist.Detail_Purchase);
-router.post('/Detail_Purchase/update-status', DetailPurchaseRequestlist.Detail_Purchase);
-
+// กำหนดเส้นทาง History
+router.get('/Purchase_History', PurchaseHistory.Purchase_History);
 
 // ส่งออก router สำหรับใช้งานในที่อื่น
 module.exports = router;

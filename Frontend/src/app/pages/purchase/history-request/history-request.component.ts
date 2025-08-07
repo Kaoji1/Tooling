@@ -2,6 +2,7 @@ import { Component,OnInit} from '@angular/core';
 import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPurchase.component';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RouterOutlet } from '@angular/router';
+import { PurchaseHistoryservice } from '../../../core/services/PurchaseHistory.service';
 
 @Component({
   selector: 'app-history-request',
@@ -10,8 +11,46 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './history-request.component.html',
   styleUrl: './history-request.component.scss'
 })
-export class HistoryRequestComponent {
+export class HistoryRequestComponent implements OnInit {
+  requests: any[] = [];
+  filteredRequests: any[] = [];
+  statussList:{ label: string, value: string }[] = [];
+  partNoList: { label: string, value: string }[] = [];
+  selectedPartNo: string | null = null;
 
+  fromDate: string = '';
+  toDate: string = '';
+  Status_: string | null = null;
+
+
+
+  constructor(private purchasehistory: PurchaseHistoryservice) {
+   
+  }
+
+  ngOnInit() {
+    this.Purchase_History();
+  }
+
+  Purchase_History() {
+    this.purchasehistory.Purchase_History().subscribe({
+      next: (response: any[]) => {
+        this.requests = [...response];
+        this.filteredRequests = [...this.requests]; // แสดงทั้งหมดก่อน
+        const uniquePartNo = [...new Set(this.requests.map(r => r.PartNo))];
+        this.partNoList = uniquePartNo.map(p => ({
+          label: p,
+          value: p
+        }));
+        const uniqueStatus = [...new Set(this.requests.map(r => r.Status))];
+        this.statussList = uniqueStatus.map(s => ({
+          label: s,
+          value: s
+        }));
+      },
+      error: (e: any) => console.error(e),
+    });
+  }
 }
 // export class HistoryRequestComponent implements OnInit {
 //   request: any[] = [];

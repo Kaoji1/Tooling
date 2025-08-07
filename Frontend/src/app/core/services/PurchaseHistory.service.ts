@@ -1,0 +1,21 @@
+import { Injectable } from '@angular/core'; // นำเข้า Injectable จาก Angular core
+import { HttpClient } from '@angular/common/http'; // นำเข้า HttpClient สำหรับทำ HTTP requests
+import { Observable } from 'rxjs'; // นำเข้า Observable จาก RxJS
+
+const BaseURL = 'http://localhost:3000/api'; // กำหนด Base URL สำหรับ API
+
+@Injectable({
+  providedIn: 'root' // ระบุว่า service นี้จะถูกให้บริการใน root module
+})
+export class PurchaseHistoryservice {
+  public user: any; // ตัวแปรสำหรับเก็บข้อมูลผู้ใช้
+
+  constructor( // คอนสตรัคเตอร์ของ service
+    private httpClient: HttpClient // เก็บ HttpClient สำหรับทำ HTTP requests
+  ) { }
+
+  Purchase_History(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
+    return this.httpClient.get(`${BaseURL}/Purchase_History`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
+  }
+ 
+}
