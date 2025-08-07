@@ -25,7 +25,7 @@ exports.Send_Request = async (req, res) => {
         MCType,                     
         QTY,
         Due_Date,               
-        Status = 'In Progress',    
+        Status = 'Waiting',    
         FileData,
         FileName,
         Path,  
