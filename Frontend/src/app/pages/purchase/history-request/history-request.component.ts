@@ -3,11 +3,12 @@ import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPur
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RouterOutlet } from '@angular/router';
 import { PurchaseHistoryservice } from '../../../core/services/PurchaseHistory.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-history-request',
   standalone: true,
-  imports: [SidebarPurchaseComponent,RouterOutlet,NotificationComponent],
+  imports: [SidebarPurchaseComponent,RouterOutlet,NotificationComponent,CommonModule],
   templateUrl: './history-request.component.html',
   styleUrl: './history-request.component.scss'
 })
@@ -42,6 +43,9 @@ export class HistoryRequestComponent implements OnInit {
           label: p,
           value: p
         }));
+
+        this.filteredRequests = this.requests.filter(r => r.Status === 'complete');
+
         const uniqueStatus = [...new Set(this.requests.map(r => r.Status))];
         this.statussList = uniqueStatus.map(s => ({
           label: s,
@@ -52,6 +56,14 @@ export class HistoryRequestComponent implements OnInit {
     });
   }
 }
+
+
+
+
+
+
+
+
 // export class HistoryRequestComponent implements OnInit {
 //   request: any[] = [];
 //   filterRequest: any[] = [];
