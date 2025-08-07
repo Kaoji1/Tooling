@@ -4,12 +4,12 @@ const sql = require("mssql");
 
 
 exports.Detail_Purchase = async (req, res) => {
-  console.log(req.body)
+  console.log('data:',req.body)
   try {
     const pool = await poolPromise;
     const result = await pool
     .request()
-    .query("SELECT * FROM View_IssueCuttingTool_Detail_Requeslist WHERE Status = 'Waiting' ");
+    .query("SELECT * FROM [dbo].[View_CuttingTool_RequestList] WHERE Status IN ('Waiting','In Progress') ");
 
     res.json(result.recordset);
   } 
@@ -21,18 +21,25 @@ exports.Detail_Purchase = async (req, res) => {
 };
 
 exports.Update_Status_Purchase = async (req, res) => {
-  console.log(req.body)
+  console.log(req.body); // ตรวจสอบค่าที่ส่งมา { ID_Request: , Status:  }
+
   try {
+    const { ID_Request, Status } = req.body; //  ดึงค่าออกมา
+
     const pool = await poolPromise;
     const result = await pool
-    .request()
-    .query("EXEC dbo.tb_IssueCuttingTool_Request_Document");
+      .request()
+      .input("ID_Request", ID_Request)
+      .input("Status", Status)
+      .query(`
+        UPDATE [dbo].[View_CuttingTool_RequestList]
+        SET Status = @Status
+        WHERE ID_Request = @ID_Request
+      `);
 
-    res.json(result.recordset);
-  } 
-  catch (error) {
+    res.json({ success: true, message: "Updated successfully" });
+  } catch (error) {
     console.error("Error executing query:", error.stack);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
- 
 };

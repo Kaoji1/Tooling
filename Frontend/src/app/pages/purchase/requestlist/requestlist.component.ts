@@ -46,10 +46,35 @@ async ngOnInit()  {
 Purchase_Request() {
   this.purchaserequest.Purchase_Request().subscribe({
     next: (response: any[]) => {
-      this.request = [...this.request, ...response];//เรียงข้อมูลต่อล่าง
+      const groupedMap = new Map<string, { Req_QTY: number, ID_Requests: Set<number>, item: any }>();
 
-      // สร้างรายการ PartNo ที่ไม่ซ้ำ
+      response.forEach(item => {
+        if (item.Status === 'Waiting') {
+          const itemNo = item.ItemNo;
+          const idRequest = item.ID_Request;
 
+          if (groupedMap.has(itemNo)) {
+            const group = groupedMap.get(itemNo)!;
+
+            if (!group.ID_Requests.has(idRequest)) {
+              group.Req_QTY += Number(item.Req_QTY);
+              group.ID_Requests.add(idRequest);
+            }
+          } else {
+            groupedMap.set(itemNo, {
+              Req_QTY: Number(item.Req_QTY),
+              ID_Requests: new Set<number>([idRequest]),
+              item: { ...item }
+            });
+          }
+        }
+      });
+
+      // แปลงกลับเป็น array พร้อมฝัง Req_QTY รวมไว้
+      this.request = Array.from(groupedMap.values()).map(group => ({
+        ...group.item,
+        Req_QTY: group.Req_QTY
+      }));
     },
     error: (e: any) => console.error(e),
   });

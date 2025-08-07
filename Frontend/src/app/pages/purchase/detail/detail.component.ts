@@ -52,13 +52,28 @@ export class DetailComponent implements OnInit {
 Detail_Purchase() {
   this.DetailPurchase.Detail_Request().subscribe({
     next: (response: any[]) => {
-      // กรองเฉพาะข้อมูลที่ ItemNo ตรงกับ itemNo จาก route
+      // 1. กรองเฉพาะ ItemNo ที่ตรง
       const filtered = response.filter(item => item.ItemNo === this.itemNo)
-      .map(item => ({
-        ...item,
-        Selection: false,
-      }));
-      this.request = [...this.request, ...filtered];
+        .map(item => ({
+          ...item,
+          Selection: false,
+        }));
+
+      // 2. กำจัด ID_Request ซ้ำ: เก็บเฉพาะตัวแรกที่เจอ
+      const seen = new Set<number>();
+      const unique = filtered.filter(item => {
+        if (seen.has(item.ID_Request)) {
+          return false; // ถ้ามีแล้ว ให้ข้าม
+        } else {
+          seen.add(item.ID_Request);
+          return true; // ยังไม่เคยมี ให้เก็บไว้
+        }
+      });
+
+      // 3. บันทึกเข้า request
+      this.request = [...this.request, ...unique];
+
+      console.log('itemที่ส่ง', this.request);
     },
     error: (e: any) => console.error(e),
   });
@@ -67,28 +82,24 @@ Detail_Purchase() {
 // เพิ่มฟังก์ชันเมื่อกดปุ่ม “Complete”
 completeSelected() {
   const selectedItems = this.request.filter(item => item.Selection);
-console.log('hello',selectedItems)
   if (selectedItems.length === 0) {
     alert('กรุณาเลือกข้อมูลที่ต้องการ');
     return;
   }
 
-  // เปลี่ยนสถานะเป็น 'Complete'
-  selectedItems.forEach(item => item.Status = 'Complete');
+  selectedItems.forEach(item => {
+    item.Status = 'Complete';
 
-  // เรียก service เพื่ออัปเดต
-  const docNos = selectedItems.map(item => item.DocNo);
-  console.log('test',docNos)
-  this.DetailPurchase.updateStatusToComplete(docNos).subscribe({
-    next: () => {
-      // ลบรายการที่เลือกออกจาก list บนหน้า UI
-      this.request = this.request.filter(item => !item.Selection);
-    },
-    error: err => {
-      console.error('เกิดข้อผิดพลาด:', err);
-      alert('ไม่สามารถอัปเดตข้อมูลได้');
-    
-    }
+    this.DetailPurchase.updateStatusToComplete(item.ID_Request, item.Status).subscribe({
+      next: () => {
+        // เอาออกจากหน้าจอหลังอัปเดต
+        this.request = this.request.filter(req => req.ID_Request !== item.ID_Request);
+      },
+      error: err => {
+        console.error('เกิดข้อผิดพลาด:', err);
+        alert('ไม่สามารถอัปเดตข้อมูลได้');
+      }
+    });
   });
 }
 }
