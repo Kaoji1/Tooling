@@ -9,6 +9,7 @@ import { SendrequestService } from '../../../core/services/SendRequest.service';
 import { FileUploadSerice } from '../../../core/services/FileUpload.service';
 
 
+
 @Component({
   selector: 'app-cart',
   standalone: true,
@@ -155,6 +156,7 @@ async CreateDocByCase() {
     const imageInfo = this.imageMap[caseKey];
     const fileName = imageInfo?.fileName || null;
     const fileData = imageInfo?.imageData || null;
+    console.log('case:',process)
 
     if (!case_ || !process || !factory) {
       alert(`ข้อมูลไม่ครบ กรุณาตรวจสอบ Case: ${case_} | Process: ${process} | Factory: ${factory}`);

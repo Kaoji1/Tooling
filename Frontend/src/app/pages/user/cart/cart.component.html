@@ -18,6 +18,7 @@
           <tr>
             <th style="width: 50px;">No.</th>
             <th style="width: 150px;">Part No.</th>
+            <th> ItemNo </th>
             <th style="width: 200px;">Spec</th>
             <th>Process</th>
             <th>MC</th>
@@ -37,7 +38,7 @@
           <ng-container *ngFor="let caseKey of (groupedCart | keyvalue)">
             <!--  แสดงหัวกลุ่ม Case -->
             <tr class="table-secondary">
-              <td colspan="12" class="text-start fw-bold bg-light p-3 rounded border">
+              <td colspan="13" class="text-start fw-bold bg-light p-3 rounded border">
                 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
 
                   <!-- Checkbox & Label -->
@@ -89,6 +90,7 @@
             <tr *ngFor="let item of caseKey.value; let i = index">
               <td>{{ i + 1 }}</td>
               <td>{{ item.PartNo }}</td>
+              <td> {{ item.ItemNo }}</td>
               <td>{{ item.SPEC }}</td>
               <td>{{ item.Process }}</td>
               <td>{{ item.MCType }}</td>

@@ -372,7 +372,7 @@ AddToCart() {
       Doc_no: null,
       Division: this.Div_?.Division || this.Div_,
       Factory: this.Fac_?.Fac || this.Fac_,
-      ITEM_NO: item.ITEM_NO,
+      ItemNo: item.ItemNo,
       PartNo: item.PartNo,
       Process: item.Process,
       Case_: caseKey,

@@ -6,8 +6,8 @@ const { poolPromise } = require("../config/database");
 
 
 exports.FileUpload = async (req,res) => {
-  console.log(req.body);
-  console.log('fileupload:',req.files)
+  // console.log(req.body);
+  // console.log('fileupload:',req.files)
   try {
     if (!req.files || !req.files.file) {
       return res.status(400).json({ message: " ไม่พบไฟล์ที่แนบ" });
@@ -48,7 +48,7 @@ exports.FileUpload = async (req,res) => {
 };
 
 exports.GetImage = async (req, res) => {
-  console.log("getimage called:", req.params.caseKey);
+  // console.log("getimage called:", req.params.caseKey);
   const caseKey = req.params.caseKey;
 
   try {
@@ -84,7 +84,7 @@ exports.GetImage = async (req, res) => {
 
 exports.loadPdfFromPath = async (req, res) => {
   try {
-    const filePath = req.body.filePath; // <<== ได้ path จาก Angular
+    const filePath = req.body.filePath; //  ได้ path จาก Angular
 
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'ไม่พบไฟล์ที่ระบุ' });

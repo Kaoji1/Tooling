@@ -28,8 +28,8 @@ export class AuthGuard implements CanActivate, CanActivateChild {
   constructor(private router: Router) {}
 
   canActivate(): boolean {
-    const token = sessionStorage.getItem('token');  // ✅ หรือใช้ localStorage ถ้าเก็บไว้ที่นั่น
-    console.log('✅ AuthGuard token:', token);
+    const token = sessionStorage.getItem('token');  // หรือใช้ localStorage ถ้าเก็บไว้ที่นั่น
+    console.log(' AuthGuard token:', token);
 
     if (token) {
       return true;

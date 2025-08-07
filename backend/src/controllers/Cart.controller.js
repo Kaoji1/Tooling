@@ -9,7 +9,7 @@ exports.AddCartItems = async (req, res) => {
     const pool = await poolPromise;
 
     for (const item of items) {
-     console.log("กำลังบันทึก ItemNo:", item.ITEM_NO);
+     console.log("กำลังบันทึก ItemNo:", item.ItemNo);
      await pool.request()
         .input('Division', sql.VarChar, item.Division)
         .input('Fac', sql.VarChar, item.Factory)
@@ -17,7 +17,7 @@ exports.AddCartItems = async (req, res) => {
         .input('Process', sql.VarChar, item.Process)
         .input('CASE', sql.VarChar, item.Case_) 
         .input('MCType', sql.VarChar, item.MC)
-        .input('ItemNo', sql.VarChar, item.ITEM_NO)
+        .input('ItemNo', sql.VarChar, item.ItemNo)
         .input('SPEC', sql.VarChar, item.SPEC)
         .input('Fresh_QTY', sql.Int, item.FreshQty)
         .input('Reuse_QTY', sql.Int, item.ReuseQty)
@@ -100,7 +100,7 @@ exports.UpdateCartItem = async (req, res) => {
     const pool = await poolPromise;
 
     await pool.request()
-      .input('ID_Cart', sql.Int, item.ID_Cart) // หรือเปลี่ยนเป็น id ที่คุณใช้
+      .input('ID_Cart', sql.Int, item.ID_Cart) // หรือเปลี่ยนเป็น id ที่ใช้
       .input('QTY', sql.Int, item.QTY)
       .input('Path',sql.NVarChar,item.Path)
       .input('Due_Date', sql.Date, item.DueDate_)

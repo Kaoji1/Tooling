@@ -83,12 +83,12 @@ export class HistoryComponent implements OnInit {
     });
   }
 
-  //  เรียงลำดับจาก DueDate ล่าสุด -> เก่าสุด
+  //  เรียงลำดับจาก DueDate เก่าสุด -> ล่าสุด
   onSort() {
     this.filteredRequests.sort((a, b) => {
       const dateA = new Date(a.DueDate).getTime();
       const dateB = new Date(b.DueDate).getTime();
-      return dateA - dateB; // เรียงจากใหม่ -> เก่า
+      return dateA - dateB; // เรียงจากเก่า -> ใหม่
     });
   }
 }

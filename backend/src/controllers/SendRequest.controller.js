@@ -85,7 +85,22 @@ exports.GenerateNewDocNo = async (req, res) => {
     let processPart = '';
     if (process.toLowerCase() === 'turning') {
       processPart = 'TN';
-    } else {
+    } else if (process.toLowerCase() === 'milling') {
+      processPart = 'ML';
+    }else if (process.toLowerCase() === 'milling2') {
+      processPart = 'ML';
+    } else if (process.toLowerCase() === 'f&boring1') {
+      processPart = 'RL';
+    } else if (process.toLowerCase() === 'f&boring2') {
+      processPart = 'RL';
+    } else if (process.toLowerCase() === 'f&boring3') {
+      processPart = 'RL';
+    } else if (process.toLowerCase() === 'f&boring') {
+      processPart = 'RL';
+    } else if (process.toLowerCase() === 'rl') {
+      processPart = 'RL';
+    } 
+     else {
       return res.status(400).json({ error:` Process '${process}' is not mapped.` });
     }
     // 1.3กำหนดfacที่เลือก

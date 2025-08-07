@@ -8,7 +8,7 @@ exports.Get_Division = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
     .request()
-    .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset]");
+    .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem]");
 
     res.json(result.recordset);
   } 
@@ -34,7 +34,7 @@ exports.get_PartNo = async (req, res) => {
     const result = await pool
       .request()
       .input("Division", req.body.Division)
-      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset] @Division");
+      .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem] @Division");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -65,7 +65,7 @@ exports.Get_Process = async (req, res) => {
       .input("Division", Division)
       .input("PartNo", PartNo)
       
-      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset] @Division, @PartNo");
+      .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem] @Division, @PartNo");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -95,7 +95,7 @@ exports.Get_Process = async (req, res) => {
       .input("PartNo", req.body.PartNo)
       .input("PROCESS", req.body.Process)
       
-      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset] @Division, @PartNo, @PROCESS ");
+      .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem] @Division, @PartNo, @PROCESS ");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
@@ -110,7 +110,7 @@ exports.Get_Process = async (req, res) => {
 };
 // ดึงItemno จาก division partno process mc
 exports.post_ItemNo = async (req, res) => {
-  console.log(req.body);
+  console.log('item:',req.body);
   try {
     const { Division, PartNo, Process, MC }= req.body;
     console.log( Division,PartNo, Process, MC );
@@ -127,7 +127,7 @@ exports.post_ItemNo = async (req, res) => {
       .input("Spec", req.body.Spec)
       .input("PROCESS", req.body.Process)
       .input("MC", req.body.MC)
-      .query("EXEC [dbo].[stored_IssueCuttingTool_ToolDataset_QTY]  @Division,@PartNo, @Spec, @PROCESS, @MC ");
+      .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem_QTY]  @Division,@PartNo, @Spec, @PROCESS, @MC ");
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Spec not found for this PartNo" });
