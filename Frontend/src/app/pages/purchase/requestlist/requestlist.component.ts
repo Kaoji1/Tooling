@@ -46,22 +46,29 @@ async ngOnInit()  {
 Purchase_Request() {
   this.purchaserequest.Purchase_Request().subscribe({
     next: (response: any[]) => {
-      const groupedMap = new Map<string, { Req_QTY: number, ID_Requests: Set<number>, item: any }>();
+      console.log('📥 ข้อมูลจาก API:', response); // ตรวจสอบข้อมูลที่ได้มา
+
+      const groupedMap = new Map<string, {
+        Req_QTY: number,
+        ID_Requests: Set<number>,
+        item: any
+      }>();
 
       response.forEach(item => {
         if (item.Status === 'Waiting') {
           const itemNo = item.ItemNo;
+          const category = item.Category || '';
           const idRequest = item.ID_Request;
+          const key = `${itemNo}_${category}`; // ✅ ตรงนี้ต้องใช้ backtick
 
-          if (groupedMap.has(itemNo)) {
-            const group = groupedMap.get(itemNo)!;
-
+          if (groupedMap.has(key)) {
+            const group = groupedMap.get(key)!;
             if (!group.ID_Requests.has(idRequest)) {
               group.Req_QTY += Number(item.Req_QTY);
               group.ID_Requests.add(idRequest);
             }
           } else {
-            groupedMap.set(itemNo, {
+            groupedMap.set(key, {
               Req_QTY: Number(item.Req_QTY),
               ID_Requests: new Set<number>([idRequest]),
               item: { ...item }
@@ -70,13 +77,20 @@ Purchase_Request() {
         }
       });
 
-      // แปลงกลับเป็น array พร้อมฝัง Req_QTY รวมไว้
+      // ✅ log รายการใน groupedMap
+      console.log('🧩 groupedMap (หลังจากจัดกลุ่ม):', groupedMap);
+
+      // แปลงเป็น array แล้วเก็บเข้า request
       this.request = Array.from(groupedMap.values()).map(group => ({
         ...group.item,
         Req_QTY: group.Req_QTY
       }));
+
+      // ✅ log ค่าที่จะนำไปแสดง
+      console.log('📊 this.request (ข้อมูลที่จะนำไปแสดง):', this.request);
     },
-    error: (e: any) => console.error(e),
+
+    error: (e: any) => console.error('❌ API error:', e),
   });
 }
 }
