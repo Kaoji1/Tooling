@@ -46,16 +46,17 @@
                     <input type="checkbox" [(ngModel)]="checkedCases[caseKey.key]" style="transform: scale(1.2);" />
                     <span class="ms-2">Case: <strong>{{ caseKey.key }}</strong> | Fac: <strong>{{ caseKey.value[0]?.Fac || '-' }}</strong></span>
                   </div>
+                </div>
 
                   <!-- File Upload + Button -->
-                  <div class="d-flex flex-column flex-sm-row align-items-start gap-2">
+                  <!-- <div class="d-flex flex-column flex-sm-row align-items-start gap-2"> -->
                     <!-- ปุ่ม UploadFile -->
-                    <label [for]="'file-upload-' + caseKey.key" class="btn btn-outline-primary btn-sm">
-                      <i class="bi bi-upload"></i> UploadFile
-                    </label>
+                    <!-- <label [for]="'file-upload-' + caseKey.key" class="btn btn-outline-primary btn-sm"> -->
+                      <!-- <i class="bi bi-upload"></i> UploadFile -->
+                    <!-- </label> -->
                     <!-- Input type="file" ซ่อนไว้ -->
-                  <div class="inputfile" style="display: block;">
-                    <input
+                  <!-- <div class="inputfile" style="display: block;"> -->
+                    <!-- <input
                       [id]="'file-upload-' + caseKey.key"
                       type="file"
                       (change)="onFileSelected($event, caseKey.key)"
@@ -63,26 +64,26 @@
                       accept="application/pdf"
                       readonly
                       style="display: none;"
-                    />
-                    <span class="file-name">{{ selectedFiles[caseKey.key]?.name || 'No file chosen' }}</span>
-                  </div>
+                    /> -->
+                    <!-- <span class="file-name">{{ selectedFiles[caseKey.key]?.name || 'No file chosen' }}</span> -->
+                  <!-- </div> -->
 
                     <!-- ปุ่ม upload ไปยัง server -->
-                    <button class="btn btn-success btn-sm" type="button" (click)="uploadFile(caseKey.key)">
+                    <!-- <button class="btn btn-success btn-sm" type="button" (click)="uploadFile(caseKey.key)">
                       <i class="bi bi-cloud-arrow-up-fill"></i> Upload
-                    </button>
-                  </div>
+                    </button> -->
+                  <!-- </div> -->
 
                   <!-- แสดงชื่อไฟล์ที่อัปโหลดแล้ว -->
-                  <div *ngIf="imageMap[caseKey.key]">
-                    <span
+                  <!-- <div *ngIf="imageMap[caseKey.key]"> -->
+                    <!-- <span
                       style="cursor: pointer; color: blue; text-decoration: underline;"
                       (click)="loadPdf(caseKey.key)"
-                    >
-                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> {{ imageMap[caseKey.key].fileName }}
-                    </span>
-                  </div>
-                </div>
+                    > -->
+                      <!-- <i class="bi bi-file-earmark-pdf-fill text-danger"></i> {{ imageMap[caseKey.key].fileName }}
+                    </span> -->
+                  <!-- </div>
+                </div> -->
               </td>
             </tr>
 
