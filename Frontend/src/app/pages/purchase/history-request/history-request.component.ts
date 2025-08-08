@@ -31,8 +31,6 @@ constructor(private purchasehistory: PurchaseHistoryservice) {}
 ngOnInit() {
 
 this.Purchase_History();
-// this.onFilter();
-// this.onSort();
 }
 
 

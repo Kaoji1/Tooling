@@ -72,26 +72,23 @@
             <th>Process</th>
             <th>QTY</th>
             <th>Status</th>
-            <th>DueDate</th>
             <th>ReqDate</th>
+            <th>DueDate</th>
+            
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of filteredRequests; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td>{{ item.DocNo }}</td>
-            <td [ngSwitch]="item.Division">
-              <span *ngSwitchCase="'7122'">GM</span>
-              <span *ngSwitchCase="'71DZ'">PMC</span>
-              <span *ngSwitchDefault>{{ item.Division }}</span>
-            </td>
-            <td>{{ item.Fac }}</td>
-            <td>{{ item.PartNo }}</td>
-            <td>{{ item.Process }}</td>
-            <td>{{ item.Req_QTY }}</td>
-            <td>{{ item.Status }}</td>
-            <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
-            <td>{{ item.DateTime_Record | date:'dd/MM/yyyy' }} </td>
+         <tr *ngFor="let item of filteredRequests; let i = index">
+            <td [ngClass]="getStatusClass(item.Status)">{{ i + 1 }}</td>
+            <td [ngClass]="getStatusClass(item.Status)">{{ item.DocNo }}</td>
+            <td [ngClass]="getStatusClass(item.Status)">{{ item.Division }}</td>
+            <td [ngClass]="getStatusClass(item.Status)">{{ item.Fac }}</td>
+            <td [ngClass]="getStatusClass(item.Status)">{{ item.PartNo }}</td>
+            <td [ngClass]="getStatusClass(item.Status)">{{ item.Process }}</td>
+            <td [ngClass]="getStatusClass(item.Status)">{{ item.Req_QTY }}</td>
+            <td [ngClass]="getStatusClass(item.Status)">{{ item.Status }}</td>
+            <td [ngClass]="getStatusClass(item.Status)">{{ item.DateTime_Record | date:'dd/MM/yyyy' }}</td>
+            <td [ngClass]="getStatusClass(item.Status)">{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
           </tr>
         </tbody>
       </table>
