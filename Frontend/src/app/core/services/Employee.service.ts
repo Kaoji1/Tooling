@@ -17,5 +17,11 @@ export class EmployeeService {
   get_Employee(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
     return this.httpClient.get(`${baseUrl}/get_Employee`); // ส่ง HTTP GET Division
   }
+   addEmployee(data: any): Observable<any> {
+    return this.httpClient.post(`${baseUrl}/AddEmployee`, data);
+  }
+  deleteEmployee(empId: string) {
+  return this.httpClient.delete(`${baseUrl}/delete_employee/${empId}`);
+}
 
 }

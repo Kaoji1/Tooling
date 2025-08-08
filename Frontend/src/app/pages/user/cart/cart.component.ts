@@ -103,23 +103,38 @@ removeItem(case_: string, index: number) {
   const item = this.groupedCart[case_][index];
   const id = item.ID_Cart || item.id || item.ItemID;
 
-  console.log(' ลบ ID:', id); // เช็คว่าเป็น undefined หรือเปล่า
-
   if (!id) {
-    alert('ไม่พบรหัส ID_Cart สำหรับลบ');
+    Swal.fire('ไม่พบรหัส ID_Cart', 'ไม่สามารถลบรายการได้', 'error');
     return;
   }
 
-  this.cartService.removeItemFromDB(id).subscribe({
-    next: () => {
-      this.groupedCart[case_].splice(index, 1);
-      if (this.groupedCart[case_].length === 0) {
-        delete this.groupedCart[case_];
-      }
-    },
-    error: (err) => {
-      console.error('ลบไม่สำเร็จ:', err);
-      alert('ลบไม่สำเร็จ');
+  //  ยืนยันก่อนลบ
+  Swal.fire({
+    title: 'Delete?',
+    text: 'Do you really want to delete this item',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Delete',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      //  เรียก service ลบ
+      this.cartService.removeItemFromDB(id).subscribe({
+        next: () => {
+          this.groupedCart[case_].splice(index, 1);
+          if (this.groupedCart[case_].length === 0) {
+            delete this.groupedCart[case_];
+          }
+
+          Swal.fire('ลบสำเร็จ', 'รายการถูกลบเรียบร้อยแล้ว', 'success');
+        },
+        error: (err) => {
+          console.error('ลบไม่สำเร็จ:', err);
+          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบรายการได้', 'error');
+        }
+      });
     }
   });
 }

@@ -21,13 +21,44 @@ exports.ShowUser = async (req, res) => {
 
 exports.AddUser = async (req, res) => {
   try {
+    const {
+      Employee_ID,
+      Employee_Name,
+      Username,
+      Password,
+      Role
+    } = req.body;
+
     const pool = await poolPromise;
+
     const result = await pool
-    .request()
-    .query('EXEC dbo.Stored_Insert_tb_CuttingTool_Employee');
-    res.json(result.recordset);
+      .request()
+      .input('Employee_ID', Employee_ID)
+      .input('Employee_Name', Employee_Name)
+      .input('Role', Role)
+      .input('Username', Username)
+      .input('Password', Password)
+      
+      .query('EXEC dbo.Stored_Insert_tb_CuttingTool_Employee @Employee_ID, @Employee_Name, @Role, @Username, @Password');
+
+    res.status(200).json({ success: true, message: 'Add success' });
   } catch (err) {
-    console.error(' Error GetEmployee:', err);
-    res.status(500).json({ error: 'Cant get Employee data' });
+    console.error(' Error AddUser:', err);
+    res.status(500).json({ success: false, error: 'Cannot add employee' });
+  }
+};
+// controller
+exports.DeleteEmployee = async (req, res) => {
+  try {
+    const empId = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input('Employee_ID', sql.VarChar, empId)
+      .query(`DELETE FROM tb_CuttingTool_Employee WHERE Employee_ID = @Employee_ID`);
+
+    res.json({ success: true, message: 'ลบสำเร็จ' });
+  } catch (err) {
+    console.error('Error deleting employee:', err);
+    res.status(500).json({ error: 'ลบไม่สำเร็จ' });
   }
 };

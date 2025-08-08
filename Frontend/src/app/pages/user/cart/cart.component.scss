@@ -56,7 +56,7 @@
     // ตาราง
    .table-responsive{
     max-height: 520px;
-    max-width: 1290px;
+    max-width: 1500px;
        table {
       width: 100%;
       border-collapse: collapse;
@@ -77,7 +77,7 @@
 
       th {
         background-color: #E3E3E3;
-        padding: 15px;
+        
         font-size: 16px;
         font-weight: 100;
       }
@@ -86,7 +86,7 @@
           height: 30px;                // ลดความสูง
           font-size: 12px;             // ลดขนาดตัวอักษร
           padding: 2px 4px;            // ลด padding
-          width: 50px;                 // ให้เต็ม cell
+          width: 40px;                 // ให้เต็ม cell
           box-sizing: border-box;  
            margin-left: 10px;    // ป้องกันล้น cell
         }
