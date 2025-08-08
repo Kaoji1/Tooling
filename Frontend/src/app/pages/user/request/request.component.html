@@ -132,7 +132,7 @@
       <!--div input-req-->
       <!-- btn group -->
       <div class="btn-group-req">
-        <button class="btn-viewall" type="button" (click)="Clearall()"> CLEARALL <i class="bi bi-list"></i></button>
+        <button class="btn-viewall" type="button" (click)="Clearall()"> CLEARALL <i class="bi bi-trash3" style="margin-right: 3px;"></i></button>
         <!-- <button class="btn-import" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal"
           data-bs-whatever="@getbootstrap"> IMPORT <i class="bi bi-download"></i></button> -->
         <button class="btn-view" type="button" (click)="Setview()" > VIEW <i class="bi bi-eye-fill"></i></button>
@@ -163,7 +163,7 @@
 
     <tbody *ngIf="!Case_ || items.length === 0">
       <tr>
-        <td colspan="11" class="text-center text-muted">กรุณากรอกข้อมูล</td>
+        <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select the criteria above to view item.</td>
       </tr>
     </tbody>
 

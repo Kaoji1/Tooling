@@ -7,7 +7,7 @@ import { NotificationComponent } from '../../../components/notification/notifica
 import { CartService } from '../../../core/services/cart.service';
 import { SendrequestService } from '../../../core/services/SendRequest.service';
 import { FileUploadSerice } from '../../../core/services/FileUpload.service';
-
+import Swal from 'sweetalert2';
 
 
 @Component({
@@ -135,9 +135,14 @@ removeItem(case_: string, index: number) {
 
 async CreateDocByCase() {
   if (!this.groupedCart || Object.keys(this.groupedCart).length === 0) {
-    alert('ไม่มีรายการในตะกร้า');
-    return;
-  }
+  Swal.fire({
+    icon: 'warning',
+    title: 'ไม่มีรายการในตะกร้า',
+    text: 'กรุณาเพิ่มรายการก่อนดำเนินการต่อ',
+    confirmButtonText: 'ตกลง'
+  });
+  return;
+}
 
   const createdDocs: string[] = [];
 
@@ -189,10 +194,20 @@ async CreateDocByCase() {
 
   // เพิ่มการแจ้งเตือนด้านล่าง
   if (createdDocs.length > 0) {
-    alert('สร้างและส่งเอกสารสำเร็จ:\n\n' + createdDocs.join('\n'));
-  } else {
-    alert('ไม่มีเอกสารใดถูกสร้าง กรุณาติ๊กก่อนส่ง');
-  }
+  Swal.fire({
+    icon: 'success',
+    title: 'Documents Created and Sent Successfully',
+    html: createdDocs.join('<br>'), // ใช้ <br> เพื่อขึ้นบรรทัดใหม่
+    confirmButtonText: 'Ok'
+  });
+} else {
+  Swal.fire({
+    icon: 'error',
+    title: 'No Documents Created',
+    text: 'Please select items before sending',
+    confirmButtonText: 'Ok'
+  });
+}
 }
 selectedFiles: { [caseKey: string]: File | null } = {};
 uploadStatusMap: { [caseKey: string]: string } = {};

@@ -4,63 +4,108 @@ import { NotificationComponent } from '../../../components/notification/notifica
 import { RouterOutlet } from '@angular/router';
 import { PurchaseHistoryservice } from '../../../core/services/PurchaseHistory.service';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-history-request',
   standalone: true,
-  imports: [SidebarPurchaseComponent,RouterOutlet,NotificationComponent,CommonModule],
+  imports: [SidebarPurchaseComponent,RouterOutlet,NotificationComponent,CommonModule,FormsModule],
   templateUrl: './history-request.component.html',
   styleUrl: './history-request.component.scss'
 })
 export class HistoryRequestComponent implements OnInit {
-  requests: any[] = [];
-  filteredRequests: any[] = [];
-  statussList:{ label: string, value: string }[] = [];
-  partNoList: { label: string, value: string }[] = [];
-  selectedPartNo: string | null = null;
+requests: any[] = [];
+filteredRequests: any[] = [];
+statussList: { label: string, value: string }[] = [];
+partNoList: { label: string, value: string }[] = [];
+selectedPartNo: string | null = null;
 
-  fromDate: string = '';
-  toDate: string = '';
-  Status_: string | null = null;
+fromDate: string = '';
+toDate: string = '';
+Status_: string | null = null;
 
+sortOrder: 'asc' | 'desc' = 'asc';
 
+constructor(private purchasehistory: PurchaseHistoryservice) {}
 
-  constructor(private purchasehistory: PurchaseHistoryservice) {
-   
-  }
+ngOnInit() {
 
-  ngOnInit() {
-    this.Purchase_History();
-  }
-
-  Purchase_History() {
-    this.purchasehistory.Purchase_History().subscribe({
-      next: (response: any[]) => {
-        this.requests = [...response];
-        this.filteredRequests = [...this.requests]; // แสดงทั้งหมดก่อน
-        const uniquePartNo = [...new Set(this.requests.map(r => r.PartNo))];
-        this.partNoList = uniquePartNo.map(p => ({
-          label: p,
-          value: p
-        }));
-
-        this.filteredRequests = this.requests.filter(r => r.Status === 'complete');
-
-        const uniqueStatus = [...new Set(this.requests.map(r => r.Status))];
-        this.statussList = uniqueStatus.map(s => ({
-          label: s,
-          value: s
-        }));
-      },
-      error: (e: any) => console.error(e),
-    });
-  }
+this.Purchase_History();
 }
 
 
 
+Purchase_History() {
+this.purchasehistory.Purchase_History().subscribe({
+next: (response: any[]) => {
+// console.log(' Raw response:', response); // ตรวจว่า API ส่งข้อมูลมาไหม
 
+this.requests = [...response];
+this.filteredRequests = [...this.requests];
 
+// console.log(' All requests:', this.requests); // ดูข้อมูลทั้งหมด
+// console.log(' กำลังกรองเฉพาะ Status = "complete"');
+
+// กรองเฉพาะ Status = 'complete'
+this.filteredRequests = this.requests.filter(r => r.Status === 'Complete');
+
+// console.log(' Filtered requests:', this.filteredRequests); // หลังกรอง
+
+// PartNo dropdown
+const uniquePartNo = [...new Set(this.requests.map(r => r.PartNo))];
+this.partNoList = uniquePartNo.map(p => ({
+label: p,
+value: p
+}));
+// console.log(' PartNo List:', this.partNoList);
+
+// Status dropdown
+const uniqueStatus = [...new Set(this.requests.map(r => r.Status))];
+this.statussList = uniqueStatus.map(s => ({
+label: s,
+value: s
+}));
+
+this.onFilter();
+// console.log(' Status List:', this.statussList);
+},
+error: (e: any) => {
+// console.error(' Error from API:', e);
+}
+});
+}
+
+onFilter() {
+    this.filteredRequests = this.requests.filter(item => {
+      const itemDate = new Date(item.DateRequest || item.DueDate);
+
+      const matchDate =
+        (!this.fromDate || itemDate >= new Date(this.fromDate)) &&
+        (!this.toDate || itemDate <= new Date(this.toDate));
+
+      const matchPartNo =
+        !this.selectedPartNo || item.PartNo === this.selectedPartNo;
+
+      const matchStatus =
+        !this.Status_ || item.Status === this.Status_;
+
+      return matchDate && matchPartNo && matchStatus;
+    });
+
+    this.onSort();
+  }
+
+    //  เรียงลำดับจาก DueDate เก่าสุด -> ล่าสุด
+  onSort() {
+    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+
+    this.filteredRequests.sort((a, b) => {
+      const dateA = new Date(a.DueDate).getTime();
+      const dateB = new Date(b.DueDate).getTime();
+      return dateA - dateB; // เรียงจากเก่า -> ใหม่
+    });
+  }
+}
 
 
 

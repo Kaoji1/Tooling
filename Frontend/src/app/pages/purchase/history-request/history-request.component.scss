@@ -1,4 +1,3 @@
-
 .layout {
   display: flex;
   flex-direction: row;
@@ -16,15 +15,27 @@
   padding: 20px;
   background-color: white;
 
+
+
+
+
+
+
   .header-content {
     display: flex;
     justify-content: space-between;
     flex-direction: row;
 
-    .noti{
-     justify-self: end;
+    .noti {
+      justify-self: end;
     }
 
+    .box-input {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
   }
 
   .reh {
@@ -32,7 +43,7 @@
     font-size: 22px;
   }
 
-  
+
 
   .lol {
     border: none;
@@ -55,20 +66,115 @@
     margin-top: 60px;
   }
 
-  .form-input {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 25px;
-    justify-content: flex-start;
+  // .form-input {
+  //   display: flex;
+  //   flex-direction: row;
+  //   flex-wrap: wrap;
+  //   gap: 25px;
+  //   justify-content: flex-start;
 
-  }
+
+  //   .button-group {
+
+  //     .export-btn {
+  //       position: sticky;
+  //       right: 20px;
+  //       margin-left: 600px;
+
+
+      
+  //     .export-button {
+
+  //        width: 120px;
+  //         height: 45px;
+  //         background-color: #4db6b6;
+  //         color: white;
+  //         border: none;
+  //         border-radius: 10px;
+  //         font-size: 18px;
+  //         align-content: center;
+  //         justify-content: space-between;
+  //     }
+           
+  //     }
+
+
+
+  //     .button-sort {
+  //       width: 100px;
+  //       display: flex;
+  //       align-content: center;
+  //       justify-content: center;
+  //       margin-top: 40px;
+  //       margin-left: 500px;
+
+
+  //       .btn-sort {
+  //         width: 120px;
+  //         height: 45px;
+  //         background-color: #4db6b6;
+  //         color: white;
+  //         border: none;
+  //         border-radius: 10px;
+  //         font-size: 18px;
+  //         align-content: center;
+  //         justify-content: space-between;
+  //       }
+
+  //     }
+
+
+
+  //   }
+
+
+
+  // }
+
+  .form-input {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap; /* ไม่ให้ตัดบรรทัด */
+  align-items: center; /* จัดให้ปุ่มอยู่ระดับเดียวกัน */
+  gap: 20px;
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
+  border: none;
+  border-radius: 10px;
+  gap: 20px; /* ระยะห่างระหว่างปุ่ม */
+}
+
+.export-btn {
+  position: static; 
+  width: 160px;
+  height: 45px;
+  
+  margin-top: 40px;
+  font-size: 18px;/* ไม่ต้อง sticky ถ้าต้องการให้เลื่อนตาม */
+}
+
+.export-button,
+.btn-sort {
+  width: 120px;
+  height: 45px;
+  background-color: #4db6b6;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  margin-top: 30px;
+  margin-left: 500px;
+}
+
 
   .group-select {
     display: flex;
     flex-direction: column;
     margin-top: 20px;
-   
+
   }
 
   label {
@@ -78,7 +184,7 @@
     margin-bottom: 5px;
   }
 
-  
+
 
   .form-select {
     color: #7a7878;
@@ -106,29 +212,9 @@
     width: 200px;
   }
 
-  .export-btn{
-    position: absolute;
-    right: 0;
-    flex-direction: column;
-    margin-top: 40px;
-    margin-right: 20px;
 
-  }
 
-  .export-btn button {
-    align-items: center;
-    border: none;
-    background-color: rgb(255, 0, 0);
-    padding: 10px;
-    border-radius: 10px;
-    color: white;
-    height: 50px;
-  }
 
-  .export{
-    align-items: center;
-
-  }
 
   .table-responsive {
     width: 100%;
@@ -138,58 +224,58 @@
     margin-top: 20px;
 
     table {
-        width: 100%;
-        table-layout: auto;
-        border-collapse: collapse;
+      width: 100%;
+      table-layout: auto;
+      border-collapse: collapse;
 
-        th, td {
-          padding: 8px 12px;
-          border: 1px solid #ccc;
-          text-align: center;
-          white-space: nowrap;
-        }
+      th,
+      td {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        text-align: center;
+        white-space: nowrap;
+      }
     }
   }
 
   thead th {
-            position: sticky;
-            top: 0;
-            background-color: #E3E3E3;
-            z-index: 2;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-          }
+    position: sticky;
+    top: 0;
+    background-color: #E3E3E3;
+    z-index: 2;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
 
   .pagination-wrapper {
-      position: fixed;
-      bottom: 30px;
-      left: 0;
-      width: 100%;
-      text-align: center;
-      padding: 10px 0;
+    position: fixed;
+    bottom: 30px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
 
-      .pagination {
-        display: flex;
-        justify-content: center;
-        padding: 0;
-        margin: 0;
-        list-style: none;
+    .pagination {
+      display: flex;
+      justify-content: center;
+      padding: 0;
+      margin: 0;
+      list-style: none;
 
-        .page-item {
+      .page-item {
 
-          .page-link {
-            padding: 6px 12px;
-            border: 1px solid #ccc;
-            color: #0066B3;
-            text-decoration: none;
-            background-color: #f9f9f9;
-          }
+        .page-link {
+          padding: 6px 12px;
+          border: 1px solid #ccc;
+          color: #0066B3;
+          text-decoration: none;
+          background-color: #f9f9f9;
+        }
 
-          .page-link:hover {
-            background-color: #e2f0ff;
-            border-color: #0066B3;
-          }
+        .page-link:hover {
+          background-color: #e2f0ff;
+          border-color: #0066B3;
         }
       }
     }
-
   }
+}

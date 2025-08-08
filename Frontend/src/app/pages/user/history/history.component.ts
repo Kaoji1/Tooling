@@ -54,6 +54,7 @@ export class HistoryComponent implements OnInit {
           label: p,
           value: p
         }));
+        console.log(this.filteredRequests)
         const uniqueStatus = [...new Set(this.requests.map(r => r.Status))];
         this.statussList = uniqueStatus.map(s => ({
           label: s,
@@ -91,5 +92,13 @@ export class HistoryComponent implements OnInit {
       return dateA - dateB; // เรียงจากเก่า -> ใหม่
     });
   }
+getStatusClass(status: string): string {
+  const s = status?.toLowerCase().trim();
+  if (s === 'complete') return 'bg-complete';
+  if (s === 'waiting') return 'bg-waiting';
+ 
+  return '';
+}
+  
 }
 
