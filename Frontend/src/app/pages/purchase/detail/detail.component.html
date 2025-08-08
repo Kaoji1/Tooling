@@ -26,10 +26,14 @@
             <h4>ItemNo: {{ itemNo }}</h4>
           </tr>
         </div>
-        <div class="button-Complete">
-          <button class="btn-Complete" type="button" (click)="completeSelected()">Complete</button>
-        </div>
+
+        <div><button class="btn-Complete" type="button" class="btn btn-danger"
+            (click)="completeSelected()">Complete</button></div>
+
+
+
       </div>
+
       <!-- กล่อง item no -->
       <!-- ตาราง -->
 
@@ -52,14 +56,16 @@
               <th style="white-space: nowrap;">MC QTY</th>
               <th>Fac</th>
               <th>DWG</th>
-              <th style="white-space: nowrap;">Fresh-QTY</th>
-              <th style="white-space: nowrap;">Reuse-QTY</th>
+              <th style="white-space: nowrap;">Fresh QTY</th>
+              <th style="white-space: nowrap;">Reuse QTY</th>
               <th style="white-space: nowrap;">On Hand</th>
+              <th style="white-space: nowrap;">Request QTY</th>
               <th>QTY</th>
               <th style="white-space: nowrap;">Due Date</th>
               <th>Case</th>
               <th>Status</th>
               <th>Remark</th>
+              <th style="white-space: nowrap;">Edit (QTY)</th>
             </tr>
           </thead>
 
@@ -68,8 +74,9 @@
             <tr *ngIf="request.length === 0">
               <td colspan="15" class="text-center text-muted">ยังไม่มีข้อมูล ( No Data )</td>
             </tr>
-            <tr *ngFor="let item of request">
-              <td><input type="checkbox" [(ngModel)]="item.Selection" /></td> <!--เชื่อม checkbox-->
+            <tr *ngFor="let item of request; let i = index">
+              <td><input type="checkbox" [(ngModel)]="item.Selection" /></td>
+              <!--เชื่อม checkbox-->
               <td>{{ item.DocNo }}</td>
               <td>{{ item.Requester }}</td>
               <td class="PartNo-column">{{ item.PartNo }}</td>
@@ -84,10 +91,27 @@
               <td>{{ item.ReuseQty }}</td>
               <td>{{ item.ON_HAND }}</td>
               <td>{{ item.Req_QTY }}</td>
+              <td>
+                <ng-container *ngIf="editingIndex[item.CASE] === i; else showQty">
+                  <input [(ngModel)]="item.QTY" type="number" class="form-control" />
+                </ng-container>
+                <ng-template #showQty>{{ item.QTY }}</ng-template>
+              </td>
               <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
               <td>{{ item.CASE }}</td>
               <td>{{ item.Status }}</td>
               <td>{{ item.Remark }}</td>
+              <td>
+  <button *ngIf="editingIndex[item.CASE] !== i" class="btn btn-primary btn-sm"
+    (click)="startEdit(item.CASE, i)">
+    <i class="bi bi-pencil-square"></i>
+  </button>
+  <button *ngIf="editingIndex[item.CASE] === i" class="btn btn-success btn-sm"
+    (click)="saveEdit(item.CASE, i)">
+    <i class="bi bi-check-lg"></i>
+  </button>
+</td>
+
 
               <!-- <button class="Editicon">
                 <i class="bi bi-pencil-square"></i>

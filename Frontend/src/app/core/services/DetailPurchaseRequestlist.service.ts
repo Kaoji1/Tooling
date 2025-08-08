@@ -22,10 +22,12 @@ export class DetailPurchaseRequestlistService {
 updateStatusToComplete(ID_Request: number, Status: string): Observable<any> {
   return this.httpClient.post(`${baseUrl}/Update_Status_Purchase`, {
     ID_Request,
-    Status
+    Status,
+    
   });
 }
-
-    
-}
+  updateItem(item: any): Observable<any> {
+    return this.httpClient.post(`${baseUrl}/update_item`, item);
+  }    
+  }
 

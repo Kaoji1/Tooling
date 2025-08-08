@@ -23,6 +23,7 @@
     "@angular/router": "^18.2.0",
     "@angular/ssr": "^18.2.20",
     "@ng-select/ng-select": "^12.0.7",
+    "@sweetalert2/ngx-sweetalert2": "^13.0.0",
     "bootstrap": "^5.3.7",
     "bootstrap-icons": "^1.13.1",
     "express": "^4.18.2",

@@ -21,19 +21,24 @@ exports.Detail_Purchase = async (req, res) => {
 };
 
 exports.Update_Status_Purchase = async (req, res) => {
-  console.log(req.body); // ตรวจสอบค่าที่ส่งมา { ID_Request: , Status:  }
+  console.log(req.body); 
+ // ตรวจสอบค่าที่ส่งมา { ID_Request: , Status:  }
 
   try {
-    const { ID_Request, Status } = req.body; //  ดึงค่าออกมา
+    const { ID_Request, Status, QTY, Remark} = req.body; //  ดึงค่าออกมา
 
     const pool = await poolPromise;
     const result = await pool
-      .request()
-      .input("ID_Request", ID_Request)
-      .input("Status", Status)
-      .query(`
+     .request()
+  .input("ID_Request", sql.Int, ID_Request)
+  .input("Status", sql.NVarChar, Status)
+  .input("QTY", sql.Int, QTY)
+  .input("Remark", sql.NVarChar, Remark)
+  .query(`
         UPDATE [dbo].[View_CuttingTool_RequestList]
-        SET Status = @Status
+        SET Status = @Status,
+            QTY = @QTY,
+            Remark = @Remark
         WHERE ID_Request = @ID_Request
       `);
 

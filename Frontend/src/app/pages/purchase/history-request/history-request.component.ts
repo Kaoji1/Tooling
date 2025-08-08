@@ -5,6 +5,7 @@ import { RouterOutlet } from '@angular/router';
 import { PurchaseHistoryservice } from '../../../core/services/PurchaseHistory.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-history-request',
@@ -32,8 +33,6 @@ ngOnInit() {
 
 this.Purchase_History();
 }
-
-
 
 Purchase_History() {
 this.purchasehistory.Purchase_History().subscribe({
@@ -105,8 +104,43 @@ onFilter() {
       return dateA - dateB; // เรียงจากเก่า -> ใหม่
     });
   }
-}
 
+showSuccessAlert(){
+  const swalWithBootstrapButtons = Swal.mixin({
+  customClass: {
+    confirmButton: "btn btn-success me-3",
+    cancelButton: "btn btn-danger"
+  },
+  buttonsStyling: false
+});
+swalWithBootstrapButtons.fire({
+  title: "Export To AS400?",
+  // text: "You won't be able to revert this!",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonText: "Yes",
+  cancelButtonText: "No",
+  // reverseButtons: true
+}).then((result) => {
+  if (result.isConfirmed) {
+    swalWithBootstrapButtons.fire({
+      title: "Export AS400 Success!",
+      // text: "Your file has been deleted.",
+      icon: "success"
+    });
+  } else if (
+    /* Read more about handling dismissals below */
+    result.dismiss === Swal.DismissReason.cancel
+  ) {
+    swalWithBootstrapButtons.fire({
+      title: "Cancelled",
+      // text: "Your imaginary file is safe :)",
+      icon: "error"
+    });
+  }
+});
+}
+}
 
 
 // export class HistoryRequestComponent implements OnInit {

@@ -41,24 +41,28 @@
       </div>
         <!--ปุ่ม Export to AS400-->
         <div class="export-btn">
-          <button class="export-button" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exportModal">EXPORT TO
+          <button class="export-button" type="button" class="btn btn-danger" (click)="showSuccessAlert()">EXPORT TO
             AS400</button>
         </div>
+        <!-- <div class="export-btn">
+          <button class="export-button" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exportModal">EXPORT TO
+            AS400</button>
+        </div> -->
       </div>
 
     </div>
       <!--Modal แสดง Export to AS400? Y/N-->
-      <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="export-title" aria-hidden="true">
+      <!-- <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="export-title" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
 
             <div class="modal-header justify-content-center border-0">
-              <!--header = ส่วนบนของฟอร์ม justify-content = การปรับตำแหน่ง  border = การกำหนดเส้นขอบ -->
+              <header = ส่วนบนของฟอร์ม justify-content = การปรับตำแหน่ง  border = การกำหนดเส้นขอบ 
               <h1 class="modal-title w-100 text-center" id="export">Export to AS400?</h1>
             </div>
             <div class="modal-footer justify-content-center border-0">
               <div class="d-grid gap-3 d-md-flex justify-content-center">
-                <!--d-grid gap = การเว้นระยะ-->
+                <d-grid gap = การเว้นระยะ
                 <button type="button" class="btn btn-primary btn-lg px-4" data-bs-toggle="modal"
                   data-bs-target="#completeModal">Yes</button>
                 <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">No</button>
@@ -66,7 +70,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Modal Success -->
       <div class="modal fade" id="completeModal" tabindex="-1" aria-hidden="true">
