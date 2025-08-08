@@ -44,7 +44,7 @@ export class HistoryRequestComponent implements OnInit {
           value: p
         }));
 
-        this.filteredRequests = this.requests.filter(r => r.Status === 'complete');
+        this.filteredRequests = this.requests.filter(r => r.Status === 'Complete');
 
         const uniqueStatus = [...new Set(this.requests.map(r => r.Status))];
         this.statussList = uniqueStatus.map(s => ({

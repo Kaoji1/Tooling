@@ -107,53 +107,65 @@
             }
           }
 }
-      .table-responsive {
-      max-height: 405px;
-      max-width: 1290px;
-      margin-top: 30px;
+    .table-responsive {
+  max-height: 405px;
+  max-width: 1290px;
+  margin-top: 30px;
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        
-        color: #4a4949;
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #4a4949;
 
-        th,
-        td {
-          padding: 6px;
-          text-align: center;
-          border: 1px solid #D2D2D2;
-          
-          .yoyu {
-            width: 50px;
-           
-            
-          }
-          .ng-select {
-            width: 100px;
-            
-           
-          }
-        }
-
-        th {
-          background-color: #E3E3E3;
-          padding: 15px;
-          font-size: 16px;
-          font-weight: 100;
-          
-          
-        }
-
-        .selected-row {
-          background-color: #84c4d6 !important;
-        }
-      }
-
-
-
+    //  Style สำหรับ tr
+     tr.row-complete {
+      background-color: #04fb3d !important; // เขียวอ่อนอ่านง่าย
+      color: #155724 !important;
     }
 
+    tr.row-waiting {
+      background-color: #ffffff !important; 
+      color: #000000 !important ;
+    }
+
+    th,
+    td {
+      padding: 6px;
+      text-align: center;
+      border: 1px solid #D2D2D2;
+
+      .yoyu {
+        width: 50px;
+      }
+
+      .ng-select {
+        width: 100px;
+      }
+    }
+
+    th {
+      background-color: #E3E3E3;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 100;
+    }
+
+    .selected-row {
+      background-color: #84c4d6 !important;
+    }
+  }
+}
+
+
+.bg-complete {
+  background-color: #01ff3c !important;
+  color: #0c0c0c;
+}
+
+.bg-waiting {
+  background-color: #ffffff !important;
+  color: #000000;
+}
 
 
 

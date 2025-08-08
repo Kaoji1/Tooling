@@ -7,7 +7,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RequestService,  } from '../../../core/services/request.service';
 import { CartService } from '../../../core/services/cart.service';
-
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-request',
@@ -207,13 +207,20 @@ Setview() {
   if (!Fac) missingFields.push("Fac");
   if (!PartNo) missingFields.push("PartNo");
   if (!Process) missingFields.push("Process");
-  if (!MC) missingFields.push("MC");
+  if (!MC) missingFields.push("Machine Type");
   if (!DueDate_) missingFields.push("DueDate");
 
-  if (missingFields.length>0){
-    alert("กรุณากรอกข้อมูลต่อไปนี้ให้ครบ:\n" + missingFields.join("\n"));
-    return;
-  }
+ if (missingFields.length > 0) {
+  Swal.fire({
+    icon: 'warning',
+    title: 'กรุณากรอกข้อมูลให้ครบ',
+    html: 'รายการที่ยังไม่กรอก:<br><ul style="text-align:left;">' +
+           missingFields.map(field =>` <li>${field}</li>`).join('') +
+          '</ul>',
+    confirmButtonText: 'ตกลง'
+  });
+  return;
+}
   console.log('division:', Division);
   console.log('factory:', Fac);
   console.log('PartNo:', PartNo);
@@ -357,9 +364,14 @@ AddToCart() {
   const filteredItems = checkedItems.filter((item: any) => item.QTY);
 
   if (filteredItems.length < checkedItems.length) {
-    alert('กรุณากรอกข้อมูลให้ครบในรายการที่เลือก');
-    return;
-  }
+  Swal.fire({
+    icon: 'warning',
+    title: 'ข้อมูลไม่ครบ',
+    text: 'กรุณากรอกข้อมูลให้ครบในรายการที่เลือก',
+    confirmButtonText: 'ตกลง'
+  });
+  return;
+}
   // ตั้งค่าการส่งเป็นวันนี้
   const InputDate_ = new Date().toISOString().split('T')[0];
 
@@ -393,18 +405,39 @@ AddToCart() {
     return acc;
   }, {});
 
-  //  ตรวจสอบว่ามีรายการหรือไม่
-  if (Object.keys(groupedByCase).length === 0) {
-    alert('ไม่มีรายการที่เลือกไว้สำหรับเพิ่มลงตะกร้า');
-    return;
-  }
-  //  แปลงจาก grouped object เป็น array ธรรมดาเพื่อส่งไป backend
-  const allItemsToSend = Object.values(groupedByCase).flat();
-  //  เรียก Service เพื่อส่งข้อมูลไปเก็บ MSSQL
-  this.cartService.addCartToDB(allItemsToSend).subscribe({
-    next: () => alert(' เพิ่มรายการลงตะกร้าและบันทึกลงฐานข้อมูลเรียบร้อย'),
-    error: () => alert(' บันทึกลงฐานข้อมูลล้มเหลว'),
+  // ตรวจสอบว่ามีรายการหรือไม่
+if (Object.keys(groupedByCase).length === 0) {
+  Swal.fire({
+    icon: 'warning',
+    title: 'ไม่มีรายการ',
+    text: 'ไม่มีรายการที่เลือกไว้สำหรับเพิ่มลงตะกร้า',
+    confirmButtonText: 'ตกลง'
   });
+  return;
+}
+
+// แปลงจาก grouped object เป็น array ธรรมดาเพื่อส่งไป backend
+const allItemsToSend = Object.values(groupedByCase).flat();
+
+// เรียก Service เพื่อส่งข้อมูลไปเก็บ MSSQL
+this.cartService.addCartToDB(allItemsToSend).subscribe({
+  next: () => {
+    Swal.fire({
+      icon: 'success',
+      title: 'สำเร็จ',
+      text: 'เพิ่มรายการลงตะกร้าและบันทึกลงฐานข้อมูลเรียบร้อย',
+      confirmButtonText: 'ตกลง'
+    });
+  },
+  error: () => {
+    Swal.fire({
+      icon: 'error',
+      title: 'เกิดข้อผิดพลาด',
+      text: 'บันทึกลงฐานข้อมูลล้มเหลว',
+      confirmButtonText: 'ลองใหม่'
+    });
+  }
+});
 
   //  ล้างค่าหลังจากเพิ่มสำเร็จ
   this.Clearall();
