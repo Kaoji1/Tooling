@@ -20,7 +20,7 @@ export class AddUserComponent {
   ngOnInit() {
     //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
     //Add 'implements OnInit' to the class.
-    this.Get_Employee
+    this.Get_Employee()
   }
 
   Get_Employee() {

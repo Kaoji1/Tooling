@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';  // <-- เพิ่มตรงนี้
 import { CartService } from '../../core/services/cart.service';
-
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -46,6 +46,28 @@ export class SidebarComponent implements OnInit {
 
 
   logout() {
-    this.router.navigate(['/login']);
-  }
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'Do you want to log out?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, log out',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // 👉 ลบ session หรือ token ถ้ามี
+      sessionStorage.clear(); // หรือ localStorage.clear();
+      this.router.navigate(['/login']); // 👉 กลับไปหน้า login
+      Swal.fire({
+        icon: 'success',
+        title: 'Logged out',
+        text: 'You have been logged out.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    }
+  });
+}
 }

@@ -1,7 +1,7 @@
 .layout {
   display: flex;
   flex-direction: row;
-  height: 100%;
+ height: 100vh;
   width: 100%;
   overflow: hidden;
 
@@ -221,6 +221,12 @@
     font-size: 22px;
     padding: 8px;
 
+    .btn-sendrequest::hover {
+      background-color: #000000;
+    }
+
     // .box-main
   }
+ 
+
 }

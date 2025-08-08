@@ -20,7 +20,7 @@ export class SendrequestService {
     return this.httpClient.post(`${baseUrl}/Send_Request`, data)
   }
   GenerateNewDocNo(case_: string, process: string, factory: string): Observable<any> {
-  return this.httpClient.post(`${baseUrl}/GenerateNewDocNo`, { case_, process, factory });
+  return this.httpClient.post(`${baseUrl}/GenerateNewDocNo`, { case_, process, factory  });
 }
 
 }

@@ -3,6 +3,7 @@ const sql = require('mssql');
 
 
 exports.ShowUser = async (req, res) => {
+  console.log(req.body)
   try {
     const pool = await poolPromise;
     const result = await pool
