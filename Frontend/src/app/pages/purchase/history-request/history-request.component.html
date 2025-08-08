@@ -33,15 +33,20 @@
           <input type="date" id="duedate">
         </div>
 
-
-
+      <div class="button-group">
+      <div class="button-sort">
+        <button class="btn-sort" type="button">
+          <i class="bi bi-sort-down">Sort</i>
+        </button>
+      </div>
         <!--ปุ่ม Export to AS400-->
         <div class="export-btn">
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">EXPORT TO
+          <button class="export-button" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exportModal">EXPORT TO
             AS400</button>
         </div>
       </div>
 
+    </div>
       <!--Modal แสดง Export to AS400? Y/N-->
       <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="export-title" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -87,25 +92,21 @@
           <thead>
             <tr>
 
-              <th></th>
+              <th>ID</th>
+              <th>Division</th>
+              <th style="white-space: nowrap;">Item No.</th>
+              <th>Order</th>
               <th>Document</th>
-              <th>Requester</th>
-              <th style="white-space: nowrap;">Part No.</th>
-              <th>Spec</th>
-              <th>Process</th>
-              <!-- <th>ItemNo</th> chaeck itemno -->
-              <th style="white-space: nowrap;">MC Type</th>
-              <th style="white-space: nowrap;">MC QTY</th>
-              <th>Fac</th>
-              <th>DWG</th>
-              <th style="white-space: nowrap;">Fresh-QTY</th>
-              <th style="white-space: nowrap;">Reuse-QTY</th>
-              <th style="white-space: nowrap;">On Hand</th>
+              <th>Stock</th>
               <th>QTY</th>
+              <th style="white-space: nowrap;">MC No.</th>
+              <!-- <th>ItemNo</th> chaeck itemno -->
+              <!-- <th style="white-space: nowrap;">MC QTY</th>
+              <th style="white-space: nowrap;">Transaction</th>
               <th style="white-space: nowrap;">Due Date</th>
               <th>Status</th>
-              <!--only complete-->
-              <th>Remark</th>
+              <!only complete-->
+              <!-- <th>Remark</th> --> 
 
             </tr>
           </thead>
@@ -113,22 +114,16 @@
           <tbody>
             <tr *ngFor="let item of filteredRequests; let i = index">
               <td>{{ i + 1 }}</td>
-              <td>{{ item.DocNo }}</td>
-              <td>{{ item.Requester }}</td>
-              <td>{{ item.PartNo }}</td>
-              <td>{{ item.SPEC }}</td>              
-              <td>{{ item.Process }}</td>
-              <td>{{ item.MCType }}</td>
-              <td>{{ item.MCQTY }}</td>
-              <td>{{ item.Fac }}</td>
-              <td>{{ item.DwgRev }}</td>
-              <td>{{ item.FreshQTY }}</td>
-              <td>{{ item.ReuseQTY }}</td>
-              <td>{{ item.ON_HAND }}</td>
-              <td>{{ item.Req_QTY }}</td>
-              <td>{{ item.DueDate }}</td>
-              <td>{{ item.Status }}</td>
-              <td>{{ item.Remark }}</td>
+              <td>{{ item.Division }}</td>
+              <td>{{ item.ItemNo }}</td>
+              <td>{{ item.MFG_Order_No }}</td>  
+              <td>{{ item.Document_No }}</td>            
+              <td>{{ item.Stock_Location }}</td>
+              <td>{{ item.QTY }}</td>
+              <td>{{ item.MC_No }}</td>
+              <!-- <td>{{ item.LOT_MATL }}</td>
+              <td>{{ item.Transaction }}</td>
+              <td>{{ item.Declation_No }}</td> -->
             </tr>
           </tbody>
         </table>
