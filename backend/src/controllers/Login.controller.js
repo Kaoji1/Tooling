@@ -14,7 +14,7 @@ exports.Login = (req, res) => {
     return pool.request()
       .input('Username', sql.NVarChar, req.body.Username)
       .input('Password', sql.NVarChar, req.body.Password)
-      .query('EXEC [dbo].[stored_Indirect_Employee] @Username, @Password');
+      .query('EXEC [dbo].[stored_Find_CuttingTool_Employee] @Username, @Password');
   })
 
   .then(result => {

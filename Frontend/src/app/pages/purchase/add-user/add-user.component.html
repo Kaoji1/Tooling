@@ -1,0 +1,37 @@
+<div class="layout">
+
+  <app-sidebarpurchase></app-sidebarpurchase>
+
+  <div class="content">
+    <div class="header">
+      <h1> Add User </h1>
+      <p> Add user to access who have permission to use this program. </p>
+
+      <button class="button"> + Add </button>
+    </div>
+    <table class="table">
+      <!-- Column name -->
+      <thead>
+        <tr>
+          <th> Employee ID </th>
+          <th> Employee Name </th>
+          <th> Role </th>
+          <th> Username </th>
+          <th> Password </th>
+        </tr>
+      </thead>
+      <!-- Values -->
+      <tbody>
+        <tr *ngFor="let Employee of Employee">
+          <td> {{ Employee.Employee_ID }} </td>
+          <td> {{ Employee.Employee_Name }} </td>
+          <td> {{ Employee.Role }} </td>
+          <td> {{ Employee.Username }} </td>
+          <td> {{ Employee.Password }} </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+</div>
