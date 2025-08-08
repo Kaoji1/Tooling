@@ -28,14 +28,15 @@ exports.Send_Request = async (req, res) => {
         Status = 'Waiting',    
         FileData,
         FileName,
-        Path,  
+        Path,
+
       } = item;
       console.log(" Factory ที่รับมา:", Fac, "| typeof:", typeof Fac);
 
       await pool
         .request()
         .input('DocNo',sql.NVarChar(50),Doc_no)
-        .input('Requester', sql.NVarChar(50), '') // สมมุติใช้ default
+        .input('Requester',sql.NVarChar(50),item.Employee_Name) // สมมุติใช้ default
         .input('Division', sql.NVarChar(50), Division)
         .input('Fac', sql.Int, Fac )
         .input('CASE', sql.NVarChar(50), item.CASE || item.Case_ || '') // จาก key Case_
@@ -52,6 +53,7 @@ exports.Send_Request = async (req, res) => {
         .input('FileData',sql.VarBinary(sql.MAX),FileData? Buffer.from(FileData.split(',')[1],'base64'):null)
         .input('FileName',sql.NVarChar(255),FileName)
         .input('Path',sql.NVarChar(255),Path)
+       
         .execute('[dbo].[stored_IssueCuttingTool_SendRequest]');
     }
 

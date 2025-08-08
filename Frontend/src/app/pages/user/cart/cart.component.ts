@@ -66,28 +66,14 @@ groupItemsByCase(items: any[]): { [case_: string]: any[] } {
   const grouped: { [case_: string]: any[] } = {};
 
   items.forEach((item) => {
-    const caseKey = item.CASE || 'ไม่ระบุ';
+    const caseKey = item.CASE || item.Case_ || 'ไม่ระบุ';
 
     if (!grouped[caseKey]) {
       grouped[caseKey] = [];
     }
 
-    // เงื่อนไขซ้ำ: ต้องตรงกันทุกฟิลด์เหล่านี้
-    const existingItem = grouped[caseKey].find(i =>
-      i.PartNo === item.PartNo &&
-      i.Process === item.Process &&
-      i.Fac === item.Fac &&
-      i.ITEM_NO === item.ITEM_NO &&
-      i.SPEC === item.SPEC
-    );
-
-    if (existingItem) {
-      // ถ้าซ้ำ → รวม QTY เข้าด้วยกัน
-      existingItem.QTY += item.QTY;
-    } else {
-      // ถ้าไม่ซ้ำ → เพิ่มใหม่
-      grouped[caseKey].push(item);
-    }
+    // เพิ่มทุกแถวลงไปในกลุ่ม ไม่เช็คซ้ำ
+    grouped[caseKey].push(item);
   });
 
   return grouped;
@@ -101,7 +87,12 @@ groupItemsByCase(items: any[]): { [case_: string]: any[] } {
     const item = this.groupedCart[case_][index];
     this.cartService.updateItemInDB(item).subscribe({
       next: () => {
-        alert('บันทึกข้อมูลเรียบร้อย');
+        Swal.fire({
+          icon: 'success',
+          title: 'Save',
+          text: 'บันทึกข้อมูลเรียบร้อย',
+          confirmButtonText: 'ตกลง'
+        });
         this.editingIndex[case_] = null;
       },
       error: () => alert('เกิดข้อผิดพลาดในการบันทึก'),
@@ -112,23 +103,38 @@ removeItem(case_: string, index: number) {
   const item = this.groupedCart[case_][index];
   const id = item.ID_Cart || item.id || item.ItemID;
 
-  console.log(' ลบ ID:', id); // เช็คว่าเป็น undefined หรือเปล่า
-
   if (!id) {
-    alert('ไม่พบรหัส ID_Cart สำหรับลบ');
+    Swal.fire('ไม่พบรหัส ID_Cart', 'ไม่สามารถลบรายการได้', 'error');
     return;
   }
 
-  this.cartService.removeItemFromDB(id).subscribe({
-    next: () => {
-      this.groupedCart[case_].splice(index, 1);
-      if (this.groupedCart[case_].length === 0) {
-        delete this.groupedCart[case_];
-      }
-    },
-    error: (err) => {
-      console.error('ลบไม่สำเร็จ:', err);
-      alert('ลบไม่สำเร็จ');
+  //  ยืนยันก่อนลบ
+  Swal.fire({
+    title: 'Delete?',
+    text: 'Do you really want to delete this item',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Delete',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      //  เรียก service ลบ
+      this.cartService.removeItemFromDB(id).subscribe({
+        next: () => {
+          this.groupedCart[case_].splice(index, 1);
+          if (this.groupedCart[case_].length === 0) {
+            delete this.groupedCart[case_];
+          }
+
+          Swal.fire('ลบสำเร็จ', 'รายการถูกลบเรียบร้อยแล้ว', 'success');
+        },
+        error: (err) => {
+          console.error('ลบไม่สำเร็จ:', err);
+          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบรายการได้', 'error');
+        }
+      });
     }
   });
 }
@@ -145,6 +151,8 @@ async CreateDocByCase() {
 }
 
   const createdDocs: string[] = [];
+  const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+  const employessName = currentUser.Employee_Name || 'Unknow';
 
   for (const caseKey in this.groupedCart) {
     if (!this.checkedCases[caseKey]) continue;
@@ -176,7 +184,9 @@ async CreateDocByCase() {
         item.Doc_no = docNo;
         item.FileName = fileName;
         item.FileData = fileData;
+        item.Employee_Name = employessName;
       });
+      console.log('EMP:',groupItems)
 
       await this.sendrequestService.SendRequest(groupItems).toPromise();
       await this.cartService.deleteItemsByCase(case_).toPromise();
@@ -370,4 +380,39 @@ openPdfFromPath(filePath: string) {
 //       this.uploadedFileNames[caseKey] = ''; // ไม่พบก็ไม่โชว์อะไร
 //     }
 //   });
+// }
+
+
+
+// groupItemsByCase(items: any[]): { [case_: string]: any[] } {
+//   const grouped: { [case_: string]: any[] } = {};
+
+//   items.forEach((item) => {
+//     const caseKey = item.CASE || 'ไม่ระบุ';
+
+//     if (!grouped[caseKey]) {
+//       grouped[caseKey] = [];
+//     }
+
+//     // เงื่อนไขซ้ำ: ต้องตรงกันทุกฟิลด์เหล่านี้
+//     const existingItem = grouped[caseKey].find(i =>
+//       i.PartNo === item.PartNo &&
+//       i.Process === item.Process &&
+//       i.Fac === item.Fac &&
+//       i.ITEM_NO === item.ITEM_NO &&
+//       i.SPEC === item.SPEC &&
+//       i.FreshQty	=== item.FreshQty	&&
+//       i.ReuseQty	=== item.ReuseQty	
+//     );
+
+//     if (existingItem) {
+//       // ถ้าซ้ำ → รวม QTY เข้าด้วยกัน
+//       existingItem.QTY += item.QTY;
+//     } else {
+//       // ถ้าไม่ซ้ำ → เพิ่มใหม่
+//       grouped[caseKey].push(item);
+//     }
+//   });
+
+//   return grouped;
 // }

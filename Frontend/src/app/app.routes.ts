@@ -14,6 +14,7 @@ import { RequestlistComponent } from './pages/purchase/requestlist/requestlist.c
 import { DetailComponent } from './pages/purchase/detail/detail.component';
 import { HistoryRequestComponent } from './pages/purchase/history-request/history-request.component';
 import { pathToFileURL } from 'url';
+import { AddUserComponent } from './pages/purchase/add-user/add-user.component';
 
 
 export const routes: Routes = [
@@ -59,9 +60,9 @@ export const routes: Routes = [
     canActivateChild: [AuthGuard],
     children: [
       { path: 'requestlist', component: RequestlistComponent },
-      // { path: 'detail', component: DetailComponent },
       { path: 'detail/:itemNo', component: DetailComponent },
-      { path: 'history-request', component: HistoryRequestComponent }
+      { path: 'history-request', component: HistoryRequestComponent },
+      { path: 'add-user', component: AddUserComponent }
     ],
   },
 

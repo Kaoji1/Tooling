@@ -103,7 +103,7 @@ exports.UpdateCartItem = async (req, res) => {
       .input('ID_Cart', sql.Int, item.ID_Cart) // หรือเปลี่ยนเป็น id ที่ใช้
       .input('QTY', sql.Int, item.QTY)
       .input('Path',sql.NVarChar,item.Path)
-      .input('Due_Date', sql.Date, item.DueDate_)
+      .input('Due_Date', sql.Date, item.Due_Date)
       .query(`
         UPDATE tb_IssueCuttingTool_SendToCart
         SET QTY = @QTY,
