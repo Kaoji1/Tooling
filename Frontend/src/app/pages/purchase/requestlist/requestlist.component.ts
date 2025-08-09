@@ -18,8 +18,10 @@ import { PurchaseRequestService } from '../../../core/services/PurchaseRequest.s
   templateUrl: './requestlist.component.html',
   styleUrl: './requestlist.component.scss'
 })
-export class RequestlistComponent   {
+export class RequestlistComponent implements OnInit  {
   request:any[]=[];
+
+  
 
    selectedCase: string = '';
    data:any[]=[];
@@ -94,6 +96,10 @@ Purchase_Request() {
   });
 }
 }
+
+
+
+
 
 // item = {
 //     inputDate: new Date()

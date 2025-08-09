@@ -45,8 +45,8 @@
       </div>
         <!--ปุ่ม Export to AS400-->
         <div class="export-btn">
-          <button class="export-button" type="button" class="btn btn-danger" (click)="showSuccessAlert()">EXPORT TO
-            AS400</button>
+          <button class="export-button" type="button" class="btn btn-danger" (click)="showSuccessAlert()">
+            <i class="bi bi-send-fill"> EXPORT TOAS400</i></button>
         </div>
         <!-- <div class="export-btn">
           <button class="export-button" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exportModal">EXPORT TO
@@ -120,9 +120,9 @@
           </thead>
 
           <tbody>
-            <tr>          
-              <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select the  to view item.</td>
-            </tr>
+          <tr *ngIf="filteredRequests.length === 0">
+            <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select the  to view item.</td>
+          </tr>
             <tr *ngFor="let item of filteredRequests; let i = index">
               <td>{{ i + 1 }}</td>
               <td>{{ item.Division }}</td>
