@@ -34,6 +34,10 @@
         </div>
 
       <div class="button-group">
+      <div class="button-filter">
+        <button class="btn btn-filter" type="button" >Filter</button>
+      </div>
+
       <div class="button-sort">
         <button class="btn-sort" type="button">
           <i class="bi bi-sort-down">Sort</i>
@@ -116,6 +120,9 @@
           </thead>
 
           <tbody>
+            <tr>          
+              <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select the  to view item.</td>
+            </tr>
             <tr *ngFor="let item of filteredRequests; let i = index">
               <td>{{ i + 1 }}</td>
               <td>{{ item.Division }}</td>

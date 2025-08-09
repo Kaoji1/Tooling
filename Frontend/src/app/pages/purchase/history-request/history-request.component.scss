@@ -58,7 +58,7 @@
 
   .the {
     margin-bottom: 5px;
-    color: #0066B3;
+    color: rgb(16, 3, 114);
     font-size: 15px;
   }
 
@@ -82,7 +82,7 @@
   //       margin-left: 600px;
 
 
-      
+
   //     .export-button {
 
   //        width: 120px;
@@ -95,7 +95,7 @@
   //         align-content: center;
   //         justify-content: space-between;
   //     }
-           
+
   //     }
 
 
@@ -132,49 +132,88 @@
   // }
 
   .form-input {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap; /* ไม่ให้ตัดบรรทัด */
-  align-items: center; /* จัดให้ปุ่มอยู่ระดับเดียวกัน */
-  gap: 20px;
-}
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    /* ไม่ให้ตัดบรรทัด */
+    align-items: center;
+    /* จัดให้ปุ่มอยู่ระดับเดียวกัน */
+    gap: 20px;
+  }
 
-.button-group {
-  display: flex;
-  align-items: center;
-  border: none;
-  border-radius: 10px;
-  gap: 20px; /* ระยะห่างระหว่างปุ่ม */
-}
+  .button-group {
+    display: flex;
+    align-items: center;
+    border: none;
+    border-radius: 20px;
+    gap: 20px;
+    /* ระยะห่างระหว่างปุ่ม */
+  }
 
-.export-btn {
-  position: static; 
-  width: 160px;
-  height: 45px;
-  
-  margin-top: 40px;
-  font-size: 18px;/* ไม่ต้อง sticky ถ้าต้องการให้เลื่อนตาม */
-}
+  .export-btn {
+    position: static;
+    width: 200px;
+    height: 40px;
+    display: flex-end;
+    border: none;
+    border-radius: 10px;
+    margin-top: -20px;
+    margin-left: -30px;
+    
+      padding:  12px 30px;
 
-.export-button,
-.btn-sort {
-  width: 120px;
-  height: 45px;
-  background-color: #4db6b6;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 18px;
-  margin-top: 30px;
-  margin-left: 500px;
-}
+    /* ไม่ต้อง sticky ถ้าต้องการให้เลื่อนตาม */
+  }
+
+  .export-button,
+ 
+  .btn-sort {
+    width: 120px;
+    height: 45px;
+    background-color: #4db6b6;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    
+     margin-top: 40px;
+    //  margin-left: 500px;
+    justify-content: space-between;
+  }
+
+  // .button-filter {
+  //   width: 100px;
+  //   display: flex;
+  //   align-content: center;
+  //   justify-content: center;
+
+
+    .btn-filter {
+      width: 120px;
+      height: 45px;
+      background-color: #4db6b6;
+      color: white;
+      border: none;
+      display: block;
+      border-radius: 10px;
+      font-size: 18px;
+      margin-top: 40px;
+      margin-left: 373px;
+      align-content: center;
+      justify-content: space-between;
+    }
+
+    // }
+  }
+
 
 
   .group-select {
     display: flex;
     flex-direction: column;
     margin-top: 20px;
-
+     margin-right: 5px;
+    
   }
 
   label {
@@ -206,10 +245,11 @@
   input {
     padding: 8px;
     border: 1px solid #b9b6b6;
-    border-radius: 10px;
+    border-radius: 5px;
     font-size: 14px;
     color: #7a7878;
     width: 200px;
+
   }
 
 
@@ -217,33 +257,51 @@
 
 
   .table-responsive {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: auto;
-    box-sizing: border-box;
-    margin-top: 20px;
+      max-height: 405px;
+      max-width: 1290px;
+      margin-top: 30px;
+
+    // width: 100%;
+    // overflow-x: auto;
+    // overflow-y: auto;
+    // box-sizing: border-box;
 
     table {
-      width: 100%;
-      table-layout: auto;
-      border-collapse: collapse;
+       width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        color: #4a494a;
+
+    thead th {
+          background-color: #E3E3E3;
+          padding: 15px;
+          font-size: 16px;
+          font-weight: 100;
+        }
 
       th,
       td {
-        padding: 8px 12px;
-        border: 1px solid #ccc;
-        text-align: center;
-        white-space: nowrap;
+         padding: 12px;
+          text-align: center;
+          border: 1px solid #D2D2D2;
+        // padding: 8px 12px;
+        // border: 1px solid #ccc;
+        // text-align: center;
+        // white-space: nowrap;
       }
     }
   }
 
   thead th {
-    position: sticky;
-    top: 0;
     background-color: #E3E3E3;
-    z-index: 2;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+          padding: 15px;
+          font-size: 16px;
+          font-weight: 100;
+    // position: sticky;
+    // top: 0;
+    // background-color: #E3E3E3;
+    // z-index: 2;
+    // box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
 
   .pagination-wrapper {
@@ -278,4 +336,4 @@
       }
     }
   }
-}
+
