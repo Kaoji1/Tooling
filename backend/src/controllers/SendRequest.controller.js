@@ -28,7 +28,8 @@ exports.Send_Request = async (req, res) => {
         Status = 'Waiting',    
         FileData,
         FileName,
-        Path,
+        PathDwg,
+        PathLayout
 
       } = item;
       console.log(" Factory ที่รับมา:", Fac, "| typeof:", typeof Fac);
@@ -52,8 +53,8 @@ exports.Send_Request = async (req, res) => {
         .input('Status', sql.NVarChar(50), Status)
         .input('FileData',sql.VarBinary(sql.MAX),FileData? Buffer.from(FileData.split(',')[1],'base64'):null)
         .input('FileName',sql.NVarChar(255),FileName)
-        .input('Path',sql.NVarChar(255),Path)
-       
+        .input('PathDwg',sql.NVarChar(255),PathDwg)
+        .input('PathLayout',sql.NVarChar(255),PathLayout)
         .execute('[dbo].[stored_IssueCuttingTool_SendRequest]');
     }
 
