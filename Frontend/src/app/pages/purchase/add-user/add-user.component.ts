@@ -24,6 +24,7 @@ export class AddUserComponent {
   EmployeeName_: string = '';
   Username_: string = '';
   Password_: string = '';
+  Email_:any;
 
   constructor(private EmployeeService: EmployeeService) {
     this.Role = [
@@ -48,7 +49,7 @@ export class AddUserComponent {
   addEmployee() {
     //  ตรวจสอบว่ากรอกครบ
     if (
-      !this.EmployeeId_ || !this.EmployeeName_ || !this.Username_ || !this.Password_ || !this.Role_
+      !this.EmployeeId_ || !this.EmployeeName_ || !this.Username_ || !this.Password_ || !this.Role_ || !this.Email_
     ) {
       Swal.fire({
         icon: 'warning',
@@ -65,9 +66,10 @@ export class AddUserComponent {
       Employee_Name: this.EmployeeName_,
       Username: this.Username_,
       Password: this.Password_,
-      Role: this.Role_
+      Role: this.Role_,
+      Email:this.Email_
     };
-
+console.log(' ข้อมูลที่จะส่งไป backend:', employeeData);
     //  ส่งไปผ่าน Service
     this.EmployeeService.addEmployee(employeeData).subscribe({
       next: () => {
@@ -83,6 +85,7 @@ export class AddUserComponent {
         this.Username_ = '';
         this.Password_ = '';
         this.Role_ = '';
+        this.Email_='';
 
         // โหลดรายชื่อพนักงานใหม่
         this.Get_Employee();

@@ -135,8 +135,8 @@ removeItem(case_: string, index: number) {
     SPEC: matchItem.SPEC,
     Process: matchItem.Process,
     MC: matchItem.MC,
-    FreshQty: matchItem.FreshQty,
-    ReuseQty: matchItem.ReuseQty
+    Fresh_QTY: matchItem.Fresh_QTY,
+    Reuse_QTY: matchItem.Reuse_QTY
   };
 
   // หารายการทั้งหมดที่ตรงกันในกลุ่มเดียวกัน
@@ -146,8 +146,8 @@ removeItem(case_: string, index: number) {
     item.SPEC === matchCriteria.SPEC &&
     item.Process === matchCriteria.Process &&
     item.MC === matchCriteria.MC &&
-    item.FreshQty === matchCriteria.FreshQty &&
-    item.ReuseQty === matchCriteria.ReuseQty
+    item.Fresh_QTY === matchCriteria.Fresh_QTY &&
+    item.Reuse_QTY=== matchCriteria.Reuse_QTY
   );
 
   if (itemsToDelete.length === 0) {
@@ -157,7 +157,7 @@ removeItem(case_: string, index: number) {
 
   // ยืนยันก่อนลบ
   Swal.fire({
-    title: 'ลบรายกา?',
+    title: 'ลบรายการ?',
     text: `คุณต้องการลบรายกสนหรือไม่?`,
     icon: 'warning',
     showCancelButton: true,
@@ -183,8 +183,8 @@ removeItem(case_: string, index: number) {
               existing.SPEC === matchCriteria.SPEC &&
               existing.Process === matchCriteria.Process &&
               existing.MC === matchCriteria.MC &&
-              existing.FreshQty === matchCriteria.FreshQty &&
-              existing.ReuseQty === matchCriteria.ReuseQty
+              existing.Fresh_QTY === matchCriteria.Fresh_QTY &&
+              existing.Reuse_QTY === matchCriteria.Reuse_QTY
             )
           );
 
