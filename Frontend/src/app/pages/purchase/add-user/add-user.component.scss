@@ -51,6 +51,28 @@
         }
     }
 
+    .table{
+
+            th,
+      td {
+        padding: 6px;
+        text-align: center;
+        border: 1px solid #D2D2D2;
+      }
+
+      th {
+        background-color: #ffffff;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: 100;
+      }
+
+    }
+
+
+        i {
+            color: #0066B3;
+          }//สีน้ำเงิน
 
 
   }

@@ -21,15 +21,27 @@
 
       <div class="group-header">
 
-        <div class="Box-itemNo">
+        <!-- <div class="Box-itemNo">
           <tr>
             <h4>ItemNo: {{ itemNo }}</h4>
           </tr>
         </div>
         <div class="button-Complete">
-          <button class="btn-Complete" type="button" (click)="completeSelected()">Complete</button>
+          <button class="btn-Complete" class="btn btn-danger" type="button" (click)="completeSelected()">Complete</button>
+        </div>
+      </div> -->
+
+        <div class="Box-itemNo">
+          <h4>ItemNo: {{ itemNo }}</h4>
+        </div>
+        <div class="button-Complete">
+          <button class="btn-Complete" type="button" (click)="completeSelected()">
+            Complete
+          </button>
+
         </div>
       </div>
+
       <!-- กล่อง item no -->
       <!-- ตาราง -->
 
@@ -40,11 +52,13 @@
             <!-- <th><input type="checkbox"[(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"/></th> -->
             <tr>
               <th>
+                <input type="checkbox" [(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()" />
                 <!-- <input type="checkbox" [(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()" /> -->
               </th>
               <th>Document</th>
               <th>Requester</th>
               <th style="white-space: nowrap;">Part No.</th>
+              <th>Item No.</th>
               <th>Spec</th>
               <th>Process</th>
               <!-- <th>ItemNo</th> chaeck itemno -->
@@ -52,8 +66,8 @@
               <th style="white-space: nowrap;">MC QTY</th>
               <th>Fac</th>
               <th>DWG</th>
-              <th style="white-space: nowrap;">Fresh-QTY</th>
-              <th style="white-space: nowrap;">Reuse-QTY</th>
+              <th style="white-space: nowrap;">Fresh QTY</th>
+              <th style="white-space: nowrap;">Reuse QTY</th>
               <th style="white-space: nowrap;">On Hand</th>
               <th>QTY</th>
               <th style="white-space: nowrap;">Due Date</th>
@@ -67,17 +81,19 @@
           <!-- ในตาราง -->
           <tbody>
             <tr *ngIf="request.length === 0">
-              <td colspan="15" class="text-center text-muted">ยังไม่มีข้อมูล ( No Data )</td>
+              <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please
+                select the to view item.</td>
             </tr>
-            <tr *ngFor="let item of request">
+            <tr *ngFor="let item of request; let i = index">
               <td><input type="checkbox" [(ngModel)]="item.Selection" /></td>
               <!--เชื่อม checkbox-->
+
               <td>{{ item.DocNo }}</td>
               <td>{{ item.Requester }}</td>
               <td class="PartNo-column">{{ item.PartNo }}</td>
+              <td>{{ item.ItemNo }}</td>
               <td class="spec-column">{{ item.SPEC }}</td>
               <td>{{ item.Process }}</td>
-              <!-- <td>{{ item.ItemNo }}</td> chaeck itemno -->
               <td>{{ item.MCType }}</td>
               <td>{{ item.MCQTY }}</td>
               <td>{{ item.Fac }}</td>
@@ -85,15 +101,51 @@
               <td>{{ item.FreshQty }}</td>
               <td>{{ item.ReuseQty }}</td>
               <td>{{ item.ON_HAND }}</td>
-              <td>{{ item.Req_QTY }}</td>
+
+              <td>
+                <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.Req_QTY }}</span>
+                <input *ngIf="editingIndex[item.ID_Request] === i" type="number" [(ngModel)]="item.Req_QTY" />
+              </td>
+
               <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
               <td>{{ item.CASE }}</td>
               <td>{{ item.Status }}</td>
-              <td>{{ item.Remark }}</td>
               <td>
-                <button class="btn btn-primary btn-sm">
-                  <i class="bi bi-pencil-square"></i>
+                <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.Remark }}</span>
+                <input *ngIf="editingIndex[item.ID_Request] === i" type="text" [(ngModel)]="item.Remark"
+                  type="text" />
+              </td>
+              <td>
+
+                <button *ngIf="editingIndex[item.ID_Request] !== i" class="btn btn-primary btn-sm"
+                  (click)="startEdit(item.ID_Request, i)">
+                  <i class="bi bi-pencil-square text-white"></i>
+
                 </button>
+                <button *ngIf="editingIndex[item.ID_Request] === i" class="btn btn-success btn-sm"
+                  (click)="saveEdit(item.ID_Request, i)">
+                  <i class="bi bi-check-lg text-white"></i>
+                </button>
+
+               <button *ngIf="editingIndex[item.ID_Request] === i" class="btn  btn-lg"
+               (click)="addNewRequest({
+                  DocNo: item.DocNo,
+                  Requester: item.Requester,
+                  PartNo: item.PartNo,
+                  ItemNo: item.ItemNo,
+                  Req_QTY: item.Req_QTY,
+                  Remark: item.Remark,
+                  Status: item.Status,
+                  SPEC: item.SPEC,
+                  Process: item.Process,
+                  MCType: item.MCType,
+                  MCQTY: item.MCQTY,
+                  Fac: item.Fac,
+                  DwgRev: item.DwgRev
+                    })"><i class="bi bi-plus-circle text-blue"></i>
+                  </button>
+
+
               </td>
 
 
