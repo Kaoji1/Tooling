@@ -62,17 +62,21 @@ export class CartComponent implements OnInit {
       return true;
     }
 
-groupItemsByCase(items: any[]): { [case_: string]: any[] } {
-  const grouped: { [case_: string]: any[] } = {};
+groupItemsByCase(items: any[]): { [key: string]: any[] } {
+  const grouped: { [key: string]: any[] } = {};
 
   items.forEach((item) => {
-    const caseKey = item.CASE || item.Case_ || 'ไม่ระบุ';
+    const case_ = item.CASE || item.Case_ || 'ไม่ระบุ';
+    const fac = item.Fac || '-';
+    const process = item.Process || '-';
 
-    if (!grouped[caseKey]) {
-      grouped[caseKey] = [];
+    const groupKey =` ${case_}___${fac}___${process}`; // ใช้ ___ เพื่อแยกชัดเจน
+
+    if (!grouped[groupKey]) {
+      grouped[groupKey] = [];
     }
 
-    const existing = grouped[caseKey].find(existingItem =>
+    const existing = grouped[groupKey].find(existingItem =>
       existingItem.PartNo === item.PartNo &&
       existingItem.ItemNo === item.ItemNo &&
       existingItem.SPEC === item.SPEC &&
@@ -85,13 +89,12 @@ groupItemsByCase(items: any[]): { [case_: string]: any[] } {
     if (existing) {
       existing.QTY += Number(item.QTY || 0);
     } else {
-      grouped[caseKey].push({ ...item });
+      grouped[groupKey].push({ ...item });
     }
   });
 
   return grouped;
 }
-
   startEdit(case_: string, index: number) {
     this.editingIndex[case_] = index;
   }
@@ -251,7 +254,7 @@ async CreateDocByCase() {
       console.log('EMP:',groupItems)
 
       await this.sendrequestService.SendRequest(groupItems).toPromise();
-      await this.cartService.deleteItemsByCase(case_).toPromise();
+      await this.cartService.deleteItemsByCaseProcessFac(case_, process, factory).toPromise();
 
       createdDocs.push(`📄 ${docNo} | ${groupItems.length} รายการ`);
 
@@ -393,6 +396,18 @@ openPdfFromPath(filePath: string) {
       alert('ไม่สามารถโหลด PDF ได้');
     }
   });
+}
+
+getRowClass(item: any): string {
+  const dwg = (item.PathDwg ?? '').toString().trim();
+  const layout = (item.PathLayout ?? '').toString().trim();
+
+  const hasDwg = dwg !== '';
+  const hasLayout = layout !== '';
+
+  if (hasDwg && hasLayout) return 'row-green';
+  if (hasDwg || hasLayout) return 'row-orange';
+  return 'row-red';
 }
 
 }

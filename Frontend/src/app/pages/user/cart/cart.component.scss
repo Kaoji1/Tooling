@@ -68,7 +68,7 @@
       td {
         padding: 6px;
         text-align: center;
-        border: 1px solid #D2D2D2;
+        border: 1px solid #f8f8f8;
         color: #000000;
         
        
@@ -134,6 +134,17 @@
        
         
       } //table
+// สำหรับเปลี่ยนแถวเรื่อวยังไม่แนบDwg,Layout
+      .row-green {
+        background-color: rgb(0, 240, 0);
+      }
+      .row-orange {
+        background-color: rgb(255, 175, 25);
+      }
+      .row-red {
+        background-color: rgb(255, 42, 42);
+        color: #000000;
+      }
     }
     
     // .btn-send {

@@ -1,5 +1,5 @@
 const { poolPromise } = require("../config/database");
-const Type = require("mssql").TYPES;
+const sql = require("mssql").TYPES;
 
 //เรียกdivisionจากSQL 
 exports.Get_Division = async (req, res) => {
@@ -91,7 +91,7 @@ exports.Get_Process = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .input("Division", req.body.Division)
+      .input("Division",  req.body.Division)
       .input("PartNo", req.body.PartNo)
       .input("PROCESS", req.body.Process)
       
@@ -122,17 +122,19 @@ exports.post_ItemNo = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .input("Division", req.body.Division)
-      .input("PartNo", req.body.PartNo)
-      .input("Spec", req.body.Spec)
-      .input("PROCESS", req.body.Process)
-      .input("MC", req.body.MC)
-      .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem_QTY]  @Division,@PartNo, @Spec, @PROCESS, @MC ");
+      .input("Division",sql.NVarChar, req.body.Division)
+      .input("PartNo",sql.NVarChar, req.body.PartNo)
+      
+      .input("PROCESS",sql.NVarChar, req.body.Process)
+      .input("MC",sql.NVarChar, req.body.MC)
+      .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem_QTY] @Division,@PartNo, @PROCESS, @MC ");
 
     if (result.recordset.length === 0) {
-      return res.status(404).json({ message: "Spec not found for this PartNo" });
+      // return res.status(404).json({ message: "Spec not found for this PartNo" });
+     
     } else {
       res.json(result.recordset);
+      
     }    
   } catch (error) {
     console.error("Error executing query:", error.stack);

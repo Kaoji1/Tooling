@@ -5,7 +5,7 @@ const router = express.Router(); // สร้าง instance ของ Router
 // นำเข้าคอนโทรเลอร์
 const ItemlistController = require('../controllers/Itemlist.controller');
 const test = require('node:test');
-
+console.log("✅ Request.route.js loaded");
 // กำหนดเส้นทาง request
 router.get('/get_Division', ItemlistController.Get_Division);
 

@@ -121,20 +121,26 @@ exports.ClearAllItems = async (req, res) => {
 // };
 
 // ลบรายการตามcaseที่กดsendแล้ว
-exports.DeleteCartItemsByCase = async (req, res) => {
-  
+exports.DeleteCartItemsByCaseProcessFac = async (req, res) => {
   try {
-    const rawCase = req.params.case_;
-    const case_ = decodeURIComponent(rawCase);
+    const case_ = decodeURIComponent(req.params.case_);
+    const process = decodeURIComponent(req.params.process);
+    const factory = decodeURIComponent(req.params.fac);
+
     const pool = await poolPromise;
 
     await pool.request()
       .input('Case_', sql.VarChar, case_)
-      .query('DELETE FROM tb_IssueCuttingTool_SendToCart WHERE [CASE] = @Case_');
+      .input('Process', sql.VarChar, process)
+      .input('Fac', sql.VarChar, factory)
+      .query(`
+        DELETE FROM tb_IssueCuttingTool_SendToCart
+        WHERE [CASE] = @Case_ AND [Process] = @Process AND [Fac] = @Fac
+      `);
 
-    res.json({ message: 'ลบรายการในตะกร้าเรียบร้อยแล้ว' });
+    res.json({ message: 'ลบรายการเฉพาะที่ตรงเงื่อนไขเรียบร้อยแล้ว' });
   } catch (err) {
-    console.error('Error DeleteCartItemsByCase:', err);
+    console.error('❌ Error DeleteCartItemsByCaseProcessFac:', err);
     res.status(500).json({ error: 'เกิดข้อผิดพลาดในการลบข้อมูล' });
   }
 };

@@ -8,7 +8,7 @@ router.get('/get_cart', CartController.GetCartItems);
 router.delete('/delete_cart_item/:id', CartController.DeleteItem);
 router.delete('/clear_cart', CartController.ClearAllItems);
 // router.put('/update_cart_item', CartController.UpdateCartItem);
-router.delete('/delete_cart_items_by_case/:case_', CartController.DeleteCartItemsByCase);
+router.delete('/delete_cart_items/:case_/:process/:fac', CartController.DeleteCartItemsByCaseProcessFac);
 router.post('/update_cart_items', CartController.UpdateMultipleCartItems);
 // ส่งออก router สำหรับใช้งานในที่อื่น
 module.exports = router;

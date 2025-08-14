@@ -60,13 +60,13 @@ export class SidebarComponent implements OnInit {
       // 👉 ลบ session หรือ token ถ้ามี
       sessionStorage.clear(); // หรือ localStorage.clear();
       this.router.navigate(['/login']); // 👉 กลับไปหน้า login
-      Swal.fire({
-        icon: 'success',
-        title: 'Logged out',
-        text: 'You have been logged out.',
-        timer: 2000,
-        showConfirmButton: false
-      });
+      // Swal.fire({
+      //   icon: 'success',
+      //   title: 'Logged out',
+      //   text: 'You have been logged out.',
+      //   timer: 2000,
+      //   showConfirmButton: false
+      // });
     }
   });
 }

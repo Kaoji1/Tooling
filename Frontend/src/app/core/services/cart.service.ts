@@ -39,8 +39,14 @@ export class CartService {
     return this.http.post(`${this.baseUrl}/update_cart_items`, items);
   }
   // ลบเฉพาะกลุ่มตาม Case_
-  deleteItemsByCase(case_: string): Observable<any> {
-    const encodedCase = encodeURIComponent(case_);
-    return this.http.delete(`${this.baseUrl}/delete_cart_items_by_case/${encodedCase}`);
-  }
+  // deleteItemsByCase(case_: string): Observable<any> {
+  //   const encodedCase = encodeURIComponent(case_);
+  //   return this.http.delete(`${this.baseUrl}/delete_cart_items_by_case/${encodedCase}`);
+  // }
+  deleteItemsByCaseProcessFac(case_: string, process: string, factory: string): Observable<any> {
+  const encodedCase = encodeURIComponent(case_);
+  const encodedProcess = encodeURIComponent(process);
+  const encodedFac = encodeURIComponent(factory);
+  return this.http.delete(`${this.baseUrl}/delete_cart_items/${encodedCase}/${encodedProcess}/${encodedFac}`);
+}
 }

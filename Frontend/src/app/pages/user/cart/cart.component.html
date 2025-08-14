@@ -45,7 +45,7 @@
                   <!-- Checkbox & Label -->
                   <div>
                     <input type="checkbox" [(ngModel)]="checkedCases[caseKey.key]" style="transform: scale(1.2);" />
-                    <span class="ms-2" style="font-size: 18px;">Case: <strong>{{ caseKey.key }}</strong> | Fac: <strong>{{ caseKey.value[0]?.Fac || '-' }}</strong></span>
+                    <span class="ms-2" style="font-size: 18px;">Case: <strong>{{ caseKey.key.split('___')[0] }}</strong> | Fac: <strong>{{ caseKey.key.split('___')[1] }}</strong></span>
                   </div>
                 </div>
 
@@ -89,25 +89,25 @@
             </tr>
 
             <!--  แสดงรายการแต่ละกลุ่ม -->
-            <tr *ngFor="let item of caseKey.value; let i = index">
-              <td>{{ i + 1 }}</td>
-              <td>{{ item.PartNo }}</td>
-              <td> {{ item.ItemNo }}</td>
-              <td>{{ item.SPEC }}</td>
-              <td>{{ item.Process }}</td>
-              <td>{{ item.MCType }}</td>
-              <td>{{ item.Fresh_QTY }}</td>
-              <td>{{ item.Reuse_QTY }}</td>
+            <tr *ngFor="let item of caseKey.value; let i = index" >
+              <td [ngClass]="getRowClass(item)">{{ i + 1 }}</td>
+              <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+              <td [ngClass]="getRowClass(item)"> {{ item.ItemNo }}</td>
+              <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+              <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+              <td [ngClass]="getRowClass(item)">{{ item.MCType }}</td>
+              <td [ngClass]="getRowClass(item)">{{ item.Fresh_QTY }}</td>
+              <td [ngClass]="getRowClass(item)">{{ item.Reuse_QTY }}</td>
 
               <!-- QTY -->
-              <td>
+              <td [ngClass]="getRowClass(item)">
                 <ng-container *ngIf="editingIndex[caseKey.key] === i; else showQty">
                   <input [(ngModel)]="item.QTY" type="number" class="form-control" />
                 </ng-container>
                 <ng-template #showQty>{{ item.QTY }}</ng-template>
               </td>
             <!--  Path DWG -->
-                <td>
+                <td [ngClass]="getRowClass(item)">
                   <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDwgPath">
                     <input [(ngModel)]="item.PathDwg" type="text" class="form-control" />
                   </ng-container>
@@ -124,7 +124,7 @@
                 </td>
 
                 <!--  Path Layout -->
-                <td>
+                <td [ngClass]="getRowClass(item)">
                   <ng-container *ngIf="editingIndex[caseKey.key] === i; else showLayoutPath">
                     <input [(ngModel)]="item.PathLayout" type="text" class="form-control" />
                   </ng-container>
@@ -141,7 +141,7 @@
                 </td>
 
               <!-- Due Date -->
-              <td>
+              <td [ngClass]="getRowClass(item)">
                 <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDate">
                   <input [(ngModel)]="item.Due_Date" type="date" class="form-control" />
                 </ng-container>
@@ -157,7 +157,7 @@
       </td> -->
 
               <!-- Edit / Save -->
-              <td>
+              <td >
                 <button *ngIf="editingIndex[caseKey.key] !== i" class="btn btn-primary btn-sm"
                   (click)="startEdit(caseKey.key, i)">
                   <i class="bi bi-pencil-square"></i>

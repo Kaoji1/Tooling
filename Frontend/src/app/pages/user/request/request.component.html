@@ -163,7 +163,7 @@
 
     <tbody *ngIf="!Case_ || items.length === 0">
       <tr>
-        <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select the  to view item.</td>
+        <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select item  to view.</td>
       </tr>
     </tbody>
 
@@ -178,7 +178,7 @@
 
         <td>{{ item.FreshQty }}</td>
         <td>{{ item.ReuseQty  }}</td>
-        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+        <td><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="1" /></td>
         <td>SET UP</td>
       </tr>
     </tbody>

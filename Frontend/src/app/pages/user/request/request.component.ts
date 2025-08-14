@@ -197,7 +197,7 @@ Setview() {
   const Division = this.Div_?.Division || this.Div_;
   const Fac = this.Fac_;
   const PartNo = this.PartNo_?.PartNo || this.PartNo_;
-  const Spec = this.Spec_?.SPEC|| this.Spec_;
+  // const Spec = this.Spec_?.SPEC|| this.Spec_;
   const Process = this.Process_?.Process || this.Process_;
   const MC = this.MachineType_?.MC || this.MachineType_;
   const DueDate_ = this.DueDate_;
@@ -224,7 +224,7 @@ Setview() {
   console.log('division:', Division);
   console.log('factory:', Fac);
   console.log('PartNo:', PartNo);
-  console.log('Spec:', Spec);
+  // console.log('Spec:', Spec);
   console.log('Process:', Process);
   console.log('MC:', MC);
   console.log('DueDate_',DueDate_);
