@@ -11,8 +11,9 @@ const Cart = require('./src/routes/Cart.route.js');
 const Login = require('./src/routes/Login.route.js');
 const Upload = require('./src/routes/FileUpload.route.js');
 const Detail = require('./src/routes/DetailPurchaseRequestlist.route.js');
+// const Update_Request = require('./src/routes/DetailPurchaseRequestlist.route.js');
 const PurchaseHistory = require('./src/routes/PurchaseHistory.route.js');
-// const updateItem = require('./src/routes/DetailPurchaseRequestlist.route.js');
+
 
 // Create Instance and Express application
 const app = express();
@@ -33,9 +34,12 @@ app.use('/api', PurchaseRequest);
 app.use('/api', Cart);
 app.use('/api', Login);
 app.use('/api', Upload);
-app.use('/api', Detail);
+app.use('/api', Detail); //DetailPurchaseRequestlistRoutes
 app.use('/api', PurchaseHistory);
-// app.use('/api', updateItem);
+
+
+
+
 
 
 

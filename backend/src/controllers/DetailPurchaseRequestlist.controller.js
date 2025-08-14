@@ -6,10 +6,10 @@ const sql = require("mssql");
 exports.Detail_Purchase = async (req, res) => {
   console.log('data:',req.body)
   try {
-    const pool = await poolPromise;
+    const pool = await poolPromise; 
     const result = await pool
-    .request()
-    .query("SELECT * FROM [dbo].[View_CuttingTool_RequestList] WHERE Status IN ('Waiting','In Progress') ");
+  .request()
+    .query("SELECT * FROM [dbo].[View_CuttingTool_RequestList] WHERE Status IN ('Waiting','In Progress')ORDER BY ItemNo ASC, ID_Request ASC ");
 
     res.json(result.recordset);
   } 
@@ -24,16 +24,22 @@ exports.Update_Status_Purchase = async (req, res) => {
   console.log(req.body); // ตรวจสอบค่าที่ส่งมา { ID_Request: , Status:  }
 
   try {
-    const { ID_Request, Status } = req.body; //  ดึงค่าออกมา
+    const { ID_Request, Status, Req_QTY, Remark, ItemNo } = req.body; //  ดึงค่าออกมา
 
-    const pool = await poolPromise;
+    const pool = await poolPromise; 
     const result = await pool
       .request()
-      .input("ID_Request", ID_Request)
-      .input("Status", Status)
+      .input("ID_Request", sql.Int, ID_Request)
+      .input("ItemNo", sql.NVarChar, ItemNo)
+      .input("Status", sql.NVarChar, Status)
+      .input("Req_QTY", sql.Int, Req_QTY)
+      .input("Remark", sql.NVarChar, Remark)      
       .query(`
-        UPDATE [dbo].[View_CuttingTool_RequestList]
-        SET Status = @Status
+        UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
+        SET Status = @Status,
+            ItemNo = @ItemNo,
+            Req_QTY = @Req_QTY,
+            Remark = @Remark
         WHERE ID_Request = @ID_Request
       `);
 
@@ -44,7 +50,152 @@ exports.Update_Status_Purchase = async (req, res) => {
   }
 };
 
+exports.Update_Request = async (req, res) => {
+  try {
+    const { ID_Request, Status, Req_QTY, Remark, ItemNo, SPEC } = req.body;
 
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input("ID_Request", sql.Int, ID_Request)
+      .input("Status", sql.NVarChar, Status)
+      .input("Req_QTY", sql.Int, Req_QTY)
+      .input("Remark", sql.NVarChar, Remark)
+      .input("ItemNo", sql.NVarChar, ItemNo)
+      .input("SPEC", sql.NVarChar, SPEC)
+      .query(`
+        UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
+        SET Status = @Status,
+            Req_QTY = @Req_QTY,
+            Remark = @Remark,
+            ItemNo = @ItemNo,
+            SPEC = @SPEC
+        WHERE ID_Request = @ID_Request
+      `);
+
+    if (result.rowsAffected[0] > 0) {
+      res.json({ success: true, message: "Request detail updated successfully" });
+    } else {
+      res.status(404).json({ success: false, message: "Request not found or no changes made" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.Add_New_Request = async (req, res) => {
+  try {
+    console.log(req.body);
+    let { ItemNo, Req_QTY, Remark, Status, SPEC } = req.body;
+
+    if (!ItemNo && !SPEC) {
+      return res.status(400).json({ message: "ต้องระบุ ItemNo หรือ SPEC" });
+    }
+
+    const pool = await poolPromise;
+
+    if (!ItemNo) {
+      const itemResult = await pool.request()
+        .input("SPEC", sql.NVarChar, SPEC)
+        .query(`
+          SELECT TOP 1 ItemNo
+          FROM tb_IssueCuttingTool_Request_Document
+          WHERE SPEC = @SPEC
+        `);
+
+      if (itemResult.recordset.length === 0) {
+        return res.status(400).json({ message: "ไม่พบ ItemNo ในฐานข้อมูล" });
+      }
+
+      ItemNo = itemResult.recordset[0].ItemNo;
+    }
+
+    const result = await pool.request()
+      .input("ItemNo", sql.NVarChar, ItemNo)
+      .input("Req_QTY", sql.Int, parseInt(Req_QTY, 10) || 0)
+      .input("Remark", sql.NVarChar, Remark || "")
+      .input("Status", sql.NVarChar, Status || "")
+      .input("SPEC", sql.NVarChar, SPEC || "")
+      .query(`
+        INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] (ItemNo, Req_QTY, Remark, Status, SPEC)
+        OUTPUT INSERTED.ID_Request
+        VALUES (@ItemNo, @Req_QTY, @Remark, @Status, @SPEC);
+      `);
+
+    const newId = result.recordset[0]?.ID_Request || null;
+
+    if (!newId) {
+      return res.status(500).json({ message: "ไม่สามารถสร้าง ID ใหม่ได้" });
+    }
+
+    res.status(201).json({ message: 'เพิ่มข้อมูลสำเร็จ', newId });
+
+  } catch (error) {
+    console.error('Error in Add_New_Request:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
+// exports.Add_New_Request = async (req, res) => {
+//   try {
+//     console.log(req.body)
+//     let { ItemNo, Req_QTY, Remark, Status, SPEC } = req.body;
+//     const pool = await poolPromise; // ต้องมีบรรทัดนี้
+    
+
+//     if (!ItemNo) {
+//       const itemResult = await pool.request()
+//         .input("SPEC", sql.NVarChar, SPEC)
+//         .query(`
+//           SELECT TOP 1 ItemNo
+//           FROM tb_IssueCuttingTool_Request_Document -- เปลี่ยนชื่อตารางให้ตรงกับที่เก็บ ItemNo
+//           WHERE SPEC = @SPEC
+//         `);
+
+//       if (itemResult.recordset.length === 0) {
+//         return res.status(400).json({ message: "ไม่พบ ItemNo ในฐานข้อมูล" });
+//       }
+
+//       ItemNo = itemResult.recordset[0].ItemNo;
+//     }
+
+// const result = await pool.request()
+//   .input("ItemNo", sql.NVarChar, ItemNo)
+//   .input("Req_QTY", sql.Int, Req_QTY)
+//   .input("Remark", sql.NVarChar, Remark)
+//   .input("Status", sql.NVarChar, Status)
+//   .input("SPEC", sql.NVarChar, SPEC)
+//   .query(`
+//     INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] (ItemNo, Req_QTY, Remark, Status, SPEC)
+//     OUTPUT INSERTED.ID
+//     VALUES (@ItemNo, @Req_QTY, @Remark, @Status, @SPEC);
+//   `);
+
+// // result.recordset[0].ID จะได้ ID ของแถวใหม่
+// const newId = result.recordset[0]?.ID || null;
+
+// if (!newId) {
+//   return res.status(500).json({ message: "ไม่สามารถสร้าง ID ใหม่ได้" });
+// }
+
+// res.status(201).json({
+//   message: 'เพิ่มข้อมูลสำเร็จ',
+//   newId
+// });
+// } catch (error) {
+//     console.error('Error in Add_New_Request:', error);
+// }
+// }
+
+
+
+//     res.status(201).json({ message: 'เพิ่มข้อมูลสำเร็จ', newId: result.recordset[0].NewID });
+//   } catch (error) {
+//     console.error('Error in Add_New_Request:', error);
+//     res.status(500).json({ message: 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล', error: error.message });
+//   }
+// };
 
 //ล่าสุด// const { poolPromise } = require("../config/database");
 // const Type = require("mssql").TYPES;
@@ -73,19 +224,19 @@ exports.Update_Status_Purchase = async (req, res) => {
 //  // ตรวจสอบค่าที่ส่งมา { ID_Request: , Status:  }
 
 //   try {
-//     const { ID_Request, Status, QTY, Remark} = req.body; //  ดึงค่าออกมา
+//     const { ID_Request, Status, Req_QTY, Remark} = req.body; //  ดึงค่าออกมา
 
 //     const pool = await poolPromise;
 //     const result = await pool
 //      .request()
 //   .input("ID_Request", sql.Int, ID_Request)
 //   .input("Status", sql.NVarChar, Status)
-//   .input("QTY", sql.Int, QTY)
+//   .input("Req_QTY", sql.Int, Req_QTY)
 //   .input("Remark", sql.NVarChar, Remark)
 //   .query(`
 //         UPDATE [dbo].[View_CuttingTool_RequestList]
 //         SET Status = @Status,
-//             QTY = @QTY,
+//             Req_QTY = @Req_QTY,
 //             Remark = @Remark
 //         WHERE ID_Request = @ID_Request
 //       `);

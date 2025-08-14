@@ -151,7 +151,7 @@
   }
 
   .export-btn {
-    position: static;
+    position: flex;
     width: 200px;
     height: 40px;
     display: flex-end;
@@ -159,14 +159,31 @@
     border-radius: 10px;
     margin-top: -20px;
     margin-left: -30px;
-    
+    align-items: center;
       padding:  12px 30px;
 
     /* ไม่ต้อง sticky ถ้าต้องการให้เลื่อนตาม */
   }
 
+  .excel-button{
+    position: static;
+    width: 200px;
+    height: 40px;
+    display: flex-end;
+    border: none;
+    border-radius: 10px;
+    align-items: center;
+    margin-top: -20px;
+    margin-left: -30px;
+    
+      padding:  12px 30px;
+
+  }
+
+
+
   .export-button,
- 
+ .excel-button,
   .btn-sort {
     width: 120px;
     height: 45px;
@@ -198,7 +215,7 @@
       border-radius: 10px;
       font-size: 18px;
       margin-top: 40px;
-      margin-left: 373px;
+      margin-left: 200px;
       align-content: center;
       justify-content: space-between;
     }
@@ -212,7 +229,7 @@
     display: flex;
     flex-direction: column;
     margin-top: 20px;
-     margin-right: 5px;
+    margin-right: 5px;
     
   }
 

@@ -26,6 +26,12 @@ updateStatusToComplete(ID_Request: number, Status: string): Observable<any> {
   });
 }
 
-    
+updateRequest(updatedItem: any): Observable<any> {
+  return this.httpClient.put(`${baseUrl}/Update_Request`, updatedItem);
+} 
+
+insertRequest(data: any): Observable<any> {
+  return this.httpClient.post(`${baseUrl}/Insert_Request`, data);
+}
 }
 

@@ -14,7 +14,10 @@
     overflow-x: hidden; // ป้องกันการเลื่อนแนวนอนของส่วนเนื้อหา
     box-sizing: border-box;
     padding-bottom: 60px;
-    
+
+    i {
+      color: #0066B3;
+    }
 
     // ส่วนหัวเรื่อง
     .toptext {
@@ -31,43 +34,93 @@
       }
     }
 
+    //     .group-header {
+    //       display: flex;
+    //       justify-content: space-between;
+    //       /* ดันกล่อง ItemNo กับปุ่มให้สุดซ้าย-ขวา */
+    //       align-items: center; /* แก้ตรงนี้ */
+    //       /* จัดกึ่งกลางแนวตั้ง */
+    //       margin-top: 50px;
+    //       margin-right: 50px;
+
+    //     }
+
+    //     // กล่องแสดงหมายเลขรายการ
+
+    // .Box-itemNo {
+    //   width: flex;
+    //   display: flex;
+    //   margin: 20px;
+    //   padding: 20px;
+    //   background-color: #dff0ff;
+    //   border: 3px solid #0065bd;
+    //   border-radius: 14px;
+    //   color: black;
+
+    //   .btn-Complete {
+    //     width: 120px;
+    //     height: 45px;
+    //     margin: 50;
+    //     margin-top: 100px; /* เพิ่ม margin ดันลงล่าง */
+    //     background-color: #4db6b6;
+    //     color: white;
+    //     border: none;
+    //     border-radius: 10px;
+    //     font-size: 20px;
+    //     cursor: pointer;
+    //     transition: background-color 0.3s ease;
+
+    //     display: block; /* บังคับให้ปุ่มเป็นบล็อค */
+    //     text-align: center; /* กึ่งกลางข้อความในปุ่ม */
+    //   }
+    // }
+
+
+
     .group-header {
       display: flex;
       justify-content: space-between;
-      /* ดันกล่อง ItemNo กับปุ่มให้สุดซ้าย-ขวา */
-      align-items: center; /* แก้ตรงนี้ */
+      /* ดัน ItemNo ซ้าย ปุ่มขวา */
+      align-items: center;
       /* จัดกึ่งกลางแนวตั้ง */
-      margin-top: 50px;
+      margin-top: 35px;
       margin-right: 50px;
     }
 
-    // กล่องแสดงหมายเลขรายการ
-.Box-itemNo {
-  width: flex;
-  display: flex;
-  margin: 20px;
-  padding: 20px;
-  background-color: #dff0ff;
-  border: 3px solid #0065bd;
-  border-radius: 14px;
-  color: black;
+    /* กล่องแสดงหมายเลขรายการ */
+    .Box-itemNo {
+      width: fit-content;
+      /* กว้างตามเนื้อหา */
+      display: flex;
+      margin: 20px;
+      padding: 20px;
+      background-color: #dff0ff;
+      border: 3px solid #0065bd;
+      border-radius: 14px;
+      color: black;
+    }
 
-  .btn-Complete {
-    width: 120px;
-    height: 45px;
-    margin-top: 50px; /* เพิ่ม margin ดันลงล่าง */
-    background-color: #4db6b6;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 20px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    /* ปุ่ม Complete */
+    .button-Complete .btn-Complete {
+      width: 120px;
+      height: 50px;
+      background-color: #c21212;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 29px;
 
-    display: block; /* บังคับให้ปุ่มเป็นบล็อค */
-    text-align: center; /* กึ่งกลางข้อความในปุ่ม */
-  }
-}
+      display: block;
+      /* ให้เป็นบล็อค */
+      text-align: center;
+    }
+
+    .button-Complete .btn-Complete:hover {
+      background-color: #1fb677;
+    }
 
     h1 {
       font-size: 30px;
@@ -125,47 +178,55 @@
     }
   }
 
-  .button {
-    width: 100px;
-    display: flex;
-    align-content: center;
-    justify-content: center;
-
-
-
-    .btn-sort {
-      width: 120px;
-      height: 45px;
-      background-color: #4db6b6;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      align-content: center;
-      justify-content: flex-end;
-
-    }
-  }
 
   // พื้นที่ตารางข้อมูล
   .table-responsive {
     max-height: 470px;
     max-width: 1290px;
     margin-left: 20px;
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      
-      color: #4a4949;
+    margin-top: 10px;
+    border-collapse: collapse;
+    color: #4a4949;
      
 
-      th,
-      td {
-        padding: 6px;
-        text-align: center;
-        border: 1px solid #D2D2D2;
+        .edit-btn i {
+          color: white;
+          /* ทำให้ไอคอนเป็นสีขาว */
+          font-size: 18px;
+          /* ปรับขนาดไอคอน */
+        }
+
+        .edit-btn {
+          background-color: #007bff;
+          /* สีน้ำเงิน bootstrap */
+          border: none;
+          padding: 5px 10px;
+        }
+
+      .edit-check i {
+        color: white;
+          /* ทำให้ไอคอนเป็นสีขาว */
+          font-size: 18px;
       }
+      .edit-check {
+          border: none;
+          padding: 5px 10px;
+        }
+      }
+
+    .table-responsive {
+      max-height: 390px;
+      max-width: 1290px;
+   
+      
+
+      // table {
+      //   width: 100%;
+      //   border-collapse: collapse;
+      //   margin-top: 20px;
+      //   color: #4a4949;
+        
+
 
       th {
         background-color: #E3E3E3;
@@ -216,12 +277,14 @@
           font-size: 25px;
           color: rgb(11, 14, 196);
         }
+
+
       }
 
     }
 
     //table
-  }
+  
 
   // แถบเปลี่ยนหน้าด้านล่าง
   .pagination-wrapper {
@@ -260,9 +323,6 @@
 
 
 
-
-
-
 //ล่าสุด // โครงสร้างหลักของหน้า
 // .detail-layout {
 //   display: flex;
@@ -279,7 +339,7 @@
 //     overflow-x: hidden; // ป้องกันการเลื่อนแนวนอนของส่วนเนื้อหา
 //     box-sizing: border-box;
 //     padding-bottom: 60px;
-    
+
 
 //     // ส่วนหัวเรื่อง
 //     .toptext {
@@ -421,9 +481,9 @@
 //     table {
 //       width: 100%;
 //       border-collapse: collapse;
-      
+
 //       color: #4a4949;
-     
+
 
 //       th,
 //       td {

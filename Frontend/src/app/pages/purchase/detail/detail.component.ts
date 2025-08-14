@@ -1,3 +1,238 @@
+// import { Component, OnInit } from '@angular/core';
+// import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPurchase.component';
+// import { NotificationComponent } from '../../../components/notification/notification.component';
+// import { RouterOutlet } from '@angular/router';
+// import { ActivatedRoute, Router } from '@angular/router';
+// import { NgSelectModule } from '@ng-select/ng-select';
+// import { CommonModule } from '@angular/common';
+// import { FormsModule } from '@angular/forms';
+// import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
+
+
+// @Component({
+//   selector: 'app-detail',
+//   standalone: true,
+//   imports: [SidebarPurchaseComponent,
+//     CommonModule,
+//     FormsModule, 
+//     RouterOutlet,
+//     NotificationComponent,
+//     NgSelectModule],
+//   templateUrl: './detail.component.html',
+//   styleUrl: './detail.component.scss'
+// })
+
+// export class DetailComponent implements OnInit {
+//   editingIndex: { [key: string]: number | null } = {}; // เก็บแถวที่กำลังแก้ไขสำหรับแต่ละ key
+//   request:any[]=[];
+//   newRequestData: any = {};
+
+  
+//   selectAllChecked = false;
+
+//   toggleAllCheckboxes() {
+//     this.request.forEach(item => item.Selection = this.selectAllChecked);
+//     localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+//   }
+
+//   itemNo!: string;
+//   displayIndex!: number;
+//   items: any[] = [];
+
+
+//   constructor(
+//     private route: ActivatedRoute, 
+//     private router: Router,
+//     private DetailPurchase : DetailPurchaseRequestlistService) {}
+
+
+
+//      async ngOnInit() {
+//     this.itemNo = this.route.snapshot.paramMap.get('itemNo') || '';
+
+//     const navigation = this.router.getCurrentNavigation();
+//     this.items = navigation?.extras?.state?.['items'] || [];
+
+//     const index = this.items.findIndex(item => item.ItemNo === this.itemNo);
+//     this.displayIndex = index >= 0 ? index + 1 : -1;
+
+//     const storedRequest = localStorage.getItem('purchaseRequest');
+//     if (storedRequest) {
+//       this.request = JSON.parse(storedRequest);
+//       console.log('โหลดข้อมูลจาก Local Storage:', this.request);
+//     } else {
+//       // รอโหลดข้อมูลจาก API ก่อน
+//       await this.Detail_Purchase();
+//     }
+//   }
+
+
+  
+//   Detail_Purchase(): Promise<void> {
+//     return new Promise((resolve, reject) => {
+//       this.DetailPurchase.Detail_Request().subscribe({
+//         next: (response: any[]) => {
+//           const filtered = response.filter(item => item.ItemNo === this.itemNo)
+//             .map(item => ({ ...item, Selection: false }));
+
+//           const seen = new Set<number>();
+//           const unique = filtered.filter(item => {
+//             if (seen.has(item.ID_Request)) {
+//               return false;
+//             } else {
+//               seen.add(item.ID_Request);
+//               return true;
+//             }
+//           });
+
+//           this.request = unique;
+
+//           // เก็บลง localStorage
+//           localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+
+//           console.log('โหลดข้อมูลจาก API:', this.request);
+//           resolve();
+//         },
+//         error: (e) => {
+//           console.error(e);
+//           reject(e);
+//         }
+//       });
+//     });
+//   }
+// //   async ngOnInit() {
+// //     this.itemNo = this.route.snapshot.paramMap.get('itemNo') || '';
+
+// //     const navigation = this.router.getCurrentNavigation();
+// //     this.items = navigation?.extras?.state?.['items'] || [];
+
+// //     const index = this.items.findIndex(item => item.ItemNo === this.itemNo);
+// //     this.displayIndex = index >= 0 ? index + 1 : -1;
+
+// //     const storedRequest = localStorage.getItem('purchaseRequest');
+// //     if (storedRequest) {
+// //       this.request = JSON.parse(storedRequest);
+// //       console.log('โหลดข้อมูลจาก Local Storage:', this.request);
+// //     } else {
+    
+// //     this.Detail_Purchase();
+// //     // this.loadPurchaseFromDB();
+// //   }
+// // }
+
+// // Detail_Purchase() {
+// //   this.DetailPurchase.Detail_Request().subscribe({
+// //     next: (response: any[]) => {
+// //       // 1. กรองเฉพาะ ItemNo ที่ตรง
+// //       const filtered = response.filter(item => item.ItemNo === this.itemNo)
+// //         .map(item => ({
+// //           ...item,
+// //           Selection: false,
+// //         }));
+
+// //       // 2. กำจัด ID_Request ซ้ำ: เก็บเฉพาะตัวแรกที่เจอ
+// //       const seen = new Set<number>();
+// //       const unique = filtered.filter(item => {
+// //         if (seen.has(item.ID_Request)) {
+// //           return false; // ถ้ามีแล้ว ให้ข้าม
+// //         } else {
+// //           seen.add(item.ID_Request);
+// //           return true; // ยังไม่เคยมี ให้เก็บไว้
+// //         }
+// //       });
+
+// //       // 3. บันทึกเข้า request
+// //       this.request = [...this.request, ...unique];
+
+// //       localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+
+// //       console.log('itemที่ส่ง', this.request);
+// //     },
+// //     error: (e: any) => console.error(e),
+// //   });
+// // }
+
+// // loadPurchaseFromDB(){
+
+// // }
+
+//   addNewRequest(newRequestData: any) {
+//   this.DetailPurchase.insertRequest(newRequestData).subscribe({
+//     next: (res) => {
+//       alert('เพิ่มข้อมูลสำเร็จ');
+//       // สมมติ API ส่งกลับข้อมูลที่เพิ่มมาใหม่ ให้เราเอามาเพิ่มใน request พร้อมบันทึกใน localStorage
+//       this.request.push({ ...res, Selection: false });
+//       localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+//     },
+//     error: (err) => {
+//       console.error('เพิ่มข้อมูลไม่สำเร็จ', err);
+//       alert('เพิ่มข้อมูลไม่สำเร็จ');
+//     }
+//   });
+// }
+
+
+
+
+// // เพิ่มฟังก์ชันเมื่อกดปุ่ม “Complete”
+// completeSelected() {
+//   const selectedItems = this.request.filter(item => item.Selection);
+//   if (selectedItems.length === 0) {
+//     alert('กรุณาเลือกข้อมูลที่ต้องการ');
+//     return;
+//   }
+
+
+  
+
+//   selectedItems.forEach(item => {
+//     item.Status = 'Complete';
+
+//     this.DetailPurchase.updateStatusToComplete(item.ID_Request, item.Status).subscribe({
+//       next: () => {
+//         // เอาออกจากหน้าจอหลังอัปเดต
+//         this.request = this.request.filter(req => req.ID_Request !== item.ID_Request);
+
+//         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+//       },
+//       error: err => {
+//         console.error('เกิดข้อผิดพลาด:', err);
+//         alert('ไม่สามารถอัปเดตข้อมูลได้');
+//       }
+//     });
+//   });
+// }
+//   startEdit(caseKey: string, rowIndex: number): void {
+//     this.editingIndex[caseKey] = rowIndex;
+//   }
+
+// saveEdit(caseKey: string, rowIndex: number): void {
+//   console.log(`บันทึกข้อมูล caseKey: ${caseKey}, แถว: ${rowIndex}`);
+
+//   const itemToUpdate = this.request.find(item => item.ID_Request === caseKey);
+//   if (!itemToUpdate) {
+//      alert('ไม่พบข้อมูลที่จะแก้ไข');
+//     return;
+//   }
+// };
+// }
+//     // เรียก API เพื่ออัพเดต (ตัวอย่าง)
+// // this.DetailPurchase.updateRequest(itemToUpdate).subscribe({
+// //   next: () => {
+// //     alert('บันทึกข้อมูลเรียบร้อยแล้ว');
+// //     this.editingIndex[caseKey] = null;
+
+// //     // อัพเดตข้อมูลใน Local Storage หลังบันทึก
+// //     localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+// //   },
+// //   error: (err) => {
+// //     console.error('เกิดข้อผิดพลาดในการบันทึก:', err);
+// //     alert('บันทึกข้อมูลไม่สำเร็จ');
+// //   }
+// // });
+// // }
+// // }
+
 import { Component, OnInit } from '@angular/core';
 import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPurchase.component';
 import { NotificationComponent } from '../../../components/notification/notification.component';
@@ -23,7 +258,16 @@ import { DetailPurchaseRequestlistService } from '../../../core/services/DetailP
 })
 
 export class DetailComponent implements OnInit {
+   editingIndex: { [key: string]: number | null } = {}; // เก็บแถวที่กำลังแก้ไขสำหรับแต่ละ key
   request:any[]=[];
+  newRequestData: any = {};
+
+selectAllChecked = false;
+
+  toggleAllCheckboxes() {
+    this.request.forEach(item => item.Selection = this.selectAllChecked);
+    localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+  }
 
   itemNo!: string;
   displayIndex!: number;
@@ -79,6 +323,26 @@ Detail_Purchase() {
   });
 }
 
+
+addNewRequest(newRequestData: any) {
+  console.log('Sending request:', newRequestData); // debug
+  this.DetailPurchase.insertRequest(newRequestData).subscribe({
+    next: (res) => {
+      console.log('Response:', res); // debug response
+      if (!res.newId) {
+        alert('Backend ไม่ส่งข้อมูลกลับมา');
+        return;
+      }
+      this.request.push({ ...newRequestData, ...res, Selection: false });
+      localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+      alert('เพิ่มข้อมูลสำเร็จ');
+    },
+    error: (err) => {
+      console.error('เพิ่มข้อมูลไม่สำเร็จ', err);
+      alert(err.error?.message || 'เกิดข้อผิดพลาด');
+    }
+  });
+}
 // เพิ่มฟังก์ชันเมื่อกดปุ่ม “Complete”
 completeSelected() {
   const selectedItems = this.request.filter(item => item.Selection);
@@ -102,7 +366,75 @@ completeSelected() {
     });
   });
 }
+ startEdit(caseKey: string, rowIndex: number): void {
+    this.editingIndex[caseKey] = rowIndex;
+  }
+
+
+saveEdit(caseKey: string, rowIndex: number): void {
+  const itemToUpdate = this.request.find(item => item.ID_Request === caseKey);
+  if (!itemToUpdate) { alert('ไม่พบข้อมูลที่จะแก้ไข'); return; }
+
+  this.DetailPurchase.updateRequest(itemToUpdate).subscribe({
+    next: (res: any) => {
+      // อัปเดต array ด้วย response
+      this.request[rowIndex] = { ...itemToUpdate, ...res };
+      delete this.editingIndex[caseKey]; // ปิด mode edit
+      alert('บันทึกข้อมูลสำเร็จ');
+    },
+    error: err => {
+      console.error(err);
+      alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+    }
+  });
 }
+}
+
+//   saveEdit(caseKey: string, rowIndex: number): void {
+//   console.log(`บันทึกข้อมูล caseKey: ${caseKey}, แถว: ${rowIndex}`);
+
+//   const itemToUpdate = this.request.find(item => item.ID_Request === caseKey);
+//   if (!itemToUpdate) {
+//     alert('ไม่พบข้อมูลที่จะแก้ไข');
+//     return;
+//   }
+// // saveEdit(caseKey: string, rowIndex: number): void {
+// //   console.log(`บันทึกข้อมูล caseKey: ${caseKey}, แถว: ${rowIndex}`);
+
+// //   const itemToUpdate = this.request.find(item => item.ID_Request === caseKey);
+// //   if (!itemToUpdate) {
+// //      alert('ไม่พบข้อมูลที่จะแก้ไข');
+// //     return;
+// //   }
+// };
+//  // เรียก API ของ Service เพื่อบันทึกข้อมูล
+//   this.DetailPurchase.updateRequest(itemToUpdate).subscribe({
+//     next: (res: any) => {
+//       console.log('บันทึกสำเร็จ:', res);
+
+//       // อัปเดต array request ด้วยข้อมูลที่ได้จาก server (ถ้ามี)
+//       this.request[rowIndex] = { ...itemToUpdate, ...res };
+
+//       // ปิดโหมดแก้ไข
+//       delete this.editingIndex[caseKey];
+
+//       alert('บันทึกข้อมูลสำเร็จ');
+//     },
+//     error: (err) => {
+//       console.error('เกิดข้อผิดพลาดในการบันทึก:', err);
+//       alert(err.error?.message || 'ไม่สามารถบันทึกข้อมูลได้');
+//     }
+//   });
+// }
+
+
+
+ 
+
+
+
+
+
 
 // Detail_Purchase() {
 //   this.DetailPurchase.Detail_Request().subscribe({
