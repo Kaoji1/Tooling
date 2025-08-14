@@ -14,19 +14,20 @@
     <div class="table-responsive">
       <table class="table table-bordered text-center">
         <!--  thead ตัวเดียว -->
-        <thead class="table-dark sticky-top">
-          <tr>
-            <th style="width: 50px;">No.</th>
-            <th style="width: 150px;">Part No.</th>
-            <th style="width: 100px;"> ItemNo </th>
-            <th style="width: 200px;">Spec</th>
-            <th style="width: 100px;">Process</th>
-            <th style="width: 80px;">MC</th>
-            <th style="width: 80px;">Fresh_Qty</th>
-            <th style="width: 80px;">Reuse_Qty</th>
+        <thead >
+          <tr style="width: auto;">
+            <th >No.</th>
+            <th >Part No.</th>
+            <th > ItemNo </th>
+            <th >Spec</th>
+            <th >Process</th>
+            <th >MC</th>
+            <th >Fresh_Qty</th>
+            <th >Reuse_Qty</th>
             <th>QTY</th>
-            <th style="width: 160px;">Path</th>
-            <th style="width: 90px;">Due Date</th>
+            <th >Path Dwg</th>
+            <th style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">Path Layout</th>
+            <th  style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">Due Date</th>
             <!-- <th>Insert</th> -->
             <th>Edit</th>
             <th>Del</th>
@@ -38,7 +39,7 @@
           <ng-container *ngFor="let caseKey of (groupedCart | keyvalue)">
             <!--  แสดงหัวกลุ่ม Case -->
             <tr class="table-secondary">
-              <td colspan="13" class="text-start fw-bold bg-light p-3 rounded border">
+              <td colspan="14" class="text-start fw-bold bg-light p-3 rounded border">
                 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
 
                   <!-- Checkbox & Label -->
@@ -105,24 +106,39 @@
                 </ng-container>
                 <ng-template #showQty>{{ item.QTY }}</ng-template>
               </td>
-            <td>
-              <ng-container *ngIf="editingIndex[caseKey.key] === i; else showPath">
-                <input [(ngModel)]="item.Path" type="text" class="form-control" />
-              </ng-container>
+            <!--  Path DWG -->
+                <td>
+                  <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDwgPath">
+                    <input [(ngModel)]="item.PathDwg" type="text" class="form-control" />
+                  </ng-container>
 
-              <ng-template #showPath>
-                <!-- แสดงชื่อ Path -->
-                <div class="text-break">{{ item.Path }}</div>
+                  <ng-template #showDwgPath>
+                    <div class="text-break">{{ item.PathDwg }}</div>
+                    <button
+                      *ngIf="item.PathDwg"
+                      class="btn btn-link btn-sm text-primary p-0 mt-1"
+                      (click)="openPdfFromPath(item.PathDwg)">
+                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                    </button>
+                  </ng-template>
+                </td>
 
-                <!-- ปุ่มเปิด PDF -->
-                <button
-                  *ngIf="item.Path"
-                  class="btn btn-link btn-sm text-primary p-0 mt-1"
-                  (click)="openPdfFromPath(item.Path)">
-                  <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
-                </button>
-              </ng-template>
-            </td>
+                <!--  Path Layout -->
+                <td>
+                  <ng-container *ngIf="editingIndex[caseKey.key] === i; else showLayoutPath">
+                    <input [(ngModel)]="item.PathLayout" type="text" class="form-control" />
+                  </ng-container>
+
+                  <ng-template #showLayoutPath>
+                    <div class="text-break">{{ item.PathLayout }}</div>
+                    <button
+                      *ngIf="item.PathLayout"
+                      class="btn btn-link btn-sm text-primary p-0 mt-1"
+                      (click)="openPdfFromPath(item.PathLayout)">
+                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                    </button>
+                  </ng-template>
+                </td>
 
               <!-- Due Date -->
               <td>

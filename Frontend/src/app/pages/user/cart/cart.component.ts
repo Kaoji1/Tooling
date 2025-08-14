@@ -72,8 +72,21 @@ groupItemsByCase(items: any[]): { [case_: string]: any[] } {
       grouped[caseKey] = [];
     }
 
-    // เพิ่มทุกแถวลงไปในกลุ่ม ไม่เช็คซ้ำ
-    grouped[caseKey].push(item);
+    const existing = grouped[caseKey].find(existingItem =>
+      existingItem.PartNo === item.PartNo &&
+      existingItem.ItemNo === item.ItemNo &&
+      existingItem.SPEC === item.SPEC &&
+      existingItem.Process === item.Process &&
+      existingItem.MC === item.MC &&
+      existingItem.Fresh_QTY === item.Fresh_QTY &&
+      existingItem.Reuse_QTY === item.Reuse_QTY
+    );
+
+    if (existing) {
+      existing.QTY += Number(item.QTY || 0);
+    } else {
+      grouped[caseKey].push({ ...item });
+    }
   });
 
   return grouped;
@@ -83,62 +96,111 @@ groupItemsByCase(items: any[]): { [case_: string]: any[] } {
     this.editingIndex[case_] = index;
   }
 
-  saveEdit(case_: string, index: number) {
-    const item = this.groupedCart[case_][index];
-    this.cartService.updateItemInDB(item).subscribe({
-      next: () => {
-        Swal.fire({
-          icon: 'success',
-          title: 'Save',
-          text: 'บันทึกข้อมูลเรียบร้อย',
-          confirmButtonText: 'ตกลง'
-        });
-        this.editingIndex[case_] = null;
-      },
-      error: () => alert('เกิดข้อผิดพลาดในการบันทึก'),
-    });
-  }
+saveEdit(case_: string, index: number) {
+  const editedItem = this.groupedCart[case_][index];
+  const editedPartNo = editedItem.PartNo;
+  const newPathDwg = editedItem.PathDwg;
+  const newPathLayout = editedItem.PathLayout;
+
+  const groupItems = this.groupedCart[case_];
+  const updatedItems = groupItems.map((item: any) => {
+    if (item.PartNo === editedPartNo) {
+      item.PathDwg = newPathDwg;
+      item.PathLayout = newPathLayout;
+    }
+    return item;
+  });
+
+  this.cartService.updateMultipleItemsInDB(updatedItems).subscribe({
+    next: () => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Save',
+        text: 'อัปเดตข้อมูลเรียบร้อยแล้ว',
+        confirmButtonText: 'ตกลง'
+      });
+      this.editingIndex[case_] = null;
+    },
+    error: () => alert('เกิดข้อผิดพลาดในการบันทึก'),
+  });
+}
 
 removeItem(case_: string, index: number) {
-  const item = this.groupedCart[case_][index];
-  const id = item.ID_Cart || item.id || item.ItemID;
+  const matchItem = this.groupedCart[case_][index];
 
-  if (!id) {
-    Swal.fire('ไม่พบรหัส ID_Cart', 'ไม่สามารถลบรายการได้', 'error');
+  // สร้างเงื่อนไขจับคู่รายการที่เหมือนกัน
+  const matchCriteria = {
+    PartNo: matchItem.PartNo,
+    ItemNo: matchItem.ItemNo,
+    SPEC: matchItem.SPEC,
+    Process: matchItem.Process,
+    MC: matchItem.MC,
+    Fresh_QTY: matchItem.Fresh_QTY,
+    Reuse_QTY: matchItem.Reuse_QTY
+  };
+
+  // หารายการทั้งหมดที่ตรงกันในกลุ่มเดียวกัน
+  const itemsToDelete = this.groupedCart[case_].filter(item =>
+    item.PartNo === matchCriteria.PartNo &&
+    item.ItemNo === matchCriteria.ItemNo &&
+    item.SPEC === matchCriteria.SPEC &&
+    item.Process === matchCriteria.Process &&
+    item.MC === matchCriteria.MC &&
+    item.Fresh_QTY === matchCriteria.Fresh_QTY &&
+    item.Reuse_QTY=== matchCriteria.Reuse_QTY
+  );
+
+  if (itemsToDelete.length === 0) {
+    Swal.fire('ไม่พบรายการที่ต้องการลบ', '', 'info');
     return;
   }
 
-  //  ยืนยันก่อนลบ
+  // ยืนยันก่อนลบ
   Swal.fire({
-    title: 'Delete?',
-    text: 'Do you really want to delete this item',
-    icon: 'question',
+    title: 'ลบรายการ?',
+    text: `คุณต้องการลบรายกสนหรือไม่?`,
+    icon: 'warning',
     showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Delete',
-    cancelButtonText: 'Cancel'
-  }).then((result) => {
+    confirmButtonText: 'ลบ',
+    cancelButtonText: 'ยกเลิก'
+  }).then(result => {
     if (result.isConfirmed) {
-      //  เรียก service ลบ
-      this.cartService.removeItemFromDB(id).subscribe({
-        next: () => {
-          this.groupedCart[case_].splice(index, 1);
+
+      // 🔧 ประกาศ id ภายใน map เพื่อส่งให้ Service ลบ
+      const deleteObservables = itemsToDelete.map(item => {
+        const id = item.ID_Cart || item.id || item.ItemID;
+        return this.cartService.removeItemFromDB(id);
+      });
+
+      // รันลบทั้งหมดพร้อมกัน
+      Promise.all(deleteObservables.map(obs => obs.toPromise()))
+        .then(() => {
+          // ลบออกจาก frontend
+          this.groupedCart[case_] = this.groupedCart[case_].filter(existing =>
+            !(
+              existing.PartNo === matchCriteria.PartNo &&
+              existing.ItemNo === matchCriteria.ItemNo &&
+              existing.SPEC === matchCriteria.SPEC &&
+              existing.Process === matchCriteria.Process &&
+              existing.MC === matchCriteria.MC &&
+              existing.Fresh_QTY === matchCriteria.Fresh_QTY &&
+              existing.Reuse_QTY === matchCriteria.Reuse_QTY
+            )
+          );
+
           if (this.groupedCart[case_].length === 0) {
             delete this.groupedCart[case_];
           }
 
-          Swal.fire('ลบสำเร็จ', 'รายการถูกลบเรียบร้อยแล้ว', 'success');
-        },
-        error: (err) => {
+          Swal.fire('ลบสำเร็จ', `ลบ ${itemsToDelete.length} รายการแล้ว`, 'success');
+        })
+        .catch(err => {
           console.error('ลบไม่สำเร็จ:', err);
-          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบรายการได้', 'error');
-        }
-      });
+          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบรายการได้ทั้งหมด', 'error');
+        });
     }
   });
 }
-
 async CreateDocByCase() {
   if (!this.groupedCart || Object.keys(this.groupedCart).length === 0) {
   Swal.fire({

@@ -3,8 +3,9 @@ const sql = require('mssql');
 
 
 exports.ShowUser = async (req, res) => {
-  console.log(req.body)
+  
   try {
+    console.log(req.body)
     const pool = await poolPromise;
     const result = await pool
     .request()
@@ -26,7 +27,8 @@ exports.AddUser = async (req, res) => {
       Employee_Name,
       Username,
       Password,
-      Role
+      Role,
+      Email
     } = req.body;
 
     const pool = await poolPromise;
@@ -38,8 +40,9 @@ exports.AddUser = async (req, res) => {
       .input('Role', Role)
       .input('Username', Username)
       .input('Password', Password)
+      .input('Email',Email)
       
-      .query('EXEC dbo.Stored_Insert_tb_CuttingTool_Employee @Employee_ID, @Employee_Name, @Role, @Username, @Password');
+      .query('EXEC dbo.Stored_Insert_tb_CuttingTool_Employee @Employee_ID, @Employee_Name, @Role, @Username, @Password, @Email');
 
     res.status(200).json({ success: true, message: 'Add success' });
   } catch (err) {

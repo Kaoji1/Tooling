@@ -359,23 +359,27 @@ Setview() {
 }
 
 // function add to cart
+// function add to cart
 AddToCart() {
   const checkedItems = this.items.filter((item: any) => item.checked);
   const filteredItems = checkedItems.filter((item: any) => item.QTY);
 
   if (filteredItems.length < checkedItems.length) {
-  Swal.fire({
-    icon: 'warning',
-    title: 'ข้อมูลไม่ครบ',
-    text: 'กรุณากรอกข้อมูลให้ครบในรายการที่เลือก',
-    confirmButtonText: 'ตกลง'
-  });
-  return;
-}
-  // ตั้งค่าการส่งเป็นวันนี้
+    Swal.fire({
+      icon: 'warning',
+      title: 'ข้อมูลไม่ครบ',
+      text: 'กรุณากรอกข้อมูลให้ครบในรายการที่เลือก',
+      confirmButtonText: 'ตกลง'
+    });
+    return;
+  }
+
   const InputDate_ = new Date().toISOString().split('T')[0];
 
-  //  จัดกลุ่มรายการตาม Case_ เก็บค่าที่เลือกไว้ก่อนส่งไปหน้าตะกร้า
+  //  ดึงชื่อพนักงานจาก session
+  const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+  const employeeName = currentUser.Employee_Name || 'Unknown';
+
   const groupedByCase = filteredItems.reduce((acc: any, item: any) => {
     const caseKey = item.Case_ || this.Case_;
     if (!acc[caseKey]) acc[caseKey] = [];
@@ -399,47 +403,45 @@ AddToCart() {
       Status: null,
       Set_by: null,
       Local: 0,
-      MCQTY_:this.MCQTY_,
-      PathDwg_:this.PathDwg_,
+      MCQTY_: this.MCQTY_,
+      PathDwg_: this.PathDwg_,
+      Employee_Name: employeeName //  เพิ่มตรงนี้
     });
     return acc;
   }, {});
 
-  // ตรวจสอบว่ามีรายการหรือไม่
-if (Object.keys(groupedByCase).length === 0) {
-  Swal.fire({
-    icon: 'warning',
-    title: 'ไม่มีรายการ',
-    text: 'ไม่มีรายการที่เลือกไว้สำหรับเพิ่มลงตะกร้า',
-    confirmButtonText: 'ตกลง'
-  });
-  return;
-}
-
-// แปลงจาก grouped object เป็น array ธรรมดาเพื่อส่งไป backend
-const allItemsToSend = Object.values(groupedByCase).flat();
-console.log('🟡 รายการทั้งหมดที่จะส่งไปฐานข้อมูล:', allItemsToSend);
-// เรียก Service เพื่อส่งข้อมูลไปเก็บ MSSQL
-this.cartService.addCartToDB(allItemsToSend).subscribe({
-  next: () => {
+  if (Object.keys(groupedByCase).length === 0) {
     Swal.fire({
-      icon: 'success',
-      title: 'สำเร็จ',
-      text: 'เพิ่มรายการลงตะกร้าเรียบร้อย',
+      icon: 'warning',
+      title: 'ไม่มีรายการ',
+      text: 'ไม่มีรายการที่เลือกไว้สำหรับเพิ่มลงตะกร้า',
       confirmButtonText: 'ตกลง'
     });
-  },
-  error: () => {
-    Swal.fire({
-      icon: 'error',
-      title: 'เกิดข้อผิดพลาด',
-      text: 'บันทึกลงฐานข้อมูลล้มเหลว',
-      confirmButtonText: 'ลองใหม่'
-    });
+    return;
   }
-});
 
-  //  ล้างค่าหลังจากเพิ่มสำเร็จ
+  const allItemsToSend = Object.values(groupedByCase).flat();
+  console.log(' รายการทั้งหมดที่จะส่งไปฐานข้อมูล:', allItemsToSend);
+
+  this.cartService.addCartToDB(allItemsToSend).subscribe({
+    next: () => {
+      Swal.fire({
+        icon: 'success',
+        title: 'สำเร็จ',
+        text: 'เพิ่มรายการลงตะกร้าเรียบร้อย',
+        confirmButtonText: 'ตกลง'
+      });
+    },
+    error: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'บันทึกลงฐานข้อมูลล้มเหลว',
+        confirmButtonText: 'ลองใหม่'
+      });
+    }
+  });
+
   this.Clearall();
 }
 // function clearall

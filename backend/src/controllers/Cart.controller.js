@@ -12,6 +12,7 @@ exports.AddCartItems = async (req, res) => {
      console.log("กำลังบันทึก ItemNo:", item.ItemNo);
      await pool.request()
         .input('Division', sql.VarChar, item.Division)
+        .input('Requester',sql.NVarChar(50),item.Employee_Name)
         .input('Fac', sql.VarChar, item.Factory)
         .input('PartNo', sql.VarChar, item.PartNo)
         .input('Process', sql.VarChar, item.Process)
@@ -24,15 +25,15 @@ exports.AddCartItems = async (req, res) => {
         .input('QTY', sql.Int, item.QTY)
         .input('MCQTY', sql.Int, item.MCQTY_)
         .input('Due_Date', sql.Date, item.DueDate_)
-        .input('Path',sql.NVarChar,item.PathDwg_)
+        .input('PathDwg',sql.NVarChar,item.PathDwg_)
         .query(`
             INSERT INTO tb_IssueCuttingTool_SendToCart (
-            Division, Fac, PartNo, Process, [CASE],
-            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCQTY, Due_Date, Path
+            Division, Requester, Fac, PartNo, Process, [CASE],
+            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCQTY, Due_Date, PathDwg
             )
             VALUES (
-            @Division, @Fac, @PartNo, @Process, @CASE,
-            @MCType,@ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCQTY, @Due_Date, @Path
+            @Division, @Requester, @Fac, @PartNo, @Process, @CASE,
+            @MCType,@ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCQTY, @Due_Date, @PathDwg
             )
         `);
     }
@@ -94,30 +95,30 @@ exports.ClearAllItems = async (req, res) => {
 };
 
 // updateรายการ
-exports.UpdateCartItem = async (req, res) => {
-  try {
-    const item = req.body;
-    const pool = await poolPromise;
+// exports.UpdateCartItem = async (req, res) => {
+//   try {
+//     const item = req.body;
+//     const pool = await poolPromise;
 
-    await pool.request()
-      .input('ID_Cart', sql.Int, item.ID_Cart) // หรือเปลี่ยนเป็น id ที่ใช้
-      .input('QTY', sql.Int, item.QTY)
-      .input('Path',sql.NVarChar,item.Path)
-      .input('Due_Date', sql.Date, item.Due_Date)
-      .query(`
-        UPDATE tb_IssueCuttingTool_SendToCart
-        SET QTY = @QTY,
-            Path = @Path,
-            Due_Date = @Due_Date
-        WHERE ID_Cart = @ID_Cart
-      `);
+//     await pool.request()
+//       .input('ID_Cart', sql.Int, item.ID_Cart) // หรือเปลี่ยนเป็น id ที่ใช้
+//       .input('QTY', sql.Int, item.QTY)
+//       .input('Path',sql.NVarChar,item.Path)
+//       .input('Due_Date', sql.Date, item.Due_Date)
+//       .query(`
+//         UPDATE tb_IssueCuttingTool_SendToCart
+//         SET QTY = @QTY,
+//             Path = @Path,
+//             Due_Date = @Due_Date
+//         WHERE ID_Cart = @ID_Cart
+//       `);
 
-    res.status(200).json({ message: 'อัปเดตข้อมูลสำเร็จ' });
-  } catch (error) {
-    console.error(' UpdateCartItem error:', error);
-    res.status(500).json({ error: error.message });
-  }
-};
+//     res.status(200).json({ message: 'อัปเดตข้อมูลสำเร็จ' });
+//   } catch (error) {
+//     console.error(' UpdateCartItem error:', error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 
 // ลบรายการตามcaseที่กดsendแล้ว
 exports.DeleteCartItemsByCase = async (req, res) => {
@@ -135,5 +136,39 @@ exports.DeleteCartItemsByCase = async (req, res) => {
   } catch (err) {
     console.error('Error DeleteCartItemsByCase:', err);
     res.status(500).json({ error: 'เกิดข้อผิดพลาดในการลบข้อมูล' });
+  }
+};
+
+exports.UpdateMultipleCartItems = async (req, res) => {
+  try {
+    const items = req.body;
+
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ error: 'ข้อมูลที่ส่งมาต้องเป็น Array' });
+    }
+
+    const pool = await poolPromise;
+
+    for (const item of items) {
+      await pool.request()
+        .input('ID_Cart', sql.Int, item.ID_Cart)
+        .input('QTY', sql.Int, item.QTY)
+        .input('PathDwg', sql.NVarChar, item.PathDwg)
+        .input('PathLayout', sql.NVarChar, item.PathLayout)
+        .input('Due_Date', sql.Date, item.Due_Date)
+        .query(`
+          UPDATE tb_IssueCuttingTool_SendToCart
+          SET QTY = @QTY,
+              PathDwg = @PathDwg,
+              PathLayout = @PathLayout,
+              Due_Date = @Due_Date
+          WHERE ID_Cart = @ID_Cart
+        `);
+    }
+
+    res.status(200).json({ message: 'อัปเดตรายการทั้งหมดสำเร็จ' });
+  } catch (error) {
+    console.error(' UpdateMultipleCartItems error:', error);
+    res.status(500).json({ error: error.message });
   }
 };

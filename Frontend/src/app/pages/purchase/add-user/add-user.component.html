@@ -22,6 +22,7 @@
           <th> Role </th>
           <th> Username </th>
           <th> Password </th>
+          <th> Email </th>
           <th> Del </th>
         </tr>
       </thead>
@@ -37,6 +38,7 @@
           <td> {{ Employee.Role }} </td>
           <td> {{ Employee.Username }} </td>
           <td> {{ Employee.Password }} </td>
+          <td> {{ Employee.Email }}</td>
            <td>
         <button class="btn btn-danger btn-sm" (click)="deleteEmployee(Employee.Employee_ID)">
           <i class="bi bi-trash"></i> Delete
@@ -98,6 +100,14 @@
             </div>
           </div>
 
+           <!-- Username & Password -->
+          <div class="mb-3 row">
+            <div class="col">
+              <label for="Username" class="form-label">Email</label>
+              <input type="text" id="Username" class="form-control" name="Username" [(ngModel)]="Email_" />
+            </div>
+            
+          </div>
         </form>
       </div>
 
