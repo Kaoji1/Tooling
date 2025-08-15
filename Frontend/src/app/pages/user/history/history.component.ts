@@ -36,9 +36,8 @@ export class HistoryComponent implements OnInit {
 
 
 
-  constructor(private userhistory: UserHistoryService) {
-   
-  }
+  constructor(private userhistory: UserHistoryService
+  ) {}
 
   ngOnInit() {
     this.User_History();
@@ -99,6 +98,7 @@ getStatusClass(status: string): string {
  
   return '';
 }
+
   
 }
 

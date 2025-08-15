@@ -405,6 +405,7 @@ AddToCart() {
       Local: 0,
       MCQTY_: this.MCQTY_,
       PathDwg_: this.PathDwg_,
+      ON_HAND : item.ON_HAND,
       Employee_Name: employeeName //  เพิ่มตรงนี้
     });
     return acc;

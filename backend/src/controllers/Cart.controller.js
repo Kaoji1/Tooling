@@ -1,22 +1,24 @@
 const { poolPromise } = require("../config/database");
 const sql = require('mssql');
+const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
 
 
-//  เพิ่มรายการลงฐานข้อมูล
+
+// เพิ่มรายการลงฐานข้อมูล
 exports.AddCartItems = async (req, res) => {
   try {
     const items = req.body;
     const pool = await poolPromise;
 
     for (const item of items) {
-     console.log("กำลังบันทึก ItemNo:", item.ItemNo);
-     await pool.request()
+      console.log("กำลังบันทึก ItemNo:", item.ItemNo);
+      await pool.request()
         .input('Division', sql.VarChar, item.Division)
-        .input('Requester',sql.NVarChar(50),item.Employee_Name)
+        .input('Requester', sql.NVarChar(50), item.Employee_Name)
         .input('Fac', sql.VarChar, item.Factory)
         .input('PartNo', sql.VarChar, item.PartNo)
         .input('Process', sql.VarChar, item.Process)
-        .input('CASE', sql.VarChar, item.Case_) 
+        .input('CASE', sql.VarChar, item.Case_)
         .input('MCType', sql.VarChar, item.MC)
         .input('ItemNo', sql.VarChar, item.ItemNo)
         .input('SPEC', sql.VarChar, item.SPEC)
@@ -25,22 +27,79 @@ exports.AddCartItems = async (req, res) => {
         .input('QTY', sql.Int, item.QTY)
         .input('MCQTY', sql.Int, item.MCQTY_)
         .input('Due_Date', sql.Date, item.DueDate_)
-        .input('PathDwg',sql.NVarChar,item.PathDwg_)
+        .input('PathDwg', sql.NVarChar, item.PathDwg_)
+        .input('ON_HAND', sql.Int, item.ON_HAND)
         .query(`
-            INSERT INTO tb_IssueCuttingTool_SendToCart (
+          INSERT INTO tb_IssueCuttingTool_SendToCart (
             Division, Requester, Fac, PartNo, Process, [CASE],
-            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCQTY, Due_Date, PathDwg
-            )
-            VALUES (
+            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCQTY, Due_Date, PathDwg, ON_HAND
+          )
+          VALUES (
             @Division, @Requester, @Fac, @PartNo, @Process, @CASE,
-            @MCType,@ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCQTY, @Due_Date, @PathDwg
-            )
+            @MCType, @ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCQTY, @Due_Date, @PathDwg, @ON_HAND
+          )
         `);
     }
+    let itemDetailsHtml = items.map(item => `
+      <tr>
+        <td>${item.Division}</td>
+        <td>${item.PartNo}</td>
+        <td>${item.ItemNo}</td>
+        <td>${item.Case_}</td>
+        <td>${item.Factory}</td>
+        <td>${item.QTY}</td>
+        <td>${item.DueDate_}</td>
+        <td>${item.Employee_Name}</td>
+      </tr>
+    `).join('');
 
-    res.status(200).json({ message: ' บันทึกรายการตะกร้าสำเร็จ' });
+    // ========  ส่งอีเมลแจ้งเตือนหลังจากบันทึกเสร็จ ========
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'testsystem1508@gmail.com',
+        pass: 'amdo inzi npqq asnd' // ใช้ App Password
+      }
+    });
+
+    const mailOptions = {
+      from: '"Material Disbursement System" <testsystem1508@gmail.com>',
+      to: ['prawarisa.jit@gmail.com','poweridradiw@gmail.com'], // เปลี่ยนเป็นเมลผู้ดูแล
+      subject: ' มีรายการใหม่ถูกเพิ่มลงตะกร้า',
+      html: `
+        <h1 style="color:black;">แจ้งเตือน!! มีรายการใหม่ถูกเพิ่มลงตะกร้า</h1>
+       <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
+      <thead>
+        <tr style="background-color: #f2f2f2;">
+          <th>Division</th>
+          <th>Part No</th>
+          <th>Item No</th>
+          <th>Case</th>
+          <th>Factory</th>
+          <th>QTY</th>
+          <th>DueDate</th>
+          <th>Requester</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemDetailsHtml}
+      </tbody>
+    </table>
+      `
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(' ส่งอีเมลไม่สำเร็จ:', error);
+      } else {
+        console.log(' ส่งอีเมลสำเร็จ:', info.response);
+      }
+    });
+
+    res.status(200).json({ message: 'บันทึกรายการตะกร้าสำเร็จ และส่งอีเมลแล้ว' });
+
   } catch (error) {
-    console.error(' Error AddCartItems:', error);
+    console.error('Error AddCartItems:', error);
     res.status(500).json({ message: 'เกิดข้อผิดพลาด', error: error.message });
   }
 };

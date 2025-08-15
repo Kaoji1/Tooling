@@ -29,7 +29,8 @@ exports.Send_Request = async (req, res) => {
         FileData,
         FileName,
         PathDwg,
-        PathLayout
+        PathLayout,
+        ON_HAND
 
       } = item;
       console.log(" Factory ที่รับมา:", Fac, "| typeof:", typeof Fac);
@@ -55,6 +56,7 @@ exports.Send_Request = async (req, res) => {
         .input('FileName',sql.NVarChar(255),FileName)
         .input('PathDwg',sql.NVarChar(255),PathDwg)
         .input('PathLayout',sql.NVarChar(255),PathLayout)
+        .input('ON_HAND',sql.Int,ON_HAND)
         .execute('[dbo].[stored_IssueCuttingTool_SendRequest]');
     }
 
