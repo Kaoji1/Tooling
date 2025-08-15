@@ -33,5 +33,10 @@ updateRequest(updatedItem: any): Observable<any> {
 insertRequest(data: any): Observable<any> {
   return this.httpClient.post(`${baseUrl}/Insert_Request`, data);
 }
+
+deleteRequest(id: number): Observable<any> {
+  return this.httpClient.delete(`${baseUrl}/Delete_Request/${id}`);
+}
+
 }
 

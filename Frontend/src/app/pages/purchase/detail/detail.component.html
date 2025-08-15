@@ -75,6 +75,7 @@
               <th>Layout</th>
               <th>Remark</th>
               <th style="white-space: nowrap;">Edit</th>
+              <th>Del</th>
              
           
             </tr>
@@ -183,6 +184,11 @@
                   </button>
 
 
+              </td>
+            <td>
+                <button class="btn btn-danger btn-sm" (click)="deleteItem(item.ID_Request)">
+                  <i class="bi bi-trash" style="color: white;"></i>
+                </button>
               </td>
 
 
