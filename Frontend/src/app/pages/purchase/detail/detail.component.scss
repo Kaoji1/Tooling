@@ -217,6 +217,11 @@
     .table-responsive {
       max-height: 390px;
       max-width: 1290px;
+
+      .editing-row {
+  background-color: #d4b346; /* สีเหลืองอ่อน */
+  transition: background-color 0.3s ease;
+}
    
       
 

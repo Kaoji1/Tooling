@@ -25,6 +25,7 @@ exports.Update_Status_Purchase = async (req, res) => {
 
 try {
     const { 
+      ID_Request,
       DocNo, 
       Status, 
       Requester, 
@@ -39,12 +40,15 @@ try {
       ON_HAND, 
       DueDate, 
       PathDwg, 
-      PathLayout, 
+      PathLayout,
+      SPEC,
+      QTY
     } = req.body;
 
     const pool = await poolPromise; 
     const result = await pool
       .request()
+      .input("ID_Request", sql.Int, ID_Request)
       .input("DocNo", sql.NVarChar, DocNo)
       .input("Requester", sql.NVarChar, Requester)
       .input("PartNo", sql.NVarChar, PartNo)
@@ -52,7 +56,7 @@ try {
       .input("SPEC", sql.NVarChar, SPEC)
       .input("Process", sql.NVarChar, Process)
       .input("MCType", sql.NVarChar, MCType)
-      .input("Fac", sql.NVarChar, Fac)
+      .input("Fac", sql.Int, Fac)
       .input("PathDwg", sql.NVarChar, PathDwg)
       .input("ON_HAND", sql.Int, ON_HAND)
       .input("Req_QTY", sql.Int, Req_QTY)
@@ -93,6 +97,7 @@ try {
 exports.Update_Request = async (req, res) => {
   try {
     const { 
+      ID_Request,
       DocNo, 
       Status, 
       Requester, 
@@ -107,11 +112,14 @@ exports.Update_Request = async (req, res) => {
       ON_HAND, 
       DueDate, 
       PathDwg, 
-      PathLayout, 
+      PathLayout,
+      SPEC,
+      QTY
     } = req.body;
 
     const pool = await poolPromise;
     const result = await pool.request()
+      .input("ID_Request", sql.Int, ID_Request)
       .input("DocNo", sql.NVarChar, DocNo)
       .input("Requester", sql.NVarChar, Requester)
       .input("PartNo", sql.NVarChar, PartNo)
@@ -119,7 +127,7 @@ exports.Update_Request = async (req, res) => {
       .input("SPEC", sql.NVarChar, SPEC)
       .input("Process", sql.NVarChar, Process)
       .input("MCType", sql.NVarChar, MCType)
-      .input("Fac", sql.NVarChar, Fac)
+      .input("Fac", sql.Int, Fac)
       .input("PathDwg", sql.NVarChar, PathDwg)
       .input("ON_HAND", sql.Int, ON_HAND)
       .input("Req_QTY", sql.Int, Req_QTY)
