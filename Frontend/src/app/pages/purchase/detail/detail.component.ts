@@ -242,7 +242,6 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
-import { PdfReader } from "pdfreader";
 import { FileReadService } from '../../../core/services/FileRead.service';
 
 
