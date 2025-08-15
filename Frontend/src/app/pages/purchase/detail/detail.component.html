@@ -63,18 +63,20 @@
               <th>Process</th>
               <!-- <th>ItemNo</th> chaeck itemno -->
               <th style="white-space: nowrap;">MC Type</th>
-              <th style="white-space: nowrap;">MC QTY</th>
               <th>Fac</th>
               <th>DWG</th>
-              <th style="white-space: nowrap;">Fresh QTY</th>
-              <th style="white-space: nowrap;">Reuse QTY</th>
               <th style="white-space: nowrap;">On Hand</th>
+              <th style="white-space: nowrap;">Req QTY</th>
               <th>QTY</th>
               <th style="white-space: nowrap;">Due Date</th>
               <th>Case</th>
               <th>Status</th>
+              <th>Dwg</th>
+              <th>Layout</th>
               <th>Remark</th>
-              <th style="white-space: nowrap;">Edit (QTY)</th>
+              <th style="white-space: nowrap;">Edit</th>
+             
+          
             </tr>
           </thead>
 
@@ -95,21 +97,57 @@
               <td class="spec-column">{{ item.SPEC }}</td>
               <td>{{ item.Process }}</td>
               <td>{{ item.MCType }}</td>
-              <td>{{ item.MCQTY }}</td>
               <td>{{ item.Fac }}</td>
               <td>{{ item.DwgRev }}</td>
-              <td>{{ item.FreshQty }}</td>
-              <td>{{ item.ReuseQty }}</td>
               <td>{{ item.ON_HAND }}</td>
-
+              <td>{{ item.Req_QTY }}</td>
+  
               <td>
-                <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.Req_QTY }}</span>
-                <input *ngIf="editingIndex[item.ID_Request] === i" type="number" [(ngModel)]="item.Req_QTY" />
+                <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.QTY }}</span>
+                <input *ngIf="editingIndex[item.ID_Request] === i" type="number" [(ngModel)]="item.QTY" />
               </td>
-
               <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
               <td>{{ item.CASE }}</td>
               <td>{{ item.Status }}</td>
+
+              <td>
+                <!-- {{ item.PathDwg }} -->
+                <div class="text-break"></div>
+                    <button
+                      *ngIf="item.PathDwg"
+                      class="btn btn-link btn-sm text-primary p-0 mt-1"
+                      (click)="openPdfFromPath(item.PathDwg)">
+                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                    </button>
+              </td>
+            
+              <td> 
+                <!-- {{ item.PathLayout }} -->
+                <div class="text-break"></div>
+                    <button
+                      *ngIf="item.PathLayout"
+                      class="btn btn-link btn-sm text-primary p-0 mt-1"
+                      (click)="openPdfFromPath(item.PathLayout)">
+                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                    </button>
+              </td>
+                <!-- <td>
+                  <ng-container *ngIf="editingIndex[caseKey.key] === i; else showLayoutPath">
+                    <input [(ngModel)]="item.PathLayout" type="text" class="form-control" />
+                  </ng-container>
+
+                  <ng-template #showLayoutPath>
+                    <div class="text-break">{{ item.PathLayout }}</div>
+                    <button
+                      *ngIf="item.PathLayout"
+                      class="btn btn-link btn-sm text-primary p-0 mt-1"
+                      (click)="openPdfFromPath(item.PathLayout)">
+                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                    </button>
+                  </ng-template>
+                </td> -->
+
+
               <td>
                 <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.Remark }}</span>
                 <input *ngIf="editingIndex[item.ID_Request] === i" type="text" [(ngModel)]="item.Remark"
@@ -139,7 +177,6 @@
                   SPEC: item.SPEC,
                   Process: item.Process,
                   MCType: item.MCType,
-                  MCQTY: item.MCQTY,
                   Fac: item.Fac,
                   DwgRev: item.DwgRev
                     })"><i class="bi bi-plus-circle text-blue"></i>

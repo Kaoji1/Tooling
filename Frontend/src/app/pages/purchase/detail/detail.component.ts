@@ -242,6 +242,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
+import { PdfReader } from "pdfreader";
+import { FileReadService } from '../../../core/services/FileRead.service';
 
 
 @Component({
@@ -277,7 +279,9 @@ selectAllChecked = false;
   constructor(
     private route: ActivatedRoute, 
     private router: Router,
-    private DetailPurchase : DetailPurchaseRequestlistService) {}
+    private DetailPurchase : DetailPurchaseRequestlistService,
+    private FileReadService : FileReadService
+) {}
 
 
   async ngOnInit() {
@@ -388,7 +392,82 @@ saveEdit(caseKey: string, rowIndex: number): void {
     }
   });
 }
+
+openPdfFromPath(filePath: string) {
+  if (!filePath) { alert('ไม่พบ path ของไฟล์'); return; }
+
+  this.FileReadService.loadPdfFromPath(filePath).subscribe({
+    next: (res: { fileName: string; imageData: string }) => {
+      const base64 = res.imageData.split(',')[1];
+      const binary = atob(base64);
+      const len = binary.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
+    },
+    error: () => alert('ไม่สามารถโหลด PDF ได้')
+  });
 }
+}
+
+// openPdfFromCaseKey(caseKey: string) {
+//   this.FileReadService.loadPdfFromPath(caseKey).subscribe({
+//     next: (res: any) => {
+//       const base64 = res.pdfData.split(',')[1];
+//       const binary = atob(base64);
+//       const len = binary.length;
+//       const bytes = new Uint8Array(len);
+//       for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+
+//       const blob = new Blob([bytes], { type: 'application/pdf' });
+//       const blobUrl = URL.createObjectURL(blob);
+//       window.open(blobUrl, '_blank');
+//     },
+//     error: (err) => {
+//       alert(err.error?.error || 'ไม่สามารถโหลด PDF ได้');
+//     }
+//   });
+// }
+// }
+
+// openPdfFromPath(filePath: string) {
+//   if (!filePath) {
+//     alert('ไม่พบพาธของไฟล์');
+//     return;
+//   }
+
+//   this.FileReadService.loadPdfFromPath(filePath).subscribe({
+//     next: (res) => {
+//       // 1. แยก base64 ออกจาก prefix
+//       const base64 = res.imageData.split(',')[1];
+
+//       // 2. แปลง base64 เป็น binary
+//       const binary = atob(base64);
+//       const len = binary.length;
+//       const bytes = new Uint8Array(len);
+//       for (let i = 0; i < len; i++) {
+//         bytes[i] = binary.charCodeAt(i);
+//       }
+
+//       // 3. แปลงเป็น Blob
+//       const blob = new Blob([bytes], { type: 'application/pdf' });
+
+//       // 4. สร้าง URL จาก Blob
+//       const blobUrl = URL.createObjectURL(blob);
+
+//       // 5. เปิดแท็บใหม่
+//       window.open(blobUrl, '_blank');
+//     },
+//     error: () => {
+//       alert('ไม่สามารถโหลด PDF ได้');
+//     }
+//   });
+
+// }
+// }
 
 //   saveEdit(caseKey: string, rowIndex: number): void {
 //   console.log(`บันทึกข้อมูล caseKey: ${caseKey}, แถว: ${rowIndex}`);
