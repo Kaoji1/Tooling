@@ -12,41 +12,49 @@
 
       <button class="button"  data-bs-toggle="modal" data-bs-target="#Insert" > + Add </button>
     </div>
+    
+    
 
-    <table class="table">
-      <!-- Column name -->
-      <thead>
-        <tr>
-          <th> Employee ID </th>
-          <th> Employee Name </th>
-          <th> Role </th>
-          <th> Username </th>
-          <th> Password </th>
-          <th> Email </th>
-          <th> Del </th>
-        </tr>
-      </thead>
-      <!-- Values -->
-      <tbody>
-        <tr >
-          <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select the  to view item.</td>
-        </tr>
+    <table class="table table-bordered text-center">
+  <thead>
+    <tr>
+      <th>No.</th>
+      <th>Employee ID</th>
+      <th>Employee Name</th>
+      <th>Role</th>
+      <th>Username</th>
+      <th>Password</th>
+      <th>Email</th>
+      <th>Del</th>
+    </tr>
+  </thead>
+  <tbody>
+    <ng-container *ngFor="let group of groupedEmployees | keyvalue">
+      <!-- หัวของกลุ่ม Role -->
+      <tr class="table-secondary">
+        <td colspan="8" class="text-start fw-bold bg-light p-3 rounded border">
+          <span> Role: <strong>{{ group.key }}</strong></span>
+        </td>
+      </tr>
 
-        <tr *ngFor="let Employee of Employee">
-          <td> {{ Employee.Employee_ID }} </td>
-          <td> {{ Employee.Employee_Name }} </td>
-          <td> {{ Employee.Role }} </td>
-          <td> {{ Employee.Username }} </td>
-          <td> {{ Employee.Password }} </td>
-          <td> {{ Employee.Email }}</td>
-           <td>
-        <button class="btn btn-danger btn-sm" (click)="deleteEmployee(Employee.Employee_ID)">
-          <i class="bi bi-trash"></i> Delete
-        </button>
-      </td>
-        </tr>
-      </tbody>
-    </table>
+      <!-- พนักงานในแต่ละกลุ่ม -->
+      <tr *ngFor="let emp of group.value; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ emp.Employee_ID }}</td>
+        <td>{{ emp.Employee_Name }}</td>
+        <td>{{ emp.Role }}</td>
+        <td>{{ emp.Username }}</td>
+        <td>{{ emp.Password }}</td>
+        <td>{{ emp.Email }}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" (click)="deleteEmployee(emp.Employee_ID)">
+            <i class="bi bi-trash"></i> Delete
+          </button>
+        </td>
+      </tr>
+    </ng-container>
+  </tbody>
+</table>
 
   </div>
 

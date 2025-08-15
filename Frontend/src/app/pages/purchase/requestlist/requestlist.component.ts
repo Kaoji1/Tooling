@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PurchaseRequestService } from '../../../core/services/PurchaseRequest.service';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-requestlist',
@@ -14,6 +15,7 @@ import { PurchaseRequestService } from '../../../core/services/PurchaseRequest.s
     SidebarPurchaseComponent,
     NotificationComponent,
     FormsModule,
+    NgSelectModule,
     CommonModule],
   templateUrl: './requestlist.component.html',
   styleUrl: './requestlist.component.scss'
@@ -21,10 +23,13 @@ import { PurchaseRequestService } from '../../../core/services/PurchaseRequest.s
 export class RequestlistComponent implements OnInit  {
   request:any[]=[];
 
-  
-
-   selectedCase: string = '';
-   data:any[]=[];
+  categoryList: { label: string; value: string }[] = [];
+  Catagory_: string | null = null;
+  selectedCase: string = '';
+  data:any[]=[];
+  filteredRequests: any[]=[];
+  fromDate: string | null = null;
+  toDate: string | null = null;
   // router: any;
 
   
@@ -48,7 +53,7 @@ async ngOnInit()  {
 Purchase_Request() {
   this.purchaserequest.Purchase_Request().subscribe({
     next: (response: any[]) => {
-      console.log('📥 ข้อมูลจาก API:', response); // ตรวจสอบข้อมูลที่ได้มา
+      console.log('📥 ข้อมูลจาก API:', response);
 
       const groupedMap = new Map<string, {
         Req_QTY: number,
@@ -61,7 +66,7 @@ Purchase_Request() {
           const itemNo = item.ItemNo;
           const category = item.Category || '';
           const idRequest = item.ID_Request;
-          const key = `${itemNo}_${category}`; // ✅ ตรงนี้ต้องใช้ backtick
+          const key = `${itemNo}_${category}`; // ✅ backtick
 
           if (groupedMap.has(key)) {
             const group = groupedMap.get(key)!;
@@ -79,22 +84,47 @@ Purchase_Request() {
         }
       });
 
-      // ✅ log รายการใน groupedMap
-      console.log('🧩 groupedMap (หลังจากจัดกลุ่ม):', groupedMap);
-
-      // แปลงเป็น array แล้วเก็บเข้า request
       this.request = Array.from(groupedMap.values()).map(group => ({
         ...group.item,
         Req_QTY: group.Req_QTY
       }));
 
-      // ✅ log ค่าที่จะนำไปแสดง
-      console.log('📊 this.request (ข้อมูลที่จะนำไปแสดง):', this.request);
-    },
+      this.filteredRequests = [...this.request]; // ✅ แสดงทั้งหมดตั้งแต่ต้น
 
+      const uniqueCategories = Array.from(
+        new Set(this.request.map(r => r.Category).filter(Boolean))
+      );
+      this.categoryList = uniqueCategories.map(cat => ({ label: cat, value: cat }));
+    },
     error: (e: any) => console.error('❌ API error:', e),
   });
 }
+
+
+
+//  กรองตามช่วงวันที่,case
+onFilter() {
+  this.filteredRequests = this.request.filter(item => {
+    const itemDate = new Date(item.DateRequest || item.DueDate);
+
+    const matchDate =
+      (!this.fromDate || itemDate >= new Date(this.fromDate)) &&
+      (!this.toDate || itemDate <= new Date(this.toDate));
+
+
+    const matchCategory =
+      !this.Catagory_ || item.Category === this.Catagory_;
+
+    return matchDate && matchCategory;
+  });
+}
+  onSort() {
+    this.filteredRequests.sort((a, b) => {
+      const dateA = new Date(a.DueDate).getTime();
+      const dateB = new Date(b.DueDate).getTime();
+      return dateA - dateB; // เรียงจากเก่า -> ใหม่
+    });
+  }
 }
 
 

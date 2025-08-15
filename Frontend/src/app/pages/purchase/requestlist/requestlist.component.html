@@ -18,7 +18,7 @@
       <div class="form-input">
         <div class="group-select">
           <label for="datesetup">Date</label>
-          <input type="date" dateFormat="dd/mm/yy">
+          <input type="date" [(ngModel)]="fromDate" placeholder="From Date">
         </div>
 
         <h6>TO</h6>
@@ -26,28 +26,40 @@
 
         <div class="group-select">
           <label for="duedate">Date</label>
-          <input type="date" id="duedate">
+          <input type="date" [(ngModel)]="toDate" placeholder="To Date">
         </div>
 
-        <div class="group-select">
+        <!-- <div class="group-select">
           <label for="case">Case</label>
           <select class="form-select" id="case" required>
             <option value="" disabled selected hidden>Select a case</option>
             <option value="1">Set up</option>
             <option value="2">Other</option>
           </select>
-        </div> 
+        </div>  -->
+        <div class="group-select">
+          <label for="case">Case</label>
+          <ng-select style="width: 150px; " 
+            [items]="categoryList"
+            bindLabel="label"
+            bindValue="value"
+            [(ngModel)]="Catagory_"
+            placeholder="Select a Case"
+            >
+            
+          </ng-select>
+        </div>
          
 
       </div>
 
       <div class="button-group">
       <div class="button-filter">
-        <button class="btn btn-filter" type="button" >Filter</button>
+        <button class="btn btn-filter" type="button" (click)="onFilter()" >Filter</button>
       </div>
 
       <div class="button-sort">
-        <button class="btn-sort" type="button">
+        <button class="btn-sort" type="button" (click)="onSort()" >
           <i class="bi bi-sort-down">Sort</i>
         </button>
       </div>
@@ -76,7 +88,7 @@
           <tr *ngIf="request.length === 0">
             <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select the  to view item.</td>
           </tr>
-          <tr *ngFor="let item of request">
+          <tr *ngFor="let item of filteredRequests">
             <td>{{ item.ItemNo }}</td>
             <td>{{ item.Process }}</td>
             <td>{{ item.Category }}</td>
