@@ -19,6 +19,16 @@
       color: #0066B3;
     }
 
+ /* สีพื้นหลังของแถวที่กำลังแก้ไข */
+.editing-row {
+  background-color: #fff3cd; /* สีเหลืองอ่อน */
+  transition: background-color 0.3s ease;
+}
+
+/* สีพื้นหลังของแต่ละ cell ในแถว */
+.editing-row td {
+  background-color: #fff3cd;
+}
     // ส่วนหัวเรื่อง
     .toptext {
       margin-top: 20px;
@@ -33,49 +43,6 @@
         font-size: 15px;
       }
     }
-
-    //     .group-header {
-    //       display: flex;
-    //       justify-content: space-between;
-    //       /* ดันกล่อง ItemNo กับปุ่มให้สุดซ้าย-ขวา */
-    //       align-items: center; /* แก้ตรงนี้ */
-    //       /* จัดกึ่งกลางแนวตั้ง */
-    //       margin-top: 50px;
-    //       margin-right: 50px;
-
-    //     }
-
-    //     // กล่องแสดงหมายเลขรายการ
-
-    // .Box-itemNo {
-    //   width: flex;
-    //   display: flex;
-    //   margin: 20px;
-    //   padding: 20px;
-    //   background-color: #dff0ff;
-    //   border: 3px solid #0065bd;
-    //   border-radius: 14px;
-    //   color: black;
-
-    //   .btn-Complete {
-    //     width: 120px;
-    //     height: 45px;
-    //     margin: 50;
-    //     margin-top: 100px; /* เพิ่ม margin ดันลงล่าง */
-    //     background-color: #4db6b6;
-    //     color: white;
-    //     border: none;
-    //     border-radius: 10px;
-    //     font-size: 20px;
-    //     cursor: pointer;
-    //     transition: background-color 0.3s ease;
-
-    //     display: block; /* บังคับให้ปุ่มเป็นบล็อค */
-    //     text-align: center; /* กึ่งกลางข้อความในปุ่ม */
-    //   }
-    // }
-
-
 
     .group-header {
       display: flex;
@@ -218,10 +185,6 @@
       max-height: 390px;
       max-width: 1290px;
 
-      .editing-row {
-  background-color: #d4b346; /* สีเหลืองอ่อน */
-  transition: background-color 0.3s ease;
-}
    
       
 

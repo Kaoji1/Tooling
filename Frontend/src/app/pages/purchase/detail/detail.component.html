@@ -21,16 +21,6 @@
 
       <div class="group-header">
 
-        <!-- <div class="Box-itemNo">
-          <tr>
-            <h4>ItemNo: {{ itemNo }}</h4>
-          </tr>
-        </div>
-        <div class="button-Complete">
-          <button class="btn-Complete" class="btn btn-danger" type="button" (click)="completeSelected()">Complete</button>
-        </div>
-      </div> -->
-
         <div class="Box-itemNo">
           <h4>ItemNo: {{ itemNo }}</h4>
         </div>
@@ -49,11 +39,9 @@
         <table class="table table-bordered text-center">
 
           <thead>
-            <!-- <th><input type="checkbox"[(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"/></th> -->
             <tr>
               <th>
                 <input type="checkbox" [(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()" />
-                <!-- <input type="checkbox" [(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()" /> -->
               </th>
               <th>Document</th>
               <th>Requester</th>
@@ -86,7 +74,7 @@
               <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please
                 select the to view item.</td>
             </tr>
-            <tr *ngFor="let item of request; let i = index">
+            <tr *ngFor="let item of request; let i = index" [ngClass]="{'editing-row': editingIndex[item.ID_Request] === i}">
               <td><input type="checkbox" [(ngModel)]="item.Selection" /></td>
               <!--เชื่อม checkbox-->
 
@@ -131,22 +119,6 @@
                       <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
                     </button>
               </td>
-                <!-- <td>
-                  <ng-container *ngIf="editingIndex[caseKey.key] === i; else showLayoutPath">
-                    <input [(ngModel)]="item.PathLayout" type="text" class="form-control" />
-                  </ng-container>
-
-                  <ng-template #showLayoutPath>
-                    <div class="text-break">{{ item.PathLayout }}</div>
-                    <button
-                      *ngIf="item.PathLayout"
-                      class="btn btn-link btn-sm text-primary p-0 mt-1"
-                      (click)="openPdfFromPath(item.PathLayout)">
-                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
-                    </button>
-                  </ng-template>
-                </td> -->
-
 
               <td>
                 <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.Remark }}</span>
@@ -158,8 +130,8 @@
                 <button *ngIf="editingIndex[item.ID_Request] !== i" class="btn btn-primary btn-sm"
                   (click)="startEdit(item.ID_Request, i)">
                   <i class="bi bi-pencil-square text-white"></i>
-
                 </button>
+                
                 <button *ngIf="editingIndex[item.ID_Request] === i" class="btn btn-success btn-sm"
                   (click)="saveEdit(item.ID_Request, i)">
                   <i class="bi bi-check-lg text-white"></i>
@@ -172,8 +144,6 @@
                   PartNo: item.PartNo,
                   ItemNo: item.ItemNo,
                   Req_QTY: item.Req_QTY,
-                  QTY: item.QTY,
-                  DueDate: item.DueDate,
                   Remark: item.Remark,
                   Status: item.Status,
                   SPEC: item.SPEC,
@@ -183,37 +153,14 @@
                   DwgRev: item.DwgRev
                     })"><i class="bi bi-plus-circle text-blue"></i>
                   </button>
-
-
               </td>
-
-
-              <!-- <button class="Editicon">
-                <i class="bi bi-pencil-square"></i>
-              </button> -->
-
-              <!-- row -->
-              <!-- <tr>
-
-              <td>
-                <button onclick="window.location.href='#'" class="Editicon">
-                    <i class="bi bi-pencil-square"></i>
-                  </button>
-              </td>
-              <td>
-                <button onclick="window.location.href='#'" class="more">
-                    <i class="bi bi-plus-circle-fill"></i>
-                  </button>
-              </td>
-            </tr> -->
-
-
-              <!-- <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr> -->
             </tr>
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+
       <!-- เลือกหน้าๅ -->
       <!-- <div class="pagination-wrapper">
     <nav aria-label="Page navigation example">
@@ -226,9 +173,7 @@
       </ul>
     </nav>
     </div> -->
-    </div>
-  </div>
-
+ 
 
 
 
