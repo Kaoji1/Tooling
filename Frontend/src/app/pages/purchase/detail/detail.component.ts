@@ -175,6 +175,22 @@ openPdfFromPath(filePath: string) {
     error: () => alert('ไม่สามารถโหลด PDF ได้')
   });
 }
+deleteItem(id: string) {
+  if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?')) return;
+
+  this.DetailPurchase.deleteRequest(Number(id)).subscribe({
+    next: () => {
+      alert('ลบข้อมูลสำเร็จ');
+
+      //  เพิ่มแค่บรรทัดนี้: ลบรายการออกจากตารางที่แสดงผล
+      this.request = this.request.filter(item => item.ID_Request !== id);
+    },
+    error: (err) => {
+      console.error('ลบไม่สำเร็จ', err);
+      alert('เกิดข้อผิดพลาดในการลบ');
+    }
+  });
+}
 }
 
 

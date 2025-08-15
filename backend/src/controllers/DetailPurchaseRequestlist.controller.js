@@ -255,7 +255,20 @@ exports.Add_New_Request = async (req, res) => {
   }
 };
 
+exports.DeleteItem = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const pool = await poolPromise;
+    await pool.request()
+      .input('ID', sql.Int, id)
+      .query('DELETE FROM [dbo].[tb_IssueCuttingTool_Request_Document]  WHERE ID_Request = @ID');
 
+    res.status(200).json({ message: 'ลบสำเร็จ' });
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    res.status(500).json({ message: 'ลบไม่สำเร็จ', error: error.message });
+  }
+};
 // exports.Add_New_Request = async (req, res) => {
 //   try {
 //     console.log(req.body)
