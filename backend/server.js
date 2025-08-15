@@ -10,6 +10,7 @@ const PurchaseRequest = require('./src/routes/PurchaseRequest.route.js');
 const Cart = require('./src/routes/Cart.route.js');
 const Login = require('./src/routes/Login.route.js');
 const Upload = require('./src/routes/FileUpload.route.js');
+const Read = require('./src/routes/FileRead.route.js');
 const Detail = require('./src/routes/DetailPurchaseRequestlist.route.js');
 // const Update_Request = require('./src/routes/DetailPurchaseRequestlist.route.js');
 const PurchaseHistory = require('./src/routes/PurchaseHistory.route.js');
@@ -35,6 +36,7 @@ app.use('/api', PurchaseRequest);
 app.use('/api', Cart);
 app.use('/api', Login);
 app.use('/api', Upload);
+app.use('/api', Read);
 app.use('/api', Detail); //DetailPurchaseRequestlistRoutes
 app.use('/api', PurchaseHistory);
 app.use('/api',Employee);

@@ -71,8 +71,11 @@
               <th style="white-space: nowrap;">Due Date</th>
               <th>Case</th>
               <th>Status</th>
+              <th>Dwg</th>
+              <th>Layout</th>
               <th>Remark</th>
               <th style="white-space: nowrap;">Edit</th>
+             
           
             </tr>
           </thead>
@@ -97,15 +100,54 @@
               <td>{{ item.Fac }}</td>
               <td>{{ item.DwgRev }}</td>
               <td>{{ item.ON_HAND }}</td>
-              <td></td>
+              <td>{{ item.Req_QTY }}</td>
+  
               <td>
-                <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.Req_QTY }}</span>
-                <input *ngIf="editingIndex[item.ID_Request] === i" type="number" [(ngModel)]="item.Req_QTY" />
+                <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.QTY }}</span>
+                <input *ngIf="editingIndex[item.ID_Request] === i" type="number" [(ngModel)]="item.QTY" />
               </td>
-
               <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
               <td>{{ item.CASE }}</td>
               <td>{{ item.Status }}</td>
+
+              <td>
+                <!-- {{ item.PathDwg }} -->
+                <div class="text-break"></div>
+                    <button
+                      *ngIf="item.PathDwg"
+                      class="btn btn-link btn-sm text-primary p-0 mt-1"
+                      (click)="openPdfFromPath(item.PathDwg)">
+                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                    </button>
+              </td>
+            
+              <td> 
+                <!-- {{ item.PathLayout }} -->
+                <div class="text-break"></div>
+                    <button
+                      *ngIf="item.PathLayout"
+                      class="btn btn-link btn-sm text-primary p-0 mt-1"
+                      (click)="openPdfFromPath(item.PathLayout)">
+                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                    </button>
+              </td>
+                <!-- <td>
+                  <ng-container *ngIf="editingIndex[caseKey.key] === i; else showLayoutPath">
+                    <input [(ngModel)]="item.PathLayout" type="text" class="form-control" />
+                  </ng-container>
+
+                  <ng-template #showLayoutPath>
+                    <div class="text-break">{{ item.PathLayout }}</div>
+                    <button
+                      *ngIf="item.PathLayout"
+                      class="btn btn-link btn-sm text-primary p-0 mt-1"
+                      (click)="openPdfFromPath(item.PathLayout)">
+                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                    </button>
+                  </ng-template>
+                </td> -->
+
+
               <td>
                 <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.Remark }}</span>
                 <input *ngIf="editingIndex[item.ID_Request] === i" type="text" [(ngModel)]="item.Remark"
