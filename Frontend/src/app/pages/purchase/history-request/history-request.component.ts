@@ -30,7 +30,6 @@ sortOrder: 'asc' | 'desc' = 'asc';
 constructor(private purchasehistory: PurchaseHistoryservice) {}
 
 ngOnInit() {
-
 this.Purchase_History();
 }
 
@@ -82,13 +81,10 @@ onFilter() {
         (!this.fromDate || itemDate >= new Date(this.fromDate)) &&
         (!this.toDate || itemDate <= new Date(this.toDate));
 
-      const matchPartNo =
-        !this.selectedPartNo || item.PartNo === this.selectedPartNo;
-
       const matchStatus =
         !this.Status_ || item.Status === this.Status_;
 
-      return matchDate && matchPartNo && matchStatus;
+      return matchDate && matchStatus;
     });
 
     this.onSort();
@@ -103,6 +99,14 @@ onFilter() {
       const dateB = new Date(b.DueDate).getTime();
       return dateA - dateB; // เรียงจากเก่า -> ใหม่
     });
+
+//   getStatusClass(status: string): string {
+//   const s = status?.toLowerCase().trim();
+//   if (s === 'complete') return 'bg-complete';
+//   if (s === 'waiting') return 'bg-waiting';
+ 
+//   return '';
+// }
   }
 
 showSuccessAlert(){

@@ -63,18 +63,17 @@
               <th>Process</th>
               <!-- <th>ItemNo</th> chaeck itemno -->
               <th style="white-space: nowrap;">MC Type</th>
-              <th style="white-space: nowrap;">MC QTY</th>
               <th>Fac</th>
               <th>DWG</th>
-              <th style="white-space: nowrap;">Fresh QTY</th>
-              <th style="white-space: nowrap;">Reuse QTY</th>
               <th style="white-space: nowrap;">On Hand</th>
+              <th style="white-space: nowrap;">Req QTY</th>
               <th>QTY</th>
               <th style="white-space: nowrap;">Due Date</th>
               <th>Case</th>
               <th>Status</th>
               <th>Remark</th>
-              <th style="white-space: nowrap;">Edit (QTY)</th>
+              <th style="white-space: nowrap;">Edit</th>
+          
             </tr>
           </thead>
 
@@ -95,13 +94,10 @@
               <td class="spec-column">{{ item.SPEC }}</td>
               <td>{{ item.Process }}</td>
               <td>{{ item.MCType }}</td>
-              <td>{{ item.MCQTY }}</td>
               <td>{{ item.Fac }}</td>
               <td>{{ item.DwgRev }}</td>
-              <td>{{ item.FreshQty }}</td>
-              <td>{{ item.ReuseQty }}</td>
               <td>{{ item.ON_HAND }}</td>
-
+              <td></td>
               <td>
                 <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.Req_QTY }}</span>
                 <input *ngIf="editingIndex[item.ID_Request] === i" type="number" [(ngModel)]="item.Req_QTY" />
@@ -139,7 +135,6 @@
                   SPEC: item.SPEC,
                   Process: item.Process,
                   MCType: item.MCType,
-                  MCQTY: item.MCQTY,
                   Fac: item.Fac,
                   DwgRev: item.DwgRev
                     })"><i class="bi bi-plus-circle text-blue"></i>

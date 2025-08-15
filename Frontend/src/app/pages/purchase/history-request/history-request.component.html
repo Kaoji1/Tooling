@@ -7,6 +7,23 @@
   <div class="content">
 
 
+
+<!-- เพิ่ม div สำหรับสถานะแนวตั้ง พร้อมข้อความ -->
+<div class="status-indicator-vertical">
+  <div class="status-item">
+    <span class="status red"></span>
+    <span class="status-label">= Waiting</span>
+  </div>
+  <div class="status-item">
+    <span class="status yellow"></span>
+    <span class="status-label">=</span>
+  </div>
+  <div class="status-item">
+    <span class="status green"></span>
+    <span class="status-label">= Complete</span>
+  </div>
+</div>
+
     <!-- Header -->
 
     <div class="header-content">
@@ -23,17 +40,30 @@
       <div class="form-input">
         <div class="group-select">
           <label for="datesetup">Date</label>
-          <input type="date" id="datesetup">
+          <input type="date" [(ngModel)]="fromDate" placeholder="datesetup">
         </div>
 
         <h6>TO</h6>
 
         <div class="group-select">
           <label for="duedate">Date</label>
-          <input type="date" id="duedate">
+          <input type="date" [(ngModel)]="toDate" placeholder="duedate">
         </div>
 
-      <div class="button-group">
+
+
+        <div class="form-input">
+  <!-- ปุ่มอื่น ๆ -->
+  <button class="btn-filter">Filter</button>
+  <button class="btn-sort"><i class="bi bi-sort-down"></i>Sort</button>
+
+  <!-- กลุ่มปุ่ม export -->
+  <div class="button-group">
+    <button class="excel-button" type="button" class="btn btn-success" (click)="showSuccessAlert()"><i class="bi bi-send-fill"> </i>EXPORT TO EXCEL</button>
+    <button class="export-button" type="button" class="btn btn-danger" (click)="showSuccessAlert()"><i class="bi bi-send-fill"> </i>EXPORT TO AS400</button>
+  </div>
+</div>
+      <!-- <div class="button-group">
       <div class="button-filter">
         <button class="btn btn-filter" type="button" >Filter</button>
       </div>
@@ -43,16 +73,16 @@
           <i class="bi bi-sort-down">Sort</i>
         </button>
       </div>
-        <!--ปุ่ม Export to AS400-->
-        <div class="export-btn">
+        <ปุ่ม Export to AS400-->
+        <!-- <div class="export-btn">
           <button class="export-button" type="button" class="btn btn-danger" (click)="showSuccessAlert()">
             <i class="bi bi-send-fill"> EXPORT TO AS400</i></button>
-        </div>
+        </div> -->
 
-        <div>
+        <!-- <div>
             <button class="excel-button" type="button" class="btn btn-success" (click)="showSuccessAlert()">
             <i class="bi bi-send-fill"> EXPORT TO EXCEL</i></button>
-        </div>
+        </div> --> 
         <!-- <div class="export-btn">
           <button class="export-button" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exportModal">EXPORT TO
             AS400</button>
