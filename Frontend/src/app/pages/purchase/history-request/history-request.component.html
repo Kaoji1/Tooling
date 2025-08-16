@@ -11,12 +11,8 @@
 <!-- เพิ่ม div สำหรับสถานะแนวตั้ง พร้อมข้อความ -->
 <div class="status-indicator-vertical">
   <div class="status-item">
-    <span class="status red"></span>
-    <span class="status-label">= Waiting</span>
-  </div>
-  <div class="status-item">
     <span class="status yellow"></span>
-    <span class="status-label">=</span>
+    <span class="status-label">= Waiting</span>
   </div>
   <div class="status-item">
     <span class="status green"></span>
@@ -59,7 +55,7 @@
 
   <!-- กลุ่มปุ่ม export -->
   <div class="button-group">
-    <button class="excel-button" type="button" class="btn btn-success" (click)="showSuccessAlert()"><i class="bi bi-send-fill"> </i>EXPORT TO EXCEL</button>
+    <button class="excel-button" type="button" class="btn btn-success" (click)="showAlert()"><i class="bi bi-send-fill"> </i>EXPORT TO EXCEL</button>
     <button class="export-button" type="button" class="btn btn-danger" (click)="showSuccessAlert()"><i class="bi bi-send-fill"> </i>EXPORT TO AS400</button>
   </div>
 </div>

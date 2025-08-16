@@ -75,7 +75,12 @@
               <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please
                 select the to view item.</td>
             </tr>
-            <tr *ngFor="let item of request; let i = index" [ngClass]="{'editing-row': editingIndex[item.ID_Request] === i}">
+            <tr *ngFor="let item of request; let i = index"
+    [ngClass]="{
+      'editing-row': editingIndex[item.ID_Request] === i,
+      'highlight-row': highlightedRow === i
+    }">
+
               <td><input type="checkbox" [(ngModel)]="item.Selection" /></td>
               <!--เชื่อม checkbox-->
 
@@ -138,23 +143,36 @@
                   <i class="bi bi-check-lg text-white"></i>
                 </button>
 
-               <button *ngIf="editingIndex[item.ID_Request] === i" class="btn  btn-lg"
-               (click)="addNewRequest({
-                  DocNo: item.DocNo,
-                  Requester: item.Requester,
-                  PartNo: item.PartNo,
-                  ItemNo: item.ItemNo,
-                  Req_QTY: item.Req_QTY,
-                  Remark: item.Remark,
-                  Status: item.Status,
-                  SPEC: item.SPEC,
-                  Process: item.Process,
-                  MCType: item.MCType,
-                  Fac: item.Fac,
-                  DwgRev: item.DwgRev
-                    })"><i class="bi bi-plus-circle text-blue"></i>
-                  </button>
-              </td>
+                 <button *ngIf="!item.isNew && editingIndex[item.ID_Request] === i" 
+          class="btn btn-lg"
+          (click)="addNewRequest({ 
+              DocNo: item.DocNo,
+              Requester: item.Requester,
+              PartNo: item.PartNo,
+              ItemNo: item.ItemNo,
+              Req_QTY: item.Req_QTY,
+              Remark: item.Remark,
+              Status: item.Status,
+              SPEC: item.SPEC,
+              Process: item.Process,
+              MCType: item.MCType,
+              ON_HAND: item.ON_HAND,
+              Fac: item.Fac,
+              DwgRev: item.DwgRev,
+              DueDate: item.DueDate,
+              CASE: item.CASE,
+              PathDwg: item.PathDwg,
+              PathLayout: item.PathLayout
+          }, i)">
+    <i class="bi bi-plus-circle text-blue"></i>
+  </button>
+</td>
+                  
+                  <td>
+                    <button class="btn btn-danger btn-sm" (click)="deleteItem(item.ID_Request)">
+                      <i class="bi bi-trash "></i>
+                    </button>
+                  </td>
             </tr>
           </tbody>
         </table>

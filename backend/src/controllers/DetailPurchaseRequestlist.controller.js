@@ -48,42 +48,28 @@ try {
     const pool = await poolPromise; 
     const result = await pool
       .request()
-      .input("ID_Request", sql.Int, ID_Request)
-      .input("DocNo", sql.NVarChar, DocNo)
-      .input("Requester", sql.NVarChar, Requester)
-      .input("PartNo", sql.NVarChar, PartNo)
-      .input("ItemNo", sql.NVarChar, ItemNo)
-      .input("SPEC", sql.NVarChar, SPEC)
-      .input("Process", sql.NVarChar, Process)
-      .input("MCType", sql.NVarChar, MCType)
-      .input("Fac", sql.Int, Fac)
-      .input("PathDwg", sql.NVarChar, PathDwg)
-      .input("ON_HAND", sql.Int, ON_HAND)
-      .input("Req_QTY", sql.Int, Req_QTY)
+      // .input("ID_Request", sql.Int, ID_Request)
+      // .input("DocNo", sql.NVarChar, DocNo)
+      // .input("Requester", sql.NVarChar, Requester)
+      // .input("PartNo", sql.NVarChar, PartNo)
+      // .input("ItemNo", sql.NVarChar, ItemNo)
+      // .input("SPEC", sql.NVarChar, SPEC)
+      // .input("Process", sql.NVarChar, Process)
+      // .input("MCType", sql.NVarChar, MCType)
+      // .input("Fac", sql.Int, Fac)
+      // .input("PathDwg", sql.NVarChar, PathDwg)
+      // .input("ON_HAND", sql.Int, ON_HAND)
+      // .input("Req_QTY", sql.Int, Req_QTY)
       .input("QTY", sql.Int, QTY)
-      .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
-      .input("CASE", sql.NVarChar, CASE)
+      // .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
+      // .input("CASE", sql.NVarChar, CASE)
       .input("Status", sql.NVarChar, Status)
-      .input("PathLayout", sql.NVarChar, PathLayout)
+      // .input("PathLayout", sql.NVarChar, PathLayout)
       .input("Remark", sql.NVarChar, Remark)
       .query(`
         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
-        SET DocNo = @DocNo,
-            Requester = @Requester,
-            PartNo = @PartNo,
-            ItemNo = @ItemNo,
-            SPEC = @SPEC,
-            Process = @Process,
-            MCType = @MCType,
-            Fac = @Fac,
-            PathDwg = @PathDwg,
-            ON_HAND = @ON_HAND,
-            Req_QTY = @Req_QTY,
-            QTY = @QTY,
-            DueDate = @DueDate,
-            [CASE] = @CASE,
+        SET QTY = @QTY,
             Status = @Status,
-            PathLayout = @PathLayout,
             Remark = @Remark
         WHERE ID_Request = @ID_Request
       `);      

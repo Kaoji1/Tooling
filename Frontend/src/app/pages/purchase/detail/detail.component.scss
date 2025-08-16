@@ -19,16 +19,27 @@
       color: #0066B3;
     }
 
- /* สีพื้นหลังของแถวที่กำลังแก้ไข */
+//  /* สีพื้นหลังของแถวที่กำลังแก้ไข */
+// .editing-row {
+//   background-color: #fff3cd; /* สีเหลืองอ่อน */
+//   transition: background-color 0.3s ease;
+// }
+
+// /* สีพื้นหลังของแต่ละ cell ในแถว */
+// .editing-row td {
+//   background-color: #fff3cd;
+// }
+
 .editing-row {
-  background-color: #fff3cd; /* สีเหลืองอ่อน */
-  transition: background-color 0.3s ease;
+  background-color: #40c0d1; // สีฟ้าอ่อนตอนแก้ไข
+}
+.editing-row td {
+  background-color: #40c0d1; // สีส้มอ่อนตอนเพิ่มใหม่
 }
 
-/* สีพื้นหลังของแต่ละ cell ในแถว */
-.editing-row td {
-  background-color: #fff3cd;
-}
+// .editing-row td {
+//   background-color: #40c0d1; // สีส้มอ่อนตอนเพิ่มใหม่
+// }
     // ส่วนหัวเรื่อง
     .toptext {
       margin-top: 20px;
