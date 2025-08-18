@@ -70,7 +70,11 @@ try {
         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
         SET QTY = @QTY,
             Status = @Status,
-            Remark = @Remark
+            Remark = @Remark,
+            DateComplete = CASE 
+                             WHEN @Status = N'Complete' THEN SYSDATETIME()
+                             ELSE DateComplete
+                           END
         WHERE ID_Request = @ID_Request
       `);      
     res.json({ success: true, message: "Updated successfully" });

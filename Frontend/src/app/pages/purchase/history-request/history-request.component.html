@@ -137,6 +137,7 @@
               <th>Order</th>
               <th>Document</th>
               <th>Stock</th>
+              <th>DateComplete</th>
               <th>QTY</th>
               <th style="white-space: nowrap;">MC Type</th>
               <!-- <th>ItemNo</th> chaeck itemno -->
@@ -162,6 +163,7 @@
               <td>{{ item.PartNo }}</td>  
               <td>{{ item.DocNo }}</td>            
               <td>{{ item.Stock_Location }}</td>
+              <td>{{ item.DateComplete ? (item.DateComplete | date: 'yyyy-MM-dd') : '-' }}</td>
               <td>{{ item.Req_QTY }}</td>
               <td>{{ item.MCType }}</td>
               <!-- <td>{{ item.LOT_MATL }}</td>
