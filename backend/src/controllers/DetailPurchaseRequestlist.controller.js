@@ -234,13 +234,13 @@ exports.Add_New_Request = async (req, res) => {
         (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark);
       `);
 
-    const newId = result.recordset[0]?.ID_Request || null;
+    const ID_Request = result.recordset[0]?.ID_Request || null;
 
-    if (!newId) {
+    if (!ID_Request) {
       return res.status(500).json({ message: "ไม่สามารถสร้าง ID ใหม่ได้" });
     }
 
-    res.status(201).json({ message: 'เพิ่มข้อมูลสำเร็จ', newId });
+    res.status(201).json({ message: 'เพิ่มข้อมูลสำเร็จ', ID_Request });
 
   } catch (error) {
     console.error('Error in Add_New_Request:', error);
