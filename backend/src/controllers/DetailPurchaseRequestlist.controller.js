@@ -60,17 +60,17 @@ try {
       // .input("PathDwg", sql.NVarChar, PathDwg)
       // .input("ON_HAND", sql.Int, ON_HAND)
       // .input("Req_QTY", sql.Int, Req_QTY)
-      .input("QTY", sql.Int, QTY)
-      .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
-      .input("CASE", sql.NVarChar, CASE)
+      // .input("QTY", sql.Int,QTY)
+      // .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
+      // .input("CASE", sql.NVarChar, CASE)
       .input("Status", sql.NVarChar, Status)
-      .input("PathLayout", sql.NVarChar, PathLayout)
-      .input("Remark", sql.NVarChar, Remark)
+      // .input("PathLayout", sql.NVarChar, PathLayout)
+      
       .query(`
         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
-        SET QTY = @QTY,
+        SET 
             Status = @Status,
-            Remark = @Remark,
+           
             DateComplete = CASE 
                              WHEN @Status = N'Complete' THEN SYSDATETIME()
                              ELSE DateComplete
@@ -164,7 +164,8 @@ exports.Add_New_Request = async (req, res) => {
     console.log(req.body);
 
     let { 
-      DocNo, 
+      DocNo,
+      Division, 
       Status, 
       Requester, 
       Fac,
@@ -208,6 +209,7 @@ exports.Add_New_Request = async (req, res) => {
  const result = await pool.request()
         
       .input("DocNo", sql.NVarChar, DocNo)
+      .input("Division",sql.NVarChar,Division)
       .input("Requester", sql.NVarChar, Requester)
       .input("PartNo", sql.NVarChar, PartNo)
       .input("ItemNo", sql.NVarChar, ItemNo)
@@ -226,10 +228,10 @@ exports.Add_New_Request = async (req, res) => {
       .input("Remark", sql.NVarChar, Remark)
       .query(`
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] 
-        (DocNo, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark)
+        (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark)
         OUTPUT INSERTED.ID_Request
         VALUES 
-        (@DocNo, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark);
+        (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark);
       `);
 
     const newId = result.recordset[0]?.ID_Request || null;

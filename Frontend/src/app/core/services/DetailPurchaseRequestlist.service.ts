@@ -19,10 +19,11 @@ export class DetailPurchaseRequestlistService {
       return this.httpClient.get(`${baseUrl}/Detail_Purchase`); // ส่ง HTTP GET Division 
     }
   
-updateStatusToComplete(ID_Request: number, Status: string): Observable<any> {
+updateStatusToComplete(ID_Request: number, Status: string, QTY?: number, Remark?: string): Observable<any> {
   return this.httpClient.post(`${baseUrl}/Update_Status_Purchase`, {
     ID_Request,
     Status
+     
   });
 }
 
