@@ -138,7 +138,7 @@
               <th>Document</th>
               <th>Stock</th>
               <th>QTY</th>
-              <th style="white-space: nowrap;">MC No.</th>
+              <th style="white-space: nowrap;">MC Type</th>
               <!-- <th>ItemNo</th> chaeck itemno -->
               <!-- <th style="white-space: nowrap;">MC QTY</th>
               <th style="white-space: nowrap;">Transaction</th>
@@ -157,6 +157,7 @@
             <tr *ngFor="let item of filteredRequests; let i = index">
               <td>{{ i + 1 }}</td>
               <td>{{ item.Division }}</td>
+              <td>{{ item.PartNo}}</td>
               <td>{{ item.ItemNo }}</td>
               <td>{{ item.MFG_Order_No }}</td>  
               <td>{{ item.Document_No }}</td>            
