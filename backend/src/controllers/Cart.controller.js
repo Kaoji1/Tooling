@@ -64,7 +64,7 @@ exports.AddCartItems = async (req, res) => {
 
     const mailOptions = {
       from: '"Material Disbursement System" <testsystem1508@gmail.com>',
-      to: ['prawarisa.jit@gmail.com','poweridradiw@gmail.com','chhanon05@gmail.com'], // เปลี่ยนเป็นเมลผู้ดูแล 'thamanoon.b@minebea.co.th'
+      to: ['prawarisa.jit@gmail.com','poweridradiw@gmail.com','chhanon05@gmail.com','thamanoon.b@minebea.co.th','wannakarn.m@minebea.co.th'], // เปลี่ยนเป็นเมลผู้ดูแล
       subject: ' มีรายการใหม่ถูกเพิ่มลงตะกร้า',
       html: `
         <h1 style="color:black;">แจ้งเตือน!! มีรายการใหม่ถูกเพิ่มลงตะกร้า</h1>

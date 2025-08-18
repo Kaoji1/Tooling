@@ -182,31 +182,52 @@ deleteRow(rowIndex: number) {
   }
 }
 
-// กดปุ่ม Complete
-completeSelected() {
-  const selectedItems = this.request.filter(item => item.Selection);
-  console.log('เรียก completeSelected, selectedItems:', selectedItems);
+// ใน component
+isCompleting = false; // กันกดซ้ำ
 
-  if (selectedItems.length === 0) { 
-    alert('กรุณาเลือกข้อมูลที่ต้องการ'); 
-    return; 
+completeSelected() {
+  if (this.isCompleting) { return; }
+
+  const selectedItems = this.request.filter(it => it.Selection && it.Status === 'Waiting');
+
+  if (selectedItems.length === 0) {
+    alert('กรุณาเลือกข้อมูลที่ต้องการ (สถานะ Waiting)');
+    return;
   }
 
-  selectedItems.forEach(item => {
-    if (item.Status === 'Waiting') {  // เปลี่ยนเฉพาะ item ที่ Status เป็น Waiting
-      const updatedStatus = 'Complete';
-      this.DetailPurchase.updateStatusToComplete(item.ID_Request, updatedStatus).subscribe({
-        next: () => {
-          console.log('อัปเดต Status สำเร็จ:', item);
-          item.Status = updatedStatus; // อัปเดตสถานะใน local array ด้วย
-        },
-        error: err => { 
-          console.error('Error completeSelected:', err); 
-          alert('ไม่สามารถอัปเดตข้อมูลได้'); 
-        }
-      });
+  this.isCompleting = true;
+
+  // ทำงานทีละตัวแบบคิว
+  const processNext = async (index: number) => {
+    if (index >= selectedItems.length) {
+      this.isCompleting = false;
+      console.log('อัปเดต Status เสร็จครบทั้งหมด');
+      return;
     }
-  });
+
+    const item = selectedItems[index];
+    const prevStatus = item.Status;
+
+    try {
+      // optimistic update
+      item.Status = 'Complete';
+
+      await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
+
+      // ถ้า backend ส่งกลับมาเฉพาะบางฟิลด์ ก็อย่าเอามาทับทั้ง object ให้คงค่าที่หน้าไว้
+      // (ที่นี่เราไม่แตะค่าอื่นเลยนอกจาก Status)
+      console.log('อัปเดต Status สำเร็จ:', item);
+    } catch (err) {
+      console.error('Error completeSelected (ID:', item.ID_Request, '):', err);
+      // rollback
+      item.Status = prevStatus;
+      alert(`อัปเดต ID:${item.ID_Request} ไม่สำเร็จ`);
+    } finally {
+      processNext(index + 1);
+    }
+  };
+
+  processNext(0);
 }
 // เปิดไฟล์ PDF
 openPdfFromPath(filePath: string) {

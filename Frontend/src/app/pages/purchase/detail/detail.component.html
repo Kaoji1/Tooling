@@ -95,10 +95,13 @@
               <td>{{ item.DwgRev }}</td>
               <td>{{ item.ON_HAND }}</td>
               <td>{{ item.Req_QTY }}</td>
+              
   
               <td>
-                <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.QTY }}</span>
-                <input *ngIf="editingIndex[item.ID_Request] === i" type="number" [(ngModel)]="item.QTY" />
+                <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showQty">
+                  <input [(ngModel)]="item.QTY" type="number" class="form-control" />
+                </ng-container>
+                <ng-template #showQty>{{ item.QTY }}</ng-template>
               </td>
               <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
               <td>{{ item.CASE }}</td>
