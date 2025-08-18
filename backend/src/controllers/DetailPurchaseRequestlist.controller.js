@@ -48,7 +48,7 @@ try {
     const pool = await poolPromise; 
     const result = await pool
       .request()
-      // .input("ID_Request", sql.Int, ID_Request)
+      .input("ID_Request", sql.Int, ID_Request)
       // .input("DocNo", sql.NVarChar, DocNo)
       // .input("Requester", sql.NVarChar, Requester)
       // .input("PartNo", sql.NVarChar, PartNo)
