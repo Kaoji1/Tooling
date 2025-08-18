@@ -40,6 +40,17 @@ exports.AddCartItems = async (req, res) => {
           )
         `);
     }
+
+    //  ดึงอีเมลทั้งหมดที่ Role = 'production'
+    const emailResult = await pool.request()
+      .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role = 'production'`);
+
+    const emailList = emailResult.recordset.map(row => row.Email).filter(email => !!email);
+
+    if (emailList.length === 0) {
+      console.warn("ไม่พบอีเมลของ Role = production ในฐานข้อมูล");
+    }
+
     let itemDetailsHtml = items.map(item => `
       <tr>
         <td>${item.Division}</td>
@@ -58,43 +69,45 @@ exports.AddCartItems = async (req, res) => {
       service: 'gmail',
       auth: {
         user: 'testsystem1508@gmail.com',
-        pass: 'amdo inzi npqq asnd' // ใช้ App Password
+        pass: 'amdo inzi npqq asnd' // App Password
       }
     });
 
     const mailOptions = {
       from: '"Material Disbursement System" <testsystem1508@gmail.com>',
-      to: ['prawarisa.jit@gmail.com','poweridradiw@gmail.com','chhanon05@gmail.com','wannakarn.m@minebea.co.th'], // เปลี่ยนเป็นเมลผู้ดูแล 'thamanoon.b@minebea.co.th'
-      subject: ' มีรายการใหม่ถูกเพิ่มลงตะกร้า',
+      to: emailList,  //  ส่งหาอีเมลจาก DB
+      subject: 'มีรายการใหม่ถูกเพิ่มลงตะกร้า',
       html: `
         <h1 style="color:black;">แจ้งเตือน!! มีรายการใหม่ถูกเพิ่มลงตะกร้า</h1>
-       <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
-      <thead>
-        <tr style="background-color: #f2f2f2;">
-          <th>Division</th>
-          <th>Part No</th>
-          <th>Item No</th>
-          <th>Case</th>
-          <th>Factory</th>
-          <th>QTY</th>
-          <th>DueDate</th>
-          <th>Requester</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${itemDetailsHtml}
-      </tbody>
-    </table>
+        <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
+          <thead>
+            <tr style="background-color: #f2f2f2;">
+              <th>Division</th>
+              <th>Part No</th>
+              <th>Item No</th>
+              <th>Case</th>
+              <th>Factory</th>
+              <th>QTY</th>
+              <th>DueDate</th>
+              <th>Requester</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemDetailsHtml}
+          </tbody>
+        </table>
       `
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error(' ส่งอีเมลไม่สำเร็จ:', error);
-      } else {
-        console.log(' ส่งอีเมลสำเร็จ:', info.response);
-      }
-    });
+    if (emailList.length > 0) {
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('ส่งอีเมลไม่สำเร็จ:', error);
+        } else {
+          console.log('ส่งอีเมลสำเร็จ:', info.response);
+        }
+      });
+    }
 
     res.status(200).json({ message: 'บันทึกรายการตะกร้าสำเร็จ และส่งอีเมลแล้ว' });
 

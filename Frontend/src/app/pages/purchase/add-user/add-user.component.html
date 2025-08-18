@@ -15,46 +15,97 @@
     
     
 
-    <table class="table table-bordered text-center">
-  <thead>
-    <tr>
-      <th>No.</th>
-      <th>Employee ID</th>
-      <th>Employee Name</th>
-      <th>Role</th>
-      <th>Username</th>
-      <th>Password</th>
-      <th>Email</th>
-      <th>Del</th>
-    </tr>
-  </thead>
-  <tbody>
-    <ng-container *ngFor="let group of groupedEmployees | keyvalue">
-      <!-- หัวของกลุ่ม Role -->
-      <tr class="table-secondary">
-        <td colspan="8" class="text-start fw-bold bg-light p-3 rounded border">
-          <span> Role: <strong>{{ group.key }}</strong></span>
-        </td>
-      </tr>
+        <table class="table table-bordered text-center">
+      <thead>
+        <tr>
+          <th>No.</th>
+          <th>Employee ID</th>
+          <th>Employee Name</th>
+          <th>Role</th>
+          <th>Username</th>
+          <th>Password</th>
+          <th>Email</th>
+          <th>Edit</th>   <!--  เพิ่ม -->
+          <th>Del</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let group of groupedEmployees | keyvalue">
+          <!-- หัวของกลุ่ม Role -->
+          <tr class="table-secondary">
+            <td colspan="9" class="text-start fw-bold bg-light p-3 rounded border">
+              <span> Role: <strong>{{ group.key }}</strong></span>
+            </td>
+          </tr>
 
-      <!-- พนักงานในแต่ละกลุ่ม -->
-      <tr *ngFor="let emp of group.value; let i = index">
-        <td>{{ i + 1 }}</td>
-        <td>{{ emp.Employee_ID }}</td>
-        <td>{{ emp.Employee_Name }}</td>
-        <td>{{ emp.Role }}</td>
-        <td>{{ emp.Username }}</td>
-        <td>{{ emp.Password }}</td>
-        <td>{{ emp.Email }}</td>
-        <td>
-          <button class="btn btn-danger btn-sm" (click)="deleteEmployee(emp.Employee_ID)">
-            <i class="bi bi-trash"></i> Delete
-          </button>
-        </td>
-      </tr>
-    </ng-container>
-  </tbody>
-</table>
+          <!-- พนักงานในแต่ละกลุ่ม -->
+          <tr *ngFor="let emp of group.value; let i = index">
+            <td>{{ i + 1 }}</td>
+
+            <!-- Employee ID (ไม่ให้แก้) -->
+            <td>{{ emp.Employee_ID }}</td>
+
+            <!-- Employee Name -->
+            <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Employee_Name }}</td>
+            <td *ngIf="editingId === emp.Employee_ID">
+              <input class="form-control" [(ngModel)]="editForm.Employee_Name">
+            </td>
+
+            <!-- Role -->
+            <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Role }}</td>
+            <td *ngIf="editingId === emp.Employee_ID">
+              <ng-select
+                [items]="Role" bindLabel="label" bindValue="value"
+                [(ngModel)]="editForm.Role"
+                placeholder="Select a role">
+              </ng-select>
+            </td>
+
+            <!-- Username -->
+            <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Username }}</td>
+            <td *ngIf="editingId === emp.Employee_ID">
+              <input class="form-control" [(ngModel)]="editForm.Username">
+            </td>
+
+            <!-- Password -->
+            <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Password }}</td>
+            <td *ngIf="editingId === emp.Employee_ID">
+              <input class="form-control" [(ngModel)]="editForm.Password" type="text">
+            </td>
+
+            <!-- Email -->
+            <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Email }}</td>
+            <td *ngIf="editingId === emp.Employee_ID">
+              <input class="form-control" [(ngModel)]="editForm.Email" type="email">
+            </td>
+
+            <!-- ปุ่ม Edit / Save / Cancel -->
+            <td>
+              <ng-container *ngIf="editingId !== emp.Employee_ID; else editingBtns">
+                <button class="btn btn-warning btn-sm" (click)="startEdit(emp)">
+                  <i class="bi bi-pencil"></i> Edit
+                </button>
+              </ng-container>
+              <ng-template #editingBtns>
+                <button class="btn btn-success btn-sm me-1" (click)="saveEdit(emp)">
+                  <i class="bi bi-check"></i> Save
+                </button>
+                <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">
+                  <i class="bi bi-x"></i> Cancel
+                </button>
+              </ng-template>
+            </td>
+
+            <!-- ปุ่ม Delete -->
+            <td>
+              <button class="btn btn-danger btn-sm" (click)="deleteEmployee(emp.Employee_ID)">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
 
   </div>
 
