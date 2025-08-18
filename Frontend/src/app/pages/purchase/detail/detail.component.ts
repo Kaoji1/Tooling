@@ -215,10 +215,24 @@ completeSelected() {
     try {
       item.Status = 'Complete'; // optimistic update
 
-      // เรียก API อัปเดต Status
-      await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
+      if (item.isNew) {
+        // แถวใหม่: ต้อง insert ก่อนแล้วอัปเดตสถานะ
+        const insertRes: any = await this.DetailPurchase.insertRequest(item).toPromise();
 
-      // ✅ ลบแถวที่สำเร็จ
+        if (insertRes && insertRes.newId) {
+          item.ID_Request = insertRes.newId;
+        } else {
+          throw new Error('Backend ไม่ส่ง ID กลับมา');
+        }
+
+        // อัปเดตสถานะ Complete หลัง insert
+        await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
+      } else {
+        // แถวเดิม: อัปเดตสถานะ Complete เลย
+        await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
+      }
+
+      //  ลบแถวที่สำเร็จ
       this.request = this.request.filter(r => r.ID_Request !== item.ID_Request);
 
       console.log('อัปเดตสำเร็จและลบแถว ID:', item.ID_Request);
@@ -235,6 +249,55 @@ completeSelected() {
 
   processNext(0);
 }
+
+// completeSelected() {
+//   if (this.isCompleting) return;
+
+//   // เลือกเฉพาะแถวที่ติ๊กและ Status = 'Waiting'
+//   const selectedItems = this.request.filter(it => it.Selection && it.Status === 'Waiting');
+
+//   if (selectedItems.length === 0) {
+//     alert('กรุณาเลือกข้อมูลที่ต้องการ (สถานะ Waiting)');
+//     return;
+//   }
+
+//   this.isCompleting = true;
+
+//   // ทำงานทีละตัวแบบ async
+//   const processNext = async (index: number) => {
+//     if (index >= selectedItems.length) {
+//       this.isCompleting = false;
+//       console.log('Complete ทุกแถวเสร็จสิ้น');
+//       return;
+//     }
+
+//     const item = selectedItems[index];
+//     const prevStatus = item.Status;
+
+//     try {
+//       item.Status = 'Complete'; // optimistic update
+
+//       // เรียก API อัปเดต Status
+//       await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
+
+//       // ✅ ลบแถวที่สำเร็จ
+//       this.request = this.request.filter(r => r.ID_Request !== item.ID_Request);
+
+//       console.log('อัปเดตสำเร็จและลบแถว ID:', item.ID_Request);
+//     } catch (err) {
+//       // rollback ถ้า fail
+//       item.Status = prevStatus;
+//       console.error('Error completeSelected ID:', item.ID_Request, err);
+//       alert(`อัปเดต ID:${item.ID_Request} ไม่สำเร็จ`);
+//     } finally {
+//       // ประมวลผลตัวต่อไป
+//       processNext(index + 1);
+//     }
+//   };
+
+//   processNext(0);
+// }
+
 // เปิดไฟล์ PDF
 openPdfFromPath(filePath: string) {
   console.log('เรียก openPdfFromPath path:', filePath);
