@@ -26,9 +26,12 @@ import { FileReadService } from '../../../core/services/FileRead.service';
 export class DetailComponent implements OnInit {
   editingIndex: { [key: string]: number | null } = {}; // เก็บแถวที่กำลังแก้ไข
   request: any[] = [];
+  // request: { Setup: any[]; Other: any[] } = { Setup: [], Other: [] }; // แยกเป็น Setup กับ Other
   newRequestData: any = {};
   selectAllChecked = false;
 
+  SetupRequests: any[] = [];
+  OtherRequests: any[] = [];
   
   itemNo!: string;
   displayIndex!: number;
@@ -65,16 +68,55 @@ export class DetailComponent implements OnInit {
     localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
   }
 
+
+// Detail_Purchase() {
+//   this.DetailPurchase.Detail_Request().subscribe({
+//     next: (response: any[]) => {
+//       console.log('Response จาก backend Detail_Request:', response);
+
+//       // กรองเฉพาะ item ของ ItemNo ปัจจุบัน
+//       const filtered = response
+//         .filter(item => item.ItemNo === this.itemNo)
+//         .map(item => ({
+//           ...item,
+//           Selection: false,
+//           caseGroup: item.CASE === 'Setup' ? 'Setup' : 'Other' // เพิ่ม property แยก CASE
+//         }));
+
+//       // ลบ duplicate ตาม ID_Request
+//       const seen = new Set<number>();
+//       const unique = filtered.filter(item => {
+//         if (seen.has(item.ID_Request)) return false;
+//         seen.add(item.ID_Request);
+//         return true;
+//       });
+
+//       this.request = [...this.request, ...unique];
+
+//       console.log('request หลังจาก Detail_Purchase:', this.request);
+//     },
+//     error: e => console.error('Error Detail_Purchase:', e)
+//   });
+// }
+
+
   // โหลดรายการ purchase request จาก backend
 Detail_Purchase() {
   this.DetailPurchase.Detail_Request().subscribe({
     next: (response: any[]) => {
       console.log('Response จาก backend Detail_Request:', response);
 
+      // กรองเฉพาะ item ของ ItemNo ปัจจุบัน
       const filtered = response
         .filter(item => item.ItemNo === this.itemNo)
-        .map(item => ({ ...item, Selection: false }));
+        .map(item => ({
+          ...item,
+          Selection: false,
+          // เพิ่ม property แยก CASE
+          caseGroup: item.CASE && item.CASE.toLowerCase() === 'setup' ? 'Setup' : 'Other'
+        }));
 
+      // ลบ duplicate ตาม ID_Request
       const seen = new Set<number>();
       const unique = filtered.filter(item => {
         if (seen.has(item.ID_Request)) return false;
@@ -83,11 +125,36 @@ Detail_Purchase() {
       });
 
       this.request = [...this.request, ...unique];
+
       console.log('request หลังจาก Detail_Purchase:', this.request);
     },
     error: e => console.error('Error Detail_Purchase:', e)
   });
 }
+
+// Detail_Purchase() {
+//   this.DetailPurchase.Detail_Request().subscribe({
+//     next: (response: any[]) => {
+//       console.log('Response จาก backend Detail_Request:', response);
+
+//       const filtered = response
+//         .filter(item => item.ItemNo === this.itemNo)
+//         .map(item => ({ ...item, Selection: false }));
+        
+
+//       const seen = new Set<number>();
+//       const unique = filtered.filter(item => {
+//         if (seen.has(item.ID_Request)) return false;
+//         seen.add(item.ID_Request);
+//         return true;
+//       });
+
+//       this.request = [...this.request, ...unique];
+//       console.log('request หลังจาก Detail_Purchase:', this.request);
+//     },
+//     error: e => console.error('Error Detail_Purchase:', e)
+//   });
+// }
 
 addNewRequest(newRequestData: any, rowIndex: number) {
   this.DetailPurchase.insertRequest(newRequestData).subscribe({
@@ -118,111 +185,6 @@ addNewRequest(newRequestData: any, rowIndex: number) {
   });
 }
 
-
-// addNewRequest(newRequestData: any, rowIndex: number) {
-//   console.log('เรียก addNewRequest:', newRequestData, 'rowIndex:', rowIndex);
-
-//   this.DetailPurchase.insertRequest(newRequestData).subscribe({
-//     next: res => {
-//       console.log('ผลลัพธ์จาก backend insertRequest:', res);
-//       if (!res.newId) { 
-//         alert('Backend ไม่ส่งข้อมูลกลับมา'); 
-//         return; 
-//       }
-
-//       // โหลดข้อมูลล่าสุดจาก backend ทันที
-//       this.Detail_Purchase();
-
-//       alert('เพิ่มข้อมูลสำเร็จ');
-//     },
-//     error: err => { 
-//       console.error('Error addNewRequest:', err); 
-//       alert(err.error?.message || 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล'); 
-//     }
-//   });
-// }
-
-// addNewRequest(newRequestData: any, rowIndex: number) {
-//   console.log('เรียก addNewRequest:', newRequestData, 'rowIndex:', rowIndex);
-
-//   this.DetailPurchase.insertRequest(newRequestData).subscribe({
-//     next: res => {
-//       console.log('ผลลัพธ์จาก backend insertRequest:', res);
-//       if (!res.newId) { 
-//         alert('Backend ไม่ส่งข้อมูลกลับมา'); 
-//         return; 
-//       }
-
-//       // สร้าง row ใหม่ และเพิ่มลงใน array ทันที
-//       const newRow = { ...newRequestData, ...res, Selection: false, isNew: true };
-//       this.request.splice(rowIndex + 1, 0, newRow);
-//       this.editingIndex[newRow.ID_Request] = rowIndex + 1;
-
-//       console.log('request หลังเพิ่มแถวใหม่:', this.request);
-//       console.log('editingIndex หลังเพิ่มแถวใหม่:', this.editingIndex);
-
-//       // เก็บลง localStorage
-//       localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-
-//       // โหลดข้อมูลล่าสุดจาก backend เพื่อให้แก้ไขหรือ Complete ได้ทันที
-//       this.Detail_Purchase();
-
-//       alert('เพิ่มข้อมูลสำเร็จ');
-//     },
-//     error: err => { 
-//       console.error('Error addNewRequest:', err); 
-//       alert(err.error?.message || 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล'); 
-//     }
-//   });
-// }
-
-
-// addNewRequest(newRequestData: any, rowIndex: number) {
-//   this.DetailPurchase.insertRequest(newRequestData).subscribe({
-//     next: res => {
-//       console.log('ผลลัพธ์จาก backend insertRequest:', res);
-//       if (!res.data) { 
-//         alert('Backend ไม่ส่งข้อมูลกลับมา'); 
-//         return; 
-//       }
-
-//       const newRow = { ...res.data, Selection: false, isNew: true };
-
-//       this.request.splice(rowIndex + 1, 0, newRow);
-//       this.editingIndex[newRow.ID_Request] = rowIndex + 1;
-
-//       localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-//       alert('เพิ่มข้อมูลสำเร็จ');
-//     },
-//     error: err => { 
-//       console.error('Error addNewRequest:', err); 
-//       alert(err.error?.message || 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล'); 
-//     }
-//   });
-// }
-
-// เพิ่มแถวใหม่
-// addNewRequest(newRequestData: any, rowIndex: number) {
-//   console.log('เรียก addNewRequest:', newRequestData, 'rowIndex:', rowIndex);
-//   this.DetailPurchase.insertRequest(newRequestData).subscribe({
-//     next: res => {
-//       console.log('ผลลัพธ์จาก backend insertRequest:', res);
-//       if (!res.newId) { alert('Backend ไม่ส่งข้อมูลกลับมา'); return; }
-
-//       const newRow = { ...newRequestData, ...res, Selection: false, isNew: true };
-//       this.request.splice(rowIndex + 1, 0, newRow);
-//       this.editingIndex[newRow.ID_Request] = rowIndex + 1;
-
-//       console.log('request หลังเพิ่มแถวใหม่:', this.request);
-//       console.log('editingIndex หลังเพิ่มแถวใหม่:', this.editingIndex);
-
-//       localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-//       alert('เพิ่มข้อมูลสำเร็จ');
-//     },
-//     error: err => { console.error('Error addNewRequest:', err); alert(err.error?.message || 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล'); }
-//   });
-// }
-
 startEdit(caseKey: number, rowIndex: number) {
   console.log('เรียก startEdit caseKey:', caseKey, 'rowIndex:', rowIndex);
   this.editingIndex[caseKey] = rowIndex;
@@ -230,33 +192,49 @@ startEdit(caseKey: number, rowIndex: number) {
 }
 
 saveEdit(caseKey: number, rowIndex: number) {
+  console.log('เรียก saveEdit caseKey:', caseKey, 'rowIndex:', rowIndex);
   const item = this.request[rowIndex];
-  console.log('เรียก saveEdit caseKey:', caseKey, 'rowIndex:', rowIndex, 'item:', item);
-  if (!item) return;
+  console.log('item ที่จะบันทึก:', item);
+
+  if (!item) {
+    console.warn('ไม่พบ item ที่แถวนี้:', rowIndex);
+    return;
+  }
 
   if (item.isNew) {
+    console.log('กำลังบันทึกแถวใหม่...');
     this.DetailPurchase.insertRequest(item).subscribe({
       next: res => {
+        console.log('Response insertRequest:', res);
         // โหลดข้อมูลล่าสุดจาก backend
         this.Detail_Purchase();
         delete this.editingIndex[caseKey];
+        console.log('ลบ editingIndex สำหรับ', caseKey);
         alert('บันทึกแถวใหม่เรียบร้อย');
       },
-      error: err => { console.error('Error saveEdit แถวใหม่:', err); alert('เกิดข้อผิดพลาดในการบันทึกแถวใหม่'); }
+      error: err => { 
+        console.error('Error saveEdit แถวใหม่:', err); 
+        alert('เกิดข้อผิดพลาดในการบันทึกแถวใหม่'); 
+      }
     });
   } else {
+    console.log('กำลังอัพเดตแถวเดิม...');
     this.DetailPurchase.updateRequest(item).subscribe({
       next: res => {
+        console.log('Response updateRequest:', res);
         // โหลดข้อมูลล่าสุดจาก backend
         this.Detail_Purchase();
         delete this.editingIndex[caseKey];
+        console.log('ลบ editingIndex สำหรับ', caseKey);
         alert('บันทึกแถวเรียบร้อย');
       },
-      error: err => { console.error('Error saveEdit แถวเดิม:', err); alert('เกิดข้อผิดพลาดในการบันทึกแถว'); }
+      error: err => { 
+        console.error('Error saveEdit แถวเดิม:', err); 
+        alert('เกิดข้อผิดพลาดในการบันทึกแถว'); 
+      }
     });
   }
 }
-
 
 // saveEdit(caseKey: number, rowIndex: number) {
 //   const item = this.request[rowIndex];
@@ -390,54 +368,6 @@ completeSelected() {
 
   processNext(0);
 }
-
-// completeSelected() {
-//   if (this.isCompleting) return;
-
-//   // เลือกเฉพาะแถวที่ติ๊กและ Status = 'Waiting'
-//   const selectedItems = this.request.filter(it => it.Selection && it.Status === 'Waiting');
-
-//   if (selectedItems.length === 0) {
-//     alert('กรุณาเลือกข้อมูลที่ต้องการ (สถานะ Waiting)');
-//     return;
-//   }
-
-//   this.isCompleting = true;
-
-//   // ทำงานทีละตัวแบบ async
-//   const processNext = async (index: number) => {
-//     if (index >= selectedItems.length) {
-//       this.isCompleting = false;
-//       console.log('Complete ทุกแถวเสร็จสิ้น');
-//       return;
-//     }
-
-//     const item = selectedItems[index];
-//     const prevStatus = item.Status;
-
-//     try {
-//       item.Status = 'Complete'; // optimistic update
-
-//       // เรียก API อัปเดต Status
-//       await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
-
-//       // ✅ ลบแถวที่สำเร็จ
-//       this.request = this.request.filter(r => r.ID_Request !== item.ID_Request);
-
-//       console.log('อัปเดตสำเร็จและลบแถว ID:', item.ID_Request);
-//     } catch (err) {
-//       // rollback ถ้า fail
-//       item.Status = prevStatus;
-//       console.error('Error completeSelected ID:', item.ID_Request, err);
-//       alert(`อัปเดต ID:${item.ID_Request} ไม่สำเร็จ`);
-//     } finally {
-//       // ประมวลผลตัวต่อไป
-//       processNext(index + 1);
-//     }
-//   };
-
-//   processNext(0);
-// }
 
 // เปิดไฟล์ PDF
 openPdfFromPath(filePath: string) {
