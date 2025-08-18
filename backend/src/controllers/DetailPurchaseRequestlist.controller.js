@@ -207,6 +207,7 @@ exports.Add_New_Request = async (req, res) => {
     }
 
  const result = await pool.request()
+        
       .input("DocNo", sql.NVarChar, DocNo)
       .input("Division",sql.NVarChar,Division)
       .input("Requester", sql.NVarChar, Requester)

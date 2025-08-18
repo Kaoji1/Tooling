@@ -29,6 +29,7 @@ export class DetailComponent implements OnInit {
   newRequestData: any = {};
   selectAllChecked = false;
 
+  
   itemNo!: string;
   displayIndex!: number;
   items: any[] = [];
@@ -40,6 +41,8 @@ export class DetailComponent implements OnInit {
     private DetailPurchase: DetailPurchaseRequestlistService,
     private FileReadService: FileReadService
   ) {}
+
+  
 
   ngOnInit() {
     // ดึง ItemNo จาก route
@@ -186,8 +189,9 @@ deleteRow(rowIndex: number) {
 isCompleting = false; // กันกดซ้ำ
 
 completeSelected() {
-  if (this.isCompleting) { return; }
+  if (this.isCompleting) return;
 
+  // เลือกเฉพาะแถวที่ติ๊กและ Status = 'Waiting'
   const selectedItems = this.request.filter(it => it.Selection && it.Status === 'Waiting');
 
   if (selectedItems.length === 0) {
@@ -197,11 +201,11 @@ completeSelected() {
 
   this.isCompleting = true;
 
-  // ทำงานทีละตัวแบบคิว
+  // ทำงานทีละตัวแบบ async
   const processNext = async (index: number) => {
     if (index >= selectedItems.length) {
       this.isCompleting = false;
-      console.log('อัปเดต Status เสร็จครบทั้งหมด');
+      console.log('Complete ทุกแถวเสร็จสิ้น');
       return;
     }
 
@@ -209,20 +213,22 @@ completeSelected() {
     const prevStatus = item.Status;
 
     try {
-      // optimistic update
-      item.Status = 'Complete';
+      item.Status = 'Complete'; // optimistic update
 
+      // เรียก API อัปเดต Status
       await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
 
-      // ถ้า backend ส่งกลับมาเฉพาะบางฟิลด์ ก็อย่าเอามาทับทั้ง object ให้คงค่าที่หน้าไว้
-      // (ที่นี่เราไม่แตะค่าอื่นเลยนอกจาก Status)
-      console.log('อัปเดต Status สำเร็จ:', item);
+      // ✅ ลบแถวที่สำเร็จ
+      this.request = this.request.filter(r => r.ID_Request !== item.ID_Request);
+
+      console.log('อัปเดตสำเร็จและลบแถว ID:', item.ID_Request);
     } catch (err) {
-      console.error('Error completeSelected (ID:', item.ID_Request, '):', err);
-      // rollback
+      // rollback ถ้า fail
       item.Status = prevStatus;
+      console.error('Error completeSelected ID:', item.ID_Request, err);
       alert(`อัปเดต ID:${item.ID_Request} ไม่สำเร็จ`);
     } finally {
+      // ประมวลผลตัวต่อไป
       processNext(index + 1);
     }
   };
