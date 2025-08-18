@@ -130,11 +130,11 @@
         <table class="table table-bordered text-center">
           <thead>
             <tr>
-
-              <th>ID</th>
+              <th><input type="checkbox" [(ngModel)]="selectAllCheck" (change)="toggleAllCheckboxes()" /></th>
+              <th>NO</th>
               <th>Division</th>
-              <th style="white-space: nowrap;">Item No.</th>
               <th>Order</th>
+              <th style="white-space: nowrap;">Item No.</th>
               <th>Document</th>
               <th>Stock</th>
               <th>DateComplete</th>
@@ -156,11 +156,11 @@
             <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select the  to view item.</td>
           </tr>
             <tr *ngFor="let item of filteredRequests; let i = index">
+               <td><input type="checkbox" [(ngModel)]="item.Selection" /></td>
               <td>{{ i + 1 }}</td>
               <td>{{ item.Division }}</td>
               <td>{{ item.PartNo}}</td>
               <td>{{ item.ItemNo }}</td>
-              <td>{{ item.PartNo }}</td>  
               <td>{{ item.DocNo }}</td>            
               <td>{{ item.Stock_Location }}</td>
               <td>{{ item.DateComplete ? (item.DateComplete | date: 'yyyy-MM-dd') : '-' }}</td>

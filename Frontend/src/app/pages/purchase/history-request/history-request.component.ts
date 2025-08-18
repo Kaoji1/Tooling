@@ -20,6 +20,7 @@ export class HistoryRequestComponent implements OnInit {
   statussList: { label: string, value: string }[] = [];
   partNoList: { label: string, value: string }[] = [];
   selectedPartNo: string | null = null;
+  selectAllCheck: boolean = false;
 
   fromDate: string = '';
   toDate: string = '';
@@ -32,6 +33,12 @@ export class HistoryRequestComponent implements OnInit {
   ngOnInit() {
     this.loadPurchaseHistory();
   }
+
+toggleAllCheckboxes() {
+    this.requests.forEach(item => item.Selection = this.selectAllCheck);
+    localStorage.setItem('purchaseRequest', JSON.stringify(this.requests));
+  }  
+
 
 loadPurchaseHistory() {
   console.log('--- loadPurchaseHistory เริ่มต้น ---');
