@@ -131,7 +131,7 @@
           <thead>
             <tr>
 
-              <th>ID</th>
+              <th>No.</th>
               <th>Division</th>
               <th style="white-space: nowrap;">Item No.</th>
               <th>Order</th>
@@ -163,7 +163,7 @@
               <td>{{ item.DocNo }}</td>            
               <td>{{ item.Stock_Location }}</td>
               <td>{{ item.DateComplete ? (item.DateComplete | date: 'yyyy-MM-dd') : '-' }}</td>
-              <td>{{ item.Req_QTY }}</td>
+              <td>{{ item.QTY }}</td>
               <td>{{ item.MCType }}</td>
               <!-- <td>{{ item.LOT_MATL }}</td>
               <td>{{ item.Transaction }}</td>
