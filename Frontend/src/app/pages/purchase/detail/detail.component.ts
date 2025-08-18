@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
 import { FileReadService } from '../../../core/services/FileRead.service';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-detail',
@@ -29,11 +30,12 @@ export class DetailComponent implements OnInit {
   newRequestData: any = {};
   selectAllChecked = false;
 
-  
   itemNo!: string;
   displayIndex!: number;
   items: any[] = [];
-  highlightedRow: number | null = null; // ใช้ไฮไลต์แถวใหม่หรือแถวที่เลือก
+  highlightedRow: number | null = null;
+
+  isCompleting = false; // กันกดซ้ำ
 
   constructor(
     private route: ActivatedRoute,
@@ -41,8 +43,6 @@ export class DetailComponent implements OnInit {
     private DetailPurchase: DetailPurchaseRequestlistService,
     private FileReadService: FileReadService
   ) {}
-
-  
 
   ngOnInit() {
     // ดึง ItemNo จาก route
@@ -55,223 +55,212 @@ export class DetailComponent implements OnInit {
     const index = this.items.findIndex(item => item.ItemNo === this.itemNo);
     this.displayIndex = index >= 0 ? index + 1 : -1;
 
-    // โหลดข้อมูล purchase request
     this.Detail_Purchase();
   }
 
-  // ฟังก์ชันติ๊ก select all checkbox
+  // Select All
   toggleAllCheckboxes() {
-    this.request.forEach(item => item.Selection = this.selectAllChecked);
+    this.request.forEach(item => (item.Selection = this.selectAllChecked));
     localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
   }
 
-  // โหลดรายการ purchase request จาก backend
-Detail_Purchase() {
-  this.DetailPurchase.Detail_Request().subscribe({
-    next: (response: any[]) => {
-      console.log('Response จาก backend Detail_Request:', response);
+  // โหลดรายการ purchase request จาก backend (กันซ้ำ/รีเฟรช state สะอาด)
+  Detail_Purchase() {
+    this.DetailPurchase.Detail_Request().subscribe({
+      next: (response: any[]) => {
+        const filtered = response
+          .filter(item => item.ItemNo === this.itemNo)
+          .map(item => ({ ...item, Selection: false }));
 
-      const filtered = response
-        .filter(item => item.ItemNo === this.itemNo)
-        .map(item => ({ ...item, Selection: false }));
+        const seen = new Set<number>();
+        const unique = filtered.filter(item => {
+          if (!item.ID_Request) return false;
+          if (seen.has(item.ID_Request)) return false;
+          seen.add(item.ID_Request);
+          return true;
+        });
 
-      const seen = new Set<number>();
-      const unique = filtered.filter(item => {
-        if (seen.has(item.ID_Request)) return false;
-        seen.add(item.ID_Request);
-        return true;
-      });
+        this.request = unique;
+        localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+        console.log('request หลังจาก Detail_Purchase:', this.request);
+      },
+      error: e => console.error('Error Detail_Purchase:', e)
+    });
+  }
 
-      this.request = [...this.request, ...unique];
-      console.log('request หลังจาก Detail_Purchase:', this.request);
-    },
-    error: e => console.error('Error Detail_Purchase:', e)
-  });
-}
-
-// เพิ่มแถวใหม่
-addNewRequest(newRequestData: any, rowIndex: number) {
-  console.log('เรียก addNewRequest:', newRequestData, 'rowIndex:', rowIndex);
-  this.DetailPurchase.insertRequest(newRequestData).subscribe({
-    next: res => {
-      console.log('ผลลัพธ์จาก backend insertRequest:', res);
-      if (!res.newId) { alert('Backend ไม่ส่งข้อมูลกลับมา'); return; }
-
-      const newRow = { ...newRequestData, ...res, Selection: false, isNew: true };
-      this.request.splice(rowIndex + 1, 0, newRow);
-      this.editingIndex[newRow.ID_Request] = rowIndex + 1;
-
-      console.log('request หลังเพิ่มแถวใหม่:', this.request);
-      console.log('editingIndex หลังเพิ่มแถวใหม่:', this.editingIndex);
-
-      localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-      alert('เพิ่มข้อมูลสำเร็จ');
-    },
-    error: err => { console.error('Error addNewRequest:', err); alert(err.error?.message || 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล'); }
-  });
-}
-
-startEdit(caseKey: number, rowIndex: number) {
-  console.log('เรียก startEdit caseKey:', caseKey, 'rowIndex:', rowIndex);
-  this.editingIndex[caseKey] = rowIndex;
-  console.log('editingIndex หลัง startEdit:', this.editingIndex);
-}
-
-saveEdit(caseKey: number, rowIndex: number) {
-  const item = this.request[rowIndex];
-  console.log('เรียก saveEdit caseKey:', caseKey, 'rowIndex:', rowIndex, 'item:', item);
-  if (!item) return;
-
-  if (item.isNew) {
-    this.DetailPurchase.insertRequest(item).subscribe({
+  // เพิ่มแถวใหม่ (map newId -> ID_Request, isNew=false)
+  addNewRequest(newRequestData: any, rowIndex: number) {
+    console.log('เรียก addNewRequest:', newRequestData, 'rowIndex:', rowIndex);
+    this.DetailPurchase.insertRequest(newRequestData).subscribe({
       next: res => {
-        this.request[rowIndex] = { ...item, ...res, isNew: false, Selection: false };
-        delete this.editingIndex[caseKey];
+        const newId = res?.ID_Request ?? res?.newId;
+        if (!newId) {
+          alert('Backend ไม่ส่ง ID กลับมา');
+          return;
+        }
 
-        console.log('request หลัง saveEdit แถวใหม่:', this.request);
-        console.log('editingIndex หลัง saveEdit แถวใหม่:', this.editingIndex);
+        const newRow = {
+          ...newRequestData,
+          ...res,
+          ID_Request: Number(newId),
+          Selection: false,
+          isNew: false
+        };
+
+        this.request.splice(rowIndex + 1, 0, newRow);
+        this.editingIndex[newRow.ID_Request] = rowIndex + 1;
 
         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-        alert('บันทึกแถวใหม่เรียบร้อย');
+        alert('เพิ่มข้อมูลสำเร็จ');
       },
-      error: err => { console.error('Error saveEdit แถวใหม่:', err); alert('เกิดข้อผิดพลาดในการบันทึกแถวใหม่'); }
+      error: err => {
+        console.error('Error addNewRequest:', err);
+        alert(err.error?.message || 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล');
+      }
     });
-  } else {
+  }
+
+  startEdit(caseKey: number, rowIndex: number) {
+    this.editingIndex[caseKey] = rowIndex;
+  }
+
+  // บันทึกแก้ไข (มี ID แล้ว = update เท่านั้น)
+  saveEdit(caseKey: number, rowIndex: number) {
+    const item = this.request[rowIndex];
+    if (!item) return;
+    if (!item.ID_Request) {
+      alert('ไม่มี ID_Request ของแถวนี้');
+      return;
+    }
+
+    item.isNew = false;
+
     this.DetailPurchase.updateRequest(item).subscribe({
       next: res => {
         this.request[rowIndex] = { ...item, ...res, isNew: false };
         delete this.editingIndex[caseKey];
-
-        console.log('request หลัง saveEdit แถวเดิม:', this.request);
-        console.log('editingIndex หลัง saveEdit แถวเดิม:', this.editingIndex);
-
         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
         alert('บันทึกแถวเรียบร้อย');
       },
-      error: err => { console.error('Error saveEdit แถวเดิม:', err); alert('เกิดข้อผิดพลาดในการบันทึกแถว'); }
+      error: err => {
+        console.error('Error saveEdit แถวเดิม:', err);
+        alert('เกิดข้อผิดพลาดในการบันทึกแถว');
+      }
     });
   }
-}
 
-// ลบแถว
-deleteRow(rowIndex: number) {
-  const item = this.request[rowIndex];
-  console.log('เรียก deleteRow rowIndex:', rowIndex, 'item:', item);
-  if (!item) return;
+  // ลบแถว
+  deleteRow(rowIndex: number) {
+    const item = this.request[rowIndex];
+    if (!item) return;
 
-  if (item.isNew) {
-    this.request.splice(rowIndex, 1);
-    delete this.editingIndex[item.ID_Request];
-
-    console.log('request หลัง deleteRow แถวใหม่:', this.request);
-    console.log('editingIndex หลัง deleteRow แถวใหม่:', this.editingIndex);
-
-    localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-    alert('ลบแถวเรียบร้อย');
-  } else {
-    this.DetailPurchase.deleteRequest(item.ID_Request).subscribe({
-      next: () => {
-        this.request.splice(rowIndex, 1);
-        delete this.editingIndex[item.ID_Request];
-
-        console.log('request หลัง deleteRow แถวเดิม:', this.request);
-        console.log('editingIndex หลัง deleteRow แถวเดิม:', this.editingIndex);
-
-        localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-        alert('ลบข้อมูลสำเร็จ');
-      },
-      error: err => { console.error('Error deleteRow แถวเดิม:', err); alert('ไม่สามารถลบข้อมูลได้'); }
-    });
-  }
-}
-
-// ใน component
-isCompleting = false; // กันกดซ้ำ
-
-completeSelected() {
-  if (this.isCompleting) return;
-
-  // เลือกเฉพาะแถวที่ติ๊กและ Status = 'Waiting'
-  const selectedItems = this.request.filter(it => it.Selection && it.Status === 'Waiting');
-
-  if (selectedItems.length === 0) {
-    alert('กรุณาเลือกข้อมูลที่ต้องการ (สถานะ Waiting)');
-    return;
-  }
-
-  this.isCompleting = true;
-
-  // ทำงานทีละตัวแบบ async
-  const processNext = async (index: number) => {
-    if (index >= selectedItems.length) {
-      this.isCompleting = false;
-      console.log('Complete ทุกแถวเสร็จสิ้น');
+    if (item.isNew && !item.ID_Request) {
+      this.request.splice(rowIndex, 1);
+      delete this.editingIndex[item.ID_Request];
+      localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+      alert('ลบแถวเรียบร้อย');
       return;
     }
 
-    const item = selectedItems[index];
-    const prevStatus = item.Status;
+    this.DetailPurchase.deleteRequest(Number(item.ID_Request)).subscribe({
+      next: () => {
+        this.request.splice(rowIndex, 1);
+        delete this.editingIndex[item.ID_Request];
+        localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+        alert('ลบข้อมูลสำเร็จ');
+      },
+      error: err => {
+        console.error('Error deleteRow แถวเดิม:', err);
+        alert('ไม่สามารถลบข้อมูลได้');
+      }
+    });
+  }
+
+  // Complete ทีละตัว (ไม่ทับค่าอื่น, ลบออกจาก list หลังสำเร็จ)
+  async completeSelected() {
+    if (this.isCompleting) return;
+
+    const selectedItems = this.request.filter(
+      it => it.Selection && it.Status === 'Waiting'
+    );
+
+    if (selectedItems.length === 0) {
+      alert('กรุณาเลือกข้อมูลที่ต้องการ (สถานะ Waiting)');
+      return;
+    }
+
+    this.isCompleting = true;
 
     try {
-      item.Status = 'Complete'; // optimistic update
+      for (const item of selectedItems) {
+        if (!item.ID_Request) continue;
 
-      // เรียก API อัปเดต Status
-      await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
+        const prevStatus = item.Status;
+        try {
+          // optimistic
+          item.Status = 'Complete';
 
-      // ✅ ลบแถวที่สำเร็จ
-      this.request = this.request.filter(r => r.ID_Request !== item.ID_Request);
+          //  ถ้า backend ไม่แตะ QTY อยู่แล้ว ไม่ต้องส่ง QTY
+          await lastValueFrom(
+            this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete')
+          );
 
-      console.log('อัปเดตสำเร็จและลบแถว ID:', item.ID_Request);
-    } catch (err) {
-      // rollback ถ้า fail
-      item.Status = prevStatus;
-      console.error('Error completeSelected ID:', item.ID_Request, err);
-      alert(`อัปเดต ID:${item.ID_Request} ไม่สำเร็จ`);
+          //  ลบออกจากจอถ้าเสร็จ
+          this.request = this.request.filter(
+            r => Number(r.ID_Request) !== Number(item.ID_Request)
+          );
+        } catch (err) {
+          // rollback
+          item.Status = prevStatus;
+          console.error('Error completeSelected ID:', item.ID_Request, err);
+          alert(`อัปเดต ID: ${item.ID_Request} ไม่สำเร็จ`);
+        }
+      }
     } finally {
-      // ประมวลผลตัวต่อไป
-      processNext(index + 1);
+      this.isCompleting = false;
     }
-  };
+  }
 
-  processNext(0);
+  // เปิด PDF จาก path
+  openPdfFromPath(filePath: string) {
+    if (!filePath) {
+      alert('ไม่พบ path ของไฟล์');
+      return;
+    }
+    this.FileReadService.loadPdfFromPath(filePath).subscribe({
+      next: res => {
+        const base64 = res.imageData.split(',')[1];
+        const binary = atob(base64);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+      },
+      error: err => {
+        console.error('Error openPdfFromPath:', err);
+        alert('ไม่สามารถโหลด PDF ได้');
+      }
+    });
+  }
+
+  // ลบรายการตาม ID (เทียบชนิดให้ตรง)
+  deleteItem(id: string | number) {
+    const numId = Number(id);
+    if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?')) return;
+
+    this.DetailPurchase.deleteRequest(numId).subscribe({
+      next: () => {
+        this.request = this.request.filter(item => Number(item.ID_Request) !== numId);
+      },
+      error: err => {
+        console.error('Error deleteItem:', err);
+        alert('เกิดข้อผิดพลาดในการลบ');
+      }
+    });
+  }
 }
-// เปิดไฟล์ PDF
-openPdfFromPath(filePath: string) {
-  console.log('เรียก openPdfFromPath path:', filePath);
-  if (!filePath) { alert('ไม่พบ path ของไฟล์'); return; }
-
-  this.FileReadService.loadPdfFromPath(filePath).subscribe({
-    next: res => {
-      console.log('ผลลัพธ์ loadPdfFromPath:', res);
-      const base64 = res.imageData.split(',')[1];
-      const binary = atob(base64);
-      const len = binary.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
-      const blob = new Blob([bytes], { type: 'application/pdf' });
-      const blobUrl = URL.createObjectURL(blob);
-      window.open(blobUrl, '_blank');
-    },
-    error: err => { console.error('Error openPdfFromPath:', err); alert('ไม่สามารถโหลด PDF ได้'); }
-  });
-}
-
-// ลบรายการด้วย ID
-deleteItem(id: string) {
-  console.log('เรียก deleteItem id:', id);
-  if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?')) return;
-
-  this.DetailPurchase.deleteRequest(Number(id)).subscribe({
-    next: () => {
-      console.log('ลบรายการสำเร็จ id:', id);
-      this.request = this.request.filter(item => item.ID_Request !== id);
-      console.log('request หลัง deleteItem:', this.request);
-    },
-    error: err => { console.error('Error deleteItem:', err); alert('เกิดข้อผิดพลาดในการลบ'); }
-  });
-}
-}
-
 
 // import { Component, OnInit } from '@angular/core';
 // import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPurchase.component';
