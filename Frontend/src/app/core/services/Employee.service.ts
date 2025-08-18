@@ -23,5 +23,12 @@ export class EmployeeService {
   deleteEmployee(empId: string) {
   return this.httpClient.delete(`${baseUrl}/delete_employee/${empId}`);
 }
+updateEmployee(payload: any) {
+  if (!payload?.Employee_ID) throw new Error('Employee_ID is required');
+  return this.httpClient.post(
+    `${baseUrl}/update/${encodeURIComponent(payload.Employee_ID)}`,
+    payload
+  );
+}
 
 }

@@ -39,10 +39,16 @@ export class RequestlistComponent implements OnInit  {
      
     ) {}
 
-    goToDetail(itemNo: string) {
-  console.log('Going to detail for ItemNo:', itemNo); // debug
+// ใช้ฟิลด์ Category จาก DB โดยตรง
+goToDetail(itemNo: string, category: string) {
+  const itemsInCategory = this.request.filter(x =>
+    String(x.ItemNo) === String(itemNo) &&
+    String(x.Category ?? 'Unknown') === String(category) // หรือ x.Case_
+  );
+
   this.router.navigate(['/purchase/detail', itemNo], {
-    state: { items: this.request }
+    queryParams: { category },
+    state: { items: itemsInCategory }
   });
 }
 
@@ -66,7 +72,7 @@ Purchase_Request() {
           const itemNo = item.ItemNo;
           const category = item.Category || '';
           const idRequest = item.ID_Request;
-          const key = `${itemNo}_${category}`; // ✅ backtick
+          const key = `${itemNo}_${category}`; // backtick
 
           if (groupedMap.has(key)) {
             const group = groupedMap.get(key)!;
@@ -89,7 +95,7 @@ Purchase_Request() {
         Req_QTY: group.Req_QTY
       }));
 
-      this.filteredRequests = [...this.request]; // ✅ แสดงทั้งหมดตั้งแต่ต้น
+      this.filteredRequests = [...this.request]; //  แสดงทั้งหมดตั้งแต่ต้น
 
       const uniqueCategories = Array.from(
         new Set(this.request.map(r => r.Category).filter(Boolean))

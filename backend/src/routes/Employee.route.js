@@ -6,5 +6,6 @@ const EmployeeController = require('../controllers/Employee.controller');
 router.get('/get_Employee', EmployeeController.ShowUser)
 router.post('/AddEmployee', EmployeeController.AddUser)
 router.delete('/delete_employee/:id', EmployeeController.DeleteEmployee);
+router.post('/update/:id', EmployeeController.updateEmployee);
 // ส่งออก router สำหรับใช้งานในที่อื่น
 module.exports = router;
