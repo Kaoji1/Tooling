@@ -90,7 +90,7 @@
               <td style="width: 600px;"> 
                   <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.ItemNo }}</span>
 
-                  <ng-select
+                 <ng-select
                     *ngIf="editingIndex[item.ID_Request] === i"
                     [items]="ItemNo"
                     bindLabel="ItemNo"
@@ -98,10 +98,9 @@
                     [(ngModel)]="item.ItemNo"
                     [searchable]="true"
                     [virtualScroll]="true"
-                    (ngModelChange)="syncSpecWithItemNo(item)"
+                    (ngModelChange)="onItemNoChange($event, item)"  
                     [clearable]="true"
-                    placeholder="Select Item No"
-                    >
+                    placeholder="Select Item No">
                   </ng-select>
                 </td>
 
