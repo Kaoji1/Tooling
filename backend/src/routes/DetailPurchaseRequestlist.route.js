@@ -15,5 +15,7 @@ router.put('/Update_Request', DetailPurchaseRequestlist.Update_Request);
 router.post('/Insert_Request', DetailPurchaseRequestlist.Add_New_Request);
 
 router.delete('/Delete_Request/:id', DetailPurchaseRequestlist.DeleteItem);
+
+router.get('/get_ItemNo', DetailPurchaseRequestlist.Get_ItemNo);
 // ส่งออก router สำหรับใช้งานในที่อื่น
 module.exports = router;

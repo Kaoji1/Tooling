@@ -86,6 +86,12 @@ loadPurchaseHistory() {
     error: e => console.error('Error from API:', e)
   });
 }
+getRowClass(item: any): string {
+  if (item.Selection) {
+    return 'row-selected'; // ถ้าติ๊ก checkbox
+  }
+  return ''; // ปกติ
+}
 
 // onFilter() {
 //   console.log('--- onFilter เริ่มต้น ---');

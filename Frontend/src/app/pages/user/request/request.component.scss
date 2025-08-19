@@ -13,6 +13,9 @@
     align-items: start;
     padding: 20px;
     background-color: white;
+    .row-selected {
+  background-color: #ebebeb !important;  /* ฟ้าอ่อน */
+}
 
     .header {
       display: flex;

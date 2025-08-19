@@ -39,6 +39,8 @@ deleteRequest(id: number): Observable<any> {
   return this.httpClient.delete(`${baseUrl}/Delete_Request/${id}`);
 }
 
-
+get_ItemNo(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
+    return this.httpClient.get(`${baseUrl}/get_ItemNo`); // ส่ง HTTP GET Division
+  }
 }
 

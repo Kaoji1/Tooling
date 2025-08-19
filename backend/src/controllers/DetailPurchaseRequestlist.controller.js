@@ -19,6 +19,21 @@ exports.Detail_Purchase = async (req, res) => {
   }
  
 };
+exports.Get_ItemNo = async (req, res) => {
+  console.log(req.body)
+  try {
+    const pool = await poolPromise;
+    const result = await pool
+    .request()
+    .query("EXEC Stored_View_CuttingTool_FindItem_Purchase");
+
+    res.json(result.recordset);
+  } 
+  catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
 
 exports.Update_Status_Purchase = async (req, res) => {
   console.log(req.body); // ตรวจสอบค่าที่ส่งมา { ID_Request: , Status:  }

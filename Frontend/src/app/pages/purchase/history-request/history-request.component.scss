@@ -1,7 +1,7 @@
 .layout {
   display: flex;
   flex-direction: row;
-  height: 100%;
+  height: 100vh;
   width: 100%;
   overflow: auto;
 }
@@ -14,7 +14,9 @@
   flex-direction: column;
   padding: 20px;
   background-color: white;
-
+.row-selected {
+  background-color: #ebebeb !important;  /* ฟ้าอ่อน */
+}
 
 
  .status-indicator-vertical {
@@ -451,57 +453,58 @@
 
 
 
-  .table-responsive {
-      max-height: 405px;
-      max-width: 1290px;
-      margin-top: 30px;
+.table-responsive {
+  max-height: 405px;
+  max-width: 1290px;
+  margin-top: 30px;
 
-    // width: 100%;
-    // overflow-x: auto;
-    // overflow-y: auto;
-    // box-sizing: border-box;
-
-    table {
-       width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        color: #4a494a;
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    color: #4a494a;
+    table-layout: fixed; // ช่วยไม่ให้คอลัมน์ยืดแปลกๆ
 
     thead th {
-          background-color: #E3E3E3;
-          padding: 15px;
-          font-size: 16px;
-          font-weight: 100;
-        }
-
-      th,
-      td {
-         padding: 12px;
-          text-align: center;
-          border: 1px solid #D2D2D2;
-        // padding: 8px 12px;
-        // border: 1px solid #ccc;
-        // text-align: center;
-        // white-space: nowrap;
-      }
-      i {
-            color: #0066B3;
-          }
-
+      background-color: #E3E3E3;
+      font-size: 16px;
+      font-weight: 100;
     }
-  }
 
-  thead th {
-    background-color: #E3E3E3;
-          padding: 15px;
-          font-size: 16px;
-          font-weight: 100;
-    // position: sticky;
-    // top: 0;
-    // background-color: #E3E3E3;
-    // z-index: 2;
-    // box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    th, td {
+      text-align: center;
+      border: 1px solid #D2D2D2;
+      padding: 6px 10px;          // ลด padding รวม
+      vertical-align: middle;     // จัดกึ่งกลางแนวตั้ง
+      white-space: nowrap;        // ไม่ให้ตัดบรรทัด
+    }
+
+    /* ✅ โฟกัสคอลัมน์ checkbox (คอลัมน์แรก) */
+    th:first-child,
+    td:first-child {
+      width: 40px !important;     // บังคับให้แคบ
+      padding: 4px !important;    // ลด padding ให้สุด
+    }
+
+    /* ✅ คุมขนาด checkbox */
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;                  // ไม่ให้มีช่องว่างเพิ่ม
+      vertical-align: middle;
+      transform: none;            // กัน scale แปลกๆ จาก CSS อื่น
+    }
+
+    i { color: #0066B3; }
   }
+}
+
+/* กัน Bootstrap/สไตล์อื่นมา override ส่วนหัวอีกชั้น */
+thead th {
+  background-color: #E3E3E3;
+  font-size: 16px;
+  font-weight: 100;
+}
 
   .pagination-wrapper {
     position: fixed;
