@@ -71,22 +71,7 @@ ngOnInit() {
   });
 }
 
-get_ItemNo() {
-  this.DetailPurchase.get_ItemNo().subscribe({
-    next: (response: any[]) => {
-      console.log('Response from DetailPurchase:', response);
-      if (response) {
-        this.ItemNo = response.filter(
-          (item, index, self) =>
-            index === self.findIndex(obj => obj.ItemNo === item.ItemNo)
-        );
-      } else {
-        console.warn('Response is undefined');
-      }
-    },
-    error: (e: any) => console.error('DetailPurchase error:', e),
-  });
-}
+
 
 // async get_SPEC(event: any) {
 //   const itemNo = event.ItemNo ?? event;
@@ -159,7 +144,7 @@ Detail_Purchase() {
     error: e => console.error('Error Detail_Purchase:', e)
   });
 }
-ItemNo: any[] = [];
+
 
 // เรียกใช้ API
 get_ItemNo() {
@@ -179,12 +164,12 @@ get_ItemNo() {
   });
 }
 onItemNoChange(selectedItemNo: string, row: any) {
+  // หา object จาก list ItemNo ที่เลือก
   const selected = this.ItemNo.find(x => x.ItemNo === selectedItemNo);
   if (selected) {
-    row.SPEC = selected.SPEC;   
-    row.ON_HAND = selected.ON_HAND; 
+    row.SPEC = selected.SPEC; 
+    row.ON_HAND = selected.ON_HAND;   // อัปเดต SPEC ของแถวนั้น
   }
-  console.log('[onItemNoChange] row -> SPEC:', row.SPEC, 'ON_HAND:', row.ON_HAND);
 }
 
   toggleAllCheckboxes() {
@@ -210,7 +195,7 @@ addNewRequest(newRequestData: any, rowIndex: number) {
       }
 
       // สร้างแถวใหม่พร้อมข้อมูลจาก backend
-      const newRow = { ...newRequestData, ...res, Selection: false, isNew: false };
+      const newRow = { ...newRequestData, ...res, Selection: false, isNew: true };
 
       // แทรกแถวใหม่หลังแถวปัจจุบัน
       this.request.splice(rowIndex + 1, 0, newRow);
@@ -243,34 +228,46 @@ saveEdit(caseKey: number, rowIndex: number) {
   console.log('เรียก saveEdit caseKey:', caseKey, 'rowIndex:', rowIndex);
   const item = this.request[rowIndex];
   console.log('item ที่จะบันทึก:', item);
-  if (!item) return;
 
+  if (!item) {
+    console.warn('ไม่พบ item ที่แถวนี้:', rowIndex);
+    return;
+  }
+
+  // ✅ การันตีให้ SPEC ตรงกับ ItemNo ก่อนยิง backend
   this.syncSpecWithItemNo(item);
+
+  // เก็บสำเนาไว้สำหรับ rollback ถ้า error
   const snapshot = { ...item };
 
+  // helper: รวมผลตอบกลับ โดยไม่ให้ null/undefined จาก backend มาทับค่าปัจจุบัน
   const mergeSafe = (original: any, resp: any) => {
     const merged = { ...original, ...(resp || {}) };
+    // ป้องกันค่าหาย
     if (resp?.ItemNo == null) merged.ItemNo = original.ItemNo;
     if (resp?.SPEC   == null) merged.SPEC   = original.SPEC;
+    // คงสถานะ selection/flag ต่าง ๆ
     merged.Selection = !!original.Selection;
     merged.isNew = false;
     return merged;
   };
 
-  //  เงื่อนไข: insert เฉพาะกรณี "ยังไม่เคยมี ID จริง"
-  const shouldInsert = !item.ID_Request || item.isNew === true;
-
-  if (shouldInsert) {
+  if (item.isNew) {
     console.log('กำลังบันทึกแถวใหม่...');
     this.DetailPurchase.insertRequest(item).subscribe({
       next: (res) => {
         this.request[rowIndex] = mergeSafe(item, res);
         delete this.editingIndex[caseKey];
+
+        console.log('request หลัง saveEdit แถวใหม่:', this.request);
+        console.log('editingIndex หลัง saveEdit แถวใหม่:', this.editingIndex);
+
         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
         alert('บันทึกแถวใหม่เรียบร้อย');
       },
       error: (err) => {
         console.error('Error saveEdit แถวใหม่:', err);
+        // rollback ค่าหน้าจอ
         this.request[rowIndex] = snapshot;
         alert('เกิดข้อผิดพลาดในการบันทึกแถวใหม่');
       }
@@ -279,13 +276,19 @@ saveEdit(caseKey: number, rowIndex: number) {
     console.log('กำลังอัพเดตแถวเดิม...');
     this.DetailPurchase.updateRequest(item).subscribe({
       next: (res) => {
+        // ❗ ไม่โหลด/กรองรายการใหม่ เพื่อกันแถว “หาย” เพราะไม่ผ่าน filter เดิม
         this.request[rowIndex] = mergeSafe(item, res);
         delete this.editingIndex[caseKey];
+
+        console.log('request หลัง saveEdit แถวเดิม:', this.request);
+        console.log('editingIndex หลัง saveEdit แถวเดิม:', this.editingIndex);
+
         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
         alert('บันทึกแถวเรียบร้อย');
       },
       error: (err) => {
         console.error('Error saveEdit แถวเดิม:', err);
+        // rollback
         this.request[rowIndex] = snapshot;
         alert('เกิดข้อผิดพลาดในการบันทึกแถว');
       }
