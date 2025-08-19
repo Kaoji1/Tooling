@@ -15,7 +15,7 @@
         </button>
 
         <div class="bell-container">
-          <app-notification class="noti"></app-notification>
+          <!-- <app-notification class="noti"></app-notification> -->
         </div>
       </div>
 
@@ -98,8 +98,10 @@
                     [(ngModel)]="item.ItemNo"
                     [searchable]="true"
                     [virtualScroll]="true"
+                    (ngModelChange)="syncSpecWithItemNo(item)"
                     [clearable]="true"
-                    placeholder="Select Item No">
+                    placeholder="Select Item No"
+                    >
                   </ng-select>
                 </td>
 

@@ -92,7 +92,29 @@ getRowClass(item: any): string {
   }
   return ''; // ปกติ
 }
+ //  เรียงลำดับจาก DueDate เก่าสุด -> ล่าสุด
+  onSort() {
+    this.filteredRequests.sort((a, b) => {
+      const dateA = new Date(a.DateComplete).getTime();
+      const dateB = new Date(b.DateComplete).getTime();
+      return dateA - dateB; // เรียงจากเก่า -> ใหม่
+    });
+  }
+onFilter() {
+  this.filteredRequests = this.requests.filter(item => {
+    const itemDate = new Date( item.DateComplete);
 
+    // เช็คช่วงวันที่
+    const matchDate =
+      (!this.fromDate || itemDate >= new Date(this.fromDate)) &&
+      (!this.toDate || itemDate <= new Date(this.toDate));
+
+    // เช็คว่า status เป็น Complete
+    const matchStatus = item.Status === 'Complete';
+
+    return matchDate && matchStatus;
+  });
+}
 // onFilter() {
 //   console.log('--- onFilter เริ่มต้น ---');
 //   console.log('Current filter values: fromDate=', this.fromDate, 'toDate=', this.toDate, 'Status_=', this.Status_, 'selectedPartNo=', this.selectedPartNo);

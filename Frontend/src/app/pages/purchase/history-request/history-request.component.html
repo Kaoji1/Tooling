@@ -24,7 +24,7 @@
 
     <div class="header-content">
       <h1 class="reh">Request History</h1>
-      <app-notification class="noti"></app-notification>
+      <!-- <app-notification class="noti"></app-notification> -->
     </div>
 
 
@@ -50,8 +50,8 @@
 
         <div class="form-input">
   <!-- ปุ่มอื่น ๆ -->
-  <button class="btn-filter" type="button">Filter</button>
-  <button class="btn-sort" type="button"><i class="bi bi-sort-down"></i>Sort</button>
+  <button class="btn-filter" type="button" (click)="onFilter()">Filter</button>
+  <button class="btn-sort" type="button" (click)="onSort()" ><i class="bi bi-sort-down" ></i>Sort</button>
 
   <!-- กลุ่มปุ่ม export -->
   <div class="button-group">
