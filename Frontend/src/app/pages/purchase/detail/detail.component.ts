@@ -86,13 +86,22 @@ get_ItemNo() {
       // เก็บข้อมูล response ลงใน ItemNo
       console.log("Response raw จาก API:", response); // 👈 ดูว่ามีข้อมูลมั้ย
       this.ItemNo = response;
-
+      this.ItemNo = response.filter((item, index, self) =>
+          index === self.findIndex(obj => obj.ItemNo === item.ItemNo)
+        );
      
 
       console.log("ItemNo ที่ได้จาก DB:", this.ItemNo);
     },
     error: (e: any) => console.error("Error API get_ItemNo:", e),
   });
+}
+onItemNoChange(selectedItemNo: string, row: any) {
+  // หา object จาก list ItemNo ที่เลือก
+  const selected = this.ItemNo.find(x => x.ItemNo === selectedItemNo);
+  if (selected) {
+    row.SPEC = selected.SPEC;   // อัปเดต SPEC ของแถวนั้น
+  }
 }
 
   toggleAllCheckboxes() {
@@ -157,11 +166,29 @@ saveEdit(caseKey: number, rowIndex: number) {
     return;
   }
 
+  // ✅ การันตีให้ SPEC ตรงกับ ItemNo ก่อนยิง backend
+  this.syncSpecWithItemNo(item);
+
+  // เก็บสำเนาไว้สำหรับ rollback ถ้า error
+  const snapshot = { ...item };
+
+  // helper: รวมผลตอบกลับ โดยไม่ให้ null/undefined จาก backend มาทับค่าปัจจุบัน
+  const mergeSafe = (original: any, resp: any) => {
+    const merged = { ...original, ...(resp || {}) };
+    // ป้องกันค่าหาย
+    if (resp?.ItemNo == null) merged.ItemNo = original.ItemNo;
+    if (resp?.SPEC   == null) merged.SPEC   = original.SPEC;
+    // คงสถานะ selection/flag ต่าง ๆ
+    merged.Selection = !!original.Selection;
+    merged.isNew = false;
+    return merged;
+  };
+
   if (item.isNew) {
     console.log('กำลังบันทึกแถวใหม่...');
     this.DetailPurchase.insertRequest(item).subscribe({
-      next: res => {
-        this.request[rowIndex] = { ...item, ...res, isNew: false, Selection: false };
+      next: (res) => {
+        this.request[rowIndex] = mergeSafe(item, res);
         delete this.editingIndex[caseKey];
 
         console.log('request หลัง saveEdit แถวใหม่:', this.request);
@@ -170,16 +197,19 @@ saveEdit(caseKey: number, rowIndex: number) {
         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
         alert('บันทึกแถวใหม่เรียบร้อย');
       },
-      error: err => { 
-        console.error('Error saveEdit แถวใหม่:', err); 
-        alert('เกิดข้อผิดพลาดในการบันทึกแถวใหม่'); 
+      error: (err) => {
+        console.error('Error saveEdit แถวใหม่:', err);
+        // rollback ค่าหน้าจอ
+        this.request[rowIndex] = snapshot;
+        alert('เกิดข้อผิดพลาดในการบันทึกแถวใหม่');
       }
     });
   } else {
     console.log('กำลังอัพเดตแถวเดิม...');
     this.DetailPurchase.updateRequest(item).subscribe({
-      next: res => {
-        this.request[rowIndex] = { ...item, ...res, isNew: false };
+      next: (res) => {
+        // ❗ ไม่โหลด/กรองรายการใหม่ เพื่อกันแถว “หาย” เพราะไม่ผ่าน filter เดิม
+        this.request[rowIndex] = mergeSafe(item, res);
         delete this.editingIndex[caseKey];
 
         console.log('request หลัง saveEdit แถวเดิม:', this.request);
@@ -188,14 +218,37 @@ saveEdit(caseKey: number, rowIndex: number) {
         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
         alert('บันทึกแถวเรียบร้อย');
       },
-      error: err => { 
-        console.error('Error saveEdit แถวเดิม:', err); 
-        alert('เกิดข้อผิดพลาดในการบันทึกแถว'); 
+      error: (err) => {
+        console.error('Error saveEdit แถวเดิม:', err);
+        // rollback
+        this.request[rowIndex] = snapshot;
+        alert('เกิดข้อผิดพลาดในการบันทึกแถว');
       }
     });
   }
 }
+ /** อัปเดต SPEC ให้ตรงกับ ItemNo ปัจจุบันของแถว ก่อนบันทึก */
+syncSpecWithItemNo(row: any) {
+  if (!row) return;
 
+  // this.ItemNo อาจเป็นได้ทั้ง [{ItemNo, SPEC, ...}] หรือ string[]
+  const list = this.ItemNo || [];
+
+  // หา object ใน list ที่ ItemNo ตรงกับของแถว
+  const found = list.find((x: any) => {
+    const no = typeof x === 'string' ? x : x?.ItemNo;
+    return no === row.ItemNo;
+  });
+
+  // ถ้า list เป็น object และมี SPEC -> อัปเดต SPEC ให้แถว
+  if (found && typeof found !== 'string') {
+    const spec = (found as any).SPEC;
+    if (typeof spec !== 'undefined' && spec !== null) {
+      row.SPEC = String(spec);
+    }
+  }
+  // ถ้าไม่พบ ก็ไม่ต้องทำอะไร ปล่อย SPEC เดิมไว้
+}
 // ลบแถว
 deleteRow(rowIndex: number) {
   const item = this.request[rowIndex];
