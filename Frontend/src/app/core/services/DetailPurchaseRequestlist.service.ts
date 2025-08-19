@@ -43,4 +43,3 @@ get_ItemNo(): Observable<any> { // ฟังก์ชันสำหรับด
     return this.httpClient.get(`${baseUrl}/get_ItemNo`); // ส่ง HTTP GET Division
   }
 }
-
