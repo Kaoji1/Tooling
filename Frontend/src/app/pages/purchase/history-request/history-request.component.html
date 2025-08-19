@@ -127,51 +127,49 @@
 
       <!-- ตารางข้อมูล -->
       <div class="table-responsive">
-        <table class="table table-bordered text-center">
-          <thead>
-            <tr>
-              <th><input type="checkbox" [(ngModel)]="selectAllCheck" (change)="toggleAllCheckboxes()" /></th>
-              <th>NO</th>
-              <th>Division</th>
-              <th>Order</th>
-              <th style="white-space: nowrap;">Item No.</th>
-              <th>Document</th>
-              <th>Stock</th>
-              <th>DateComplete</th>
-              <th>QTY</th>
-              <th style="white-space: nowrap;">MC Type</th>
-              <!-- <th>ItemNo</th> chaeck itemno -->
-              <!-- <th style="white-space: nowrap;">MC QTY</th>
-              <th style="white-space: nowrap;">Transaction</th>
-              <th style="white-space: nowrap;">Due Date</th>
-              <th>Status</th>
-              <!only complete-->
-              <!-- <th>Remark</th> --> 
+          <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 20px;">
+                  <input type="checkbox" [(ngModel)]="selectAllCheck" (change)="toggleAllCheckboxes()" />
+                </th>
+                <th style="width: 60px;">No.</th>
+                <th style="min-width: 120px;">Division</th>
+                <th style="min-width: 120px;">Order</th>
+                <th style="min-width: 120px; white-space: nowrap;">Item No.</th>
+                <th style="min-width: 120px;">Document</th>
+                <th style="min-width: 120px;">Stock</th>
+                <th style="min-width: 140px;">Date Complete</th>
+                <th style="min-width: 80px;">QTY</th>
+                <th style="min-width: 120px; white-space: nowrap;">MC Type</th>
+              </tr>
+            </thead>
 
-            </tr>
-          </thead>
+            <tbody>
+              <!-- กรณีไม่มีข้อมูล -->
+              <tr *ngIf="filteredRequests.length === 0">
+                <td colspan="10" class="text-center text-muted py-3">
+                  <i class="bi bi-exclamation-circle-fill"></i> Please select the to view item.
+                </td>
+              </tr>
 
-          <tbody>
-          <tr *ngIf="filteredRequests.length === 0">
-            <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select the  to view item.</td>
-          </tr>
-            <tr *ngFor="let item of filteredRequests; let i = index">
-               <td><input type="checkbox" [(ngModel)]="item.Selection" /></td>
-              <td>{{ i + 1 }}</td>
-              <td>{{ item.Division }}</td>
-              <td>{{ item.PartNo}}</td>
-              <td>{{ item.ItemNo }}</td>
-              <td>{{ item.DocNo }}</td>            
-              <td>{{ item.Stock_Location }}</td>
-              <td>{{ item.DateComplete ? (item.DateComplete | date: 'yyyy-MM-dd') : '-' }}</td>
-              <td>{{ item.QTY }}</td>
-              <td>{{ item.MCType }}</td>
-              <!-- <td>{{ item.LOT_MATL }}</td>
-              <td>{{ item.Transaction }}</td>
-              <td>{{ item.Declation_No }}</td> -->
-            </tr>
-          </tbody>
-        </table>
+              <!-- แสดงข้อมูล -->
+              <tr *ngFor="let item of filteredRequests; let i = index">
+                <td [ngClass]="getRowClass(item)">
+                  <input type="checkbox" [(ngModel)]="item.Selection" />
+                </td>
+                <td [ngClass]="getRowClass(item)">{{ i + 1 }}</td>
+                <td [ngClass]="getRowClass(item)">{{ item.Division }}</td>
+                <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+                <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+                <td [ngClass]="getRowClass(item)">{{ item.DocNo }}</td>
+                <td [ngClass]="getRowClass(item)">{{ item.Stock_Location }}</td>
+                <td [ngClass]="getRowClass(item)">{{ item.DateComplete ? (item.DateComplete | date: 'yyyy-MM-dd') : '-' }}</td>
+                <td [ngClass]="getRowClass(item)">{{ item.QTY }}</td>
+                <td [ngClass]="getRowClass(item)">{{ item.MCType }}</td>
+              </tr>
+            </tbody>
+          </table>
       </div>
     </div>
   </div>

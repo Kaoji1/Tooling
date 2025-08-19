@@ -473,5 +473,11 @@ Clearall() {
     this.Process_=null;
     this.MachineType_=null;
   }
+  getRowClass(item: any): string {
+  if (item.checked) {
+    return 'row-selected'; // ถ้าติ๊ก checkbox
+  }
+  return ''; // ปกติ
+}
 }
 

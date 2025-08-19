@@ -39,12 +39,9 @@ deleteRequest(id: number): Observable<any> {
   return this.httpClient.delete(`${baseUrl}/Delete_Request/${id}`);
 }
 
-  get_PartNo(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-    return this.httpClient.get(`${baseUrl}/get_PartNo`); // ส่ง HTTP GET Division
+get_ItemNo(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
+    return this.httpClient.get(`${baseUrl}/get_ItemNo`); // ส่ง HTTP GET Division
   }
-
-  get_ItemNo(): Observable<any> {
-  return this.httpClient.get(`${baseUrl}/get_ItemNo`);
 }
 // get_ItemNo(itemNo: string): Observable<any[]> {
 //   return this.httpClient.get<any[]>(`${baseUrl}/get_ItemNo`, {
@@ -55,4 +52,3 @@ deleteRequest(id: number): Observable<any> {
 // get_SPEC(): Observable<any> {
 //   return this.httpClient.post(`${baseUrl}/get_SPEC`);
 // }
-}

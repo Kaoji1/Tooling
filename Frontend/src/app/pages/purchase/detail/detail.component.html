@@ -46,7 +46,7 @@
               <th>Document</th>
               <th>Requester</th>
               <th style="white-space: nowrap;">Part No.</th>
-              <th>Item No.</th>
+              <th style="width: 600px;">Item No.</th>
               <th>Spec</th>
               <th>Process</th>
               <!-- <th>ItemNo</th> chaeck itemno -->
@@ -87,22 +87,21 @@
               <td>{{ item.DocNo }}</td>
               <td>{{ item.Requester }}</td>
               <td class="PartNo-column">{{ item.PartNo }}</td>
-              <td>
-                  <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showItemNo">
-                    <ng-select
-                      [items]="ItemNo"
-                      bindLabel="label"
-                      bindValue="value"
-                      [(ngModel)]="ItemNo_"
-                      [virtualScroll]="true"
-                      placeholder="Select a Item No.">
-                    </ng-select>
-                  </ng-container>
-                <ng-template #showItemNo>{{ item.ItemNo }}</ng-template>
-              </td>
-                <!-- <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.ItemNo }}</span>
-                <input *ngIf="editingIndex[item.ID_Request] === i" type="text" [(ngModel)]="item.ItemNo"
-                  type="text" /> -->
+              <td style="width: 600px;"> 
+                  <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.ItemNo }}</span>
+
+                  <ng-select
+                    *ngIf="editingIndex[item.ID_Request] === i"
+                    [items]="ItemNo"
+                    bindLabel="ItemNo"
+                    bindValue="ItemNo"
+                    [(ngModel)]="item.ItemNo"
+                    [searchable]="true"
+                    [virtualScroll]="true"
+                    [clearable]="true"
+                    placeholder="Select Item No">
+                  </ng-select>
+                </td>
 
               <td class="spec-column">{{ item.SPEC }}</td>
               <td>{{ item.Process }}</td>

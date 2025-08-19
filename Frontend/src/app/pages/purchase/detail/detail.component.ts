@@ -66,7 +66,8 @@ ngOnInit() {
   // อ่าน category จาก query param
   this.route.queryParamMap.subscribe(q => {
     this.category = q.get('category') || '';
-    this.Detail_Purchase();               // โหลดใหม่เมื่อ category เปลี่ยน
+    this.Detail_Purchase();   
+    this.get_ItemNo();            // โหลดใหม่เมื่อ category เปลี่ยน
   });
 }
 
@@ -156,6 +157,23 @@ Detail_Purchase() {
       this.request = unique;
     },
     error: e => console.error('Error Detail_Purchase:', e)
+  });
+}
+ItemNo: any[] = [];
+
+// เรียกใช้ API
+get_ItemNo() {
+  this.DetailPurchase.get_ItemNo().subscribe({
+    next: (response: any[]) => {
+      // เก็บข้อมูล response ลงใน ItemNo
+      console.log("Response raw จาก API:", response); // 👈 ดูว่ามีข้อมูลมั้ย
+      this.ItemNo = response;
+
+     
+
+      console.log("ItemNo ที่ได้จาก DB:", this.ItemNo);
+    },
+    error: (e: any) => console.error("Error API get_ItemNo:", e),
   });
 }
 
@@ -381,4 +399,3 @@ deleteItem(id: string) {
   });
 }
 }
-

@@ -10,7 +10,7 @@
         <p class="p"> Add user who have permission to use this program. </p>
       </div>
 
-      <button class="button"  data-bs-toggle="modal" data-bs-target="#Insert" > + Add </button>
+      <button class="button"  data-bs-toggle="modal" data-bs-target="#Insert" > <i class="bi bi-person-fill-add" style="color: rgb(0, 0, 0); font-size: 25px;"></i>  Add </button>
     </div>
     
     
@@ -35,6 +35,7 @@
           <tr class="table-secondary">
             <td colspan="9" class="text-start fw-bold bg-light p-3 rounded border">
               <span> Role: <strong>{{ group.key }}</strong></span>
+              
             </td>
           </tr>
 
@@ -83,9 +84,10 @@
             <td>
               <ng-container *ngIf="editingId !== emp.Employee_ID; else editingBtns">
                 <button class="btn btn-warning btn-sm" (click)="startEdit(emp)">
-                  <i class="bi bi-pencil"></i> Edit
+                  <i class="bi bi-pencil" style="color: black;"></i> Edit
                 </button>
               </ng-container>
+            
               <ng-template #editingBtns>
                 <button class="btn btn-success btn-sm me-1" (click)="saveEdit(emp)">
                   <i class="bi bi-check"></i> Save
@@ -94,12 +96,13 @@
                   <i class="bi bi-x"></i> Cancel
                 </button>
               </ng-template>
+             
             </td>
 
             <!-- ปุ่ม Delete -->
             <td>
               <button class="btn btn-danger btn-sm" (click)="deleteEmployee(emp.Employee_ID)">
-                <i class="bi bi-trash"></i> Delete
+                <i class="bi bi-trash" style="color: white;"></i> Delete
               </button>
             </td>
           </tr>
@@ -122,57 +125,68 @@
 
       <div class="modal-body">
         <form>
-          <!--  Role -->
-          <div class="mb-3">
-            <label class="form-label">Role</label>
-            <ng-select
-              [items]="Role"
-              bindLabel="label"
-              bindValue="value"
-              [(ngModel)]="Role_"
-              name="Role"
-              placeholder="Select a role">
-            </ng-select>
-          </div>
+         <div class="modal-body">
+  <form>
+    <!-- Role -->
+    <div class="mb-3">
+      <label class="form-label">Role</label>
+      <span>สำหรับกำหนดฝั่งการใช้งาน</span>
+      <ng-select
+        [items]="Role"
+        bindLabel="label"
+        bindValue="value"
+        [(ngModel)]="Role_"
+        name="Role"
+        [clearable]="true"
+        placeholder="Select a role">
+      </ng-select>
+      <small class="form-text text-muted">เลือกบทบาทของผู้ใช้ </small>
+    </div>
 
-          <!--  Employee ID & Name -->
-          <div class="mb-3 row">
-            <div class="col">
-              <label for="EmployeeId" class="form-label">Employee ID</label>
-              <input type="text" id="EmployeeId" class="form-control" name="EmployeeId" [(ngModel)]="EmployeeId_" />
-            </div>
-            <div class="col">
-              <label for="EmployeeName" class="form-label">Employee Name</label>
-              <input type="text" id="EmployeeName" class="form-control" name="EmployeeName" [(ngModel)]="EmployeeName_" />
-            </div>
-          </div>
+    <!-- Employee ID & Name -->
+    <div class="mb-3 row">
+      <div class="col">
+        <label for="EmployeeId" class="form-label">Employee ID</label>
+        <input type="text" id="EmployeeId" class="form-control" name="EmployeeId" [(ngModel)]="EmployeeId_" />
+        <small class="form-text text-muted">รหัสพนักงาน เช่น 1001</small>
+      </div>
+      <div class="col">
+        <label for="EmployeeName" class="form-label">Employee Name</label>
+        <input type="text" id="EmployeeName" class="form-control" name="EmployeeName" [(ngModel)]="EmployeeName_" />
+        <small class="form-text text-muted">ชื่อเต็มของพนักงาน</small>
+      </div>
+    </div>
 
-          <!-- Username & Password -->
-          <div class="mb-3 row">
-            <div class="col">
-              <label for="Username" class="form-label">Username</label>
-              <input type="text" id="Username" class="form-control" name="Username" [(ngModel)]="Username_" />
-            </div>
-            <div class="col">
-              <label for="Password" class="form-label">Password</label>
-              <input type="text" id="Password" class="form-control" name="Password" [(ngModel)]="Password_" />
-            </div>
-          </div>
+    <!-- Username & Password -->
+    <div class="mb-3 row">
+      <div class="col">
+        <label for="Username" class="form-label">Username</label>
+        <input type="text" id="Username" class="form-control" name="Username" [(ngModel)]="Username_" />
+        <small class="form-text text-muted">ชื่อผู้ใช้สำหรับล็อกอิน</small>
+      </div>
+      <div class="col">
+        <label for="Password" class="form-label">Password</label>
+        <input type="text" id="Password" class="form-control" name="Password" [(ngModel)]="Password_" />
+        <small class="form-text text-muted">รหัสผ่านเข้าสู่ระบบ</small>
+      </div>
+    </div>
 
-           <!-- Username & Password -->
-          <div class="mb-3 row">
-            <div class="col">
-              <label for="Username" class="form-label">Email</label>
-              <input type="text" id="Username" class="form-control" name="Username" [(ngModel)]="Email_" />
-            </div>
-            
-          </div>
+    <!-- Email -->
+    <div class="mb-3 row">
+      <div class="col">
+        <label for="Email" class="form-label">Email</label>
+        <input type="text" id="Email" class="form-control" name="Email" [(ngModel)]="Email_" />
+        <small class="form-text text-muted">อีเมลที่ใช้ติดต่อ</small>
+      </div>
+    </div>
+  </form>
+</div>
         </form>
       </div>
 
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" (click)="addEmployee()">Save</button>
+        <button type="button" class="btn btn-primary" (click)="addEmployee()" style="width: 150px;">Save</button>
       </div>
 
     </div>

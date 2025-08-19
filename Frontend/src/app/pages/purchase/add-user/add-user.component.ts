@@ -5,6 +5,7 @@ import { EmployeeService } from '../../../core/services/Employee.service';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import Swal from 'sweetalert2';
+declare var bootstrap:any;
 
 @Component({
   selector: 'app-add-user',
@@ -27,7 +28,7 @@ export class AddUserComponent {
   ];
 
   // รับค่าจากแบบฟอร์ม (เพิ่มใหม่)
-  Role_: string = '';
+  Role_:string | null = null;
   EmployeeId_: string = '';
   EmployeeName_: string = '';
   Username_: string = '';
@@ -65,12 +66,7 @@ export class AddUserComponent {
   // เพิ่มพนักงาน
   addEmployee() {
     if (!this.EmployeeId_ || !this.EmployeeName_ || !this.Username_ || !this.Password_ || !this.Role_ || !this.Email_) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'กรอกข้อมูลไม่ครบ',
-        text: 'กรุณากรอกข้อมูลให้ครบถ้วนก่อนบันทึก',
-        confirmButtonText: 'ตกลง'
-      });
+      Swal.fire({ icon: 'warning', title: 'กรอกข้อมูลไม่ครบ' });
       return;
     }
 
@@ -85,17 +81,29 @@ export class AddUserComponent {
 
     this.EmployeeService.addEmployee(employeeData).subscribe({
       next: () => {
-        Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'บันทึกข้อมูลพนักงานเรียบร้อยแล้ว' });
-        // ล้างฟอร์ม
-        this.EmployeeId_ = this.EmployeeName_ = this.Username_ = this.Password_ = this.Role_ = this.Email_ = '';
-        // โหลดข้อมูลใหม่
+        Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'บันทึกข้อมูลเรียบร้อยแล้ว' });
+
+        //  ปิด modal
+        const modalEl = document.getElementById('Insert');
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.hide();
+
+        this.resetForm();
         this.Get_Employee();
       },
-      error: (err) => {
-        console.error('❌ เกิดข้อผิดพลาด:', err);
-        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่' });
+      error: () => {
+        Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถบันทึกข้อมูลได้' });
       }
     });
+  }
+
+  resetForm() {
+    this.Role_ = null;
+    this.EmployeeId_ = '';
+    this.EmployeeName_ = '';
+    this.Username_ = '';
+    this.Password_ = '';
+    this.Email_ = '';
   }
 
   //  ลบพนักงาน
