@@ -69,6 +69,7 @@
             <th>Division</th>
             <th>Fac</th>
             <th>Part No</th>
+            <th>ItemNo</th>
             <th>Process</th>
             <th>QTY</th>
             <th>Status</th>
@@ -84,6 +85,7 @@
             <td [ngClass]="getStatusClass(item.Status)">{{ item.Division }}</td>
             <td [ngClass]="getStatusClass(item.Status)">{{ item.Fac }}</td>
             <td [ngClass]="getStatusClass(item.Status)">{{ item.PartNo }}</td>
+            <td [ngClass]="getStatusClass(item.Status)">{{ item.ItemNo }}</td>
             <td [ngClass]="getStatusClass(item.Status)">{{ item.Process }}</td>
             <td [ngClass]="getStatusClass(item.Status)">{{ item.Req_QTY }}</td>
             <td [ngClass]="getStatusClass(item.Status)">{{ item.Status }}</td>
