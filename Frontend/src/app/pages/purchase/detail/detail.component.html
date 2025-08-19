@@ -88,10 +88,21 @@
               <td>{{ item.Requester }}</td>
               <td class="PartNo-column">{{ item.PartNo }}</td>
               <td>
-                <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.ItemNo }}</span>
-                <input *ngIf="editingIndex[item.ID_Request] === i" type="text" [(ngModel)]="item.ItemNo"
-                  type="text" />
+                  <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showItemNo">
+                    <ng-select
+                      [items]="ItemNo"
+                      bindLabel="label"
+                      bindValue="value"
+                      [(ngModel)]="ItemNo_"
+                      [virtualScroll]="true"
+                      placeholder="Select a Item No.">
+                    </ng-select>
+                  </ng-container>
+                <ng-template #showItemNo>{{ item.ItemNo }}</ng-template>
               </td>
+                <!-- <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.ItemNo }}</span>
+                <input *ngIf="editingIndex[item.ID_Request] === i" type="text" [(ngModel)]="item.ItemNo"
+                  type="text" /> -->
 
               <td class="spec-column">{{ item.SPEC }}</td>
               <td>{{ item.Process }}</td>

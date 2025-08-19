@@ -24,6 +24,17 @@ import { FileReadService } from '../../../core/services/FileRead.service';
   styleUrls: ['./detail.component.scss']
 })
 export class DetailComponent implements OnInit {
+
+  // Dropdown data
+  PartNo_: any = null;
+  ItemNo_: any = null;
+
+  // option dropdown
+  PartNo: any = [];
+  ItemNo: any[] = [];
+  SPEC: any[] = []; // เก็บข้อมูล SPEC ที่ดึงมาจาก API
+
+
   editingIndex: { [key: string]: number | null } = {}; // เก็บแถวที่กำลังแก้ไข
   request: any[] = [];
   // request: { Setup: any[]; Other: any[] } = { Setup: [], Other: [] }; // แยกเป็น Setup กับ Other
@@ -36,11 +47,13 @@ category = '';
   items: any[] = [];
   highlightedRow: number | null = null; // ใช้ไฮไลต์แถวใหม่หรือแถวที่เลือก
 
+  
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private DetailPurchase: DetailPurchaseRequestlistService,
-    private FileReadService: FileReadService
+    private FileReadService: FileReadService,
   ) {}
 
 
@@ -56,6 +69,75 @@ ngOnInit() {
     this.Detail_Purchase();               // โหลดใหม่เมื่อ category เปลี่ยน
   });
 }
+
+get_ItemNo() {
+  this.DetailPurchase.get_ItemNo().subscribe({
+    next: (response: any[]) => {
+      console.log('Response from DetailPurchase:', response);
+      if (response) {
+        this.ItemNo = response.filter(
+          (item, index, self) =>
+            index === self.findIndex(obj => obj.ItemNo === item.ItemNo)
+        );
+      } else {
+        console.warn('Response is undefined');
+      }
+    },
+    error: (e: any) => console.error('DetailPurchase error:', e),
+  });
+}
+
+// async get_SPEC(event: any) {
+//   const itemNo = event.ItemNo ?? event;
+//   if (!itemNo) return;
+
+//   this.DetailPurchase.get_ItemNo(itemNo).subscribe({
+//     next: (response: any[]) => {
+//       this.SPEC = response.filter(
+//         (item, index, self) =>
+//           index === self.findIndex(obj => obj.ItemNo === item.ItemNo)
+//       );
+//       console.log('SPEC:', this.SPEC);
+//     },
+//     error: e => console.error('Error get_SPEC:', e),
+//   });
+// }
+
+// เรียกใช้ตัวดึงapi
+// async get_SPEC(event: any) {
+//   const itemNo = event.ItemNo ?? event;
+//   if (itemNo) {
+//     this.DetailPurchase.get_ItemNo({ ItemNo: itemNo }).subscribe({
+//       next: (response: any[]) => {
+      
+//         this.SPEC = response.filter(
+//           (item, index, self) =>
+//             index === self.findIndex(obj => obj.ItemNo === item.ItemNo)
+//         );
+        
+//       },
+//       error: (e: any) => console.error(e),
+//     });
+//   }
+// }
+
+// Get_ItemNo() {
+//   this.api.get_ItemNo().subscribe({
+//     next: (response: any[]) => {
+//       // เก็บค่า PartNo ที่ดึงมาจาก API
+//       // และกรองไม่ให้ซ้ำ
+//       this.ItemNo = response.filter(
+//         (item, index, self) =>
+//           index === self.findIndex(obj => obj.ItemNo === item.ItemNo)
+//       );
+
+//       console.log("ItemNo:", this.ItemNo);
+//     },
+//     error: (e: any) => console.error(e),
+//   });
+// }
+
+
 
 // โหลดรายการ purchase request จาก backend
 Detail_Purchase() {
