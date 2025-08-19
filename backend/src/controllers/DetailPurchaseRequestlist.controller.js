@@ -35,6 +35,22 @@ exports.Get_ItemNo = async (req, res) => {
   }
 };
 
+exports.get_ItemNo = async (req, res) => {
+  console.log(req.body)
+  try {
+    const pool = await poolPromise;
+    const result = await pool
+    .request()
+    .query("EXEC Stored_View_CuttingTool_FindItem_Purchase");
+
+    res.json(result.recordset);
+  } 
+  catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
 exports.Update_Status_Purchase = async (req, res) => {
   console.log(req.body); // ตรวจสอบค่าที่ส่งมา { ID_Request: , Status:  }
 
@@ -277,6 +293,96 @@ exports.DeleteItem = async (req, res) => {
     res.status(500).json({ message: 'ลบไม่สำเร็จ', error: error.message });
   }
 };
+
+
+
+
+
+// // ดึงItemno จาก division partno process mc
+// exports.post_ItemNo = async (req, res) => {
+//   console.log('item:',req.body);
+//   try {
+//     const { Division, PartNo, Process, MC }= req.body;
+//     console.log( Division,PartNo, Process, MC );
+
+//     if (!Division || !PartNo  || !Process || !MC ) {
+//       return res.status(400).json({ error: "Missing PartNo parameter" });
+//     }
+
+//     const pool = await poolPromise;
+//     const result = await pool
+//       .request()
+//       .input("Division",sql.NVarChar, req.body.Division)
+//       .input("PartNo",sql.NVarChar, req.body.PartNo)
+      
+//       .input("PROCESS",sql.NVarChar, req.body.Process)
+//       .input("MC",sql.NVarChar, req.body.MC)
+//       .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem_QTY] @Division,@PartNo, @PROCESS, @MC ");
+
+//     if (result.recordset.length === 0) {
+//       // return res.status(404).json({ message: "Spec not found for this PartNo" });
+     
+//     } else {
+//       res.json(result.recordset);
+      
+//     }    
+//   } catch (error) {
+//     console.error("Error executing query:", error.stack);
+//     res.status(500).json({ error: "Internal Server Error", details: error.message });
+//   }
+// };
+
+
+// exports.Get_ItemNo = async (req, res) => {
+//   console.log(req.body)
+//   try {
+//     const pool = await poolPromise;
+//     const result = await pool
+//     .request()
+//     .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem]");
+
+//     res.json(result.recordset);
+//   } 
+//   catch (error) {
+//     console.error("Error executing query:", error.stack);
+//     res.status(500).json({ error: "Internal Server Error", details: error.message });
+//   }
+// };
+
+// exports.post_Spec = async (req, res) => {
+//   console.log('item:',req.body);
+//   try {
+//     const { Division, PartNo, Process, MC }= req.body;
+//     console.log( Division,PartNo, Process, MC );
+
+//     if (!Division || !PartNo  || !Process || !MC ) {
+//       return res.status(400).json({ error: "Missing PartNo parameter" });
+//     }
+
+//     const pool = await poolPromise;
+//     const result = await pool
+//       .request()
+//       .input("Division",sql.NVarChar, req.body.Division)
+//       .input("PartNo",sql.NVarChar, req.body.PartNo)
+      
+//       .input("PROCESS",sql.NVarChar, req.body.Process)
+//       .input("MC",sql.NVarChar, req.body.MC)
+//       .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem_QTY] @Division,@PartNo, @PROCESS, @MC ");
+
+//     if (result.recordset.length === 0) {
+//       // return res.status(404).json({ message: "Spec not found for this PartNo" });
+     
+//     } else {
+//       res.json(result.recordset);
+      
+//     }    
+//   } catch (error) {
+//     console.error("Error executing query:", error.stack);
+//     res.status(500).json({ error: "Internal Server Error", details: error.message });
+//   }
+// };
+
+
 // exports.Add_New_Request = async (req, res) => {
 //   try {
 //     console.log(req.body)

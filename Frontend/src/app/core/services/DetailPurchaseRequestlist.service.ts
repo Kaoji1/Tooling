@@ -43,3 +43,12 @@ get_ItemNo(): Observable<any> { // ฟังก์ชันสำหรับด
     return this.httpClient.get(`${baseUrl}/get_ItemNo`); // ส่ง HTTP GET Division
   }
 }
+// get_ItemNo(itemNo: string): Observable<any[]> {
+//   return this.httpClient.get<any[]>(`${baseUrl}/get_ItemNo`, {
+//     params: { ItemNo: itemNo }  // ส่งเป็น query param
+//   });
+
+
+// get_SPEC(): Observable<any> {
+//   return this.httpClient.post(`${baseUrl}/get_SPEC`);
+// }
