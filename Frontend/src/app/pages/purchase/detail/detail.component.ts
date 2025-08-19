@@ -216,9 +216,7 @@ isCompleting = false; // กันกดซ้ำ
 completeSelected() {
   if (this.isCompleting) return;
 
-  // เลือกเฉพาะแถวที่ติ๊กและ Status = 'Waiting'
   const selectedItems = this.request.filter(it => it.Selection && it.Status === 'Waiting');
-
   if (selectedItems.length === 0) {
     alert('กรุณาเลือกข้อมูลที่ต้องการ (สถานะ Waiting)');
     return;
@@ -226,7 +224,6 @@ completeSelected() {
 
   this.isCompleting = true;
 
-  // ทำงานทีละตัวแบบ async
   const processNext = async (index: number) => {
     if (index >= selectedItems.length) {
       this.isCompleting = false;
@@ -241,33 +238,24 @@ completeSelected() {
       item.Status = 'Complete'; // optimistic update
 
       if (item.isNew) {
-        // แถวใหม่: ต้อง insert ก่อนแล้วอัปเดตสถานะ
         const insertRes: any = await this.DetailPurchase.insertRequest(item).toPromise();
+        if (insertRes && insertRes.ID_Request) item.ID_Request = insertRes.ID_Request;
+        else throw new Error('Backend ไม่ส่ง ID กลับมา');
 
-        if (insertRes && insertRes.ID_Request) {
-          item.ID_Request = insertRes.ID_Request;
-        } else {
-          throw new Error('Backend ไม่ส่ง ID กลับมา');
-        }
-
-        // อัปเดตสถานะ Complete หลัง insert
         await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
       } else {
-        // แถวเดิม: อัปเดตสถานะ Complete เลย
         await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
       }
 
-      //  ลบแถวที่สำเร็จ
+      // ลบแถวที่สำเร็จ
       this.request = this.request.filter(r => r.ID_Request !== item.ID_Request);
-
       console.log('อัปเดตสำเร็จและลบแถว ID:', item.ID_Request);
+
     } catch (err) {
-      // rollback ถ้า fail
       item.Status = prevStatus;
       console.error('Error completeSelected ID:', item.ID_Request, err);
       alert(`อัปเดต ID:${item.ID_Request} ไม่สำเร็จ`);
     } finally {
-      // ประมวลผลตัวต่อไป
       processNext(index + 1);
     }
   };
