@@ -31,7 +31,10 @@
 // }
 
 .editing-row {
-  background-color: #40c0d1; // สีฟ้าอ่อนตอนแก้ไข
+  background-color: #40c0d1;
+  .highlight-row {
+  background-color: #40c0d1; /* สีเขียวอ่อน */
+} // สีฟ้าอ่อนตอนแก้ไข
 }
 .editing-row td {
   background-color: #40c0d1; // สีส้มอ่อนตอนเพิ่มใหม่
