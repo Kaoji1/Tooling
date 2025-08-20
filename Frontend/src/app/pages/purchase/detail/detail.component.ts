@@ -213,7 +213,7 @@ addNewRequest(newRequestData: any, rowIndex: number) {
       // alert('เพิ่มข้อมูลสำเร็จ');
       Swal.fire({
         icon: "success",
-        title: "Add New Row Success",
+        title: "Successfully Added Data Row",
         showConfirmButton: false,
         timer: 1330
         });
@@ -273,7 +273,7 @@ saveEdit(caseKey: number, rowIndex: number) {
         // alert('บันทึกแถวใหม่เรียบร้อย');
         Swal.fire({
         icon: "success",
-        title: "Successfully Added Data Row",
+        title: "Your work has been saved",
         showConfirmButton: false,
         timer: 1330
         });
@@ -453,20 +453,65 @@ const cleanPath = filePath.replace(/^"|"$/g, '');
   });
 }
 
-// ลบรายการด้วย ID
+
 deleteItem(id: string) {
   console.log('เรียก deleteItem id:', id);
-  if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?')) return;
 
-  this.DetailPurchase.deleteRequest(Number(id)).subscribe({
-    next: () => {
-      console.log('ลบรายการสำเร็จ id:', id);
-      this.request = this.request.filter(item => item.ID_Request !== id);
-      console.log('request หลัง deleteItem:', this.request);
+  Swal.fire({
+    title: 'Do you want to delete',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'No',
+    customClass: {
+      confirmButton: 'btn btn-success me-3',
+      cancelButton: 'btn btn-danger'
     },
-    error: err => { console.error('Error deleteItem:', err); alert('เกิดข้อผิดพลาดในการลบ'); }
+    buttonsStyling: false
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // เรียก API ลบ
+      this.DetailPurchase.deleteRequest(Number(id)).subscribe({
+        next: () => {
+          console.log('ลบรายการสำเร็จ id:', id);
+          this.request = this.request.filter(item => item.ID_Request !== id);
+          console.log('request หลัง deleteItem:', this.request);
+          Swal.fire({
+            title: 'Delete Success!',
+            icon: 'success'
+          });
+        },
+        error: err => {
+          console.error('Error deleteItem:', err);
+          Swal.fire({
+            title: 'เกิดข้อผิดพลาดในการลบ',
+            icon: 'error'
+          });
+        }
+      });
+    } else if (result.dismiss === Swal.DismissReason.cancel) {
+      Swal.fire({
+        title: 'Cancel Delete',
+        icon: 'info'
+      });
+    }
   });
 }
+
+// // ลบรายการด้วย ID
+// deleteItem(id: string) {
+//   console.log('เรียก deleteItem id:', id);
+//   if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?')) return;
+
+//   this.DetailPurchase.deleteRequest(Number(id)).subscribe({
+//     next: () => {
+//       console.log('ลบรายการสำเร็จ id:', id);
+//       this.request = this.request.filter(item => item.ID_Request !== id);
+//       console.log('request หลัง deleteItem:', this.request);
+//     },
+//     error: err => { console.error('Error deleteItem:', err); alert('เกิดข้อผิดพลาดในการลบ'); }
+//   });
+// }
 
 
 }
