@@ -191,38 +191,62 @@ async get_PartNo(event: any) {
   }
 
 
-
+loading: boolean = false;  // เก็บสถานะกำลังโหลด
 
 Setview() {
   const Division = this.Div_?.Division || this.Div_;
   const Fac = this.Fac_;
   const PartNo = this.PartNo_?.PartNo || this.PartNo_;
-  // const Spec = this.Spec_?.SPEC|| this.Spec_;
   const Process = this.Process_?.Process || this.Process_;
   const MC = this.MachineType_?.MC || this.MachineType_;
   const DueDate_ = this.DueDate_;
   const Case_ = this.Case_;
-// แจ้งเตือนกรอกไม่ครบ
-  const missingFields:string[] = [];
+
+  // ตรวจสอบฟิลด์ที่หาย
+  const missingFields: string[] = [];
   if (!Division) missingFields.push("Division");
   if (!Fac) missingFields.push("Fac");
   if (!PartNo) missingFields.push("PartNo");
   if (!Process) missingFields.push("Process");
   if (!MC) missingFields.push("Machine Type");
   if (!DueDate_) missingFields.push("DueDate");
-  if (!Case_) missingFields.push("Case")
+  if (!Case_) missingFields.push("Case");
 
- if (missingFields.length > 0) {
-  Swal.fire({
-    icon: 'warning',
-    title: 'Incomplete Data',
-    html: 'Missing fields:<br><ul style="text-align:left;">' +
-           missingFields.map(field =>` <li>${field}</li>`).join('') +
-          '</ul>',
-    confirmButtonText: 'ตกลง'
+  if (missingFields.length > 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Incomplete Data',
+      html:
+        'Missing fields:<br><ul style="text-align:left;">' +
+        missingFields.map(field => `<li>${field}</li>`).join('') +
+        '</ul>',
+      confirmButtonText: 'ตกลง'
+    });
+    return;
+  }
+
+  // set state กำลังโหลด
+  this.loading = true;
+
+  const data = { Division, PartNo, Process, MC };
+
+  this.api.post_ItemNo(data).subscribe({
+    next: (response) => {
+      this.items = response.map((item: any) => ({
+        ...item,
+        checked: true,
+        qty: null
+      }));
+
+      console.log('ข้อมูลที่โหลด:', this.items);
+      this.loading = false; // โหลดเสร็จ
+    },
+    error: (e) => {
+      console.error('API Error:', e);
+      this.loading = false; // โหลดเสร็จแต่ error
+    }
   });
-  return;
-}
+
   console.log('division:', Division);
   console.log('factory:', Fac);
   console.log('PartNo:', PartNo);
@@ -430,10 +454,11 @@ AddToCart() {
   this.cartService.addCartToDB(allItemsToSend).subscribe({
     next: () => {
       Swal.fire({
-  icon: 'success',
-  title: 'Success',
-  text: 'Items have been successfully added to the cart',
-  confirmButtonText: 'OK'
+        icon: 'success',
+        title: 'Success',
+        text: 'Items have been successfully added to the cart',
+        showConfirmButton: false,
+        timer:1500
 });
 },
 error: () => {
@@ -451,18 +476,22 @@ error: () => {
 // function clearall
 Clearall() {
   // Delete select group
-  this.Div_=null;
-  this.Fac_=null;
-  this.DueDate_='';
-  this.Case_=null;
-  this.PartNo_=null;
-  this.Spec_=null
-  this.MachineType_=null;
-  this.Process_=null
+  this.Div_ = null;
+  this.Fac_ = null;
+  this.DueDate_ = '';
+  this.Case_ = null;
+  this.PartNo_ = null;
+  this.Spec_ = null;
+  this.MachineType_ = null;
+  this.Process_ = null;
+
   // Delete items ค่าที่รวมที่จะส่งไปตะกร้า
-  this.items=[];
-  this.PathDwg_=null;
-  }
+  this.items = [];
+  this.PathDwg_ = null;
+
+  // 👇 เพิ่มบรรทัดนี้เพื่อให้หยุดหมุนถ้ายัง loading อยู่
+  this.loading = false;
+}
   // upload file
   selectedFileName: string = '';
   onFileChosen(event: any) {
