@@ -201,6 +201,7 @@ Setview() {
   const Process = this.Process_?.Process || this.Process_;
   const MC = this.MachineType_?.MC || this.MachineType_;
   const DueDate_ = this.DueDate_;
+  const Case_ = this.Case_;
 // แจ้งเตือนกรอกไม่ครบ
   const missingFields:string[] = [];
   if (!Division) missingFields.push("Division");
@@ -209,12 +210,13 @@ Setview() {
   if (!Process) missingFields.push("Process");
   if (!MC) missingFields.push("Machine Type");
   if (!DueDate_) missingFields.push("DueDate");
+  if (!Case_) missingFields.push("Case")
 
  if (missingFields.length > 0) {
   Swal.fire({
     icon: 'warning',
-    title: 'กรุณากรอกข้อมูลให้ครบ',
-    html: 'รายการที่ยังไม่กรอก:<br><ul style="text-align:left;">' +
+    title: 'Incomplete Data',
+    html: 'Missing fields:<br><ul style="text-align:left;">' +
            missingFields.map(field =>` <li>${field}</li>`).join('') +
           '</ul>',
     confirmButtonText: 'ตกลง'
@@ -354,7 +356,7 @@ Setview() {
     });
   } else {
     console.warn('กรุณาเลือกข้อมูลให้ครบก่อน');
-    alert("กรุณาเลือกข้อมูลให้ครบทุกช่องก่อนค้นหา");
+   
   }
 }
 
@@ -367,9 +369,9 @@ AddToCart() {
   if (filteredItems.length < checkedItems.length) {
     Swal.fire({
       icon: 'warning',
-      title: 'ข้อมูลไม่ครบ',
-      text: 'กรุณากรอกข้อมูลให้ครบในรายการที่เลือก',
-      confirmButtonText: 'ตกลง'
+      title: 'Incomplete Data',
+      text: 'Please fill in all required fields for the selevted item',
+      confirmButtonText: 'OK'
     });
     return;
   }
@@ -406,7 +408,8 @@ AddToCart() {
       MCQTY_: this.MCQTY_,
       PathDwg_: this.PathDwg_,
       ON_HAND : item.ON_HAND,
-      Employee_Name: employeeName //  เพิ่มตรงนี้
+      Employee_Name: employeeName, //  เพิ่มตรงนี้
+      PhoneNo:this.phone_
     });
     return acc;
   }, {});
@@ -414,8 +417,8 @@ AddToCart() {
   if (Object.keys(groupedByCase).length === 0) {
     Swal.fire({
       icon: 'warning',
-      title: 'ไม่มีรายการ',
-      text: 'ไม่มีรายการที่เลือกไว้สำหรับเพิ่มลงตะกร้า',
+      title: 'No Item',
+      text: 'No item selected add to cart',
       confirmButtonText: 'ตกลง'
     });
     return;
@@ -427,20 +430,20 @@ AddToCart() {
   this.cartService.addCartToDB(allItemsToSend).subscribe({
     next: () => {
       Swal.fire({
-        icon: 'success',
-        title: 'สำเร็จ',
-        text: 'เพิ่มรายการลงตะกร้าเรียบร้อย',
-        confirmButtonText: 'ตกลง'
-      });
-    },
-    error: () => {
-      Swal.fire({
-        icon: 'error',
-        title: 'เกิดข้อผิดพลาด',
-        text: 'บันทึกลงฐานข้อมูลล้มเหลว',
-        confirmButtonText: 'ลองใหม่'
-      });
-    }
+  icon: 'success',
+  title: 'Success',
+  text: 'Items have been successfully added to the cart',
+  confirmButtonText: 'OK'
+});
+},
+error: () => {
+  Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: 'Failed to save data to the database',
+    confirmButtonText: 'Retry'
+  });
+}
   });
 
   this.Clearall();

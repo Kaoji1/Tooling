@@ -91,14 +91,22 @@ export class HistoryComponent implements OnInit {
       return dateA - dateB; // เรียงจากเก่า -> ใหม่
     });
   }
-getStatusClass(status: string): string {
-  const s = status?.toLowerCase().trim();
+getStatusClass(Status: string, Remark?: any): string {
+  const s = Status?.toLowerCase().trim();
+
+  // normalize remark → แปลงเป็น string แล้ว trim
+  const r = Remark != null ? String(Remark).trim().toLowerCase() : '';
+
+  // ถ้า complete และ remark มีค่า (ไม่ใช่ "", "null", "undefined")
+  if (s === 'complete' && r !== '' && r !== 'null' && r !== 'undefined') {
+    return 'bg-completeremark'; // สีเหลือง
+  }
+
   if (s === 'complete') return 'bg-complete';
   if (s === 'waiting') return 'bg-waiting';
- 
+
   return '';
 }
-
   
 }
 

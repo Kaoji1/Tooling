@@ -73,6 +73,7 @@
             <th>Process</th>
             <th>QTY</th>
             <th>Status</th>
+            <th>Remark</th>
             <th>ReqDate</th>
             <th>DueDate</th>
             
@@ -89,6 +90,7 @@
             <td [ngClass]="getStatusClass(item.Status)">{{ item.Process }}</td>
             <td [ngClass]="getStatusClass(item.Status)">{{ item.Req_QTY }}</td>
             <td [ngClass]="getStatusClass(item.Status)">{{ item.Status }}</td>
+            <td [ngClass]="getStatusClass(item.Status, item.Remark)">{{ item.Remark }}</td>
             <td [ngClass]="getStatusClass(item.Status)">{{ item.DateTime_Record | date:'dd/MM/yyyy' }}</td>
             <td [ngClass]="getStatusClass(item.Status)">{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
           </tr>

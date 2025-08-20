@@ -29,14 +29,15 @@ exports.AddCartItems = async (req, res) => {
         .input('Due_Date', sql.Date, item.DueDate_)
         .input('PathDwg', sql.NVarChar, item.PathDwg_)
         .input('ON_HAND', sql.Int, item.ON_HAND)
+        .input('PhoneNo',sql.NVarChar,item.PhoneNo)
         .query(`
           INSERT INTO tb_IssueCuttingTool_SendToCart (
             Division, Requester, Fac, PartNo, Process, [CASE],
-            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCQTY, Due_Date, PathDwg, ON_HAND
+            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCQTY, Due_Date, PathDwg, ON_HAND, PhoneNo
           )
           VALUES (
             @Division, @Requester, @Fac, @PartNo, @Process, @CASE,
-            @MCType, @ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCQTY, @Due_Date, @PathDwg, @ON_HAND
+            @MCType, @ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCQTY, @Due_Date, @PathDwg, @ON_HAND, @PhoneNo
           )
         `);
     }

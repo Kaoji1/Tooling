@@ -370,26 +370,23 @@ openPdfFromPath(filePath: string) {
     return;
   }
 
-  this.FileUploadSerice.loadPdfFromPath(filePath).subscribe({
-    next: (res) => {
-      // 1. แยก base64 ออกจาก prefix
-      const base64 = res.imageData.split(',')[1];
+  //  ลบเครื่องหมาย " ทั้งหน้าและหลังออก
+  const cleanPath = filePath.replace(/^"|"$/g, '');
 
-      // 2. แปลง base64 เป็น binary
+  this.FileUploadSerice.loadPdfFromPath(cleanPath).subscribe({
+    next: (res) => {
+      const base64 = res.imageData.split(',')[1];
       const binary = atob(base64);
       const len = binary.length;
       const bytes = new Uint8Array(len);
+
       for (let i = 0; i < len; i++) {
         bytes[i] = binary.charCodeAt(i);
       }
 
-      // 3. แปลงเป็น Blob
       const blob = new Blob([bytes], { type: 'application/pdf' });
-
-      // 4. สร้าง URL จาก Blob
       const blobUrl = URL.createObjectURL(blob);
 
-      // 5. เปิดแท็บใหม่
       window.open(blobUrl, '_blank');
     },
     error: () => {
