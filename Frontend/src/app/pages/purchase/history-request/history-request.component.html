@@ -55,8 +55,10 @@
 
   <!-- กลุ่มปุ่ม export -->
   <div class="button-group">
-    <button class="excel-button" type="button" class="btn btn-success" (click)="showAlert()"><i class="bi bi-send-fill"> </i>EXPORT TO EXCEL</button>
-    <button class="export-button" type="button" class="btn btn-danger" (click)="showSuccessAlert()"><i class="bi bi-send-fill"> </i>EXPORT TO AS400</button>
+    <button class="excel-button" type="button" class="btn btn-success" (click)="exportexcel()"><i class="bi bi-file-earmark-spreadsheet"></i>  EXPORT TO EXCEL</button>
+    <button class="export-button" type="button" class="btn btn-danger"><i class="bi bi-database"></i>  EXPORT TO AS400 </button>
+        <!-- <button class="export-button" type="button" class="btn btn-danger" (click)="showSuccessAlert()"><i class="bi bi-send-fill"> </i>EXPORT TO AS400</button> -->
+
   </div>
 </div>
       <!-- <div class="button-group">
@@ -127,7 +129,7 @@
 
       <!-- ตารางข้อมูล -->
       <div class="table-responsive">
-          <table class="table table-bordered table-hover align-middle text-center">
+          <table class="table table-bordered table-hover align-middle text-center" id="table-data">
             <thead class="table-light">
               <tr>
                 <th style="width: 20px;">

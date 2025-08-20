@@ -6,6 +6,8 @@ import { PurchaseHistoryservice } from '../../../core/services/PurchaseHistory.s
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx'
+
 
 @Component({
   selector: 'app-history-request',
@@ -146,7 +148,19 @@ onFilter() {
 //   });
 //   console.log('Filtered requests after sortByDueDate:', this.filteredRequests);
 
+//export excelfile
+fileName = "ExcelSheet.xlsx";
 
+exportexcel(){
+
+  let data = document.getElementById("table-data");
+  const ws :XLSX.WorkSheet = XLSX.utils.table_to_sheet(data)
+
+  const wb :XLSX.WorkBook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Sheet1')
+
+  XLSX.writeFile(wb,this.fileName)
+}
 
   showSuccessAlert() {
     Swal.fire({
@@ -165,27 +179,27 @@ onFilter() {
       }
     });
   }
+}
 
-  showAlert() {
-    Swal.fire({
-      title: 'Export To Excel?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
-      customClass: { confirmButton: 'btn btn-success me-3', cancelButton: 'btn btn-danger' },
-      buttonsStyling: false
-    }).then(result => {
-      if (result.isConfirmed) {
-        Swal.fire({ title: 'Export AS400 Success!', icon: 'success' });
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
-        Swal.fire({ title: 'Cancelled', icon: 'error' });
-      }
-    });
-  }
+  // showAlert() {
+  //   Swal.fire({
+  //     title: 'Export To Excel?',
+  //     icon: 'warning',
+  //     showCancelButton: true,
+  //     confirmButtonText: 'Yes',
+  //     cancelButtonText: 'No',
+  //     customClass: { confirmButton: 'btn btn-success me-3', cancelButton: 'btn btn-danger' },
+  //     buttonsStyling: false
+  //   }).then(result => {
+  //     if (result.isConfirmed) {
+  //       Swal.fire({ title: 'Export AS400 Success!', icon: 'success' });
+  //     } else if (result.dismiss === Swal.DismissReason.cancel) {
+  //       Swal.fire({ title: 'Cancelled', icon: 'error' });
+  //     }
+  //   });
+  // }
 
   
-}
 
 
 // import { Component,OnInit} from '@angular/core';

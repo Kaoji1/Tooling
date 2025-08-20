@@ -135,7 +135,8 @@ exports.Update_Request = async (req, res) => {
       PathDwg, 
       PathLayout,
       SPEC,
-      QTY
+      QTY,
+      PhoneNo
     } = req.body;
 
     const pool = await poolPromise;
@@ -158,6 +159,7 @@ exports.Update_Request = async (req, res) => {
       .input("Status", sql.NVarChar, Status)
       .input("PathLayout", sql.NVarChar, PathLayout)
       .input("Remark", sql.NVarChar, Remark)
+      .input("PhoneNo", sql.Int, PhoneNo)
       .query(`
         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
         SET DocNo = @DocNo,
@@ -176,7 +178,8 @@ exports.Update_Request = async (req, res) => {
             [CASE] = @CASE,
             Status = @Status,
             PathLayout = @PathLayout,
-            Remark = @Remark
+            Remark = @Remark,
+            PhoneNo = @PhoneNo
         WHERE ID_Request = @ID_Request
       `);
     if (result.rowsAffected[0] > 0) {
@@ -212,7 +215,8 @@ exports.Add_New_Request = async (req, res) => {
       ON_HAND, 
       DueDate, 
       PathDwg, 
-      PathLayout, 
+      PathLayout,
+      PhoneNo
     } = req.body;
 
     if (!ItemNo && !SPEC) {
@@ -257,12 +261,13 @@ exports.Add_New_Request = async (req, res) => {
       .input("Status", sql.NVarChar, Status)
       .input("PathLayout", sql.NVarChar, PathLayout)
       .input("Remark", sql.NVarChar, Remark)
+      .input("PhoneNo", sql.Int, PhoneNo)
       .query(`
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] 
-        (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark)
+        (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo)
         OUTPUT INSERTED.ID_Request
         VALUES 
-        (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark);
+        (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo);
       `);
 
     const ID_Request = result.recordset[0]?.ID_Request || null;
