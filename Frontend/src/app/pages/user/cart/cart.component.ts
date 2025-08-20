@@ -119,8 +119,9 @@ saveEdit(case_: string, index: number) {
       Swal.fire({
         icon: 'success',
         title: 'Save',
-        text: 'อัปเดตข้อมูลเรียบร้อยแล้ว',
-        confirmButtonText: 'ตกลง'
+        text: 'UpdateComplete',
+        showConfirmButton: false,
+        timer:1500
       });
       this.editingIndex[case_] = null;
     },

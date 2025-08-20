@@ -135,7 +135,15 @@
         <button class="btn-viewall" type="button" (click)="Clearall()"> CLEARALL <i class="bi bi-trash3" style="margin-right: 3px;"></i></button>
         <!-- <button class="btn-import" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal"
           data-bs-whatever="@getbootstrap"> IMPORT <i class="bi bi-download"></i></button> -->
-        <button class="btn-view" type="button" (click)="Setview()" > VIEW <i class="bi bi-eye-fill"></i></button>
+       <button class="btn-view" type="button" (click)="Setview()" [disabled]="loading">
+            <ng-container *ngIf="!loading; else loadingTpl">
+              VIEW <i class="bi bi-eye-fill"></i>
+            </ng-container>
+            <ng-template #loadingTpl>
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Loading...
+            </ng-template>
+          </button>
 
       </div>
 
