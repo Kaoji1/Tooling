@@ -165,6 +165,10 @@
     margin-top: 10px;
     border-collapse: collapse;
     color: #4a4949;
+    .table-responsive {
+    transform: none !important;
+}
+
      
 
         .edit-btn i {

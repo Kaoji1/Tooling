@@ -55,17 +55,18 @@
               <th>DWG</th>
               <th style="white-space: nowrap;">On Hand</th>
               <th style="white-space: nowrap;">Req QTY</th>
-              <th>QTY</th>
+              <th style="width: 120px;">QTY</th>
               <th style="white-space: nowrap;">Due Date</th>
               <th>Case</th>
               <th>Status</th>
               <th>Dwg</th>
               <th>Layout</th>
+              <th style="white-space: nowrap;">Phone Number</th>
               <th>Remark</th>
               <th style="white-space: nowrap;">Edit</th>
               <th>Del</th>
-             
-          
+
+
             </tr>
           </thead>
 
@@ -75,11 +76,9 @@
               <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please
                 select the to view item.</td>
             </tr>
-            <tr *ngFor="let item of request; let i = index"
-    [ngClass]="{
-      'editing-row': editingIndex[item.ID_Request] === i,
-      'highlight-row': highlightedRow === i
-    }">
+            <tr *ngFor="let item of request; let i = index" [ngClass]="{
+              'editing-row': editingIndex[item.ID_Request] === i,
+              'highlight-row': highlightedRow === i}">
 
               <td><input type="checkbox" [(ngModel)]="item.Selection" /></td>
               <!--เชื่อม checkbox-->
@@ -87,22 +86,23 @@
               <td>{{ item.DocNo }}</td>
               <td>{{ item.Requester }}</td>
               <td class="PartNo-column">{{ item.PartNo }}</td>
-              <td style="width: 600px;"> 
-                  <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.ItemNo }}</span>
+              <td>
+                <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.ItemNo }}</span>
 
-                 <ng-select
-                    *ngIf="editingIndex[item.ID_Request] === i"
-                    [items]="ItemNo"
-                    bindLabel="ItemNo"
-                    bindValue="ItemNo"
-                    [(ngModel)]="item.ItemNo"
-                    [searchable]="true"
-                    [virtualScroll]="true"
-                    (ngModelChange)="onItemNoChange($event, item)"  
-                    [clearable]="true"
-                    placeholder="Select Item No">
-                  </ng-select>
-                </td>
+                <ng-select *ngIf="editingIndex[item.ID_Request] === i" 
+                  [items]="ItemNo" 
+                  bindLabel="ItemNo"
+                  bindValue="ItemNo" 
+                  [(ngModel)]="item.ItemNo" 
+                  [searchable]="true" 
+                  [virtualScroll]="true"
+                  (ngModelChange)="onItemNoChange($event, item)" 
+                  [clearable]="true" 
+                  placeholder="Select Item No"
+                  style="width:150px;" 
+                  >
+                </ng-select>
+              </td>
 
               <td class="spec-column">{{ item.SPEC }}</td>
               <td>{{ item.Process }}</td>
@@ -111,11 +111,11 @@
               <td>{{ item.DwgRev }}</td>
               <td>{{ item.ON_HAND }}</td>
               <td>{{ item.Req_QTY }}</td>
-              
-  
+
+
               <td>
                 <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showQty">
-                  <input [(ngModel)]="item.QTY" type="number" class="form-control" />
+                  <input [(ngModel)]="item.QTY" type="number" class="form-control" style="width:100px;" />
                 </ng-container>
                 <ng-template #showQty>{{ item.QTY }}</ng-template>
               </td>
@@ -126,29 +126,26 @@
               <td>
                 <!-- {{ item.PathDwg }} -->
                 <div class="text-break"></div>
-                    <button
-                      *ngIf="item.PathDwg"
-                      class="btn btn-link btn-sm text-primary p-0 mt-1"
-                      (click)="openPdfFromPath(item.PathDwg)">
-                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
-                    </button>
-              </td>
-            
-              <td> 
-                <!-- {{ item.PathLayout }} -->
-                <div class="text-break"></div>
-                    <button
-                      *ngIf="item.PathLayout"
-                      class="btn btn-link btn-sm text-primary p-0 mt-1"
-                      (click)="openPdfFromPath(item.PathLayout)">
-                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
-                    </button>
+                <button *ngIf="item.PathDwg" class="btn btn-link btn-sm text-primary p-0 mt-1"
+                  (click)="openPdfFromPath(item.PathDwg)">
+                  <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                </button>
               </td>
 
               <td>
+                <!-- {{ item.PathLayout }} -->
+                <div class="text-break"></div>
+                <button *ngIf="item.PathLayout" class="btn btn-link btn-sm text-primary p-0 mt-1"
+                  (click)="openPdfFromPath(item.PathLayout)">
+                  <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                </button>
+              </td>
+
+              <td>{{ item.PhoneNo }}</td>
+
+              <td>
                 <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.Remark }}</span>
-                <input *ngIf="editingIndex[item.ID_Request] === i" type="text" [(ngModel)]="item.Remark"
-                  type="text" />
+                <input *ngIf="editingIndex[item.ID_Request] === i" type="text" [(ngModel)]="item.Remark" type="text" />
               </td>
               <td>
 
@@ -156,15 +153,13 @@
                   (click)="startEdit(item.ID_Request, i)">
                   <i class="bi bi-pencil-square text-white"></i>
                 </button>
-                
+
                 <button *ngIf="editingIndex[item.ID_Request] === i" class="btn btn-success btn-sm"
                   (click)="saveEdit(item.ID_Request, i)">
                   <i class="bi bi-check-lg text-white"></i>
                 </button>
 
-                 <button *ngIf="!item.isNew && editingIndex[item.ID_Request] === i" 
-          class="btn btn-lg"
-          (click)="addNewRequest({ 
+                <button *ngIf="!item.isNew && editingIndex[item.ID_Request] === i" class="btn btn-lg" (click)="addNewRequest({ 
               DocNo: item.DocNo,
               Division: item.Division,
               Requester: item.Requester,
@@ -184,15 +179,15 @@
               PathDwg: item.PathDwg,
               PathLayout: item.PathLayout
           }, i)">
-    <i class="bi bi-plus-circle text-blue"></i>
-  </button>
-</td>
-                  
-                  <td>
-                    <button class="btn btn-danger btn-sm" (click)="deleteItem(item.ID_Request)">
-                      <i class="bi bi-trash "></i>
-                    </button>
-                  </td>
+                  <i class="bi bi-plus-circle text-blue"></i>
+                </button>
+              </td>
+
+              <td>
+                <button class="btn btn-danger btn-sm" (click)="deleteItem(item.ID_Request)">
+                  <i class="bi bi-trash "></i>
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -200,8 +195,8 @@
     </div>
   </div>
 
-      <!-- เลือกหน้าๅ -->
-      <!-- <div class="pagination-wrapper">
+  <!-- เลือกหน้าๅ -->
+  <!-- <div class="pagination-wrapper">
     <nav aria-label="Page navigation example">
       <ul class="pagination">
         <li class="page-item"><a class="page-link" href="#">Previous</a></li>
@@ -212,7 +207,7 @@
       </ul>
     </nav>
     </div> -->
- 
+
 
 
 

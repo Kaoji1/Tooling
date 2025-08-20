@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
 import { FileReadService } from '../../../core/services/FileRead.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-detail',
@@ -209,7 +210,13 @@ addNewRequest(newRequestData: any, rowIndex: number) {
       // เก็บใน localStorage
       localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
 
-      alert('เพิ่มข้อมูลสำเร็จ');
+      // alert('เพิ่มข้อมูลสำเร็จ');
+      Swal.fire({
+        icon: "success",
+        title: "Add New Row Success",
+        showConfirmButton: false,
+        timer: 1330
+        });
     },
     error: err => {
       console.error('Error addNewRequest:', err);
@@ -263,7 +270,13 @@ saveEdit(caseKey: number, rowIndex: number) {
         console.log('editingIndex หลัง saveEdit แถวใหม่:', this.editingIndex);
 
         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-        alert('บันทึกแถวใหม่เรียบร้อย');
+        // alert('บันทึกแถวใหม่เรียบร้อย');
+        Swal.fire({
+        icon: "success",
+        title: "Successfully Added Data Row",
+        showConfirmButton: false,
+        timer: 1330
+        });
       },
       error: (err) => {
         console.error('Error saveEdit แถวใหม่:', err);
@@ -284,8 +297,14 @@ saveEdit(caseKey: number, rowIndex: number) {
         console.log('editingIndex หลัง saveEdit แถวเดิม:', this.editingIndex);
 
         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-        alert('บันทึกแถวเรียบร้อย');
-      },
+        // alert('บันทึกแถวเรียบร้อย');
+        Swal.fire({
+        icon: "success",
+        title: "Your work has been saved",
+        showConfirmButton: false,
+        timer: 1330
+        });
+        },
       error: (err) => {
         console.error('Error saveEdit แถวเดิม:', err);
         // rollback
@@ -354,11 +373,19 @@ isCompleting = false; // กันกดซ้ำ
 
 completeSelected() {
   if (this.isCompleting) return;
+  Swal.fire({
+  title: "Complete!",
+  icon: "success",
+  draggable: true
+});
 
   const selectedItems = this.request.filter(it => it.Selection && it.Status === 'Waiting');
   if (selectedItems.length === 0) {
-    alert('กรุณาเลือกข้อมูลที่ต้องการ (สถานะ Waiting)');
-    return;
+  Swal.fire({
+  icon: "error",
+  title: "Oops...",
+  text: "Please select at least one item to complete.",
+  });
   }
 
   this.isCompleting = true;
@@ -375,6 +402,7 @@ completeSelected() {
 
     try {
       item.Status = 'Complete'; // optimistic update
+
 
       if (item.isNew) {
         const insertRes: any = await this.DetailPurchase.insertRequest(item).toPromise();
@@ -407,7 +435,9 @@ openPdfFromPath(filePath: string) {
   console.log('เรียก openPdfFromPath path:', filePath);
   if (!filePath) { alert('ไม่พบ path ของไฟล์'); return; }
 
-  this.FileReadService.loadPdfFromPath(filePath).subscribe({
+const cleanPath = filePath.replace(/^"|"$/g, '');
+
+  this.FileReadService.loadPdfFromPath(cleanPath).subscribe({
     next: res => {
       console.log('ผลลัพธ์ loadPdfFromPath:', res);
       const base64 = res.imageData.split(',')[1];
@@ -437,4 +467,6 @@ deleteItem(id: string) {
     error: err => { console.error('Error deleteItem:', err); alert('เกิดข้อผิดพลาดในการลบ'); }
   });
 }
+
+
 }
