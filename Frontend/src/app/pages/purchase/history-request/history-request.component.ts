@@ -5,6 +5,8 @@ import { RouterOutlet } from '@angular/router';
 import { PurchaseHistoryservice } from '../../../core/services/PurchaseHistory.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
+
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx'
 
@@ -12,7 +14,7 @@ import * as XLSX from 'xlsx'
 @Component({
   selector: 'app-history-request',
   standalone: true,
-  imports: [SidebarPurchaseComponent, RouterOutlet, NotificationComponent, CommonModule, FormsModule],
+  imports: [SidebarPurchaseComponent, RouterOutlet, NotificationComponent, CommonModule, FormsModule, NgSelectModule],
   templateUrl: './history-request.component.html',
   styleUrls: ['./history-request.component.scss']
 })
@@ -20,14 +22,18 @@ export class HistoryRequestComponent implements OnInit {
   requests: any[] = [];
   filteredRequests: any[] = [];
   statussList: { label: string, value: string }[] = [];
-  partNoList: { label: string, value: string }[] = [];
-  selectedPartNo: string | null = null;
+  divisionList = [
+  { label: 'GM', value: '7122' },
+  { label: 'PMC', value: '71DZ' }
+];
+  Division_: string | null = null;
+
   selectAllCheck: boolean = false;
 
   fromDate: string = '';
   toDate: string = '';
   Status_: string | null = 'Complete'; // ตั้งค่าเริ่มต้นเป็น Complete
-  PartNo_: string | null = null;
+
 
   sortOrder: 'asc' | 'desc' = 'asc';
 
@@ -42,6 +48,7 @@ toggleAllCheckboxes() {
     localStorage.setItem('purchaseRequest', JSON.stringify(this.requests));
   }  
 
+  
 
 loadPurchaseHistory() {
   console.log('--- loadPurchaseHistory เริ่มต้น ---');
@@ -66,6 +73,12 @@ loadPurchaseHistory() {
       // กรองเฉพาะ Status = 'Complete'
       this.filteredRequests = this.requests.filter(r => r.Status === 'Complete');
       console.log('Filtered requests after Status=Complete:', this.filteredRequests);
+
+      const uniqueDivisions = [...new Set(this.requests.map(r => r.Division).filter(c => c))];
+      this.divisionList = uniqueDivisions.map(d => ({ label: d, value: d }));
+      //  const uniqueDivisions = [...new Set(this.requests.map(r => r.Division).filter(c => c))];
+      // this.divisionList = uniqueDivisions.map(d => ({ label: d, value: d }));
+      // console.log('divisionList:', this.divisionList);
 
       // สร้าง PartNo dropdown แบบไม่รวมค่าว่าง
       // const uniquePartNo = [...new Set(this.requests.map(r => r.PartNo).filter(p => p))];
@@ -112,10 +125,10 @@ onFilter() {
       (!this.toDate || itemDate <= new Date(this.toDate));
 
 
-    const matchCategory =
-      !this.PartNo_ || item.Category === this.PartNo_;
+    const matchDivision =
+      !this.Division_ || item.Division === this.Division_;
 
-    return matchDate && matchCategory;
+    return matchDate && matchDivision;
   });
 }
 

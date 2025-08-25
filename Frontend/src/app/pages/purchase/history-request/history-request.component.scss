@@ -23,8 +23,8 @@
 
   .status-indicator-vertical {
     position: fixed;
-    top: 10px;
-    right: 10px;
+    top: 0px;
+    right: 25px;
     display: flex;
     flex-direction: column;
     /* แนวตั้ง */
@@ -33,7 +33,7 @@
     padding: 8px 12px;
     border-radius: 6px;
     z-index: 1000;
-    margin-top: 70px;
+    margin-top: 110px;
   }
 
   .status-item {
@@ -118,28 +118,63 @@
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
     justify-content: flex-start;
     /* เริ่มจากซ้าย */
     position: relative;
     /* สำหรับจัดตำแหน่งภายใน */
+    
   }
 
-  /* กลุ่มปุ่ม export อยู่ขวาสุด */
   .button-group {
-    display: flex;
-    flex-direction: column;
-    /* เรียงปุ่มแนวตั้ง */
-    gap: 10px;
-    margin-left: 150px;
-    /* ดันกลุ่มปุ่มไปขวาสุด */
-    align-items: center;
-    border: none;
-    border-radius: 20px;
-    justify-content: flex-end;
-    /* เริ่มจากซ้าย */
+  display: flex;
+  flex-direction: column; /* เรียงปุ่มในแนวตั้ง */
+  gap: 10px;              /* ระยะห่างระหว่างปุ่ม */
+  align-items: center;    /* จัดปุ่มให้อยู่ตรงกลาง (ในแนวขวาง) */
+
+  // .button-group button {
+  // display: flex;
+  // align-items: center;
+  // justify-content: center;
+  // gap: 5px; /* ระยะห่าง icon กับข้อความ */
+  // font-size: 16px;
+  // font-weight: bold;
+  // padding: 10px 10px;  /* ปรับความสูงให้พอดี */
+  // border: none;
+  // border-radius: 8px;
+  // width: 220px; /* ให้ปุ่มกว้างเท่ากัน */
+  // cursor: pointer;
+
+  // /* กลุ่มปุ่ม export อยู่ขวาสุด */
+  // .button-group {
+  //   display: flex;
+  //   flex-direction: column;
+  //   /* เรียงปุ่มแนวตั้ง */
+  //   gap: 10px;
+  //   margin-left: 60px;
+  //   /* ดันกลุ่มปุ่มไปขวาสุด */
+  //   align-items: center;
+  //   border: none;
+  //   border-radius: 20px;
+  //   justify-content: flex-end;
+  //   /* เริ่มจากซ้าย */
 
   }
+  .button-group button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+   gap: 5px;              /* ระยะห่าง icon กับข้อความ */
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  width: 220px;          /* ให้ปุ่มกว้างเท่ากัน */
+  cursor: pointer;
+  margin-left: 20px;
+
+}
 
   /* กำหนดขนาดปุ่ม export ให้เท่ากัน */
   .export-btn,
@@ -157,7 +192,10 @@
     padding: 0;
     box-sizing: border-box;
     white-space: nowrap;
-    margin: 0;
+    gap: 5px;
+    margin: 5px;
+    margin-left: 30px;
+
   }
 
   /* สีปุ่ม export Excel */
@@ -187,11 +225,12 @@
     justify-content: center;
     cursor: pointer;
     margin-top: 40px;
+    margin-left: 5px;
   }
 
   /* ปรับ margin-left เฉพาะ btn-filter เพื่อจัดวางให้เหมาะสม */
   .btn-filter {
-    margin-left: 20px;
+    margin-left: 5px;
   }
 }
 
@@ -239,9 +278,6 @@ input {
   width: 200px;
 
 }
-
-
-
 
 
 .table-responsive {

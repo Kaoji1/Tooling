@@ -46,6 +46,19 @@
           <input type="date" [(ngModel)]="toDate" placeholder="duedate">
         </div>
         
+        <div class="group-select">
+  <label for="division">Division</label>
+  <ng-select
+    style="width: 145px;"
+    [items]="divisionList"
+    bindLabel="label"
+    bindValue="value"
+    [(ngModel)]="Division_"
+    placeholder="Select a Division"
+  >
+  </ng-select>
+</div>
+
          <!-- <div class="group-select">
           <label for="PartNo">PartNo</label>
           <ng-select style="width: 150px; " 
