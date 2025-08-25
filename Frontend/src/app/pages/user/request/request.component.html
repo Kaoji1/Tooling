@@ -19,50 +19,36 @@
         <div class="req-row1">
           <!-- รวม label,select ของ division,fac,phon,date -->
           <div class="group-select">
-                <label > Division </label>
-                <ng-select
-                  [items]="Division"
-                  bindLabel="DivisionName"
-                  [(ngModel)]="Div_"
-                  (ngModelChange)="get_PartNo($event)"
-                  [virtualScroll]="true"
-                  placeholder="Select Division">
-                </ng-select>
-                <!-- 7122 = GM 71DZ=PMC -->
-              </div>
+            <label> Division </label>
+            <ng-select [items]="Division" bindLabel="DivisionName" [(ngModel)]="Div_"
+              (ngModelChange)="get_PartNo($event)" [virtualScroll]="true" placeholder="Select Division">
+            </ng-select>
+            <!-- 7122 = GM 71DZ=PMC -->
+          </div>
 
 
-              <div class="group-select">
-                <label > Fac </label>
-                <ng-select
-                  [items]="Fac"
-                  bindLabel="label"
-                  bindValue="value"
-
-                  [(ngModel)]="Fac_"
-                  placeholder="Select a Fac">
-                </ng-select>
-            </div>
+          <div class="group-select">
+            <label> Fac </label>
+            <ng-select [items]="Fac" bindLabel="label" bindValue="value" [(ngModel)]="Fac_" placeholder="Select a Fac">
+            </ng-select>
+          </div>
 
           <div class="group-select">
             <label for="phonenumber"> Phone Number </label>
-            <input type="tel" class="form-control" placeholder="Enter your phone number" id="phonenumber" [(ngModel)]="phone_"/>
+            <input type="tel" class="form-control" placeholder="Enter your phone number" id="phonenumber"
+              [(ngModel)]="phone_" />
           </div>
 
           <div class="group-select">
             <label for="date"> DueDate </label>
-            <input type="date" class="form-control" placeholder="Enter date" id="date" [min]="today_" [(ngModel)]="DueDate_" />
+            <input type="date" class="form-control" placeholder="Enter date" id="date" [min]="today_"
+              [(ngModel)]="DueDate_" />
           </div>
 
           <!-- select case -->
           <div class="group-select" style="width: 180px;">
-            <label > Case </label>
-            <ng-select
-              [items]="Case"
-              bindLabel="label"
-              bindValue="value"
-              [(ngModel)]="Case_"
-              [virtualScroll]="true"
+            <label> Case </label>
+            <ng-select [items]="Case" bindLabel="label" bindValue="value" [(ngModel)]="Case_" [virtualScroll]="true"
               placeholder="Select a case">
             </ng-select>
           </div>
@@ -73,56 +59,29 @@
           <!-- group รวม label,select -->
           <div class="group-select">
 
-            <label > Part No. </label>
-            <ng-select
-              [items]="PartNo"
-              bindLabel="PartNo"
-              [(ngModel)]="PartNo_"
-              [virtualScroll]="true"
-              (ngModelChange)="get_Process($event)"
-              (change)="onPartNoChange()"
-              placeholder="Select  partNo">
+            <label> Part No. </label>
+            <ng-select [items]="PartNo" bindLabel="PartNo" [(ngModel)]="PartNo_" [virtualScroll]="true"
+              (ngModelChange)="get_Process($event)" (change)="onPartNoChange()" placeholder="Select  partNo">
             </ng-select>
           </div>
-          <!-- <div class="group-select">
-                <label > Spec </label>
-                <ng-select style="width: 280px;"
-                  [items]="spec"
-                  bindLabel="SPEC"
-                  [(ngModel)]="Spec_"
-                  [virtualScroll]="true"
-                  (ngModelChange)="get_Process($event)"
-                  placeholder="Select Spec">
-                </ng-select>
-          </div> -->
+          
           <div class="group-select">
             <label> Process </label>
-            <ng-select
-              [items]="Process"
-              bindLabel="Process"
-              [(ngModel)]="Process_"
-              (ngModelChange)="get_MC($event)"
+            <ng-select [items]="Process" bindLabel="Process" [(ngModel)]="Process_" (ngModelChange)="get_MC($event)"
               placeholder="Select process">
             </ng-select>
           </div>
 
           <div class="group-select">
-            <label > Machine Type </label>
-            <ng-select
-              [items]="MachineType"
-              bindLabel="MC"
-              [(ngModel)]="MachineType_"
-              placeholder="Select MachineType">
+            <label> Machine Type </label>
+            <ng-select [items]="MachineType" bindLabel="MC" [(ngModel)]="MachineType_" placeholder="Select MachineType">
             </ng-select>
           </div>
-          
-          <!-- <div class="group-select">
-            <label for="PathDwg">Path Dwg </label>
-            <input type="text" class="form-control" placeholder="Enter your Path" id="Path" [(ngModel)]="PathDwg_" style="width: 350px;"/>
-          </div> -->
-          <div class="group-select"  *ngIf="Case_ === 'SET' ">
+
+          <div class="group-select" *ngIf="Case_ === 'SET' ">
             <label for="MCQTY"> MC QTY </label>
-            <input type="text" class="form-control" placeholder="Enter your MC QTY" id="MCQTY" [(ngModel)]="MCQTY_" style="width: 100px;"/>
+            <input type="text" class="form-control" placeholder="Enter your MC QTY" id="MCQTY" [(ngModel)]="MCQTY_"
+              style="width: 100px;" />
           </div>
 
         </div>
@@ -132,18 +91,19 @@
       <!--div input-req-->
       <!-- btn group -->
       <div class="btn-group-req">
-        <button class="btn-viewall" type="button" (click)="Clearall()"> CLEARALL <i class="bi bi-trash3" style="margin-right: 3px;"></i></button>
+        <button class="btn-viewall" type="button" (click)="Clearall()"> CLEARALL <i class="bi bi-trash3"
+            style="margin-right: 3px;"></i></button>
         <!-- <button class="btn-import" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal"
           data-bs-whatever="@getbootstrap"> IMPORT <i class="bi bi-download"></i></button> -->
-       <button class="btn-view" type="button" (click)="Setview()" [disabled]="loading">
-            <ng-container *ngIf="!loading; else loadingTpl">
-              VIEW <i class="bi bi-eye-fill"></i>
-            </ng-container>
-            <ng-template #loadingTpl>
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              Loading...
-            </ng-template>
-          </button>
+        <button class="btn-view" type="button" (click)="Setview()" [disabled]="loading">
+          <ng-container *ngIf="!loading; else loadingTpl">
+            VIEW <i class="bi bi-eye-fill"></i>
+          </ng-container>
+          <ng-template #loadingTpl>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Loading...
+          </ng-template>
+        </button>
 
       </div>
 
@@ -151,230 +111,232 @@
     <!--div grop-req-->
     <!-- table setup-->
     <div class="table-responsive">
-       <table class="table table-bordered table-hover align-middle text-center">
-            <thead class="table-light">
-  
-      <tr>
-        <th><input type="checkbox"[(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"/></th>
-        <th>Part No.</th>
-        <th>Item No.</th>
-        <th>Spec</th>
-        <th>Process</th>
-        <th>Machine Type</th>
+      <table class="table table-bordered table-hover align-middle text-center">
+        <thead class="table-light">
 
-        <th>Fresh_Qty</th>
-        <th>Reuse_Qty</th>
-        <th>QTY</th>
-        <th>Case</th>
-      </tr>
-    </thead>
+          <tr>
+            <th><input type="checkbox" [(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()" /></th>
+            <th>Part No.</th>
+            <th>Item No.</th>
+            <th>Spec</th>
+            <th>Process</th>
+            <th>Machine Type</th>
 
-    <tbody *ngIf="!Case_ || items.length === 0">
-      <tr>
-        <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select item  to view.</td>
-      </tr>
-    </tbody>
+            <th>Fresh_Qty</th>
+            <th>Reuse_Qty</th>
+            <th>QTY</th>
+            <th>Case</th>
+          </tr>
+        </thead>
 
-    <tbody *ngIf="Case_ === 'SET' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked"  /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+        <tbody *ngIf="!Case_ || items.length === 0">
+          <tr>
+            <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select
+              item to view.</td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty  }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="1" /></td>
-        <td>SET UP</td>
-      </tr>
-    </tbody>
+        <tbody *ngIf="Case_ === 'SET' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-    <tbody *ngIf="Case_ === 'BRO' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty  }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="1" /></td>
+            <td>SET UP</td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
-        <td [ngClass]="getRowClass(item)"> BRO</td>
-      </tr>
-    </tbody>
+        <tbody *ngIf="Case_ === 'BRO' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-     <tbody *ngIf="Case_ === 'BUR' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> BRO</td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
-        <td [ngClass]="getRowClass(item)"> BUR</td>
-      </tr>
-    </tbody>
+        <tbody *ngIf="Case_ === 'BUR' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-     <tbody *ngIf="Case_ === 'USA' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> BUR</td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
-        <td [ngClass]="getRowClass(item)"> USA </td>
-      </tr>
-    </tbody>
+        <tbody *ngIf="Case_ === 'USA' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-     <tbody *ngIf="Case_ === 'HOL' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> USA </td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
-        <td [ngClass]="getRowClass(item)"> HOL </td>
-      </tr>
-    </tbody>
+        <tbody *ngIf="Case_ === 'HOL' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-     <tbody *ngIf="Case_ === 'JIG' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> HOL </td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
-        <td [ngClass]="getRowClass(item)"> JIG </td>
-      </tr>
-    </tbody>
+        <tbody *ngIf="Case_ === 'JIG' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-    <tbody *ngIf="Case_ === 'MOD' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> JIG </td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
-        <td [ngClass]="getRowClass(item)"> MOD </td>
-      </tr>
-    </tbody>
+        <tbody *ngIf="Case_ === 'MOD' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-    <tbody *ngIf="Case_ === 'N/G' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> MOD </td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
-        <td [ngClass]="getRowClass(item)"> N/G </td>
-      </tr>
-    </tbody>
+        <tbody *ngIf="Case_ === 'N/G' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-    <tbody *ngIf="Case_ === 'F/A' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> N/G </td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
-        <td [ngClass]="getRowClass(item)"> F/A </td>
-      </tr>
-    </tbody>
+        <tbody *ngIf="Case_ === 'F/A' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-     <tbody *ngIf="Case_ === 'CHA' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> F/A </td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
-        <td [ngClass]="getRowClass(item)"> CHA </td>
-      </tr>
-    </tbody>
+        <tbody *ngIf="Case_ === 'CHA' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-     <tbody *ngIf="Case_ === 'P/P' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> CHA </td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
-        <td [ngClass]="getRowClass(item)"> P/P </td>
-      </tr>
-    </tbody>
+        <tbody *ngIf="Case_ === 'P/P' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-     <tbody *ngIf="Case_ === 'REC' && items.length > 0">
-      <tr *ngFor="let item of items">
-        <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
-        <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> P/P </td>
+          </tr>
+        </tbody>
 
-        <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-        <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-        <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
-        <td [ngClass]="getRowClass(item)"> REC </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+        <tbody *ngIf="Case_ === 'REC' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
 
-
-
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> REC </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
 
 
-    <button class="btn-sendrequest" type="button" (click)="AddToCart()" ><i class="bi bi-cart-plus" ></i> Add To Cart</button>
+
+
+
+    <button class="btn-sendrequest" type="button" (click)="AddToCart()"><i class="bi bi-cart-plus"></i> Add To
+      Cart</button>
   </div>
   <!--div box-main-->
 </div>
@@ -392,11 +354,7 @@
         <form>
           <div class="mb-3">
             <label for="fileInput" class="form-label">Choose Excel File:</label>
-            <input type="file"
-                   class="form-control"
-                   id="fileInput"
-                   accept=".xlsx, .xls"
-                   (change)="onFileChosen($event)">
+            <input type="file" class="form-control" id="fileInput" accept=".xlsx, .xls" (change)="onFileChosen($event)">
           </div>
 
           <div class="mb-3">

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-const baseUrl = 'http://localhost:3000/api';
+const baseUrl = 'http://PBGM7E:3000/api';
 
 @Injectable({
   providedIn: 'root' // ระบุว่า service นี้จะถูกให้บริการใน root module
@@ -43,12 +43,3 @@ get_ItemNo(): Observable<any> { // ฟังก์ชันสำหรับด
     return this.httpClient.get(`${baseUrl}/get_ItemNo`); // ส่ง HTTP GET Division
   }
 }
-// get_ItemNo(itemNo: string): Observable<any[]> {
-//   return this.httpClient.get<any[]>(`${baseUrl}/get_ItemNo`, {
-//     params: { ItemNo: itemNo }  // ส่งเป็น query param
-//   });
-
-
-// get_SPEC(): Observable<any> {
-//   return this.httpClient.post(`${baseUrl}/get_SPEC`);
-// }

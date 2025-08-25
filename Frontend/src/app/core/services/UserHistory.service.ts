@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core'; // นำเข้า Injectable จ
 import { HttpClient } from '@angular/common/http'; // นำเข้า HttpClient สำหรับทำ HTTP requests
 import { Observable } from 'rxjs'; // นำเข้า Observable จาก RxJS
 
-const BaseURL = 'http://localhost:3000/api'; // กำหนด Base URL สำหรับ API
-
+const baseUrl = 'http://PBGM7E:3000/api';
 @Injectable({
   providedIn: 'root' // ระบุว่า service นี้จะถูกให้บริการใน root module
 })
@@ -15,7 +14,7 @@ export class UserHistoryService {
   ) { }
 
   User_History(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-    return this.httpClient.get(`${BaseURL}/User_History`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
+    return this.httpClient.get(`${baseUrl}/User_History`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
   }
  
 }

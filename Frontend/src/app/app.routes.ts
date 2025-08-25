@@ -29,16 +29,6 @@ export const routes: Routes = [
     component: LoginComponent
   },
 
-  // {
-  //   path: 'production/request',
-  //   component: requestComponent
-  //   // canActivate: [AuthGuard]
-  // },
-  // {
-  //   path: 'purchase/requestlist',
-  //   component: RequestlistComponent
-  //   // canActivate: [AuthGuard]
-  // },
 
   // Production role
 {
@@ -77,7 +67,6 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
 
-  // { path: '**', redirectTo: 'login' }
 
 ];
 

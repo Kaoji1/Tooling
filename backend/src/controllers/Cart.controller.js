@@ -167,32 +167,6 @@ exports.ClearAllItems = async (req, res) => {
   }
 };
 
-// updateรายการ
-// exports.UpdateCartItem = async (req, res) => {
-//   try {
-//     const item = req.body;
-//     const pool = await poolPromise;
-
-//     await pool.request()
-//       .input('ID_Cart', sql.Int, item.ID_Cart) // หรือเปลี่ยนเป็น id ที่ใช้
-//       .input('QTY', sql.Int, item.QTY)
-//       .input('Path',sql.NVarChar,item.Path)
-//       .input('Due_Date', sql.Date, item.Due_Date)
-//       .query(`
-//         UPDATE tb_IssueCuttingTool_SendToCart
-//         SET QTY = @QTY,
-//             Path = @Path,
-//             Due_Date = @Due_Date
-//         WHERE ID_Cart = @ID_Cart
-//       `);
-
-//     res.status(200).json({ message: 'อัปเดตข้อมูลสำเร็จ' });
-//   } catch (error) {
-//     console.error(' UpdateCartItem error:', error);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
 // ลบรายการตามcaseที่กดsendแล้ว
 exports.DeleteCartItemsByCaseProcessFac = async (req, res) => {
   try {

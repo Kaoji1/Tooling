@@ -8,17 +8,17 @@
 
 
 
-<!-- เพิ่ม div สำหรับสถานะแนวตั้ง พร้อมข้อความ -->
-<div class="status-indicator-vertical">
-  <div class="status-item">
-    <span class="status yellow"></span>
-    <span class="status-label">= Waiting</span>
-  </div>
-  <div class="status-item">
-    <span class="status green"></span>
-    <span class="status-label">= Complete</span>
-  </div>
-</div>
+    <!-- เพิ่ม div สำหรับสถานะแนวตั้ง พร้อมข้อความ -->
+    <div class="status-indicator-vertical">
+      <div class="status-item">
+        <span class="status yellow"></span>
+        <span class="status-label">= Waiting</span>
+      </div>
+      <div class="status-item">
+        <span class="status green"></span>
+        <span class="status-label">= Complete</span>
+      </div>
+    </div>
 
     <!-- Header -->
 
@@ -49,164 +49,85 @@
 
 
         <div class="form-input">
-  <!-- ปุ่มอื่น ๆ -->
-  <button class="btn-filter" type="button" (click)="onFilter()">Filter</button>
-  <button class="btn-sort" type="button" (click)="onSort()" ><i class="bi bi-sort-down" ></i>Sort</button>
+          <!-- ปุ่มอื่น ๆ -->
+          <button class="btn-filter" type="button" (click)="onFilter()">Filter</button>
+          <button class="btn-sort" type="button" (click)="onSort()"><i class="bi bi-sort-down"></i>Sort</button>
 
-  <!-- กลุ่มปุ่ม export -->
-  <div class="button-group">
-    <button class="excel-button" type="button" class="btn btn-success" (click)="exportexcel()"><i class="bi bi-file-earmark-spreadsheet"></i>  EXPORT TO EXCEL</button>
-    <button class="export-button" type="button" class="btn btn-danger"><i class="bi bi-database"></i>  EXPORT TO AS400 </button>
-        <!-- <button class="export-button" type="button" class="btn btn-danger" (click)="showSuccessAlert()"><i class="bi bi-send-fill"> </i>EXPORT TO AS400</button> -->
+          <!-- กลุ่มปุ่ม export -->
+          <div class="button-group">
+            <button class="excel-button" type="button" class="btn btn-success" (click)="exportexcel()"><i
+                class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL</button>
+            <button class="export-button" type="button" class="btn btn-danger"><i class="bi bi-database"></i> EXPORT TO
+              AS400 </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <!-- Modal Success -->
+    <div class="modal fade" id="completeModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header justify-content-center border-0">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 120px;"></i>
+          </div>
+          <div class="modal-body justify-content-center border-0">
+            <h1 class="modal-title w-0 text-center" id="export">EXPORT AS400 success!</h1>
+          </div>
+          <div class="modal-footer justify-content-center border-0">
+            <button type="button" class="btn btn-primary btn-lg px-4"
+              onclick="window.location.href='nextpage.html'">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ตารางข้อมูล -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle text-center" id="table-data">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 30px;">
+              <input type="checkbox" [(ngModel)]="selectAllCheck" (change)="toggleAllCheckboxes()" />
+            </th>
+            <th style="width: 60px;">No.</th>
+            <th style="min-width: 120px;">DIVISION</th>
+            <th style="min-width: 120px; white-space: nowrap;">PART NO.</th>
+            <th style="min-width: 120px;">MFG ORDER NO.</th>
+            <th style="min-width: 120px;">DOCUMENT NO.</th>
+            <th style="min-width: 120px;">STK LOC.</th>
+            <th style="min-width: 200px; white-space: nowrap;">TRANSACTION (YMD)</th>
+            <th style="min-width: 80px;">QTY</th>
+            <th style="min-width: 120px; white-space: nowrap;">M/C NO.</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <!-- กรณีไม่มีข้อมูล -->
+          <tr *ngIf="filteredRequests.length === 0">
+            <td colspan="10" class="text-center text-muted py-3">
+              <i class="bi bi-exclamation-circle-fill"></i> Please select the to view item.
+            </td>
+          </tr>
+
+          <!-- แสดงข้อมูล -->
+          <tr *ngFor="let item of filteredRequests; let i = index">
+            <td [ngClass]="getRowClass(item)">
+              <input type="checkbox" [(ngModel)]="item.Selection" />
+            </td>
+            <td [ngClass]="getRowClass(item)">{{ i + 1 }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Division }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.DocNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Stock_Location }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.DateComplete ? (item.DateComplete | date: 'yyyy-MM-dd') : '-' }}
+            </td>
+            <td [ngClass]="getRowClass(item)">{{ item.QTY }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MCType }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
-      <!-- <div class="button-group">
-      <div class="button-filter">
-        <button class="btn btn-filter" type="button" >Filter</button>
-      </div>
-
-      <div class="button-sort">
-        <button class="btn-sort" type="button">
-          <i class="bi bi-sort-down">Sort</i>
-        </button>
-      </div>
-        <ปุ่ม Export to AS400-->
-        <!-- <div class="export-btn">
-          <button class="export-button" type="button" class="btn btn-danger" (click)="showSuccessAlert()">
-            <i class="bi bi-send-fill"> EXPORT TO AS400</i></button>
-        </div> -->
-
-        <!-- <div>
-            <button class="excel-button" type="button" class="btn btn-success" (click)="showSuccessAlert()">
-            <i class="bi bi-send-fill"> EXPORT TO EXCEL</i></button>
-        </div> --> 
-        <!-- <div class="export-btn">
-          <button class="export-button" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exportModal">EXPORT TO
-            AS400</button>
-        </div> -->
-      </div>
-
-    </div>
-      <!--Modal แสดง Export to AS400? Y/N-->
-      <!-- <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="export-title" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-
-            <div class="modal-header justify-content-center border-0">
-              <header = ส่วนบนของฟอร์ม justify-content = การปรับตำแหน่ง  border = การกำหนดเส้นขอบ 
-              <h1 class="modal-title w-100 text-center" id="export">Export to AS400?</h1>
-            </div>
-            <div class="modal-footer justify-content-center border-0">
-              <div class="d-grid gap-3 d-md-flex justify-content-center">
-                <d-grid gap = การเว้นระยะ
-                <button type="button" class="btn btn-primary btn-lg px-4" data-bs-toggle="modal"
-                  data-bs-target="#completeModal">Yes</button>
-                <button type="button" class="btn btn-secondary btn-lg px-4" data-bs-dismiss="modal">No</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> -->
-
-      <!-- Modal Success -->
-      <div class="modal fade" id="completeModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header justify-content-center border-0">
-              <i class="bi bi-check-circle-fill text-success" style="font-size: 120px;"></i>
-            </div>
-            <div class="modal-body justify-content-center border-0">
-              <h1 class="modal-title w-0 text-center" id="export">EXPORT AS400 success!</h1>
-            </div>
-            <div class="modal-footer justify-content-center border-0">
-              <button type="button" class="btn btn-primary btn-lg px-4"
-                onclick="window.location.href='nextpage.html'">OK</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ตารางข้อมูล -->
-      <div class="table-responsive">
-          <table class="table table-bordered table-hover align-middle text-center" id="table-data" >
-            <thead class="table-light">
-              <tr>
-                <th style="width: 30px;">
-                  <input type="checkbox" [(ngModel)]="selectAllCheck" (change)="toggleAllCheckboxes()" />
-                </th>
-                <th style="width: 60px;">No.</th>
-                <th style="min-width: 120px;">DIVISION</th>
-                <th style="min-width: 120px; white-space: nowrap;">PART NO.</th>
-                <th style="min-width: 120px;">MFG ORDER NO.</th>
-                <th style="min-width: 120px;">DOCUMENT NO.</th>
-                <th style="min-width: 120px;">STK LOC.</th>
-                <th style="min-width: 200px; white-space: nowrap;">TRANSACTION (YMD)</th>
-                <th style="min-width: 80px;">QTY</th>
-                <th style="min-width: 120px; white-space: nowrap;">M/C NO.</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <!-- กรณีไม่มีข้อมูล -->
-              <tr *ngIf="filteredRequests.length === 0">
-                <td colspan="10" class="text-center text-muted py-3">
-                  <i class="bi bi-exclamation-circle-fill"></i> Please select the to view item.
-                </td>
-              </tr>
-
-              <!-- แสดงข้อมูล -->
-              <tr *ngFor="let item of filteredRequests; let i = index">
-                <td [ngClass]="getRowClass(item)">
-                  <input type="checkbox" [(ngModel)]="item.Selection" />
-                </td>
-                <td [ngClass]="getRowClass(item)">{{ i + 1 }}</td>
-                <td [ngClass]="getRowClass(item)">{{ item.Division }}</td>
-                <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-                <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-                <td [ngClass]="getRowClass(item)">{{ item.DocNo }}</td>
-                <td [ngClass]="getRowClass(item)">{{ item.Stock_Location }}</td>
-                <td [ngClass]="getRowClass(item)">{{ item.DateComplete ? (item.DateComplete | date: 'yyyy-MM-dd') : '-' }}</td>
-                <td [ngClass]="getRowClass(item)">{{ item.QTY }}</td>
-                <td [ngClass]="getRowClass(item)">{{ item.MCType }}</td>
-              </tr>
-            </tbody>
-          </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- <th>Document</th>
-              <th>Item Name</th>
-              <th>Part No.</th>
-              <th>Spec</th>
-              <th>Process</th>
-              <th>Mac Type</th>
-              <th>Mac QTY.</th>
-              <th>Case</th>
-              <th>On hand</th>
-              <th>QTY.</th>
-              <th>Reg.</th>
-              <th>New</th>
-              <th>Non</th>
-              <th>Con.</th>
-              //con คืออะไร//
-              <th>Fac.</th>
-              <th>Status Export</th>
-              <th>Remark</th>
-              <th>Export Date</th> -->
-  <!-- Rows ซ้ำ 8 แถว -->
-
-
-  <!-- Pagination -->
-  <!-- <div class="pagination-wrapper">
-        <nav aria-label="Page navigation example">
-          <ul class="pagination">
-            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-            <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item"><a class="page-link" href="#">Next</a></li>
-          </ul>
-        </nav>
-      </div> -->

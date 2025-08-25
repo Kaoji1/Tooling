@@ -29,24 +29,15 @@
 
         <div class="group-select">
           <label for="satus">Status</label>
-          <ng-select
-            [items]="statussList"
-            bindLabel="label"
-            bindValue="value"
-            [(ngModel)]="Status_"
+          <ng-select [items]="statussList" bindLabel="label" bindValue="value" [(ngModel)]="Status_"
             placeholder="Select a Status">
           </ng-select>
         </div>
 
         <div class="group-select">
           <label>PartNo</label>
-          <ng-select
-            [items]="partNoList"
-            bindLabel="label"
-            bindValue="value"
-            [(ngModel)]="selectedPartNo"
-            [virtualScroll]="true"
-            placeholder="Select a PartNo">
+          <ng-select [items]="partNoList" bindLabel="label" bindValue="value" [(ngModel)]="selectedPartNo"
+            [virtualScroll]="true" placeholder="Select a PartNo">
           </ng-select>
         </div>
       </div>
@@ -56,7 +47,7 @@
         <button class="btn-sort me-2" type="button" (click)="onFilter()">Filter</button>
         <button class="btn-sort" type="button" (click)="onSort()">Sort ↓</button>
       </div>
-      
+
     </div>
 
     <!-- ตารางที่รับค่ามาจากการกด send request -->
@@ -76,11 +67,11 @@
             <th>Remark</th>
             <th>ReqDate</th>
             <th>DueDate</th>
-            
+
           </tr>
         </thead>
         <tbody>
-         <tr *ngFor="let item of filteredRequests; let i = index">
+          <tr *ngFor="let item of filteredRequests; let i = index">
             <td [ngClass]="getStatusClass(item.Status)">{{ i + 1 }}</td>
             <td [ngClass]="getStatusClass(item.Status)">{{ item.DocNo }}</td>
             <td [ngClass]="getStatusClass(item.Status)">{{ item.Division }}</td>
@@ -98,6 +89,6 @@
       </table>
     </div>
     <!--table-->
-    
+
   </div>
 </div>

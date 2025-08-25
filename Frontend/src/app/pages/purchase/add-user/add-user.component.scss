@@ -1,7 +1,7 @@
 .layout {
   display: flex;
   flex-direction: row;
- height: 100vh;
+  height: 100vh;
   width: 100%;
   overflow-x: hidden;
 
@@ -10,10 +10,12 @@
     width: 100%;
     height: 100%;
     padding: 20px;
-   background-color: white;
-   .row{
-    justify-content: space-around;
-   }
+    background-color: white;
+
+    .row {
+      justify-content: space-around;
+    }
+
     .header-group {
       display: flex;
       width: 100%;
@@ -22,12 +24,12 @@
       .header {
         display: block;
 
-        .h1{
+        .h1 {
           font-size: 22px;
           margin-bottom: 5px;
         }
 
-        .p{
+        .p {
           font-size: 15px;
           margin-bottom: 5px;
           color: rgb(16, 3, 114);
@@ -43,20 +45,21 @@
         height: 45px;
         width: 200px;
         font-size: 20px;
-        
+
         cursor: pointer;
         transition-duration: 0.2s;
 
       }
-        .button:hover{
-          background-color: #89A8B2;
-          color: black;
-        }
+
+      .button:hover {
+        background-color: #89A8B2;
+        color: black;
+      }
     }
 
-    .table{
+    .table {
 
-            th,
+      th,
       td {
         padding: 6px;
         text-align: center;
@@ -69,26 +72,29 @@
         font-size: 16px;
         font-weight: 100;
       }
+
       thead th {
-          background-color: #E3E3E3;
-          padding: 15px;
-          font-size: 16px;
-          font-weight: 100;
-        }
+        background-color: #E3E3E3;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: 100;
+      }
 
-        td {
-          padding: 12px;
-          text-align: center;
-          border: 1px solid #d2d2d2;
-          color: black;
+      td {
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #d2d2d2;
+        color: black;
 
+      }
     }
-  }
 
 
-        i {
-            color: #0066B3;
-          }//สีน้ำเงิน
+    i {
+      color: #0066B3;
+    }
+
+    //สีน้ำเงิน
 
 
   }

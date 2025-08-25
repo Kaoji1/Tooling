@@ -72,60 +72,6 @@ ngOnInit() {
   });
 }
 
-
-
-// async get_SPEC(event: any) {
-//   const itemNo = event.ItemNo ?? event;
-//   if (!itemNo) return;
-
-//   this.DetailPurchase.get_ItemNo(itemNo).subscribe({
-//     next: (response: any[]) => {
-//       this.SPEC = response.filter(
-//         (item, index, self) =>
-//           index === self.findIndex(obj => obj.ItemNo === item.ItemNo)
-//       );
-//       console.log('SPEC:', this.SPEC);
-//     },
-//     error: e => console.error('Error get_SPEC:', e),
-//   });
-// }
-
-// เรียกใช้ตัวดึงapi
-// async get_SPEC(event: any) {
-//   const itemNo = event.ItemNo ?? event;
-//   if (itemNo) {
-//     this.DetailPurchase.get_ItemNo({ ItemNo: itemNo }).subscribe({
-//       next: (response: any[]) => {
-      
-//         this.SPEC = response.filter(
-//           (item, index, self) =>
-//             index === self.findIndex(obj => obj.ItemNo === item.ItemNo)
-//         );
-        
-//       },
-//       error: (e: any) => console.error(e),
-//     });
-//   }
-// }
-
-// Get_ItemNo() {
-//   this.api.get_ItemNo().subscribe({
-//     next: (response: any[]) => {
-//       // เก็บค่า PartNo ที่ดึงมาจาก API
-//       // และกรองไม่ให้ซ้ำ
-//       this.ItemNo = response.filter(
-//         (item, index, self) =>
-//           index === self.findIndex(obj => obj.ItemNo === item.ItemNo)
-//       );
-
-//       console.log("ItemNo:", this.ItemNo);
-//     },
-//     error: (e: any) => console.error(e),
-//   });
-// }
-
-
-
 // โหลดรายการ purchase request จาก backend
 Detail_Purchase() {
   this.DetailPurchase.Detail_Request().subscribe({
@@ -497,21 +443,4 @@ deleteItem(id: string) {
     }
   });
 }
-
-// // ลบรายการด้วย ID
-// deleteItem(id: string) {
-//   console.log('เรียก deleteItem id:', id);
-//   if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?')) return;
-
-//   this.DetailPurchase.deleteRequest(Number(id)).subscribe({
-//     next: () => {
-//       console.log('ลบรายการสำเร็จ id:', id);
-//       this.request = this.request.filter(item => item.ID_Request !== id);
-//       console.log('request หลัง deleteItem:', this.request);
-//     },
-//     error: err => { console.error('Error deleteItem:', err); alert('เกิดข้อผิดพลาดในการลบ'); }
-//   });
-// }
-
-
 }

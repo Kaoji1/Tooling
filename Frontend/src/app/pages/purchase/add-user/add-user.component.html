@@ -10,12 +10,13 @@
         <p class="p"> Add user who have permission to use this program. </p>
       </div>
 
-      <button class="button"  data-bs-toggle="modal" data-bs-target="#Insert" > <i class="bi bi-person-fill-add" style="color: rgb(0, 0, 0); font-size: 25px;"></i>  Add </button>
+      <button class="button" data-bs-toggle="modal" data-bs-target="#Insert"> <i class="bi bi-person-fill-add"
+          style="color: rgb(0, 0, 0); font-size: 25px;"></i> Add </button>
     </div>
-    
-    
 
-        <table class="table table-bordered text-center">
+
+
+    <table class="table table-bordered text-center">
       <thead>
         <tr>
           <th>No.</th>
@@ -25,7 +26,7 @@
           <th>Username</th>
           <th>Password</th>
           <th>Email</th>
-          <th>Edit</th>   <!--  เพิ่ม -->
+          <th>Edit</th> <!--  เพิ่ม -->
           <th>Del</th>
         </tr>
       </thead>
@@ -35,7 +36,7 @@
           <tr class="table-secondary">
             <td colspan="9" class="text-start fw-bold bg-light p-3 rounded border">
               <span> Role: <strong>{{ group.key }}</strong></span>
-              
+
             </td>
           </tr>
 
@@ -55,9 +56,7 @@
             <!-- Role -->
             <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Role }}</td>
             <td *ngIf="editingId === emp.Employee_ID">
-              <ng-select
-                [items]="Role" bindLabel="label" bindValue="value"
-                [(ngModel)]="editForm.Role"
+              <ng-select [items]="Role" bindLabel="label" bindValue="value" [(ngModel)]="editForm.Role"
                 placeholder="Select a role">
               </ng-select>
             </td>
@@ -87,7 +86,7 @@
                   <i class="bi bi-pencil" style="color: black;"></i> Edit
                 </button>
               </ng-container>
-            
+
               <ng-template #editingBtns>
                 <button class="btn btn-success btn-sm me-1" (click)="saveEdit(emp)">
                   <i class="bi bi-check"></i> Save
@@ -96,7 +95,7 @@
                   <i class="bi bi-x"></i> Cancel
                 </button>
               </ng-template>
-             
+
             </td>
 
             <!-- ปุ่ม Delete -->
@@ -114,7 +113,7 @@
 
 </div>
 
- <div class="modal fade" id="Insert" tabindex="-1" aria-labelledby="InsertLabel" aria-hidden="true">
+<div class="modal fade" id="Insert" tabindex="-1" aria-labelledby="InsertLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
 
@@ -125,62 +124,57 @@
 
       <div class="modal-body">
         <form>
-         <div class="modal-body">
-  <form>
-    <!-- Role -->
-    <div class="mb-3">
-      <label class="form-label">Role</label>
-      <span>สำหรับกำหนดฝั่งการใช้งาน</span>
-      <ng-select
-        [items]="Role"
-        bindLabel="label"
-        bindValue="value"
-        [(ngModel)]="Role_"
-        name="Role"
-        [clearable]="true"
-        placeholder="Select a role">
-      </ng-select>
-      <small class="form-text text-muted">เลือกบทบาทของผู้ใช้ </small>
-    </div>
+          <div class="modal-body">
+            <form>
+              <!-- Role -->
+              <div class="mb-3">
+                <label class="form-label">Role</label>
+                <span>สำหรับกำหนดฝั่งการใช้งาน</span>
+                <ng-select [items]="Role" bindLabel="label" bindValue="value" [(ngModel)]="Role_" name="Role"
+                  [clearable]="true" placeholder="Select a role">
+                </ng-select>
+                <small class="form-text text-muted">เลือกบทบาทของผู้ใช้ </small>
+              </div>
 
-    <!-- Employee ID & Name -->
-    <div class="mb-3 row">
-      <div class="col">
-        <label for="EmployeeId" class="form-label">Employee ID</label>
-        <input type="text" id="EmployeeId" class="form-control" name="EmployeeId" [(ngModel)]="EmployeeId_" />
-        <small class="form-text text-muted">รหัสพนักงาน เช่น 1001</small>
-      </div>
-      <div class="col">
-        <label for="EmployeeName" class="form-label">Employee Name</label>
-        <input type="text" id="EmployeeName" class="form-control" name="EmployeeName" [(ngModel)]="EmployeeName_" />
-        <small class="form-text text-muted">ชื่อเต็มของพนักงาน</small>
-      </div>
-    </div>
+              <!-- Employee ID & Name -->
+              <div class="mb-3 row">
+                <div class="col">
+                  <label for="EmployeeId" class="form-label">Employee ID</label>
+                  <input type="text" id="EmployeeId" class="form-control" name="EmployeeId" [(ngModel)]="EmployeeId_" />
+                  <small class="form-text text-muted">รหัสพนักงาน เช่น 1001</small>
+                </div>
+                <div class="col">
+                  <label for="EmployeeName" class="form-label">Employee Name</label>
+                  <input type="text" id="EmployeeName" class="form-control" name="EmployeeName"
+                    [(ngModel)]="EmployeeName_" />
+                  <small class="form-text text-muted">ชื่อเต็มของพนักงาน</small>
+                </div>
+              </div>
 
-    <!-- Username & Password -->
-    <div class="mb-3 row">
-      <div class="col">
-        <label for="Username" class="form-label">Username</label>
-        <input type="text" id="Username" class="form-control" name="Username" [(ngModel)]="Username_" />
-        <small class="form-text text-muted">ชื่อผู้ใช้สำหรับล็อกอิน</small>
-      </div>
-      <div class="col">
-        <label for="Password" class="form-label">Password</label>
-        <input type="text" id="Password" class="form-control" name="Password" [(ngModel)]="Password_" />
-        <small class="form-text text-muted">รหัสผ่านเข้าสู่ระบบ</small>
-      </div>
-    </div>
+              <!-- Username & Password -->
+              <div class="mb-3 row">
+                <div class="col">
+                  <label for="Username" class="form-label">Username</label>
+                  <input type="text" id="Username" class="form-control" name="Username" [(ngModel)]="Username_" />
+                  <small class="form-text text-muted">ชื่อผู้ใช้สำหรับล็อกอิน</small>
+                </div>
+                <div class="col">
+                  <label for="Password" class="form-label">Password</label>
+                  <input type="text" id="Password" class="form-control" name="Password" [(ngModel)]="Password_" />
+                  <small class="form-text text-muted">รหัสผ่านเข้าสู่ระบบ</small>
+                </div>
+              </div>
 
-    <!-- Email -->
-    <div class="mb-3 row">
-      <div class="col">
-        <label for="Email" class="form-label">Email</label>
-        <input type="email" id="Email" class="form-control" name="Email" [(ngModel)]="Email_" />
-        <small class="form-text text-muted">อีเมลที่ใช้ติดต่อ</small>
-      </div>
-    </div>
-  </form>
-</div>
+              <!-- Email -->
+              <div class="mb-3 row">
+                <div class="col">
+                  <label for="Email" class="form-label">Email</label>
+                  <input type="email" id="Email" class="form-control" name="Email" [(ngModel)]="Email_" />
+                  <small class="form-text text-muted">อีเมลที่ใช้ติดต่อ</small>
+                </div>
+              </div>
+            </form>
+          </div>
         </form>
       </div>
 

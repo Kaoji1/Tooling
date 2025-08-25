@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class CartService {
   
-  private baseUrl = 'http://localhost:3000/api';
+  private baseUrl = 'http://PBGM7E:4200/api';
 
   constructor(private http: HttpClient) {}
   
@@ -32,17 +32,11 @@ export class CartService {
   }
 
   // อัปเดตรายการในฐานข้อมูล
-  // updateItemInDB(item: any): Observable<any> {
-  //   return this.http.put(`${this.baseUrl}/update_cart_item`, item);
-  // }
+
   updateMultipleItemsInDB(items: any[]): Observable<any> {
     return this.http.post(`${this.baseUrl}/update_cart_items`, items);
   }
   // ลบเฉพาะกลุ่มตาม Case_
-  // deleteItemsByCase(case_: string): Observable<any> {
-  //   const encodedCase = encodeURIComponent(case_);
-  //   return this.http.delete(`${this.baseUrl}/delete_cart_items_by_case/${encodedCase}`);
-  // }
   deleteItemsByCaseProcessFac(case_: string, process: string, factory: string): Observable<any> {
   const encodedCase = encodeURIComponent(case_);
   const encodedProcess = encodeURIComponent(process);

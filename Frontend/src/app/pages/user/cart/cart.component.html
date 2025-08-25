@@ -14,20 +14,21 @@
     <div class="table-responsive">
       <table class="table table-bordered text-center">
         <!--  thead ตัวเดียว -->
-        <thead >
+        <thead>
           <tr style="width: auto;">
-            <th >No.</th>
-            <th >Part No.</th>
-            <th > ItemNo </th>
-            <th >Spec</th>
-            <th >Process</th>
-            <th >MC</th>
-            <th >Fresh_Qty</th>
-            <th >Reuse_Qty</th>
+            <th>No.</th>
+            <th>Part No.</th>
+            <th> ItemNo </th>
+            <th>Spec</th>
+            <th>Process</th>
+            <th>MC</th>
+            <th>Fresh_Qty</th>
+            <th>Reuse_Qty</th>
             <th>QTY</th>
-            <th >Path Dwg</th>
-            <th style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">Path Layout</th>
-            <th  style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">Due Date</th>
+            <th>Path Dwg</th>
+            <th style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">Path Layout
+            </th>
+            <th style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">Due Date</th>
             <!-- <th>Insert</th> -->
             <th>Edit</th>
             <th>Del</th>
@@ -45,51 +46,15 @@
                   <!-- Checkbox & Label -->
                   <div>
                     <input type="checkbox" [(ngModel)]="checkedCases[caseKey.key]" style="transform: scale(1.2);" />
-                    <span class="ms-2" style="font-size: 18px;">Case: <strong>{{ caseKey.key.split('___')[0] }}</strong> | Fac: <strong>{{ caseKey.key.split('___')[1] }}</strong></span>
+                    <span class="ms-2" style="font-size: 18px;">Case: <strong>{{ caseKey.key.split('___')[0] }}</strong>
+                      | Fac: <strong>{{ caseKey.key.split('___')[1] }}</strong></span>
                   </div>
                 </div>
-
-                  <!-- File Upload + Button -->
-                  <!-- <div class="d-flex flex-column flex-sm-row align-items-start gap-2"> -->
-                    <!-- ปุ่ม UploadFile -->
-                    <!-- <label [for]="'file-upload-' + caseKey.key" class="btn btn-outline-primary btn-sm"> -->
-                      <!-- <i class="bi bi-upload"></i> UploadFile -->
-                    <!-- </label> -->
-                    <!-- Input type="file" ซ่อนไว้ -->
-                  <!-- <div class="inputfile" style="display: block;"> -->
-                    <!-- <input
-                      [id]="'file-upload-' + caseKey.key"
-                      type="file"
-                      (change)="onFileSelected($event, caseKey.key)"
-                      multiple
-                      accept="application/pdf"
-                      readonly
-                      style="display: none;"
-                    /> -->
-                    <!-- <span class="file-name">{{ selectedFiles[caseKey.key]?.name || 'No file chosen' }}</span> -->
-                  <!-- </div> -->
-
-                    <!-- ปุ่ม upload ไปยัง server -->
-                    <!-- <button class="btn btn-success btn-sm" type="button" (click)="uploadFile(caseKey.key)">
-                      <i class="bi bi-cloud-arrow-up-fill"></i> Upload
-                    </button> -->
-                  <!-- </div> -->
-
-                  <!-- แสดงชื่อไฟล์ที่อัปโหลดแล้ว -->
-                  <!-- <div *ngIf="imageMap[caseKey.key]"> -->
-                    <!-- <span
-                      style="cursor: pointer; color: blue; text-decoration: underline;"
-                      (click)="loadPdf(caseKey.key)"
-                    > -->
-                      <!-- <i class="bi bi-file-earmark-pdf-fill text-danger"></i> {{ imageMap[caseKey.key].fileName }}
-                    </span> -->
-                  <!-- </div>
-                </div> -->
               </td>
             </tr>
 
             <!--  แสดงรายการแต่ละกลุ่ม -->
-            <tr *ngFor="let item of caseKey.value; let i = index" >
+            <tr *ngFor="let item of caseKey.value; let i = index">
               <td [ngClass]="getRowClass(item)">{{ i + 1 }}</td>
               <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
               <td [ngClass]="getRowClass(item)"> {{ item.ItemNo }}</td>
@@ -106,39 +71,35 @@
                 </ng-container>
                 <ng-template #showQty>{{ item.QTY }}</ng-template>
               </td>
-            <!--  Path DWG -->
-                <td [ngClass]="getRowClass(item)">
-                  <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDwgPath">
-                    <input [(ngModel)]="item.PathDwg" type="text" class="form-control" />
-                  </ng-container>
+              <!--  Path DWG -->
+              <td [ngClass]="getRowClass(item)">
+                <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDwgPath">
+                  <input [(ngModel)]="item.PathDwg" type="text" class="form-control" />
+                </ng-container>
 
-                  <ng-template #showDwgPath>
-                    <div class="text-break">{{ item.PathDwg }}</div>
-                    <button
-                      *ngIf="item.PathDwg"
-                      class="btn btn-link btn-sm text-primary p-0 mt-1"
-                      (click)="openPdfFromPath(item.PathDwg)">
-                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
-                    </button>
-                  </ng-template>
-                </td>
+                <ng-template #showDwgPath>
+                  <div class="text-break">{{ item.PathDwg }}</div>
+                  <button *ngIf="item.PathDwg" class="btn btn-link btn-sm text-primary p-0 mt-1"
+                    (click)="openPdfFromPath(item.PathDwg)">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                  </button>
+                </ng-template>
+              </td>
 
-                <!--  Path Layout -->
-                <td [ngClass]="getRowClass(item)">
-                  <ng-container *ngIf="editingIndex[caseKey.key] === i; else showLayoutPath">
-                    <input [(ngModel)]="item.PathLayout" type="text" class="form-control" />
-                  </ng-container>
+              <!--  Path Layout -->
+              <td [ngClass]="getRowClass(item)">
+                <ng-container *ngIf="editingIndex[caseKey.key] === i; else showLayoutPath">
+                  <input [(ngModel)]="item.PathLayout" type="text" class="form-control" />
+                </ng-container>
 
-                  <ng-template #showLayoutPath>
-                    <div class="text-break">{{ item.PathLayout }}</div>
-                    <button
-                      *ngIf="item.PathLayout"
-                      class="btn btn-link btn-sm text-primary p-0 mt-1"
-                      (click)="openPdfFromPath(item.PathLayout)">
-                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
-                    </button>
-                  </ng-template>
-                </td>
+                <ng-template #showLayoutPath>
+                  <div class="text-break">{{ item.PathLayout }}</div>
+                  <button *ngIf="item.PathLayout" class="btn btn-link btn-sm text-primary p-0 mt-1"
+                    (click)="openPdfFromPath(item.PathLayout)">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                  </button>
+                </ng-template>
+              </td>
 
               <!-- Due Date -->
               <td [ngClass]="getRowClass(item)">
@@ -157,7 +118,7 @@
       </td> -->
 
               <!-- Edit / Save -->
-              <td >
+              <td>
                 <button *ngIf="editingIndex[caseKey.key] !== i" class="btn btn-primary btn-sm"
                   (click)="startEdit(caseKey.key, i)">
                   <i class="bi bi-pencil-square"></i>
@@ -179,17 +140,10 @@
         </tbody>
       </table>
     </div>
-    <!-- button sendrequest -->
-    <!-- <div class="btn-send"> -->
-    <!-- <button class="btn-sendfile" type="button" >
-      <i class="bi bi-box-arrow-in-down"></i>  UploadFile
-      </button> -->
     <button class="btn-sendrequest" type="button" (click)=CreateDocByCase()>
       <i class="bi bi-send-fill"></i>Send Request
     </button>
-    <!-- </div> -->
   </div>
-
 
   <!-- test -->
 
