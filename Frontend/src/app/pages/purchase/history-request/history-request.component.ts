@@ -150,7 +150,11 @@ exportexcel() {
                             });
 
   if (selectedRows.length === 0) {
-    alert('กรุณาเลือกอย่างน้อย 1 แถว');
+    Swal.fire({
+    icon: "error",
+    title: "Oops...",
+    text: "Plese Select 1 Row!",
+    });
     return;
   }
 
