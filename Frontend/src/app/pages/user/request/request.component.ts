@@ -83,6 +83,8 @@ export class requestComponent {
       { label: 'N/G', value: 'N/G' }, // ตัวเลือกเคสที่ 9
       { label: 'P/P', value: 'P/P' }, // ตัวเลือกเคสที่ 10
       { label: 'REC', value: 'REC' }, // ตัวเลือกเคสที่ 11
+      { label: 'INV', value: 'INV' }, // ตัวเลือกเคสที่ 12
+
     ];
 
     this.Fac = [
@@ -367,6 +369,14 @@ Setview() {
           }));
         }
           else if (this.Case_=== 'REC') {
+          this.items = response.map((item: any) => ({
+            ...item,
+            checked: true,
+            qty: null,
+
+          }));
+        }
+          else if (this.Case_=== 'INV') {
           this.items = response.map((item: any) => ({
             ...item,
             checked: true,

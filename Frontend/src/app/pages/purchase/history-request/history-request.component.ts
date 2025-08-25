@@ -27,6 +27,7 @@ export class HistoryRequestComponent implements OnInit {
   fromDate: string = '';
   toDate: string = '';
   Status_: string | null = 'Complete'; // ตั้งค่าเริ่มต้นเป็น Complete
+  PartNo_: string | null = null;
 
   sortOrder: 'asc' | 'desc' = 'asc';
 
@@ -104,32 +105,58 @@ getRowClass(item: any): string {
   }
 onFilter() {
   this.filteredRequests = this.requests.filter(item => {
-    const itemDate = new Date( item.DateComplete);
+    const itemDate = new Date(item.DateRequest || item.DueDate);
 
-    // เช็คช่วงวันที่
     const matchDate =
       (!this.fromDate || itemDate >= new Date(this.fromDate)) &&
       (!this.toDate || itemDate <= new Date(this.toDate));
 
-    // เช็คว่า status เป็น Complete
-    const matchStatus = item.Status === 'Complete';
 
-    return matchDate && matchStatus;
+    const matchCategory =
+      !this.PartNo_ || item.Category === this.PartNo_;
+
+    return matchDate && matchCategory;
   });
 }
 
-//export excelfile
+
 fileName = "ExcelSheet.xlsx";
 
-exportexcel(){
+exportexcel() {
+  const table = document.getElementById("table-data") as HTMLTableElement;
 
-  let data = document.getElementById("table-data");
-  const ws :XLSX.WorkSheet = XLSX.utils.table_to_sheet(data)
+  // แยก thead กับ tbody
+  const thead = table.querySelector("thead");
+  const tbody = table.querySelector("tbody");
 
-  const wb :XLSX.WorkBook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Sheet1')
+  // เลือกเฉพาะ row ที่ checkbox ถูกติ๊กจาก tbody
+  const selectedRows = Array.from(tbody?.querySelectorAll("tr") || [])
+                            .filter(row => {
+                              const checkbox = row.querySelector<HTMLInputElement>('input[type="checkbox"]');
+                              return checkbox?.checked;
+                            });
 
-  XLSX.writeFile(wb,this.fileName)
+  if (selectedRows.length === 0) {
+    alert('กรุณาเลือกอย่างน้อย 1 แถว');
+    return;
+  }
+
+  // สร้าง table ชั่วคราว
+  const tempTable = document.createElement("table");
+
+  // ใส่ thead เสมอ
+  if (thead) {
+    tempTable.appendChild(thead.cloneNode(true));
+  }
+
+  // ใส่เฉพาะ row ที่เลือก
+  selectedRows.forEach(row => tempTable.appendChild(row.cloneNode(true)));
+
+  // แปลง table เป็น worksheet แล้ว export
+  const ws: XLSX.WorkSheet = XLSX.utils.table_to_sheet(tempTable);
+  const wb: XLSX.WorkBook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+  XLSX.writeFile(wb, this.fileName);
 }
 
   showSuccessAlert() {
