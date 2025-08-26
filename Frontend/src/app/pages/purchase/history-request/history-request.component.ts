@@ -62,12 +62,12 @@ loadPurchaseHistory() {
         PartNo: item.PartNo ?? '',
         Status: item.Status ?? '',
         DateRequest: item.DateRequest ?? item.DueDate ?? '',
-        ItemNo: item.ItemNo ?? '-',
-        MFG_Order_No: item.MFG_Order_No ?? '-',
-        Document_No: item.Document_No ?? '-',
-        Stock_Location: item.Stock_Location ?? '-',
+        ItemNo: item.ItemNo ?? '',
+        MFG_Order_No: item.MFG_Order_No ?? '',
+        Document_No: item.Document_No ?? '',
+        Stock_Location: item.Stock_Location ?? '',
         QTY: item.QTY ?? 0,
-        MC_No: item.MC_No ?? '-'
+        MC_No: item.MC_No ?? ''
       }));
 
       // กรองเฉพาะ Status = 'Complete'
@@ -150,11 +150,7 @@ exportexcel() {
                             });
 
   if (selectedRows.length === 0) {
-    Swal.fire({
-    icon: "error",
-    title: "Oops...",
-    text: "Plese Select 1 Row!",
-    });
+    alert('กรุณาเลือกอย่างน้อย 1 แถว');
     return;
   }
 

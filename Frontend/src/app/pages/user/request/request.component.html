@@ -344,6 +344,22 @@
           </tr>
         </tbody>
 
+        <tbody *ngIf="Case_ === 'SPA' && items.length > 0">
+          <tr *ngFor="let item of items">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" [(ngModel)]="item.checked" /></td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+
+            <td [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="0" /></td>
+            <td [ngClass]="getRowClass(item)"> SPA </td>
+          </tr>
+        </tbody>
+
       </table>
     </div>
 

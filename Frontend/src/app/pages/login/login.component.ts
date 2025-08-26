@@ -52,7 +52,7 @@ export class LoginComponent {
   }
   togglePasswordVisibility() {
     const input = document.getElementById('passwordinput') as HTMLInputElement;
-    input.type = input.type === 'Password' ? 'text' : 'Password';
+    input.type = input.type === 'password' ? 'text' : 'password';
   }
 }
 

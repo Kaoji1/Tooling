@@ -129,6 +129,8 @@
             <th style="min-width: 80px;">QTY</th>
             <th style="min-width: 120px; white-space: nowrap;">M/C NO.</th>
             <th style="min-width: 120px;">DECLATION NO.</th>
+            <th>วันที่ใช้</th>
+            <th>วันที่ขอ</th>
           </tr>
         </thead>
 
@@ -157,6 +159,8 @@
             <td [ngClass]="getRowClass(item)">{{ item.QTY }}</td>
             <td [ngClass]="getRowClass(item)">{{ item.MCType }}</td>
             <td [ngClass]="getRowClass(item)">{{ item.Stock_Location }}</td>
+            <td></td>
+            <td></td>
           </tr>
         </tbody>
       </table>

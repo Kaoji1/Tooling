@@ -84,6 +84,7 @@ export class requestComponent {
       { label: 'P/P', value: 'P/P' }, // ตัวเลือกเคสที่ 10
       { label: 'REC', value: 'REC' }, // ตัวเลือกเคสที่ 11
       { label: 'INV', value: 'INV' }, // ตัวเลือกเคสที่ 12
+      { label: 'SPA', value: 'SPA' }, // ตัวเลือกเคสที่ 13
 
     ];
 
@@ -320,14 +321,7 @@ Setview() {
 
           }));
         }
-        else if (this.Case_=== 'INV') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
-        }
+        
         else if (this.Case_=== 'RET') {
           this.items = response.map((item: any) => ({
             ...item,
@@ -384,6 +378,15 @@ Setview() {
 
           }));
         }
+          else if (this.Case_=== 'SPA') {
+          this.items = response.map((item: any) => ({
+            ...item,
+            checked: true,
+            qty: null,
+
+          }));
+        }
+
         console.log('ข้อมูลที่โหลด:', this.items);
       },
       error: (e) => console.error('API Error:', e),
