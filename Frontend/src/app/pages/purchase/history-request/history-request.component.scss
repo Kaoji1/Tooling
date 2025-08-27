@@ -21,6 +21,8 @@
   }
 
 
+
+
   .status-indicator-vertical {
     position: fixed;
     top: 0px;
@@ -123,58 +125,38 @@
     /* เริ่มจากซ้าย */
     position: relative;
     /* สำหรับจัดตำแหน่งภายใน */
-    
+
   }
 
   .button-group {
-  display: flex;
-  flex-direction: column; /* เรียงปุ่มในแนวตั้ง */
-  gap: 10px;              /* ระยะห่างระหว่างปุ่ม */
-  align-items: center;    /* จัดปุ่มให้อยู่ตรงกลาง (ในแนวขวาง) */
+    display: flex;
+    flex-direction: column;
+    /* เรียงปุ่มในแนวตั้ง */
+    gap: 10px;
+    /* ระยะห่างระหว่างปุ่ม */
+    align-items: center;
+    /* จัดปุ่มให้อยู่ตรงกลาง (ในแนวขวาง) */
 
-  // .button-group button {
-  // display: flex;
-  // align-items: center;
-  // justify-content: center;
-  // gap: 5px; /* ระยะห่าง icon กับข้อความ */
-  // font-size: 16px;
-  // font-weight: bold;
-  // padding: 10px 10px;  /* ปรับความสูงให้พอดี */
-  // border: none;
-  // border-radius: 8px;
-  // width: 220px; /* ให้ปุ่มกว้างเท่ากัน */
-  // cursor: pointer;
-
-  // /* กลุ่มปุ่ม export อยู่ขวาสุด */
-  // .button-group {
-  //   display: flex;
-  //   flex-direction: column;
-  //   /* เรียงปุ่มแนวตั้ง */
-  //   gap: 10px;
-  //   margin-left: 60px;
-  //   /* ดันกลุ่มปุ่มไปขวาสุด */
-  //   align-items: center;
-  //   border: none;
-  //   border-radius: 20px;
-  //   justify-content: flex-end;
-  //   /* เริ่มจากซ้าย */
 
   }
-  .button-group button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-   gap: 5px;              /* ระยะห่าง icon กับข้อความ */
-  font-size: 16px;
-  font-weight: bold;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  width: 220px;          /* ให้ปุ่มกว้างเท่ากัน */
-  cursor: pointer;
-  margin-left: 20px;
 
-}
+  .button-group button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    /* ระยะห่าง icon กับข้อความ */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    width: 220px;
+    /* ให้ปุ่มกว้างเท่ากัน */
+    cursor: pointer;
+    margin-left: 20px;
+
+  }
 
   /* กำหนดขนาดปุ่ม export ให้เท่ากัน */
   .export-btn,
