@@ -79,7 +79,7 @@ exports.Send_Request = async (req, res) => {
         <td>${item.CASE}</td>
         <td>${item.Fac}</td>
         <td>${item.QTY}</td>
-        <td>${item.Due_Date}</td>
+        <td>${new Date(item.Due_Date).toLocaleDateString('th-TH')}</td>
         <td>${item.Employee_Name}</td>
       </tr>
     `).join('');
@@ -98,7 +98,7 @@ exports.Send_Request = async (req, res) => {
       to: emailList,  //  ส่งหาอีเมลจาก DB
       subject: 'มีรายการถูกขอเข้ามาใหม่',
       html: `
-        <h1 style="color:black;">🚚แจ้งเตือน!! มีรายการถูกขอเข้ามาใหม่📦</h1>
+        <h1 style="color:black;">🚚แจ้งเตือน❗❗ มีรายการถูกขอเข้ามาใหม่🚚</h1>
         <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
           <thead>
             <tr style="background-color: #f2f2f2;">
@@ -116,7 +116,7 @@ exports.Send_Request = async (req, res) => {
             ${itemDetailsHtml}
           </tbody>
         </table>
-        <h3>กรุณาเข้ามาตรวจสอบ👉 http://10.120.113.44:4200/ </h3>
+        <h3 style="color: black;">กรุณาเข้ามาตรวจสอบ👉 http://10.120.113.44:4200/ 👈</h3>
       `
     };
 
