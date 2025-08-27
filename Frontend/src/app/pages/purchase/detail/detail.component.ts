@@ -124,7 +124,7 @@ onItemNoChange(selectedItemNo: string, row: any) {
     localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
   }
 
-  
+
 // เพิ่มแถวใหม่
 // เพิ่มแถวใหม่
 addNewRequest(newRequestData: any, rowIndex: number) {

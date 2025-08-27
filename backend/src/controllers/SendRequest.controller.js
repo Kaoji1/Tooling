@@ -126,7 +126,7 @@ exports.GenerateNewDocNo = async (req, res) => {
     let isUnique = false;
 
     while (!isUnique) {
-      docNo =` ${prefix}${nextNumber.toString().padStart(3, '0')}`; // เช่น SETTN908001
+      docNo =` ${prefix}${nextNumber.toString().padStart(4, '0')}`; // เช่น SETTN908001
 
       const check = await pool.request()
         .input('DocNo', sql.NVarChar(20), docNo)

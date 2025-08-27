@@ -76,26 +76,6 @@ loadPurchaseHistory() {
 
       const uniqueDivisions = [...new Set(this.requests.map(r => r.Division).filter(c => c))];
       this.divisionList = uniqueDivisions.map(d => ({ label: d, value: d }));
-      //  const uniqueDivisions = [...new Set(this.requests.map(r => r.Division).filter(c => c))];
-      // this.divisionList = uniqueDivisions.map(d => ({ label: d, value: d }));
-      // console.log('divisionList:', this.divisionList);
-
-      // สร้าง PartNo dropdown แบบไม่รวมค่าว่าง
-      // const uniquePartNo = [...new Set(this.requests.map(r => r.PartNo).filter(p => p))];
-      // this.partNoList = uniquePartNo.map(p => ({ label: p, value: p }));
-      // console.log('PartNo dropdown list:', this.partNoList);
-
-      // // สร้าง Status dropdown แบบไม่รวมค่าว่าง
-      // const uniqueStatus = [...new Set(this.requests.map(r => r.Status).filter(s => s))];
-      // this.statussList = uniqueStatus.map(s => ({ label: s, value: s }));
-      // console.log('Status dropdown list:', this.statussList);
-
-      // // เรียงลำดับตาม DueDate (null-safe)
-      // this.filteredRequests.sort((a, b) => {
-      //   const dateA = a.DueDate ? new Date(a.DueDate).getTime() : 0;
-      //   const dateB = b.DueDate ? new Date(b.DueDate).getTime() : 0;
-      //   return dateA - dateB;
-      // });
 
       console.log('Filtered requests after sortByDueDate:', this.filteredRequests);
     },
@@ -144,10 +124,10 @@ exportexcel() {
 
   // เลือกเฉพาะ row ที่ checkbox ถูกติ๊กจาก tbody
   const selectedRows = Array.from(tbody?.querySelectorAll("tr") || [])
-                            .filter(row => {
-                              const checkbox = row.querySelector<HTMLInputElement>('input[type="checkbox"]');
-                              return checkbox?.checked;
-                            });
+    .filter(row => {
+    const checkbox = row.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    return checkbox?.checked;
+    });
 
   if (selectedRows.length === 0) {
     alert('กรุณาเลือกอย่างน้อย 1 แถว');
@@ -158,12 +138,33 @@ exportexcel() {
   const tempTable = document.createElement("table");
 
   // ใส่ thead เสมอ
-  if (thead) {
-    tempTable.appendChild(thead.cloneNode(true));
+
+   if (thead) {
+    const clonedThead = thead.cloneNode(true) as HTMLElement;
+    clonedThead.querySelectorAll("th").forEach((th, index) => {
+      if (["0", "12", "13"].includes(index.toString())) { 
+        // 0 = checkbox, 12 = DueDate, 13 = RequestDate (ปรับ index ตามจริงใน table ของคุณ)
+        th.remove();
+      }
+    });
+    tempTable.appendChild(clonedThead);
   }
 
+  // if (thead) {
+  //   tempTable.appendChild(thead.cloneNode(true));
+  // }
+
   // ใส่เฉพาะ row ที่เลือก
-  selectedRows.forEach(row => tempTable.appendChild(row.cloneNode(true)));
+  // selectedRows.forEach(row => tempTable.appendChild(row.cloneNode(true)));
+  selectedRows.forEach(row => {
+    const clonedRow = row.cloneNode(true) as HTMLElement;
+    clonedRow.querySelectorAll("td").forEach((td, index) => {
+      if (["0", "12", "13"].includes(index.toString())) { 
+        td.remove();
+      }
+    });
+    tempTable.appendChild(clonedRow);
+  });
 
   // แปลง table เป็น worksheet แล้ว export
   const ws: XLSX.WorkSheet = XLSX.utils.table_to_sheet(tempTable);

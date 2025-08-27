@@ -45,40 +45,20 @@
           <label for="duedate">Date</label>
           <input type="date" [(ngModel)]="toDate" placeholder="duedate">
         </div>
-        
+
         <div class="group-select">
-  <label for="division">Division</label>
-  <ng-select
-    style="width: 145px;"
-    [items]="divisionList"
-    bindLabel="label"
-    bindValue="value"
-    [(ngModel)]="Division_"
-    placeholder="Select a Division"
-  >
-  </ng-select>
-</div>
-
-         <!-- <div class="group-select">
-          <label for="PartNo">PartNo</label>
-          <ng-select style="width: 150px; " 
-      
-            bindLabel="label"
-            bindValue="value"
-            [(ngModel)]="PartNo_"
-            placeholder="Select a PartNo"
-            >
-            
+          <label for="division">Division</label>
+          <ng-select style="width: 145px;" [items]="divisionList" bindLabel="label" bindValue="value"
+            [(ngModel)]="Division_" placeholder="Select a Division">
           </ng-select>
-        </div> -->
-
+        </div>
 
 
         <div class="form-input">
           <!-- ปุ่มอื่น ๆ -->
           <div class="button-filter">
-        <button class="btn btn-filter" type="button" (click)="onFilter()" >Filter</button>
-      </div>
+            <button class="btn btn-filter" type="button" (click)="onFilter()">Filter</button>
+          </div>
           <button class="btn-sort" type="button" (click)="onSort()"><i class="bi bi-sort-down"></i>Sort</button>
 
           <!-- กลุ่มปุ่ม export -->
@@ -129,8 +109,8 @@
             <th style="min-width: 80px;">QTY</th>
             <th style="min-width: 120px; white-space: nowrap;">M/C NO.</th>
             <th style="min-width: 120px;">DECLATION NO.</th>
-            <th>วันที่ใช้</th>
-            <th>วันที่ขอ</th>
+            <th>Due date</th>
+            <th>Request date</th>
           </tr>
         </thead>
 
@@ -154,13 +134,13 @@
             <td [ngClass]="getRowClass(item)">{{ item.DocNo }}</td>
             <td [ngClass]="getRowClass(item)">{{ item.Stock_Location }}</td>
             <td [ngClass]="getRowClass(item)">{{ item.Stock_Location }}</td>
-            <td [ngClass]="getRowClass(item)">{{ item.DateComplete ? (item.DateComplete | date: 'yyyy-MM-dd') : '-' }}
+            <td [ngClass]="getRowClass(item)">{{ item.DateComplete ? (item.DateComplete | date: 'yyyy-MM-dd') : '' }}
             </td>
             <td [ngClass]="getRowClass(item)">{{ item.QTY }}</td>
             <td [ngClass]="getRowClass(item)">{{ item.MCType }}</td>
             <td [ngClass]="getRowClass(item)">{{ item.Stock_Location }}</td>
-            <td></td>
-            <td></td>
+            <td [ngClass]="getRowClass(item)">{{ item.DueDate ? (item.DateComplete | date: 'yyyy-MM-dd') : '' }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.DateTime_Record }}</td>
           </tr>
         </tbody>
       </table>

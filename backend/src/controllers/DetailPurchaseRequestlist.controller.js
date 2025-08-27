@@ -1,6 +1,8 @@
 const { poolPromise } = require("../config/database");
 const Type = require("mssql").TYPES;
 const sql = require("mssql");
+const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
+
 
 
 exports.Detail_Purchase = async (req, res) => {
@@ -51,55 +53,248 @@ exports.get_ItemNo = async (req, res) => {
   }
 };
 
+
 exports.Update_Status_Purchase = async (req, res) => {
-  console.log(req.body); // ตรวจสอบค่าที่ส่งมา { ID_Request: , Status:  }
+  console.log(req.body);
 
-try {
-    const { 
-      ID_Request,
-      DocNo, 
-      Status, 
-      Requester, 
-      Fac,
-      CASE, 
-      PartNo, 
-      ItemNo, 
-      Process, 
-      MCType,  
-      Req_QTY, 
-      Remark, 
-      ON_HAND, 
-      DueDate, 
-      PathDwg, 
-      PathLayout,
-      SPEC,
-      QTY
-    } = req.body;
+  const { 
+    ID_Request, Status 
+  } = req.body;
 
-    const pool = await poolPromise; 
-    const result = await pool
-      .request()
+  try {
+    const pool = await poolPromise;
+
+    // อัปเดตสถานะ
+    await pool.request()
       .input("ID_Request", sql.Int, ID_Request)
       .input("Status", sql.NVarChar, Status)
-      // .input("PathLayout", sql.NVarChar, PathLayout)
-      
       .query(`
         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
         SET 
             Status = @Status,
-           
             DateComplete = CASE 
                              WHEN @Status = N'Complete' THEN SYSDATETIME()
                              ELSE DateComplete
                            END
         WHERE ID_Request = @ID_Request
-      `);      
-    res.json({ success: true, message: "Updated successfully" });
-  } catch (error) {
-    console.error("Error executing query:", error.stack);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+      `);
+
+    // ส่งอีเมลอัตโนมัติถ้า Status = Complete
+    if (Status === "Complete") {
+      try {
+        const emailResult = await pool.request()
+          .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role = 'production'`);
+        const emailList = emailResult.recordset.map(r => r.Email).filter(Boolean);
+
+        if (!emailList.length) {
+          console.warn("⚠️ ไม่พบอีเมลของ Role = production");
+          return res.json({ success: true, message: "อัปเดตสำเร็จ แต่ไม่พบอีเมลสำหรับส่ง" });
+        }
+
+        const itemResult = await pool.request()
+          .input("ID_Request", sql.Int, ID_Request)
+          .query(`SELECT Division, PartNo, ItemNo, [CASE], Fac, QTY, DueDate, Requester, Remark
+                  FROM tb_IssueCuttingTool_Request_Document
+                  WHERE ID_Request = @ID_Request`);
+
+        const item = itemResult.recordset[0];
+        if (!item) return res.status(404).json({ success: false, message: "ไม่พบรายการนี้" });
+
+        const formattedDueDate = item.DueDate ? new Date(item.DueDate).toLocaleDateString() : '-';
+
+        const itemDetailsHtml = `
+          <tr>
+            <td>${item.Division || '-'}</td>
+            <td>${item.PartNo || '-'}</td>
+            <td>${item.ItemNo || '-'}</td>
+            <td>${item.CASE || '-'}</td>
+            <td>${item.Fac || '-'}</td>
+            <td>${item.QTY || '-'}</td>
+            <td>${formattedDueDate}</td>
+            <td>${item.Requester || '-'}</td>
+            <td>${item.Remark || '-'}</td>
+          </tr>
+        `;
+
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: { user: 'testsystem1508@gmail.com', pass: 'amdo inzi npqq asnd' }
+        });
+
+        await transporter.sendMail({
+          from: '"Material Disbursement System" <testsystem1508@gmail.com>',
+          to: emailList,
+          subject: 'รายการเสร็จสิ้น',
+          html: `
+            <h1 style="color:black;">✅ แจ้งเตือน!! รายการถูกจัดส่งสำเร็จ</h1>
+            <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
+              <thead>
+                <tr style="background-color: #f2f2f2;">
+                  <th>Division</th>
+                  <th>Part No</th>
+                  <th>Item No</th>
+                  <th>Case</th>
+                  <th>Factory</th>
+                  <th>QTY</th>
+                  <th>DueDate</th>
+                  <th>Requester</th>
+                  <th>Remark</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemDetailsHtml}
+              </tbody>
+            </table>
+          `
+        });
+
+        console.log("📧 ส่งอีเมลสำเร็จ");
+        return res.json({ success: true, message: "Updated และส่งอีเมลเรียบร้อย" });
+
+      } catch (mailError) {
+        console.error("❌ ส่งอีเมลล้มเหลว:", mailError);
+        return res.status(500).json({ success: false, message: "อัปเดตสำเร็จแต่ส่งอีเมลล้มเหลว", error: mailError.message });
+      }
+    }
+
+    // กรณี Status ไม่ใช่ Complete
+    res.json({ success: true, message: "Updated สำเร็จ" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "เกิดข้อผิดพลาดในการอัปเดต", error: err.message });
   }
 };
+// exports.Update_Status_Purchase = async (req, res) => {
+//   console.log(req.body); // ตรวจสอบค่าที่ส่งมา { ID_Request: , Status:  }
+
+// try {
+//     const { 
+//       ID_Request,
+//       DocNo, 
+//       Status, 
+//       Requester, 
+//       Fac,
+//       CASE, 
+//       PartNo, 
+//       ItemNo, 
+//       Process, 
+//       MCType,  
+//       Req_QTY, 
+//       Remark, 
+//       ON_HAND, 
+//       DueDate, 
+//       PathDwg, 
+//       PathLayout,
+//       SPEC,
+//       QTY,
+//       Division
+//     } = req.body;
+
+//     const pool = await poolPromise; 
+//     const result = await pool
+//       .request()
+//       .input("ID_Request", sql.Int, ID_Request)
+//       .input("Status", sql.NVarChar, Status)
+//       // .input("PathLayout", sql.NVarChar, PathLayout)
+      
+//       .query(`
+//         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
+//         SET 
+//             Status = @Status,
+           
+//             DateComplete = CASE 
+//                              WHEN @Status = N'Complete' THEN SYSDATETIME()
+//                              ELSE DateComplete
+//                            END
+//         WHERE ID_Request = @ID_Request
+//       `);
+//       // =============================
+//     // ✅ ส่งอีเมลอัตโนมัติถ้า Status = Complete
+//     // =============================
+//     // ส่งอีเมลอัตโนมัติถ้า Status = Complete
+//     if (Status === "Complete") {
+//       try {
+//         const emailResult = await pool.request()
+//           .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role = 'production'`);
+
+//         const emailList = emailResult.recordset.map(row => row.Email).filter(Boolean);
+
+//         if (emailList.length > 0) {
+//           const formattedDueDate = DueDate ? new Date(DueDate).toLocaleDateString() : '-';
+
+//           const itemDetailsHtml = `
+//             <tr>
+//               <td>${Division || '-'}</td>
+//               <td>${PartNo || '-'}</td>
+//               <td>${ItemNo || '-'}</td>
+//               <td>${CASE || '-'}</td>
+//               <td>${Fac || '-'}</td>
+//               <td>${QTY || '-'}</td>
+//               <td>${formattedDueDate}</td>
+//               <td>${Requester || '-'}</td>
+//             </tr>
+//           `;
+
+//           const transporter = nodemailer.createTransport({
+//             service: 'gmail',
+//             auth: {
+//               user: 'testsystem1508@gmail.com',
+//               pass: 'amdo inzi npqq asnd' // App Password
+//             }
+//           });
+
+//           const mailOptions = {
+//             from: '"Material Disbursement System" <testsystem1508@gmail.com>',
+//             to: emailList,
+//             subject: 'รายการเสร็จสิ้น',
+//             html: `
+//               <h1 style="color:black;">✅ แจ้งเตือน!! รายการถูกส่งสำเร็จ</h1>
+//               <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
+//                 <thead>
+//                   <tr style="background-color: #f2f2f2;">
+//                     <th>Division</th>
+//                     <th>Part No</th>
+//                     <th>Item No</th>
+//                     <th>Case</th>
+//                     <th>Factory</th>
+//                     <th>QTY</th>
+//                     <th>DueDate</th>
+//                     <th>Requester</th>
+//                   </tr>
+//                 </thead>
+//                 <tbody>
+//                   ${itemDetailsHtml}
+//                 </tbody>
+//               </table>
+//             `
+//           };
+
+//           await transporter.sendMail(mailOptions);
+//           console.log("📧 ส่งอีเมลสำเร็จ");
+//         } else {
+//           console.warn("⚠️ ไม่พบอีเมลของ Role = production");
+//         }
+//       } catch (mailError) {
+//         console.error("❌ ส่งอีเมลล้มเหลว:", mailError);
+//       }
+//     }
+
+//     // ตอบกลับ client ว่าสำเร็จ
+//     res.json({ success: true, message: "Updated successfully" });
+
+//   } catch (error) {
+//     console.error("Error executing query:", error.stack);
+//     res.status(500).json({ error: "Internal Server Error", details: error.message });
+//   }
+// };
+
+//     res.json({ success: true, message: "Updated successfully" });
+//   } catch (error) {
+//     console.error("Error executing query:", error.stack);
+//     res.status(500).json({ error: "Internal Server Error", details: error.message });
+//   }
+// };
 
 exports.Update_Request = async (req, res) => {
   try {
@@ -285,3 +480,78 @@ exports.DeleteItem = async (req, res) => {
   }
 };
 
+// exports.Send_Complete_Email = async (req, res) => {
+//   try {
+//     const pool = await poolPromise;
+
+//     // ดึงอีเมลทั้งหมดที่ Role = 'production'
+//     const emailResult = await pool.request()
+//       .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role = 'production'`);
+
+//     const emailList = emailResult.recordset.map(row => row.Email).filter(Boolean);
+
+//     if (emailList.length === 0) {
+//       console.warn("ไม่พบอีเมลของ Role = production ในฐานข้อมูล");
+//       return res.status(404).json({ message: "ไม่พบอีเมลของ Role = production" });
+//     }
+
+//     const { items } = req.body; // รับ items จาก frontend
+
+//     let itemDetailsHtml = items.map(item => `
+//       <tr>
+//         <td>${item.Division}</td>
+//         <td>${item.PartNo}</td>
+//         <td>${item.ItemNo}</td>
+//         <td>${item.Case_}</td>
+//         <td>${item.Factory}</td>
+//         <td>${item.QTY}</td>
+//         <td>${item.DueDate_}</td>
+//         <td>${item.Employee_Name}</td>
+//       </tr>
+//     `).join('');
+
+//     // ======== ส่งอีเมลแจ้งเตือน ========
+//     const transporter = nodemailer.createTransport({
+//       service: 'gmail',
+//       auth: {
+//         user: 'testsystem1508@gmail.com',
+//         pass: 'amdo inzi npqq asnd' // App Password
+//       }
+//     });
+
+//     const mailOptions = {
+//       from: '"Material Disbursement System" <testsystem1508@gmail.com>',
+//       to: emailList,
+//       subject: 'รายการเสร็จสิ้น',
+//       html: `
+//         <h1 style="color:black;">✅ แจ้งเตือน!! รายการถูกส่งสำเร็จ</h1>
+//         <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
+//           <thead>
+//             <tr style="background-color: #f2f2f2;">
+//               <th>Division</th>
+//               <th>Part No</th>
+//               <th>Item No</th>
+//               <th>Case</th>
+//               <th>Factory</th>
+//               <th>QTY</th>
+//               <th>DueDate</th>
+//               <th>Requester</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             ${itemDetailsHtml}
+//           </tbody>
+//         </table>
+//       `
+//     };
+
+//     await transporter.sendMail(mailOptions);
+
+//     console.log("ส่งอีเมลสำเร็จ");
+//     res.json({ success: true, message: "ส่งอีเมลเรียบร้อย" });
+
+//   } catch (error) {
+//     console.error("ส่งอีเมลไม่สำเร็จ:", error);
+//     res.status(500).json({ success: false, message: "ส่งอีเมลไม่สำเร็จ", error: error.message });
+//   }
+// };
