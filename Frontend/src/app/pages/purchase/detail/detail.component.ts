@@ -76,16 +76,24 @@ ngOnInit() {
 Detail_Purchase() {
   this.DetailPurchase.Detail_Request().subscribe({
     next: (response: any[]) => {
-      //  กรองด้วย ItemNo + Category จาก DB ตรงๆ
       const filtered = (response || [])
         .filter(it => it.ItemNo === this.itemNo && String(it.Category ?? 'Unknown') === this.category)
-        .map(it => ({ ...it, Selection: false }));
+        .map(it => ({
+          ...it,
+          ID_Request: Number(it.ID_Request),   // ✅ บังคับเป็น number
+          Selection: false
+        }));
 
-      // กันซ้ำ
+      // ✅ กันซ้ำด้วย number แน่นอน
       const seen = new Set<number>();
-      const unique = filtered.filter(it => !seen.has(it.ID_Request) && seen.add(it.ID_Request));
+      const unique = filtered.filter(it => {
+        const id = Number(it.ID_Request);
+        if (!Number.isFinite(id)) return true; // ถ้า id เพี้ยน ปล่อยผ่าน (หรือจะกรองทิ้งก็ได้)
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
 
-      //  ไม่ append เพื่อไม่ให้ผสม
       this.request = unique;
     },
     error: e => console.error('Error Detail_Purchase:', e)
@@ -128,46 +136,25 @@ onItemNoChange(selectedItemNo: string, row: any) {
 // เพิ่มแถวใหม่
 // เพิ่มแถวใหม่
 addNewRequest(newRequestData: any, rowIndex: number) {
-  console.log('เรียก addNewRequest:', newRequestData, 'rowIndex:', rowIndex);
-
-  // เรียก backend insert
   this.DetailPurchase.insertRequest(newRequestData).subscribe({
     next: res => {
-      console.log('ผลลัพธ์จาก backend insertRequest:', res);
+      if (!res.ID_Request) { alert('Backend ไม่ส่งข้อมูลกลับมา'); return; }
 
-      // ตรวจสอบว่ามี newId กลับมาหรือไม่
-      if (!res.ID_Request) {
-        alert('Backend ไม่ส่งข้อมูลกลับมา');
-        return;
-      }
+      const newRow = {
+        ...newRequestData,
+        ...res,
+        ID_Request: Number(res.ID_Request),  // ✅ บังคับเป็น number
+        Selection: false,
+        isNew: true
+      };
 
-      // สร้างแถวใหม่พร้อมข้อมูลจาก backend
-      const newRow = { ...newRequestData, ...res, Selection: false, isNew: true };
-
-      // แทรกแถวใหม่หลังแถวปัจจุบัน
       this.request.splice(rowIndex + 1, 0, newRow);
-
-      // อัปเดต editingIndex สำหรับแถวใหม่
       this.editingIndex[newRow.ID_Request] = rowIndex + 1;
 
-      console.log('request หลังเพิ่มแถวใหม่:', this.request);
-      console.log('editingIndex หลังเพิ่มแถวใหม่:', this.editingIndex);
-
-      // เก็บใน localStorage
       localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-
-      // alert('เพิ่มข้อมูลสำเร็จ');
-      Swal.fire({
-        icon: "success",
-        title: "Successfully Added Data Row",
-        showConfirmButton: false,
-        timer: 1330
-        });
+      Swal.fire({ icon: 'success', title: 'Successfully Added Data Row', showConfirmButton: false, timer: 1330 });
     },
-    error: err => {
-      console.error('Error addNewRequest:', err);
-      alert(err.error?.message || 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล');
-    }
+    error: err => { /* ... */ }
   });
 }
 
@@ -187,26 +174,33 @@ saveEdit(caseKey: number, rowIndex: number) {
     return;
   }
 
-  // ✅ การันตีให้ SPEC ตรงกับ ItemNo ก่อนยิง backend
+  // อัปเดต SPEC ให้ตรงกับ ItemNo ล่าสุดก่อนยิง backend
   this.syncSpecWithItemNo(item);
 
   // เก็บสำเนาไว้สำหรับ rollback ถ้า error
   const snapshot = { ...item };
 
-  // helper: รวมผลตอบกลับ โดยไม่ให้ null/undefined จาก backend มาทับค่าปัจจุบัน
+  // รวมผลตอบกลับ โดยไม่ให้ null/undefined มาทับค่าปัจจุบัน
   const mergeSafe = (original: any, resp: any) => {
     const merged = { ...original, ...(resp || {}) };
+    // ✅ การันตี ID เป็น number เสมอ
+    merged.ID_Request = Number(resp?.ID_Request ?? original.ID_Request);
+
     // ป้องกันค่าหาย
     if (resp?.ItemNo == null) merged.ItemNo = original.ItemNo;
     if (resp?.SPEC   == null) merged.SPEC   = original.SPEC;
+
     // คงสถานะ selection/flag ต่าง ๆ
     merged.Selection = !!original.Selection;
-    merged.isNew = false;
+    merged.isNew = false; // ✅ บันทึกแล้วให้ไม่ถือว่าเป็นแถวใหม่อีก
     return merged;
   };
 
-  if (item.isNew) {
-    console.log('กำลังบันทึกแถวใหม่...');
+  // ✅ ใช้ "การมี ID จริง" เป็นตัวตัดสิน insert/update (เลิกพึ่ง isNew)
+  const hasId = Number.isInteger(Number(item.ID_Request));
+
+  if (!hasId) {
+    console.log('กำลังบันทึกแถวใหม่ (insert)...');
     this.DetailPurchase.insertRequest(item).subscribe({
       next: (res) => {
         this.request[rowIndex] = mergeSafe(item, res);
@@ -216,26 +210,20 @@ saveEdit(caseKey: number, rowIndex: number) {
         console.log('editingIndex หลัง saveEdit แถวใหม่:', this.editingIndex);
 
         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-        // alert('บันทึกแถวใหม่เรียบร้อย');
-        Swal.fire({
-        icon: "success",
-        title: "Your work has been saved",
-        showConfirmButton: false,
-        timer: 1330
-        });
+        Swal.fire({ icon: 'success', title: 'Your work has been saved', showConfirmButton: false, timer: 1330 });
       },
       error: (err) => {
         console.error('Error saveEdit แถวใหม่:', err);
-        // rollback ค่าหน้าจอ
+        // rollback
         this.request[rowIndex] = snapshot;
         alert('เกิดข้อผิดพลาดในการบันทึกแถวใหม่');
       }
     });
   } else {
-    console.log('กำลังอัพเดตแถวเดิม...');
+    console.log('กำลังอัพเดตแถวเดิม (update)...');
     this.DetailPurchase.updateRequest(item).subscribe({
       next: (res) => {
-        // ❗ ไม่โหลด/กรองรายการใหม่ เพื่อกันแถว “หาย” เพราะไม่ผ่าน filter เดิม
+        // ❗ ไม่ reload รายการใหม่ เพื่อกันแถวหายจาก filter
         this.request[rowIndex] = mergeSafe(item, res);
         delete this.editingIndex[caseKey];
 
@@ -243,14 +231,8 @@ saveEdit(caseKey: number, rowIndex: number) {
         console.log('editingIndex หลัง saveEdit แถวเดิม:', this.editingIndex);
 
         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-        // alert('บันทึกแถวเรียบร้อย');
-        Swal.fire({
-        icon: "success",
-        title: "Your work has been saved",
-        showConfirmButton: false,
-        timer: 1330
-        });
-        },
+        Swal.fire({ icon: 'success', title: 'Your work has been saved', showConfirmButton: false, timer: 1330 });
+      },
       error: (err) => {
         console.error('Error saveEdit แถวเดิม:', err);
         // rollback
@@ -314,66 +296,49 @@ deleteRow(rowIndex: number) {
   }
 }
 
-// ใน component
-isCompleting = false; // กันกดซ้ำ
+isCompleting = false;
 
 completeSelected() {
   if (this.isCompleting) return;
-  Swal.fire({
-  title: "Complete!",
-  icon: "success",
-  draggable: true
-});
 
-  const selectedItems = this.request.filter(it => it.Selection && it.Status === 'Waiting');
-  if (selectedItems.length === 0) {
-  Swal.fire({
-  icon: "error",
-  title: "Oops...",
-  text: "Please select at least one item to complete.",
-  });
+  const ids: number[] = (this.request || [])
+    .filter(it => it?.Selection === true && it?.Status === 'Waiting')
+    .map(it => Number(it.ID_Request))
+    .filter(Number.isInteger);
+
+  if (ids.length === 0) {
+    Swal.fire({ icon: 'error', title: 'Oops...', text: 'Please select at least one item to complete.' });
+    return; // ❗️อย่าลืม return
   }
 
   this.isCompleting = true;
 
-  const processNext = async (index: number) => {
-    if (index >= selectedItems.length) {
-      this.isCompleting = false;
-      console.log('Complete ทุกแถวเสร็จสิ้น');
-      return;
-    }
+  // ✅ เรียกครั้งเดียว ส่งหลาย ID
+  
+this.DetailPurchase.updateStatusToComplete(ids, 'Complete').subscribe({
+  next: () => {
+    const idSet = new Set(ids);
 
-    const item = selectedItems[index];
-    const prevStatus = item.Status;
+    // (ถ้าจะคงแถวเดิมไว้ระหว่างรอรีโหลด)
+    this.request = this.request.map(r =>
+      idSet.has(Number(r.ID_Request))
+        ? { ...r, Status: 'Complete', Selection: false, isNew: false }
+        : r
+    );
+    localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
 
-    try {
-      item.Status = 'Complete'; // optimistic update
+    // 👇 เพิ่มแค่นี้: รีโหลดข้อมูลใหม่จาก backend
+    this.Detail_Purchase();   // โหลดรายการตาม filter ปัจจุบัน
+    // this.get_ItemNo();     // ถ้าต้องรีโหลด master ItemNo ด้วย ค่อยปลดคอมเมนต์
 
-
-      if (item.isNew) {
-        const insertRes: any = await this.DetailPurchase.insertRequest(item).toPromise();
-        if (insertRes && insertRes.ID_Request) item.ID_Request = insertRes.ID_Request;
-        else throw new Error('Backend ไม่ส่ง ID กลับมา');
-
-        await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
-      } else {
-        await this.DetailPurchase.updateStatusToComplete(item.ID_Request, 'Complete').toPromise();
-      }
-
-      // ลบแถวที่สำเร็จ
-      this.request = this.request.filter(r => r.ID_Request !== item.ID_Request);
-      console.log('อัปเดตสำเร็จและลบแถว ID:', item.ID_Request);
-
-    } catch (err) {
-      item.Status = prevStatus;
-      console.error('Error completeSelected ID:', item.ID_Request, err);
-      alert(`อัปเดต ID:${item.ID_Request} ไม่สำเร็จ`);
-    } finally {
-      processNext(index + 1);
-    }
-  };
-
-  processNext(0);
+    Swal.fire({ icon: 'success', title: 'Complete!', text: `Updated ${ids.length} items.` }); // ใช้ backticks
+  },
+  error: err => {
+    console.error('Bulk update failed:', err);
+    Swal.fire({ icon: 'error', title: 'Bulk update failed', text: err?.error?.message || '' });
+  },
+  complete: () => { this.isCompleting = false; }
+});
 }
 
 // เปิดไฟล์ PDF

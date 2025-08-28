@@ -25,6 +25,7 @@
             <th>Fresh_Qty</th>
             <th>Reuse_Qty</th>
             <th>QTY</th>
+            <th>MC NO</th>
             <th>Path Dwg</th>
             <th style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">Path Layout
             </th>
@@ -40,7 +41,7 @@
           <ng-container *ngFor="let caseKey of (groupedCart | keyvalue)">
             <!--  แสดงหัวกลุ่ม Case -->
             <tr class="table-secondary">
-              <td colspan="14" class="text-start fw-bold bg-light p-3 rounded border">
+              <td colspan="15" class="text-start fw-bold bg-light p-3 rounded border">
                 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
 
                   <!-- Checkbox & Label -->
@@ -71,6 +72,7 @@
                 </ng-container>
                 <ng-template #showQty>{{ item.QTY }}</ng-template>
               </td>
+              <td [ngClass]="getRowClass(item)">{{ item.MCNo}}</td>
               <!--  Path DWG -->
               <td [ngClass]="getRowClass(item)">
                 <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDwgPath">
