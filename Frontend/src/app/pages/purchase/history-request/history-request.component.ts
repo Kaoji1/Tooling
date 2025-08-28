@@ -86,6 +86,30 @@ loadPurchaseHistory() {
     error: e => console.error('Error from API:', e)
   });
 }
+
+// formatMC(item: any): string {
+//   const mcNo = item.MCNo ? item.MCNo.toString().padStart(3, '0') : '000';
+//   return `${item.MC_Code}${mcNo}`;
+// }
+
+formatMC(item: any): string {
+  let mcNoStr = item.MCNo ? item.MCNo.toString().replace(/\s+/g, '') : '000';
+
+  // ลบสัญลักษณ์ใด ๆ ที่ขึ้นต้น (เช่น comma, จุด, เครื่องหมายอื่น ๆ)
+  mcNoStr = mcNoStr.replace(/^[!+@#$%^&฿*\(\)\-_;:'"\.,=\]\[\{\}\/|\\]+<>/, '');
+
+  // แยกด้วยทุกสัญลักษณ์ (, . ; - _ |)
+  const mcNoParts = mcNoStr.split(/[!+@#$%^&฿*\(\)\-_;:'"\.,=\]\[\{\}\/|\\<>]/);
+
+  // เอา 3 ตัวแรกของตัวเลขตัวแรก
+  const firstPart = mcNoParts[0];
+  const firstThreeDigits = firstPart.slice(0, 3).padEnd(3, '0');
+
+  return `${item.MC_Code}${firstThreeDigits}`;
+}
+
+
+
 getRowClass(item: any): string {
   if (item.Selection) {
     return 'row-selected'; // ถ้าติ๊ก checkbox
