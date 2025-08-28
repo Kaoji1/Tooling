@@ -1,7 +1,7 @@
 const { poolPromise } = require("../config/database");
 const Type = require("mssql").TYPES;
 const sql = require("mssql");
-
+const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
 
 // insert data to table
 exports.Send_Request = async (req, res) => {
@@ -60,6 +60,74 @@ exports.Send_Request = async (req, res) => {
         .input('ON_HAND',sql.Int,ON_HAND)
         .input('PhoneNo', sql.NVarChar(50), PhoneNo ? String(PhoneNo) : '')
         .execute('[dbo].[stored_IssueCuttingTool_SendRequest]');
+    }
+    //  ดึงอีเมลทั้งหมดที่ Role = 'production'
+    const emailResult = await pool.request()
+      .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role = 'purchase'`);
+
+    const emailList = emailResult.recordset.map(row => row.Email).filter(email => !!email);
+
+    if (emailList.length === 0) {
+      console.warn("ไม่พบอีเมลของ Role = production ในฐานข้อมูล");
+    }
+
+    let itemDetailsHtml = items.map(item => `
+      <tr>
+        <td>${item.Division}</td>
+        <td>${item.PartNo}</td>
+        <td>${item.ItemNo}</td>
+        <td>${item.CASE}</td>
+        <td>${item.Fac}</td>
+        <td>${item.QTY}</td>
+        <td>${new Date(item.Due_Date).toLocaleDateString('th-TH')}</td>
+        <td>${item.Employee_Name}</td>
+      </tr>
+    `).join('');
+
+    // ========  ส่งอีเมลแจ้งเตือนหลังจากบันทึกเสร็จ ========
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'testsystem1508@gmail.com',
+        pass: 'amdo inzi npqq asnd' // App Password
+      }
+    });
+
+    const mailOptions = {
+      from: '"Material Disbursement System" <testsystem1508@gmail.com>',
+      to: emailList,  //  ส่งหาอีเมลจาก DB
+      subject: 'มีรายการถูกขอเข้ามาใหม่',
+      html: `
+        <h1 style="color:black;">🚚แจ้งเตือน❗❗ มีรายการถูกขอเข้ามาใหม่🚚</h1>
+        <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
+          <thead>
+            <tr style="background-color: #f2f2f2;">
+              <th>Division</th>
+              <th>Part No</th>
+              <th>Item No</th>
+              <th>Case</th>
+              <th>Factory</th>
+              <th>QTY</th>
+              <th>DueDate</th>
+              <th>Requester</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemDetailsHtml}
+          </tbody>
+        </table>
+        <h3 style="color: black;">กรุณาเข้ามาตรวจสอบ👉 http://10.120.113.44:4200/ 👈</h3>
+      `
+    };
+
+    if (emailList.length > 0) {
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('ส่งอีเมลไม่สำเร็จ:', error);
+        } else {
+          console.log('ส่งอีเมลสำเร็จ:', info.response);
+        }
+      });
     }
 
     res.status(200).json({ message: " บันทึกข้อมูลเรียบร้อยแล้วทุกแถว" });

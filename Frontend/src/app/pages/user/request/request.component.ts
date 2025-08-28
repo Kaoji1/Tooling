@@ -205,6 +205,18 @@ Setview() {
   const DueDate_ = this.DueDate_;
   const Case_ = this.Case_;
 
+  // ===== helper คัดซ้ำ (เหลือตัวแรกต่อ key) =====
+  const dedupe = (arr: any[]) => {
+    const seen = new Set<string>();
+    return arr.filter(x => {
+      const k = `${x.PartNo}|${x.Process}|${x.MC}|${x.SPEC}|${x.ItemNo}|${x.FreshQty}|${x.ReuseQty}`; // ใช้ key ตามที่ต้องการ
+      if (seen.has(k)) return false; // ถ้าเจอแล้ว ไม่เก็บ
+      seen.add(k);
+      return true; // เก็บเฉพาะครั้งแรก
+    });
+  };
+  // ============================================
+
   // ตรวจสอบฟิลด์ที่หาย
   const missingFields: string[] = [];
   if (!Division) missingFields.push("Division");
@@ -235,11 +247,14 @@ Setview() {
 
   this.api.post_ItemNo(data).subscribe({
     next: (response) => {
-      this.items = response.map((item: any) => ({
+      let mapped = response.map((item: any) => ({
         ...item,
         checked: true,
         qty: null
       }));
+
+      // คัดซ้ำ
+      this.items = dedupe(mapped);
 
       console.log('ข้อมูลที่โหลด:', this.items);
       this.loading = false; // โหลดเสร็จ
@@ -253,138 +268,69 @@ Setview() {
   console.log('division:', Division);
   console.log('factory:', Fac);
   console.log('PartNo:', PartNo);
-  // console.log('Spec:', Spec);
   console.log('Process:', Process);
   console.log('MC:', MC);
-  console.log('DueDate_',DueDate_);
+  console.log('DueDate_', DueDate_);
 
-  if (PartNo && Fac && Process && MC && Division && DueDate_  !== undefined) {
+  if (PartNo && Fac && Process && MC && Division && DueDate_ !== undefined) {
     const data = { Division, PartNo, Process, MC };
 
     this.api.post_ItemNo(data).subscribe({
       next: (response) => {
-        //  กรณี selectedType คือ 'setup'
+        const mapped = response.map((item: any) => ({
+          ...item,
+          checked: true,
+          qty: null,
+        }));
+
+        // คัดซ้ำ
+        const unique = dedupe(mapped);
+
+        // คงโครงสร้าง Case เดิม
         if (this.Case_ === 'SET') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-          }));
+          this.items = unique;
         }
-
-        //  กรณี selectedType คือ 'other'
-        else if (this.Case_=== 'USA') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'USA') {
+          this.items = unique;
         }
-         else if (this.Case_=== 'BRO') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'BRO') {
+          this.items = unique;
         }
-         else if (this.Case_=== 'BUR') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'BUR') {
+          this.items = unique;
         }
-         else if (this.Case_=== 'CHA') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'CHA') {
+          this.items = unique;
         }
-        else if (this.Case_=== 'F/A') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'F/A') {
+          this.items = unique;
         }
-         else if (this.Case_=== 'HOL') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'HOL') {
+          this.items = unique;
         }
-        
-        else if (this.Case_=== 'RET') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'RET') {
+          this.items = unique;
         }
-         else if (this.Case_=== 'JIG') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'JIG') {
+          this.items = unique;
         }
-         else if (this.Case_=== 'MOD') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'MOD') {
+          this.items = unique;
         }
-         else if (this.Case_=== 'N/G') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'N/G') {
+          this.items = unique;
         }
-        else if (this.Case_=== 'P/P') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'P/P') {
+          this.items = unique;
         }
-          else if (this.Case_=== 'REC') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'REC') {
+          this.items = unique;
         }
-          else if (this.Case_=== 'INV') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'INV') {
+          this.items = unique;
         }
-          else if (this.Case_=== 'SPA') {
-          this.items = response.map((item: any) => ({
-            ...item,
-            checked: true,
-            qty: null,
-
-          }));
+        else if (this.Case_ === 'SPA') {
+          this.items = unique;
         }
 
         console.log('ข้อมูลที่โหลด:', this.items);
@@ -393,7 +339,6 @@ Setview() {
     });
   } else {
     console.warn('กรุณาเลือกข้อมูลให้ครบก่อน');
-   
   }
 }
 
@@ -524,5 +469,9 @@ Clearall() {
   }
   return ''; // ปกติ
 }
+}
+
+function makeKey(x: any) {
+  throw new Error('Function not implemented.');
 }
 
