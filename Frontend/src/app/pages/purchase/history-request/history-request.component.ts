@@ -67,7 +67,11 @@ loadPurchaseHistory() {
         Document_No: item.Document_No ?? '',
         Stock_Location: item.Stock_Location ?? '',
         QTY: item.QTY ?? 0,
-        MC_No: item.MC_No ?? ''
+        MCType: item.MCType ?? '',
+        MC_Code: item.MC_Code ?? '',
+        MC_No: item.MC_No ?? '',
+        DueDate: item.DueDate ?? '',
+        DateTime_Record: item.DateTime_Record ?? ''
       }));
 
       // กรองเฉพาะ Status = 'Complete'

@@ -141,8 +141,9 @@
             <td [ngClass]="getRowClass(item)">{{ item.QTY }}</td>
             <td [ngClass]="getRowClass(item)">{{ item.MCType?.substring() }}</td>
             <td [ngClass]="getRowClass(item)">{{ item.MC_Code }}</td>
-            <td [ngClass]="getRowClass(item)">{{ item.DueDate ? (item.DateComplete | date: 'yyyy-MM-dd') : '' }}</td>
-            <td [ngClass]="getRowClass(item)">{{ item.DateTime_Record }}</td>
+            <td></td>
+            <td [ngClass]="getRowClass(item)">{{ item.DueDate ? (item.DueDate | date: 'yyyy-MM-dd') : '' }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.DateTime_Record ? (item.DateTime_Record | date: 'yyyy-MM-dd') : ''}}</td>
           </tr>
         </tbody>
       </table>
