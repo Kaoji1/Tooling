@@ -25,7 +25,7 @@ exports.AddCartItems = async (req, res) => {
         .input('Fresh_QTY', sql.Int, item.FreshQty)
         .input('Reuse_QTY', sql.Int, item.ReuseQty)
         .input('QTY', sql.Int, item.QTY)
-        .input('MCNo', sql.Int, item.MCNo_)
+        .input('MCNo', sql.NVarChar, item.MCNo_)
         .input('Due_Date', sql.Date, item.DueDate_)
         .input('PathDwg', sql.NVarChar, item.PathDwg_)
         .input('ON_HAND', sql.Int, item.ON_HAND)

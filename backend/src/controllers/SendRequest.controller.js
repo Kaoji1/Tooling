@@ -49,7 +49,7 @@ exports.Send_Request = async (req, res) => {
         .input('DwgRev', sql.NVarChar(50), DwgRev)
         .input('Process', sql.NVarChar(50), Process)
         .input('MCType', sql.NVarChar(50), MCType)
-        .input('MCNo',sql.Int,MCNo)
+        .input('MCNo',sql.NVarChar,MCNo)
         .input('Req_QTY', sql.Int, QTY)
         .input('DueDate', sql.DateTime,new Date(Due_Date))
         .input('Status', sql.NVarChar(50), Status)
