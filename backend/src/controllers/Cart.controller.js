@@ -25,7 +25,7 @@ exports.AddCartItems = async (req, res) => {
         .input('Fresh_QTY', sql.Int, item.FreshQty)
         .input('Reuse_QTY', sql.Int, item.ReuseQty)
         .input('QTY', sql.Int, item.QTY)
-        .input('MCQTY', sql.Int, item.MCQTY_)
+        .input('MCNo', sql.Int, item.MCNo_)
         .input('Due_Date', sql.Date, item.DueDate_)
         .input('PathDwg', sql.NVarChar, item.PathDwg_)
         .input('ON_HAND', sql.Int, item.ON_HAND)
@@ -33,11 +33,11 @@ exports.AddCartItems = async (req, res) => {
         .query(`
           INSERT INTO tb_IssueCuttingTool_SendToCart (
             Division, Requester, Fac, PartNo, Process, [CASE],
-            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCQTY, Due_Date, PathDwg, ON_HAND, PhoneNo
+            MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCNo, Due_Date, PathDwg, ON_HAND, PhoneNo
           )
           VALUES (
             @Division, @Requester, @Fac, @PartNo, @Process, @CASE,
-            @MCType, @ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCQTY, @Due_Date, @PathDwg, @ON_HAND, @PhoneNo
+            @MCType, @ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCNo, @Due_Date, @PathDwg, @ON_HAND, @PhoneNo
           )
         `);
     }

@@ -109,6 +109,7 @@
             <th style="min-width: 80px;">QTY</th>
             <th>M/C TYPE</th>
             <th style="min-width: 120px; white-space: nowrap;">M/C NO.</th>
+            
             <th style="min-width: 120px;">DECLATION NO.</th>
             <th>Due date</th>
             <th>Request date</th>
@@ -139,7 +140,7 @@
             </td>
             <td [ngClass]="getRowClass(item)">{{ item.QTY }}</td>
             <td [ngClass]="getRowClass(item)">{{ item.MCType?.substring() }}</td>
-            <td [ngClass]="getRowClass(item)">{{ item.Stock_Location }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC_Code }}</td>
             <td [ngClass]="getRowClass(item)">{{ item.DueDate ? (item.DateComplete | date: 'yyyy-MM-dd') : '' }}</td>
             <td [ngClass]="getRowClass(item)">{{ item.DateTime_Record }}</td>
           </tr>

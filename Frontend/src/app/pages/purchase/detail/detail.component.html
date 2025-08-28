@@ -56,6 +56,7 @@
               <th style="white-space: nowrap;">On Hand</th>
               <th style="white-space: nowrap;">Req QTY</th>
               <th style="width: 120px;">QTY</th>
+              <th>MC No.</th>
               <th style="white-space: nowrap;">Due Date</th>
               <th>Case</th>
               <th>Status</th>
@@ -111,6 +112,7 @@
                 </ng-container>
                 <ng-template #showQty>{{ item.QTY }}</ng-template>
               </td>
+              <td>{{ item.MCQTY }}</td>
               <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
               <td>{{ item.CASE }}</td>
               <td>{{ item.Status }}</td>

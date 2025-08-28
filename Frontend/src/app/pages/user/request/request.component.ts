@@ -54,7 +54,7 @@ export class requestComponent {
   DueDate_: string = '';
   today_: string = '';
   InputDate_:string='';
-  MCQTY_:string='';
+  MCNo_:string='';
 
   // Table data
   items: any= [];// array เก่าวแปรสำหรับเก็บรายการข้อมูล (items) ที่มีอยู่แล้ว
@@ -387,7 +387,7 @@ AddToCart() {
       Status: null,
       Set_by: null,
       Local: 0,
-      MCQTY_: this.MCQTY_,
+      MCNo_: this.MCNo_,
       PathDwg_: this.PathDwg_,
       ON_HAND : item.ON_HAND,
       Employee_Name: employeeName, //  เพิ่มตรงนี้
