@@ -130,11 +130,10 @@
               <!-- Role -->
               <div class="mb-3">
                 <label class="form-label">Role</label>
-                <span>สำหรับกำหนดฝั่งการใช้งาน</span>
                 <ng-select [items]="Role" bindLabel="label" bindValue="value" [(ngModel)]="Role_" name="Role"
                   [clearable]="true" placeholder="Select a role">
                 </ng-select>
-                <small class="form-text text-muted">เลือกบทบาทของผู้ใช้ </small>
+                <small class="form-text text-muted">Choose Role For User </small>
               </div>
 
               <!-- Employee ID & Name -->
@@ -142,13 +141,13 @@
                 <div class="col">
                   <label for="EmployeeId" class="form-label">Employee ID</label>
                   <input type="text" id="EmployeeId" class="form-control" name="EmployeeId" [(ngModel)]="EmployeeId_" />
-                  <small class="form-text text-muted">รหัสพนักงาน เช่น 1001</small>
+                  <small class="form-text text-muted">Employee ID such as 1001</small>
                 </div>
                 <div class="col">
                   <label for="EmployeeName" class="form-label">Employee Name</label>
                   <input type="text" id="EmployeeName" class="form-control" name="EmployeeName"
                     [(ngModel)]="EmployeeName_" />
-                  <small class="form-text text-muted">ชื่อเต็มของพนักงาน</small>
+                  <small class="form-text text-muted">Employee full name</small>
                 </div>
               </div>
 
@@ -157,12 +156,12 @@
                 <div class="col">
                   <label for="Username" class="form-label">Username</label>
                   <input type="text" id="Username" class="form-control" name="Username" [(ngModel)]="Username_" />
-                  <small class="form-text text-muted">ชื่อผู้ใช้สำหรับล็อกอิน</small>
+                  <small class="form-text text-muted">Login Username</small>
                 </div>
                 <div class="col">
                   <label for="Password" class="form-label">Password</label>
                   <input type="text" id="Password" class="form-control" name="Password" [(ngModel)]="Password_" />
-                  <small class="form-text text-muted">รหัสผ่านเข้าสู่ระบบ</small>
+                  <small class="form-text text-muted">Login Password</small>
                 </div>
               </div>
 
@@ -171,7 +170,7 @@
                 <div class="col">
                   <label for="Email" class="form-label">Email</label>
                   <input type="email" id="Email" class="form-control" name="Email" [(ngModel)]="Email_" />
-                  <small class="form-text text-muted">อีเมลที่ใช้ติดต่อ</small>
+                  <small class="form-text text-muted">Contact email</small>
                 </div>
               </div>
             </form>

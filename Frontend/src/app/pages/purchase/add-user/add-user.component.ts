@@ -66,7 +66,7 @@ export class AddUserComponent {
   // เพิ่มพนักงาน
   addEmployee() {
     if (!this.EmployeeId_ || !this.EmployeeName_ || !this.Username_ || !this.Password_ || !this.Role_ || !this.Email_) {
-      Swal.fire({ icon: 'warning', title: 'กรอกข้อมูลไม่ครบ' });
+      Swal.fire({ icon: 'warning', title: 'Please fill out the information completely' });
       return;
     }
 
@@ -81,7 +81,7 @@ export class AddUserComponent {
 
     this.EmployeeService.addEmployee(employeeData).subscribe({
       next: () => {
-        Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'บันทึกข้อมูลเรียบร้อยแล้ว' });
+        Swal.fire({ icon: 'success', title: 'Complete', text: 'Data has been recorded successfully' });
 
         //  ปิด modal
         const modalEl = document.getElementById('Insert');
@@ -92,7 +92,7 @@ export class AddUserComponent {
         this.Get_Employee();
       },
       error: () => {
-        Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถบันทึกข้อมูลได้' });
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to save data' });
       }
     });
   }
@@ -109,26 +109,25 @@ export class AddUserComponent {
   //  ลบพนักงาน
   deleteEmployee(empId: string) {
     Swal.fire({
-      title: 'แน่ใจหรือไม่?',
-      text: 'คุณต้องการลบพนักงานคนนี้ใช่หรือไม่?',
+      title: 'Do you want to delete this employee?',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
-      confirmButtonText: 'ใช่, ลบเลย!',
-      cancelButtonText: 'ยกเลิก'
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
     }).then((result) => {
       if (result.isConfirmed) {
         this.EmployeeService.deleteEmployee(empId).subscribe({
           next: () => {
-            Swal.fire('ลบแล้ว!', 'ข้อมูลพนักงานถูกลบเรียบร้อย', 'success');
+            Swal.fire('Delete Complete!', 'Employee Information has been Deleted', 'success');
             // อัปเดตหน้าโดยไม่ reload
             this.Employee = this.Employee.filter(e => e.Employee_ID !== empId);
             this.groupedEmployees = this.groupItemsByRole(this.Employee);
           },
           error: (err) => {
-            console.error('ลบไม่สำเร็จ:', err);
-            Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบข้อมูลได้', 'error');
+            console.error('Unable to delete data:', err);
+            Swal.fire('Error', 'Unable to delete data', 'error');
           }
         });
       }
@@ -165,7 +164,7 @@ export class AddUserComponent {
   saveEdit(originalEmp: any) {
     // validate ง่าย ๆ
     if (!this.editForm.Employee_Name || !this.editForm.Username || !this.editForm.Role || !this.editForm.Email) {
-      Swal.fire({ icon: 'warning', title: 'กรอกข้อมูลไม่ครบ', text: 'กรุณากรอกข้อมูลให้ครบ' });
+      Swal.fire({ icon: 'warning', title: 'Incomplete Information Filled', text: 'Please fill out the information completely' });
       return;
     }
 
@@ -180,11 +179,11 @@ export class AddUserComponent {
         this.groupedEmployees = this.groupItemsByRole(this.Employee);
 
         this.cancelEdit();
-        Swal.fire({ icon: 'success', title: 'บันทึกแล้ว', timer: 1200, showConfirmButton: false });
+        Swal.fire({ icon: 'success', title: 'Save Complete', timer: 1200, showConfirmButton: false });
       },
       error: (err) => {
         console.error(err);
-        Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ' });
+        Swal.fire({ icon: 'error', title: 'Error ' });
       }
     });
   }
@@ -193,7 +192,7 @@ export class AddUserComponent {
   groupItemsByRole(items: any[]): { [key: string]: any[] } {
     const grouped: { [key: string]: any[] } = {};
     items.forEach((item) => {
-      const roleValue = item.Role || 'ไม่ระบุ';
+      const roleValue = item.Role || 'Not specified';
       const groupKey = String(roleValue); //  ใช้สตริงปกติ
       if (!grouped[groupKey]) grouped[groupKey] = [];
       grouped[groupKey].push(item);

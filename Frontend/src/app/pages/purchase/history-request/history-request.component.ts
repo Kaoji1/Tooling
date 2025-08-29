@@ -163,7 +163,7 @@ exportexcel() {
     });
 
   if (selectedRows.length === 0) {
-    alert('กรุณาเลือกอย่างน้อย 1 แถว');
+    Swal.fire({ icon: 'error', title: 'Oops...', text: 'Please select at least one item to complete.' });
     return;
   }
 

@@ -143,7 +143,7 @@
             <td [ngClass]="getRowClass(item)">{{ formatMC(item) }}</td>
             <td></td>
             <td [ngClass]="getRowClass(item)">{{ item.DueDate ? (item.DueDate | date: 'yyyy-MM-dd') : '' }}</td>
-            <td [ngClass]="getRowClass(item)">{{ item.DateTime_Record ? (item.DateTime_Record | date: 'yyyy-MM-dd') : ''}}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.DateTime_Record ? (item.DueDate | date: 'yyyy-MM-dd') : '' }}</td>
           </tr>
         </tbody>
       </table>

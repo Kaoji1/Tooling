@@ -125,7 +125,7 @@ saveEdit(case_: string, index: number) {
       });
       this.editingIndex[case_] = null;
     },
-    error: () => alert('เกิดข้อผิดพลาดในการบันทึก'),
+    error: () => alert('Error Occurred Recording'),
   });
 }
 
@@ -155,18 +155,17 @@ removeItem(case_: string, index: number) {
   );
 
   if (itemsToDelete.length === 0) {
-    Swal.fire('ไม่พบรายการที่ต้องการลบ', '', 'info');
+    Swal.fire('The item you want to delete was not found', '', 'info');
     return;
   }
 
   // ยืนยันก่อนลบ
   Swal.fire({
-    title: 'ลบรายการ?',
-    text: `คุณต้องการลบรายกสนหรือไม่?`,
+    title: 'Do you want to delete?',
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'ลบ',
-    cancelButtonText: 'ยกเลิก'
+    confirmButtonText: 'Yes',
+    cancelButtonText: 'Cancel'
   }).then(result => {
     if (result.isConfirmed) {
 
@@ -196,11 +195,11 @@ removeItem(case_: string, index: number) {
             delete this.groupedCart[case_];
           }
 
-          Swal.fire('ลบสำเร็จ', `ลบ ${itemsToDelete.length} รายการแล้ว`, 'success');
+          Swal.fire('Delete Complete', ` ${itemsToDelete.length} Item has been Delete `, 'success');
         })
         .catch(err => {
           console.error('ลบไม่สำเร็จ:', err);
-          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบรายการได้ทั้งหมด', 'error');
+          Swal.fire('Error', 'Unable to delete all items', 'error');
         });
     }
   });
@@ -209,9 +208,9 @@ async CreateDocByCase() {
   if (!this.groupedCart || Object.keys(this.groupedCart).length === 0) {
   Swal.fire({
     icon: 'warning',
-    title: 'ไม่มีรายการในตะกร้า',
-    text: 'กรุณาเพิ่มรายการก่อนดำเนินการต่อ',
-    confirmButtonText: 'ตกลง'
+    title: 'There are no items in the cart',
+    text: 'Please add items before proceeding',
+    confirmButtonText: 'OK'
   });
   return;
 }
@@ -238,7 +237,7 @@ async CreateDocByCase() {
     console.log('case:',process)
 
     if (!case_ || !process || !factory) {
-      alert(`ข้อมูลไม่ครบ กรุณาตรวจสอบ Case: ${case_} | Process: ${process} | Factory: ${factory}`);
+      alert(`The information is incomplete. Please check Case: ${case_} | Process: ${process} | Factory: ${factory}`);
       continue;
     }
 
@@ -257,7 +256,7 @@ async CreateDocByCase() {
       await this.sendrequestService.SendRequest(groupItems).toPromise();
       await this.cartService.deleteItemsByCaseProcessFac(case_, process, factory).toPromise();
 
-      createdDocs.push(`📄 ${docNo} | ${groupItems.length} รายการ`);
+      createdDocs.push(`📄 ${docNo} | ${groupItems.length} list`);
 
       delete this.groupedCart[caseKey];
       delete this.checkedCases[caseKey];
@@ -307,21 +306,21 @@ uploadFile(caseKey:string):void {
   console.log("file from key:",this.selectedFiles[caseKey]);
 const file=this.selectedFiles[caseKey];
 if(!file){
-  this.uploadStatus = `กรุณาเลือกไฟล์`
+  this.uploadStatus = `Please select file`
   console.log(this.uploadStatus);
   return;
 }
 this.FileUploadSerice.FileUpload(file,caseKey).subscribe ({
   
   next : (response) => {
-    console.log('ส่งไฟลแล้ว',file);
-    this.uploadStatus = `อัปโหลดเรียบร้อยแล้ว ${caseKey}`;
+    console.log('File sent',file);
+    this.uploadStatus = `Uploaded Complete ${caseKey}`;
     this.selectedFiles[caseKey] = null ;
     this.loadImage(caseKey);
     
   },
   error: err => {
-    this.uploadStatus = `ล้มเหลวการอัปโหลด เคส ${caseKey}`;
+    this.uploadStatus = `Failed to upload case ${caseKey}`;
     console.error(err);
   }
 });
@@ -336,7 +335,7 @@ loadImage(caseKey: string) {
       this.imageMap[caseKey] = res;
     },
     error: () => {
-      console.error(`โหลดภาพล้มเหลวสำหรับ ${caseKey}`);
+      console.error(`Image loading failed ${caseKey}`);
     }
   });
 }
@@ -352,7 +351,7 @@ loadPdf(caseKey: string) {
       }
     },
     error: () => {
-      alert("ไม่สามารถโหลดไฟล์ PDF ได้");
+      alert("Unable to load PDF file");
     }
   });
 }
@@ -367,7 +366,7 @@ clearSelectedCases() {
   }
 openPdfFromPath(filePath: string) {
   if (!filePath) {
-    alert('ไม่พบพาธของไฟล์');
+    alert('File path not found');
     return;
   }
 
@@ -391,7 +390,7 @@ openPdfFromPath(filePath: string) {
       window.open(blobUrl, '_blank');
     },
     error: () => {
-      alert('ไม่สามารถโหลด PDF ได้');
+      alert('Unable to load PDF file');
     }
   });
 }
