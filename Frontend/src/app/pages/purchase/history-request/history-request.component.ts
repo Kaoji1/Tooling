@@ -175,7 +175,7 @@ exportexcel() {
    if (thead) {
     const clonedThead = thead.cloneNode(true) as HTMLElement;
     clonedThead.querySelectorAll("th").forEach((th, index) => {
-      if (["0", "1","2","3","10", "13", "14"].includes(index.toString())) { 
+      if (["0", "1","10", "13", "14"].includes(index.toString())) { 
         // 0 = checkbox, 12 = DueDate, 13 = RequestDate (ปรับ index ตามจริงใน table ของคุณ)
         th.remove();
       }
@@ -192,7 +192,7 @@ exportexcel() {
   selectedRows.forEach(row => {
     const clonedRow = row.cloneNode(true) as HTMLElement;
     clonedRow.querySelectorAll("td").forEach((td, index) => {
-      if (["0", "1", "2", "3", "10", "13", "14"].includes(index.toString())) { 
+      if (["0", "1", "10", "13", "14"].includes(index.toString())) { 
         td.remove();
       }
     });
