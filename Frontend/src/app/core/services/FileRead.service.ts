@@ -3,7 +3,7 @@ import { HttpClient, HttpEvent, HttpRequest } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { arrayBuffer } from 'node:stream/consumers';
 
-const baseUrl = 'http://PBGM7E:3000/api';
+const baseUrl = 'http://PBGM06:3000/api';
 @Injectable({
   providedIn: 'root' // ระบุว่า service นี้จะถูกให้บริการใน root module
 })
