@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'; // นำเข้า Injectable จ
 import { HttpClient } from '@angular/common/http'; // นำเข้า HttpClient สำหรับทำ HTTP requests
 import { Observable } from 'rxjs'; // นำเข้า Observable จาก RxJS
 
-const baseUrl = 'http://localhost:3000/api';
+const baseUrl = 'http://PBGM06:3000/api';
 @Injectable({
   providedIn: 'root' // ระบุว่า service นี้จะถูกให้บริการใน root module
 })
