@@ -1,8 +1,9 @@
 .history-layout {
-  display: flex;
+   display: flex;
   flex-direction: row;
-  height: 100vh;
+  height: 100%;
   width: 100%;
+  overflow: hidden;
   background-color: rgb(255, 255, 255);
 
 
@@ -42,7 +43,59 @@
     .box-input {
       display: flex;
       justify-content: space-between;
+      
 
+      .button-group {
+  display: flex;
+  flex-direction: row;
+  gap: 15px; /* เว้นระยะระหว่างปุ่ม */
+  margin-bottom: 5px; /* เพิ่มระยะด้านล่างถ้าต้องการ */
+}
+
+   .button-group button {
+
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    /* ระยะห่าง icon กับข้อความ */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    width: 210px;
+    /* ให้ปุ่มกว้างเท่ากัน */
+    cursor: pointer;
+
+
+  }
+
+    .excel-button {
+    width: 170px;
+    /* กำหนดให้เท่ากัน */
+    height: 45px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    box-sizing: border-box;
+    white-space: nowrap;
+    gap: 5px;
+    margin: 5px;
+    margin-left: 30px;
+
+  }
+
+  /* สีปุ่ม export Excel */
+  .excel-button {
+    background-color: #2e8b57;
+    color: white;
+    gap: 25px;
+  }
       .btn-group-req {
 
 
@@ -117,8 +170,9 @@
     }
 
     .table-responsive {
-      max-height: 450px;
-      max-width: 1290px;
+       max-height: 70vh;  // ตารางสูงไม่เกิน 70% ของจอ
+  width: 100%;      // กว้างเต็ม 100% ของจอ
+  overflow: auto;
       margin-top: 30px;
 
       table {
@@ -131,7 +185,12 @@
           background-color: #04fb3d !important; // เขียวอ่อนอ่านง่าย
           color: #155724 !important;
         }
-
+// .docno-group-row {
+//     background-color: #00d9ff; /* สีฟ้าอ่อน */
+//     font-weight: bold;
+//     text-align: center;
+//     vertical-align: middle;
+// }
         tr.row-waiting {
           background-color: #ffffff !important;
           color: #000000 !important;
@@ -150,6 +209,16 @@
           .ng-select {
             width: 100px;
           }
+          .print-button {
+            background: none;      /* ไม่มีพื้นหลัง */
+            border: none;          /* ไม่มีขอบ */
+            align-items: center;   /* จัดไอคอนกับข้อความให้อยู่กลาง */
+            gap: 5px;              /* ระยะห่างระหว่างไอคอนกับข้อความ */
+          }
+
+          .print-button i {
+            display: inline-block;
+          }
         }
 
         th {
@@ -164,7 +233,6 @@
         }
       }
     }
-
 
     .bg-complete {
       background-color: #C1F8CF !important;

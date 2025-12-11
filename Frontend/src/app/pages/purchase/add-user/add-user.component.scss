@@ -1,9 +1,9 @@
 .layout {
   display: flex;
   flex-direction: row;
-  height:100vh ;
+  height: 100%;
   width: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
 
   .content {
     display: block;
@@ -35,30 +35,76 @@
           color: rgb(16, 3, 114);
         }
       }
+.button-per {
+  display: block;
+  background-color: #4db6b6;
+  margin: 10px;
+  margin-top: 70px;
+  margin-left: 900px;
+  border: none; /* ปรับให้เป็น none ดีกว่า */
+  border-radius: 10px;
+  height: 45px;
+  width: 200px;
+  font-size: 20px;
+  color: #fff; /* ให้ตัวหนังสือสีขาว */
+  cursor: pointer;
+  transition: 0.2s; /* transition นุ่มขึ้น */
+}
 
-      .button {
-        display: block;
-        background-color: #9ACBD0;
-        margin: 30px;
-        border: 10px;
-        border-radius: 10px;
-        height: 45px;
-        width: 200px;
-        font-size: 20px;
+/* hover effect */
+.button-per:hover {
+  background-color: #3a9999;  /* เปลี่ยนสีเข้มขึ้น */
+  color: black; /* ใส่เงา */
+}
 
-        cursor: pointer;
-        transition-duration: 0.2s;
+.button {
+  display: block;
+  background-color: #4db6b6;
+  margin: 30px;
+  border: none; /* ปรับ border ให้เป็น none */
+  border-radius: 10px;
+  height: 45px;
+  width: 200px;
+  font-size: 20px;
+  margin-top: 70px;
+  color: #fff; /* สีตัวอักษรเริ่มต้น */
+  cursor: pointer;
+  transition:  0.2s ; /* transition นุ่มขึ้น */
+  
+}
 
-      }
+/* hover effect */
+.button:hover {
+  background-color: #3a9999;  /* เปลี่ยนสีเข้มขึ้น */
+  color: black;               /* ตัวอักษรเปลี่ยนเป็นสีดำ */
+}
+}
 
-      .button:hover {
-        background-color: #89A8B2;
-        color: black;
-      }
-    }
+
+//       .button {
+//         display: block;
+//         background-color: #4db6b6;
+//         margin: 30px;
+//         border: 10px;
+//         border-radius: 10px;
+//         height: 45px;
+//         width: 200px;
+//         font-size: 20px;
+//         margin-top: 70px;
+//   cursor: pointer;
+//   transition: 0.2s; /* transition นุ่มขึ้น */
+
+//       }
+
+//       .button-per:hover {
+//   background-color: #3a9999;  /* เปลี่ยนสีเข้มขึ้น */
+//   color: black; /* ใส่เงา */
+// }
+//     }
     .table-responsive {
-      max-height: 550px;
-      max-width: 1290px;
+      max-height: 70vh;  // ตารางสูงไม่เกิน 70% ของจอ
+  width: 100%;      // กว้างเต็ม 100% ของจอ
+  overflow: auto;
 
 
       table {

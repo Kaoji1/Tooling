@@ -46,9 +46,9 @@
 
                   <!-- Checkbox & Label -->
                   <div>
-                    <input type="checkbox" [(ngModel)]="checkedCases[caseKey.key]" style="transform: scale(1.2);" />
+                    <input type="checkbox" [(ngModel)]="checkedCases[caseKey.key]" style="transform: scale(1.2);"[disabled]="isViewer()"/>
                     <span class="ms-2" style="font-size: 18px;">Case: <strong>{{ caseKey.key.split('___')[0] }}</strong>
-                      | Fac: <strong>{{ caseKey.key.split('___')[1] }}</strong></span>
+                      | Fac: <strong>{{ caseKey.key.split('___')[1] }}</strong>| Process: <strong>{{ caseKey.key.split('___')[2] }}</strong></span>
                   </div>
                 </div>
               </td>
@@ -66,46 +66,80 @@
               <td [ngClass]="getRowClass(item)">{{ item.Reuse_QTY }}</td>
 
               <!-- QTY -->
+              <!-- <td [ngClass]="getRowClass(item)">
+                <ng-container *ngIf="editingIndex[caseKey.key] === i && employeeId !=='6020A'&& employeeId !=='6020B' && !isViewer(); else showQty">
+                  <input [(ngModel)]="item.QTY" type="number" class="form-control" />
+                </ng-container>
+                <ng-template #showQty>{{ item.QTY }}</ng-template>
+              </td> -->
               <td [ngClass]="getRowClass(item)">
-                <ng-container *ngIf="editingIndex[caseKey.key] === i; else showQty">
+                <ng-container *ngIf="editingIndex[caseKey.key] === i && !isViewer() && (isAdmin() || (Role !== 'engineer')); else showQty">
                   <input [(ngModel)]="item.QTY" type="number" class="form-control" />
                 </ng-container>
                 <ng-template #showQty>{{ item.QTY }}</ng-template>
               </td>
+
               <td [ngClass]="getRowClass(item)">{{ item.MCNo}}</td>
               <!--  Path DWG -->
-              <td [ngClass]="getRowClass(item)">
+              <!-- <td [ngClass]="getRowClass(item)">
                 <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDwgPath">
-                  <input [(ngModel)]="item.PathDwg" type="text" class="form-control" />
+                  <input *ngIf="employeeId ==='6020A'" [(ngModel)]="item.PathDwg" type="text" class="form-control" />
                 </ng-container>
 
-                <ng-template #showDwgPath>
+                <ng-template #showDwgPath  >
                   <div class="text-break">{{ item.PathDwg }}</div>
-                  <button *ngIf="item.PathDwg" class="btn btn-link btn-sm text-primary p-0 mt-1"
+                  <button *ngIf="item.PathDwg && employeeId ==='6020A'" class="btn btn-link btn-sm text-primary p-0 mt-1"
                     (click)="openPdfFromPath(item.PathDwg)">
                     <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
                   </button>
                 </ng-template>
-              </td>
+              </td> -->
+
+              <td [ngClass]="getRowClass(item)">
+              <ng-container *ngIf="editingIndex[caseKey.key] === i && (isAdmin() || Role === 'engineer' || employeeId === 'K1490'); else showDwgPath">
+                <input [(ngModel)]="item.PathDwg" type="text" class="form-control" />
+              </ng-container>
+
+                <ng-template #showDwgPath>
+                  <div class="text-break">{{ item.PathDwg }}</div>
+                  <button *ngIf="item.PathDwg && (isAdmin() || Role === 'engineer' || employeeId === 'K1490')" class="btn btn-link btn-sm text-primary p-0 mt-1"
+                    (click)="openPdfFromPath(item.PathDwg)">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                  </button>
+                </ng-template>
+</td>
 
               <!--  Path Layout -->
-              <td [ngClass]="getRowClass(item)">
+              <!-- <td [ngClass]="getRowClass(item)">
                 <ng-container *ngIf="editingIndex[caseKey.key] === i; else showLayoutPath">
-                  <input [(ngModel)]="item.PathLayout" type="text" class="form-control" />
+                  <input *ngIf="employeeId ==='6020B'" [(ngModel)]="item.PathLayout" type="text" class="form-control" />
                 </ng-container>
 
                 <ng-template #showLayoutPath>
                   <div class="text-break">{{ item.PathLayout }}</div>
-                  <button *ngIf="item.PathLayout" class="btn btn-link btn-sm text-primary p-0 mt-1"
+                  <button *ngIf="item.PathLayout && employeeId ==='6020B'" class="btn btn-link btn-sm text-primary p-0 mt-1"
                     (click)="openPdfFromPath(item.PathLayout)">
                     <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
                   </button>
                 </ng-template>
-              </td>
+              </td> -->
+              <td [ngClass]="getRowClass(item)">
+                  <ng-container *ngIf="editingIndex[caseKey.key] === i && (isAdmin() || Role === 'engineer' || employeeId === 'TJ039'); else showLayoutPath">
+                    <input [(ngModel)]="item.PathLayout" type="text" class="form-control" />
+                  </ng-container>
+
+                  <ng-template #showLayoutPath>
+                    <div class="text-break">{{ item.PathLayout }}</div>
+                    <button *ngIf="item.PathLayout && (isAdmin() || Role === 'engineer' || employeeId === 'TJ039')" class="btn btn-link btn-sm text-primary p-0 mt-1"
+                      (click)="openPdfFromPath(item.PathLayout)">
+                      <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+                    </button>
+                  </ng-template>
+                </td>
 
               <!-- Due Date -->
               <td [ngClass]="getRowClass(item)">
-                <ng-container *ngIf="editingIndex[caseKey.key] === i; else showDate">
+                <ng-container *ngIf="editingIndex[caseKey.key] === i && Role !== 'engineer'; else showDate">
                   <input [(ngModel)]="item.Due_Date" type="date" class="form-control" />
                 </ng-container>
                 <ng-template #showDate>
@@ -120,20 +154,20 @@
       </td> -->
 
               <!-- Edit / Save -->
-              <td>
+              <td [ngClass]="getRowClass(item)">
                 <button *ngIf="editingIndex[caseKey.key] !== i" class="btn btn-primary btn-sm"
-                  (click)="startEdit(caseKey.key, i)">
+                  (click)="startEdit(caseKey.key, i)" [disabled]="isViewer()">
                   <i class="bi bi-pencil-square"></i>
                 </button>
                 <button *ngIf="editingIndex[caseKey.key] === i" class="btn btn-success btn-sm"
-                  (click)="saveEdit(caseKey.key, i)">
+                  (click)="saveEdit(caseKey.key, i)" [disabled]="isViewer()">
                   <i class="bi bi-check-lg"></i>
                 </button>
               </td>
 
               <!-- Delete -->
-              <td>
-                <button class="btn btn-danger btn-sm" (click)="removeItem(caseKey.key, i)">
+              <td [ngClass]="getRowClass(item)">
+                <button class="btn btn-danger btn-sm" (click)="removeItem(caseKey.key, i)"[disabled]="isViewer()">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
@@ -142,7 +176,7 @@
         </tbody>
       </table>
     </div>
-    <button class="btn-sendrequest" type="button" (click)=CreateDocByCase()>
+    <button class="btn-sendrequest" type="button" (click)=CreateDocByCase() [disabled]="isViewer()">
       <i class="bi bi-send-fill"></i>Send Request
     </button>
   </div>
@@ -172,7 +206,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save File</button>
+          <button type="button" class="btn btn-primary" [disabled]="isViewer()">Save File</button>
         </div>
       </div>
     </div>

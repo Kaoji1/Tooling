@@ -9,7 +9,7 @@ const baseUrl = 'http://PBGM06:3000/api';
 })
 
 export class FileUploadSerice {
-   
+
     public user: any;
 
     constructor( // คอนสตรัคเตอร์ของ service
@@ -41,4 +41,3 @@ export class FileUploadSerice {
 
 
  }
- 

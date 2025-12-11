@@ -88,15 +88,7 @@ export class requestComponent {
 
     ];
 
-    this.Fac = [
-      {label: '1',value: '1'},
-      {label: '2',value: '2'},
-      {label: '3',value: '3'},
-      {label: '4',value: '4'},
-      {label: '5',value: '5'},
-      {label: '6',value: '6'},
-      {label: '7',value: '7'},
-    ];
+   
   }
   async ngOnInit()  {
     this.Get_Division();
@@ -118,7 +110,7 @@ Get_Division() {
         { Division: '7122', DivisionName: 'GM' },
         { Division: '71DZ', DivisionName: 'PMC' }
       ];
-      console.log(this.Division);
+      // console.log(this.Division);
     },
     error: (e: any) => console.error(e),
   });
@@ -133,15 +125,43 @@ async get_PartNo(event: any) {
         this.PartNo = response.filter((item, index, self) =>
           index === self.findIndex(obj => obj.PartNo === item.PartNo)
         );
-        console.log(this.PartNo);
+        // console.log(this.PartNo);
       },
       error: (e) => console.error(e),
     });
   }
 }
+onDivisionChange(value: any) {
+  // เรียกหลายฟังก์ชันพร้อมกัน
+  this.get_Facility(value);
+  this.get_PartNo(value);
+}
+async get_Facility(event: any) {
+  const division = event.Division ?? event;
+  if (!division) return;
+
+  this.api.get_Facility({ Division: division }).subscribe({
+    next: (response: any[]) => {
+      // กรองค่า FacilityName ที่ไม่ว่างและไม่ซ้ำ
+      const map = new Map<string, any>();
+      response.forEach(item => {
+        if (item.FacilityName) {
+          const facName = String(item.FacilityName).trim(); // ทำให้เป็น string ชัวร์
+          if (!map.has(facName)) {
+            map.set(facName, { FacilityName: facName }); // เก็บเป็น object แบบเดียวกัน
+          }
+        }
+      });
+
+      this.Fac = Array.from(map.values());
+      console.log('Fac normalized:', this.Fac);
+    },
+    error: (e) => console.error('Error get_Facility:', e),
+  });
+}
   // Process
   async get_Process(event:any) {
-    console.log(event); // แสดงค่าที่ได้รับใน console
+    // console.log(event); // แสดงค่าที่ได้รับใน console
     // เช็คว่า event.value มีค่าหรือไม่
     if (event.PartNo !== undefined) {
       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
@@ -150,7 +170,7 @@ async get_PartNo(event: any) {
         PartNo: event.PartNo,
 
       }
-      console.log(data);
+      // console.log(data);
       this.api.get_Process(data).subscribe({
         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_process
       next: (response: any[]) => {
@@ -158,7 +178,7 @@ async get_PartNo(event: any) {
         this.Process = response.filter((item, index, self) =>
           index === self.findIndex(obj => obj.Process === item.Process)
         );
-        console.log(this.Process);
+         console.log(this.Process);
       },
       error: (e) => console.error(e),
     });
@@ -167,26 +187,31 @@ async get_PartNo(event: any) {
 
   // MAchineType
   async get_MC(event:any) {
-    console.log(event); // แสดงค่าที่ได้รับใน console
+     console.log(event); // แสดงค่าที่ได้รับใน console
     // เช็คว่า event.value มีค่าหรือไม่
     if (event.PartNo !== undefined) {
       // เรียก API เพื่อส่งข้อมูลไปยัง SQL
       const data = {
-        Division:event.Division,
+        Division: event.Division,
         PartNo: event.PartNo,
 
         Spec: event.SPEC,
         Process: event.Process
       }
-      console.log(data);
+      // console.log(data);
       this.api.get_MC(data).subscribe({
         // ถ้าสำเร็จ จะเก็บค่าผลลัพธ์ใน req_machinetype
        next: (response: any[]) => {
+        console.log('MC',response)
         // กรอง PartNo ไม่ให้ซ้ำ
-        this.MachineType = response.filter((item, index, self) =>
-          index === self.findIndex(obj => obj.MachineType === item.MachineType)
-        );
-        console.log(this.MachineType);
+       this.MachineType = response.filter((item, index, self) =>
+        index === self.findIndex(obj => 
+        //Change from obj.MachineType === item.MachineType by TJ080 28/10/2025
+          obj.MC === item.MC 
+       && obj.Process === item.Process
+  )
+);
+        console.log('list',this.MachineType);
       },
       error: (e) => console.error(e),
     });
@@ -198,29 +223,19 @@ loading: boolean = false;  // เก็บสถานะกำลังโห�
 
 Setview() {
   const Division = this.Div_?.Division || this.Div_;
-  const Fac = this.Fac_;
+  const FacilityName = this.Fac_
+    ? (typeof this.Fac_ === 'string' ? this.Fac_ : this.Fac_.FacilityName)
+    : '';
   const PartNo = this.PartNo_?.PartNo || this.PartNo_;
   const Process = this.Process_?.Process || this.Process_;
   const MC = this.MachineType_?.MC || this.MachineType_;
   const DueDate_ = this.DueDate_;
   const Case_ = this.Case_;
 
-  // ===== helper คัดซ้ำ (เหลือตัวแรกต่อ key) =====
-  const dedupe = (arr: any[]) => {
-    const seen = new Set<string>();
-    return arr.filter(x => {
-      const k = `${x.PartNo}|${x.Process}|${x.MC}|${x.SPEC}|${x.ItemNo}|${x.FreshQty}|${x.ReuseQty}`; // ใช้ key ตามที่ต้องการ
-      if (seen.has(k)) return false; // ถ้าเจอแล้ว ไม่เก็บ
-      seen.add(k);
-      return true; // เก็บเฉพาะครั้งแรก
-    });
-  };
-  // ============================================
-
-  // ตรวจสอบฟิลด์ที่หาย
+  // ===== ตรวจสอบฟิลด์ =====
   const missingFields: string[] = [];
   if (!Division) missingFields.push("Division");
-  if (!Fac) missingFields.push("Fac");
+  if (!FacilityName) missingFields.push("FacilityName");
   if (!PartNo) missingFields.push("PartNo");
   if (!Process) missingFields.push("Process");
   if (!MC) missingFields.push("Machine Type");
@@ -233,116 +248,66 @@ Setview() {
       title: 'Incomplete Data',
       html:
         'Missing fields:<br><ul style="text-align:left;">' +
-        missingFields.map(field => `<li>${field}</li>`).join('') +
+        missingFields.map(f => `<li>${f}</li>`).join('') +
         '</ul>',
       confirmButtonText: 'ตกลง'
     });
     return;
   }
 
-  // set state กำลังโหลด
   this.loading = true;
 
   const data = { Division, PartNo, Process, MC };
+  console.log('ส่งไป API:', data);
 
   this.api.post_ItemNo(data).subscribe({
-    next: (response) => {
-      let mapped = response.map((item: any) => ({
+    next: (response: any[]) => {
+      const itemMap = new Map<string, any>();
+
+      response.forEach(item => {
+        const key = `${item.PartNo}|${item.Process}|${item.MC}|${item.SPEC}|${item.ItemNo}`;
+
+        if (!itemMap.has(key)) {
+          // กำหนดค่าเริ่มต้นเป็น 0
+          itemMap.set(key, {
+            ...item,
+            FreshQty: 0,
+            ReuseQty: 0,
+            checked: true,
+            qty: null
+          });
+        }
+
+        // ถ้า Fac ตรงกับ dropdown → update Fresh/Reuse ถ้าผลรวมมากกว่าเดิม
+        if (item.FacilityName === FacilityName) {
+          const existing = itemMap.get(key);
+          const existingSum = (existing.FreshQty ?? 0) + (existing.ReuseQty ?? 0);
+          const currentSum = (item.FreshQty ?? 0) + (item.ReuseQty ?? 0);
+
+          if (currentSum > existingSum) {
+            itemMap.set(key, {
+              ...existing,
+              FreshQty: item.FreshQty ?? 0,
+              ReuseQty: item.ReuseQty ?? 0
+            });
+          }
+        }
+      });
+
+      this.items = Array.from(itemMap.values()).map(item => ({
         ...item,
-        checked: true,
-        qty: null
+        QTY: item.QTY ?? 1   // ถ้า QTY ยังไม่มีค่า ให้เป็น 1
       }));
-
-      // คัดซ้ำ
-      this.items = dedupe(mapped);
-
-      console.log('ข้อมูลที่โหลด:', this.items);
-      this.loading = false; // โหลดเสร็จ
+      this.loading = false;
     },
     error: (e) => {
       console.error('API Error:', e);
-      this.loading = false; // โหลดเสร็จแต่ error
+      this.loading = false;
     }
   });
-
-  console.log('division:', Division);
-  console.log('factory:', Fac);
-  console.log('PartNo:', PartNo);
-  console.log('Process:', Process);
-  console.log('MC:', MC);
-  console.log('DueDate_', DueDate_);
-
-  if (PartNo && Fac && Process && MC && Division && DueDate_ !== undefined) {
-    const data = { Division, PartNo, Process, MC };
-
-    this.api.post_ItemNo(data).subscribe({
-      next: (response) => {
-        const mapped = response.map((item: any) => ({
-          ...item,
-          checked: true,
-          qty: null,
-        }));
-
-        // คัดซ้ำ
-        const unique = dedupe(mapped);
-
-        // คงโครงสร้าง Case เดิม
-        if (this.Case_ === 'SET') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'USA') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'BRO') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'BUR') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'CHA') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'F/A') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'HOL') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'RET') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'JIG') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'MOD') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'N/G') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'P/P') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'REC') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'INV') {
-          this.items = unique;
-        }
-        else if (this.Case_ === 'SPA') {
-          this.items = unique;
-        }
-
-        console.log('ข้อมูลที่โหลด:', this.items);
-      },
-      error: (e) => console.error('API Error:', e),
-    });
-  } else {
-    console.warn('กรุณาเลือกข้อมูลให้ครบก่อน');
-  }
 }
 
-// function add to cart
+
 // function add to cart
 AddToCart() {
   const checkedItems = this.items.filter((item: any) => item.checked);
@@ -352,7 +317,7 @@ AddToCart() {
     Swal.fire({
       icon: 'warning',
       title: 'Incomplete Data',
-      text: 'Please fill in all required fields for the selevted item',
+      text: 'Please fill in all required fields for the selected item',
       confirmButtonText: 'OK'
     });
     return;
@@ -360,9 +325,19 @@ AddToCart() {
 
   const InputDate_ = new Date().toISOString().split('T')[0];
 
-  //  ดึงชื่อพนักงานจาก session
+  // ดึงชื่อพนักงานจาก session
   const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
   const employeeName = currentUser.Employee_Name || 'Unknown';
+  const Employee_ID = currentUser.Employee_ID || 'Unknown';
+
+  // แปลง Fac_ → เอาเลขหลัง F. ตัวแรกอย่างปลอดภัย
+  let rawFac = '';
+  if (this.Fac_) {
+    if (typeof this.Fac_ === 'string') rawFac = this.Fac_;
+    else if (this.Fac_.FacilityName) rawFac = this.Fac_.FacilityName;
+  }
+  const FactoryNumberMatch = rawFac.match(/F\.(\d+)/);
+  const Factory = FactoryNumberMatch ? FactoryNumberMatch[1] : rawFac;
 
   const groupedByCase = filteredItems.reduce((acc: any, item: any) => {
     const caseKey = item.Case_ || this.Case_;
@@ -371,7 +346,7 @@ AddToCart() {
     acc[caseKey].push({
       Doc_no: null,
       Division: this.Div_?.Division || this.Div_,
-      Factory: this.Fac_?.Fac || this.Fac_,
+      Factory: Factory, // ใช้เลขหลัง F.
       ItemNo: item.ItemNo,
       PartNo: item.PartNo,
       Process: item.Process,
@@ -389,10 +364,12 @@ AddToCart() {
       Local: 0,
       MCNo_: this.MCNo_,
       PathDwg_: this.PathDwg_,
-      ON_HAND : item.ON_HAND,
-      Employee_Name: employeeName, //  เพิ่มตรงนี้
-      PhoneNo:this.phone_
+      ON_HAND: item.ON_HAND,
+      Employee_Name: employeeName,
+      PhoneNo: this.phone_,
+      Employee_ID: Employee_ID
     });
+
     return acc;
   }, {});
 
@@ -400,14 +377,13 @@ AddToCart() {
     Swal.fire({
       icon: 'warning',
       title: 'No Item',
-      text: 'No item selected add to cart',
+      text: 'No item selected to add to cart',
       confirmButtonText: 'ตกลง'
     });
     return;
   }
 
   const allItemsToSend = Object.values(groupedByCase).flat();
-  console.log(' รายการทั้งหมดที่จะส่งไปฐานข้อมูล:', allItemsToSend);
 
   this.cartService.addCartToDB(allItemsToSend).subscribe({
     next: () => {
@@ -416,17 +392,17 @@ AddToCart() {
         title: 'Success',
         text: 'Items have been successfully added to the cart',
         showConfirmButton: false,
-        timer:1500
-});
-},
-error: () => {
-  Swal.fire({
-    icon: 'error',
-    title: 'Error',
-    text: 'Failed to save data to the database',
-    confirmButtonText: 'Retry'
-  });
-}
+        timer: 1500
+      });
+    },
+    error: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to save data to the database',
+        confirmButtonText: 'Retry'
+      });
+    }
   });
 
   this.Clearall();
@@ -442,6 +418,8 @@ Clearall() {
   this.Spec_ = null;
   this.MachineType_ = null;
   this.Process_ = null;
+  this.phone_='';
+  this.MCNo_='';
 
   // Delete items ค่าที่รวมที่จะส่งไปตะกร้า
   this.items = [];
@@ -456,7 +434,7 @@ Clearall() {
     const file = event.target.files[0];
     if (file) {
       this.selectedFileName = file.name;
-      console.log('Selected file:', file.name);
+      // console.log('Selected file:', file.name);
     }
   }
   onPartNoChange(){

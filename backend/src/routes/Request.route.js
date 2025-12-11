@@ -9,6 +9,8 @@ console.log("✅ Request.route.js loaded");
 // กำหนดเส้นทาง request
 router.get('/get_Division', ItemlistController.Get_Division);
 
+router.post('/get_Facility', ItemlistController.get_Facility);
+
 router.post('/get_PartNo', ItemlistController.get_PartNo);
 
 router.post('/get_Process', ItemlistController.Get_Process);

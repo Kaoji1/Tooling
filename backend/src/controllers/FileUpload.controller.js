@@ -5,82 +5,82 @@ const sql = require("mssql");
 const { poolPromise } = require("../config/database");
 
 
-exports.FileUpload = async (req,res) => {
-  // console.log(req.body);
-  // console.log('fileupload:',req.files)
-  try {
-    if (!req.files || !req.files.file) {
-      return res.status(400).json({ message: " ไม่พบไฟล์ที่แนบ" });
-    }
+// exports.FileUpload = async (req,res) => {
+//   // console.log(req.body);
+//   // console.log('fileupload:',req.files)
+//   try {
+//     if (!req.files || !req.files.file) {
+//       return res.status(400).json({ message: " ไม่พบไฟล์ที่แนบ" });
+//     }
 
-    const file = req.files.file;
-    const caseKey = req.body.caseKey; // 'JIG', 'MOLD', etc.
+//     const file = req.files.file;
+//     const caseKey = req.body.caseKey; // 'JIG', 'MOLD', etc.
 
-    if (!caseKey) {
-      return res.status(400).json({ message: " ต้องระบุ Case_" });
-    }
+//     if (!caseKey) {
+//       return res.status(400).json({ message: " ต้องระบุ Case_" });
+//     }
 
-    const fileBuffer = file.data;
-    const fileName = file.name;
-    // const contentType = file.mimetype;
+//     const fileBuffer = file.data;
+//     const fileName = file.name;
+//     // const contentType = file.mimetype;
 
-    const pool = await poolPromise;
+//     const pool = await poolPromise;
 
-    //  อัปเดตทุกแถวในตะกร้าที่ตรงกับเคสนั้น
-    const result = await pool.request()
-      .input('CASE', sql.NVarChar(50), caseKey)
-      .input('FileName', sql.NVarChar(255), fileName)
-      .input('FileData', sql.VarBinary(sql.MAX), fileBuffer)
+//     //  อัปเดตทุกแถวในตะกร้าที่ตรงกับเคสนั้น
+//     const result = await pool.request()
+//       .input('CASE', sql.NVarChar(50), caseKey)
+//       .input('FileName', sql.NVarChar(255), fileName)
+//       .input('FileData', sql.VarBinary(sql.MAX), fileBuffer)
       
-      .query(`
-        UPDATE tb_IssueCuttingTool_SendToCart
-        SET FileName = @FileName,
-            FileData = @FileData
-        WHERE [CASE] = @CASE
-      `);
+//       .query(`
+//         UPDATE tb_IssueCuttingTool_SendToCart
+//         SET FileName = @FileName,
+//             FileData = @FileData
+//         WHERE [CASE] = @CASE
+//       `);
 
-    res.status(200).json({ message: ` แนบไฟล์ให้ทุกแถวในเคส ${caseKey} แล้ว (${result.rowsAffected[0]} แถว)` });
+//     res.status(200).json({ message: ` แนบไฟล์ให้ทุกแถวในเคส ${caseKey} แล้ว (${result.rowsAffected[0]} แถว)` });
 
-  } catch (error) {
-    console.error(" Error FileUploadByCase:", error);
-    res.status(500).json({ message: "เกิดข้อผิดพลาด", error: error.message });
-  }
-};
+//   } catch (error) {
+//     console.error(" Error FileUploadByCase:", error);
+//     res.status(500).json({ message: "เกิดข้อผิดพลาด", error: error.message });
+//   }
+// };
 
-exports.GetImage = async (req, res) => {
-  // console.log("getimage called:", req.params.caseKey);
-  const caseKey = req.params.caseKey;
+// exports.GetImage = async (req, res) => {
+//   // console.log("getimage called:", req.params.caseKey);
+//   const caseKey = req.params.caseKey;
 
-  try {
-    const pool = await poolPromise;
-    const result = await pool.request()
-      .input('CASE', sql.NVarChar(50), caseKey)
-      .query(`
-        SELECT TOP 1 FileData, FileName
-        FROM tb_IssueCuttingTool_SendToCart
-        WHERE [CASE] = @CASE AND FileData IS NOT NULL
-      `);
+//   try {
+//     const pool = await poolPromise;
+//     const result = await pool.request()
+//       .input('CASE', sql.NVarChar(50), caseKey)
+//       .query(`
+//         SELECT TOP 1 FileData, FileName
+//         FROM tb_IssueCuttingTool_SendToCart
+//         WHERE [CASE] = @CASE AND FileData IS NOT NULL
+//       `);
 
-    if (result.recordset.length === 0) {
-      return res.status(404).json({ message: 'ไม่พบภาพ' });
-    }
+//     if (result.recordset.length === 0) {
+//       return res.status(404).json({ message: 'ไม่พบภาพ' });
+//     }
 
-    const image = result.recordset[0];
+//     const image = result.recordset[0];
 
-    // แปลง Buffer เป็น base64
-    const base64Image = Buffer.from(image.FileData).toString('base64');
-    const mimeType = 'application/pdf'; // หรือ 'image/png'
+//     // แปลง Buffer เป็น base64
+//     const base64Image = Buffer.from(image.FileData).toString('base64');
+//     const mimeType = 'application/pdf'; // หรือ 'image/png'
 
-    res.json({
-      fileName: image.FileName,
-      imageData: `data:${mimeType};base64,${base64Image}`
-    });
+//     res.json({
+//       fileName: image.FileName,
+//       imageData: `data:${mimeType};base64,${base64Image}`
+//     });
 
-  } catch (error) {
-    console.error("Error executing GetImage:", error);
-    res.status(500).json({ message: "เกิดข้อผิดพลาด", error: error.message });
-  }
-};
+//   } catch (error) {
+//     console.error("Error executing GetImage:", error);
+//     res.status(500).json({ message: "เกิดข้อผิดพลาด", error: error.message });
+//   }
+// };
 
 exports.loadPdfFromPath = async (req, res) => {
   try {

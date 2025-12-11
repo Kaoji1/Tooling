@@ -1,24 +1,49 @@
-<nav class="sidebar">
+<nav class="sidebar"> 
   <div class="top">
       <!-- logo -->
       <img src="logominebea.png" width="205px" />
     <!-- แถบเมนู -->
      <ul class="nav-links">
-        <li routerLinkActive="active">
-          <a routerLink="/purchase/requestlist"> <i class="bi bi-newspaper"></i> Request List </a>
+       
+      <!--แถบเมนู Request List-->
+       <li routerLinkActive="active">
+         <a routerLink="/purchase/detail"> <i class="bi bi-newspaper"></i>  Request List </a>
         </li>
+        
+       <!--แถบเมนู Total Item-->
+        <li routerLinkActive="active">
+          <a routerLink="/purchase/requestlist"> <i class="bi bi-card-checklist"></i>  Total Item</a>
+        </li>
+        
+        <!--แถบเมนู history-request-->
         <li routerLinkActive="active">
           <a routerLink="/purchase/history-request"> <i class="bi bi-clock-history"></i> History </a>
         </li>
+        <!-- <li routerLinkActive="active">
+          <a routerLink="/purchase/permission"> <i class="bi bi-person-fill-add" style="font-size: 25px;"></i> Add Permission </a>
+        </li> -->
+        
+        <!--แถบเมนู Dashboard-->
+         <li routerLinkActive="active">
+          <a routerLink="/purchase/analyze"> <i class="bi bi-clipboard-data"></i> Dashboard </a>
+        </li>
+       
+        
+        
+        <!-- <li routerLinkActive="active">
+          <a routerLink="/purchase/analyzeSmartRack"> <i class="bi bi-hdd-rack" style="font-size: 25px;"></i> SmartRack </a>
+        </li> -->
+     
+        <!--แถบเมนู Add User-->
         <li routerLinkActive="active">
           <a routerLink="/purchase/add-user"> <i class="bi bi-person-fill-add" style="font-size: 25px;"></i> Add User </a>
         </li>
-        <!-- <li routerLinkActive="active">
-         <a routerLink="/purchase/graphanalyze"> <i class="bi bi-clock-history"></i> Graph Analyze </a>
-        </li> -->
-         <!-- <li routerLinkActive="active">
-         <a routerLink="/detail"> <i class="bi bi-clock-history"></i>Detail </a>
-        </li> -->
+<!-- 
+         <li routerLinkActive="active">
+         <a routerLink="/detail"> <i class="bi bi-file-earmark-spreadsheet"></i> Import Excel </a>
+        </li>
+         -->
+
       </ul>
 
   </div>

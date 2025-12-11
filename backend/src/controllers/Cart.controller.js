@@ -10,83 +10,74 @@ exports.AddCartItems = async (req, res) => {
     const items = req.body;
     const pool = await poolPromise;
 
+    // บันทึกทุกรายการลง DB
     for (const item of items) {
-      console.log("กำลังบันทึก ItemNo:", item.ItemNo);
       await pool.request()
-        .input('Division', sql.VarChar, item.Division)
+        .input('Division', sql.NVarChar(50), item.Division)
+        .input('Employee_ID', sql.NVarChar(50), item.Employee_ID)
         .input('Requester', sql.NVarChar(50), item.Employee_Name)
-        .input('Fac', sql.VarChar, item.Factory)
-        .input('PartNo', sql.VarChar, item.PartNo)
-        .input('Process', sql.VarChar, item.Process)
-        .input('CASE', sql.VarChar, item.Case_)
-        .input('MCType', sql.VarChar, item.MC)
-        .input('ItemNo', sql.VarChar, item.ItemNo)
-        .input('SPEC', sql.VarChar, item.SPEC)
+        .input('Fac', sql.Int, item.Factory)
+        .input('PartNo', sql.NVarChar(50), item.PartNo)
+        .input('Process', sql.NVarChar(50), item.Process)
+        .input('CASE', sql.NVarChar(50), item.Case_)
+        .input('MCType', sql.NVarChar(50), item.MC)
+        .input('ItemNo', sql.NVarChar(50), item.ItemNo)
+        .input('SPEC', sql.NVarChar(50), item.SPEC)
         .input('Fresh_QTY', sql.Int, item.FreshQty)
         .input('Reuse_QTY', sql.Int, item.ReuseQty)
         .input('QTY', sql.Int, item.QTY)
-        .input('MCNo', sql.NVarChar, item.MCNo_)
+        .input('MCNo', sql.NVarChar(50), item.MCNo_)
         .input('Due_Date', sql.Date, item.DueDate_)
-        .input('PathDwg', sql.NVarChar, item.PathDwg_)
+        .input('PathDwg', sql.NVarChar(50), item.PathDwg_)
         .input('ON_HAND', sql.Int, item.ON_HAND)
-        .input('PhoneNo',sql.NVarChar,item.PhoneNo)
+        .input('PhoneNo', sql.Int, item.PhoneNo)
         .query(`
           INSERT INTO tb_IssueCuttingTool_SendToCart (
-            Division, Requester, Fac, PartNo, Process, [CASE],
+            Division, Employee_ID, Requester, Fac, PartNo, Process, [CASE],
             MCType, ItemNo, SPEC, Fresh_QTY, Reuse_QTY, QTY, MCNo, Due_Date, PathDwg, ON_HAND, PhoneNo
-          )
-          VALUES (
-            @Division, @Requester, @Fac, @PartNo, @Process, @CASE,
+          ) VALUES (
+            @Division, @Employee_ID, @Requester, @Fac, @PartNo, @Process, @CASE,
             @MCType, @ItemNo, @SPEC, @Fresh_QTY, @Reuse_QTY, @QTY, @MCNo, @Due_Date, @PathDwg, @ON_HAND, @PhoneNo
           )
         `);
     }
 
-    //  ดึงอีเมลทั้งหมดที่ Role = 'production'
-    const emailResult = await pool.request()
-      .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role = 'production'`);
+    // === เตรียมส่งอีเมลแบบ background ===
+    const setItems = items.filter(item => item.Case_?.toUpperCase() === 'SET');
+    const burBroItems = items.filter(item => ['BUR', 'BRO'].includes(item.Case_?.toUpperCase()));
 
-    const emailList = emailResult.recordset.map(row => row.Email).filter(email => !!email);
-
-    if (emailList.length === 0) {
-      console.warn("ไม่พบอีเมลของ Role = production ในฐานข้อมูล");
-    }
-
-    let itemDetailsHtml = items.map(item => `
-      <tr>
-        <td>${item.Division}</td>
-        <td>${item.PartNo}</td>
-        <td>${item.ItemNo}</td>
-        <td>${item.Case_}</td>
-        <td>${item.Factory}</td>
-        <td>${item.QTY}</td>
-        <td>${item.DueDate_}</td>
-        <td>${item.Employee_Name}</td>
-      </tr>
-    `).join('');
-
-    // ========  ส่งอีเมลแจ้งเตือนหลังจากบันทึกเสร็จ ========
     const transporter = nodemailer.createTransport({
       service: 'gmail',
-      auth: {
-        user: 'testsystem1508@gmail.com',
-        pass: 'amdo inzi npqq asnd' // App Password
-      }
+      auth: { user: 'testsystem1508@gmail.com', pass: 'amdo inzi npqq asnd' }
     });
 
-    const mailOptions = {
-      from: '"Material Disbursement System" <testsystem1508@gmail.com>',
-      to: emailList,  //  ส่งหาอีเมลจาก DB
-      subject: 'มีรายการใหม่ถูกเพิ่มลงตะกร้า',
-      html: `
-        <h1 style="color:black;">📦แจ้งเตือน❗❗ มีรายการใหม่ถูกเพิ่มลงตะกร้า📦</h1>
+    // --- ฟังก์ชันสร้าง HTML ตาราง ---
+    const createTableHTML = (itemArray) => {
+      const rows = itemArray.map(i => `
+        <tr>
+          <td>${i.Division}</td>
+          <td>${i.PartNo}</td>
+          <td>${i.ItemNo}</td>
+          <td>${i.SPEC}</td>
+          <td>${i.Case_}</td>
+          <td>${i.MC}</td>
+          <td>${i.MCNo_}</td>
+          <td>${i.Factory}</td>
+          <td>${i.QTY}</td>
+          <td>${i.DueDate_}</td>
+          <td>${i.Employee_Name}</td>
+        </tr>`).join('');
+      return `
         <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
-          <thead>
-            <tr style="background-color: #f2f2f2;">
+          <thead style="background-color: #f2f2f2;">
+            <tr>
               <th>Division</th>
               <th>Part No</th>
               <th>Item No</th>
+              <th>Spec</th>
               <th>Case</th>
+              <th>MCType</th>
+              <th>MCNo.</th>
               <th>Factory</th>
               <th>QTY</th>
               <th>DueDate</th>
@@ -94,28 +85,53 @@ exports.AddCartItems = async (req, res) => {
             </tr>
           </thead>
           <tbody>
-            ${itemDetailsHtml}
+            ${rows}
           </tbody>
-        </table>
-        <h3>กรุณาเข้ามาตรวจสอบ👉 http://10.120.113.44:4200/ </h3>
-      `
+        </table>`;
     };
 
-    if (emailList.length > 0) {
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error('ส่งอีเมลไม่สำเร็จ:', error);
-        } else {
-          console.log('ส่งอีเมลสำเร็จ:', info.response);
-        }
-      });
+    // ส่ง SET → production/admin
+    if (setItems.length > 0) {
+      const emailResultSet = await pool.request()
+        .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role IN ('production','admin')`);
+      const emailListSet = emailResultSet.recordset.map(r => r.Email).filter(e => !!e);
+
+      if (emailListSet.length > 0) {
+        transporter.sendMail({
+          from: '"Indirect expense" <testsystem1508@gmail.com>',
+          to: emailListSet,
+          subject: 'New SET items added to cart',
+          html: `<h3>📦 New SET items added 📦</h3>${createTableHTML(setItems)}
+       <h3>Come in and check 👉 <a href="http://pbgm06:4200/login">Indirect expense</a></h3>`
+        }).then(info => console.log('SET email sent:', info.response))
+          .catch(err => console.error('SET email error:', err));
+      }
     }
 
-    res.status(200).json({ message: 'บันทึกรายการตะกร้าสำเร็จ และส่งอีเมลแล้ว' });
+    // ส่ง BUR/BRO → engineer
+    if (burBroItems.length > 0) {
+      const emailResultEng = await pool.request()
+        .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role = 'engineer'`);
+      const emailListEng = emailResultEng.recordset.map(r => r.Email).filter(e => !!e);
 
-  } catch (error) {
-    console.error('Error AddCartItems:', error);
-    res.status(500).json({ message: 'เกิดข้อผิดพลาด', error: error.message });
+      if (emailListEng.length > 0) {
+        transporter.sendMail({
+          from: '"Indirect expense" <testsystem1508@gmail.com>',
+          to: emailListEng,
+          subject: 'New BUR/BRO items added to cart',
+          html: `<h3>📦 New BUR/BRO items added 📦</h3>${createTableHTML(burBroItems)}
+       <h3>Come in and check 👉 <a href="http://pbgm06:4200/login">Indirect expense</a></h3>`
+        }).then(info => console.log('BUR/BRO email sent:', info.response))
+          .catch(err => console.error('BUR/BRO email error:', err));
+      }
+    }
+
+    // ตอบ client ทันที
+    res.status(200).json({ message: 'Items saved. Emails are sending in background.' });
+
+  } catch (err) {
+    console.error('❌ Error AddCartItems:', err);
+    res.status(500).json({ message: 'Error', error: err.message });
   }
 };
 
@@ -127,7 +143,7 @@ exports.GetCartItems = async (req, res) => {
     res.json(result.recordset);
   } catch (err) {
     console.error(' Error GetCartItems:', err);
-    res.status(500).json({ error: 'ไม่สามารถโหลดรายการตะกร้าได้' });
+    res.status(500).json({ error: 'Unable to load shopping cart items.' });
   }
 };
 
@@ -137,7 +153,7 @@ exports.DeleteItem = async (req, res) => {
     const ID_Cart = parseInt(req.params.id); // แปลง string → int
 
     if (isNaN(ID_Cart)) {
-      return res.status(400).json({ error: 'ID_Cart ที่ส่งมาไม่ถูกต้อง (ไม่ใช่ตัวเลข)' });
+      return res.status(400).json({ error: 'ID_Cart The submission is incorrect (not a number)' });
     }
 
     const pool = await poolPromise;
@@ -146,13 +162,13 @@ exports.DeleteItem = async (req, res) => {
       .query('DELETE FROM tb_IssueCuttingTool_SendToCart WHERE ID_Cart = @ID_Cart');
 
     if (result.rowsAffected[0] === 0) {
-      return res.status(404).json({ message: 'ไม่พบรายการที่ต้องการลบ' });
+      return res.status(404).json({ message: 'The item you want to delete was not found.' });
     }
 
-    res.json({ message: 'ลบรายการสำเร็จ' });
+    res.json({ message: 'The item was successfully deleted.' });
   } catch (err) {
     console.error(' Error DeleteItem:', err);
-    res.status(500).json({ error: 'ลบไม่สำเร็จ', detail: err.message });
+    res.status(500).json({ error: 'Failed to delete', detail: err.message });
   }
 };
 
@@ -161,10 +177,10 @@ exports.ClearAllItems = async (req, res) => {
   try {
     const pool = await poolPromise;
     await pool.request().query('DELETE FROM tb_IssueCuttingTool_SendToCart'); // ลบทั้งหมด
-    res.json({ message: ' ล้างตะกร้าทั้งหมดแล้ว' });
+    res.json({ message: ' All baskets have been emptied.' });
   } catch (err) {
     console.error(' Error ClearAllItems:', err);
-    res.status(500).json({ error: 'ไม่สามารถล้างตะกร้าได้' });
+    res.status(500).json({ error: 'Unable to empty basket' });
   }
 };
 
@@ -186,10 +202,10 @@ exports.DeleteCartItemsByCaseProcessFac = async (req, res) => {
         WHERE [CASE] = @Case_ AND [Process] = @Process AND [Fac] = @Fac
       `);
 
-    res.json({ message: 'ลบรายการเฉพาะที่ตรงเงื่อนไขเรียบร้อยแล้ว' });
+    res.json({ message: 'Delete only items that meet the conditions.' });
   } catch (err) {
     console.error('❌ Error DeleteCartItemsByCaseProcessFac:', err);
-    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการลบข้อมูล' });
+    res.status(500).json({ error: 'An error occurred while deleting data.' });
   }
 };
 
@@ -198,7 +214,7 @@ exports.UpdateMultipleCartItems = async (req, res) => {
     const items = req.body;
 
     if (!Array.isArray(items)) {
-      return res.status(400).json({ error: 'ข้อมูลที่ส่งมาต้องเป็น Array' });
+      return res.status(400).json({ error: 'The information submitted must be Array' });
     }
 
     const pool = await poolPromise;
@@ -220,7 +236,7 @@ exports.UpdateMultipleCartItems = async (req, res) => {
         `);
     }
 
-    res.status(200).json({ message: 'อัปเดตรายการทั้งหมดสำเร็จ' });
+    res.status(200).json({ message: 'All items successfully updated' });
   } catch (error) {
     console.error(' UpdateMultipleCartItems error:', error);
     res.status(500).json({ error: error.message });

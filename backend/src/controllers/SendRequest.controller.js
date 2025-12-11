@@ -34,7 +34,7 @@ exports.Send_Request = async (req, res) => {
         PhoneNo
 
       } = item;
-      console.log(" Factory ที่รับมา:", Fac, "| typeof:", typeof Fac);
+      console.log(" Factory received:", Fac, "| typeof:", typeof Fac);
 
       await pool
         .request()
@@ -53,8 +53,6 @@ exports.Send_Request = async (req, res) => {
         .input('Req_QTY', sql.Int, QTY)
         .input('DueDate', sql.DateTime,new Date(Due_Date))
         .input('Status', sql.NVarChar(50), Status)
-        .input('FileData',sql.VarBinary(sql.MAX),FileData? Buffer.from(FileData.split(',')[1],'base64'):null)
-        .input('FileName',sql.NVarChar(255),FileName)
         .input('PathDwg',sql.NVarChar(255),PathDwg)
         .input('PathLayout',sql.NVarChar(255),PathLayout)
         .input('ON_HAND',sql.Int,ON_HAND)
@@ -63,12 +61,12 @@ exports.Send_Request = async (req, res) => {
     }
     //  ดึงอีเมลทั้งหมดที่ Role = 'production'
     const emailResult = await pool.request()
-      .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role = 'purchase'`);
+      .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role IN ('purchase','admin')`);
 
     const emailList = emailResult.recordset.map(row => row.Email).filter(email => !!email);
 
     if (emailList.length === 0) {
-      console.warn("ไม่พบอีเมลของ Role = production ในฐานข้อมูล");
+      console.warn("The email for Role = production was not found in the database.");
     }
 
     let itemDetailsHtml = items.map(item => `
@@ -76,7 +74,10 @@ exports.Send_Request = async (req, res) => {
         <td>${item.Division}</td>
         <td>${item.PartNo}</td>
         <td>${item.ItemNo}</td>
+        <td>${item.SPEC}</td>
         <td>${item.CASE}</td>
+        <td>${item.MCType}</td>
+        <td>${item.MCNo}</td>
         <td>${item.Fac}</td>
         <td>${item.QTY}</td>
         <td>${new Date(item.Due_Date).toLocaleDateString('th-TH')}</td>
@@ -94,18 +95,21 @@ exports.Send_Request = async (req, res) => {
     });
 
     const mailOptions = {
-      from: '"Material Disbursement System" <testsystem1508@gmail.com>',
+      from: '"Indirect expense" <testsystem1508@gmail.com>',
       to: emailList,  //  ส่งหาอีเมลจาก DB
-      subject: 'มีรายการถูกขอเข้ามาใหม่',
+      subject: 'New items have been requested.',
       html: `
-        <h1 style="color:black;">🚚แจ้งเตือน❗❗ มีรายการถูกขอเข้ามาใหม่🚚</h1>
+        <h1 style="color:black;">🚚Message notification❗❗ New items have been requested.🚚</h1>
         <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
           <thead>
             <tr style="background-color: #f2f2f2;">
               <th>Division</th>
               <th>Part No</th>
               <th>Item No</th>
+              <th>Spec</th>
               <th>Case</th>
+              <th>MCType</th>
+              <th>MCNo.</th>
               <th>Factory</th>
               <th>QTY</th>
               <th>DueDate</th>
@@ -116,21 +120,21 @@ exports.Send_Request = async (req, res) => {
             ${itemDetailsHtml}
           </tbody>
         </table>
-        <h3 style="color: black;">กรุณาเข้ามาตรวจสอบ👉 http://10.120.113.44:4200/ 👈</h3>
+        <h3>Come in and check 👉 <a href="http://pbgm06:4200/login">Indirect expense</a></h3>
       `
     };
 
     if (emailList.length > 0) {
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-          console.error('ส่งอีเมลไม่สำเร็จ:', error);
+          console.error('Email failed to send:', error);
         } else {
-          console.log('ส่งอีเมลสำเร็จ:', info.response);
+          console.log('Email sent successfully:', info.response);
         }
       });
     }
 
-    res.status(200).json({ message: " บันทึกข้อมูลเรียบร้อยแล้วทุกแถว" });
+    res.status(200).json({ message: " All rows have been successfully saved." });
 
   } catch (error) {
     console.error(" Error executing query:", error.stack);
@@ -194,7 +198,7 @@ exports.GenerateNewDocNo = async (req, res) => {
     let isUnique = false;
 
     while (!isUnique) {
-      docNo =` ${prefix}${nextNumber.toString().padStart(4, '0')}`; // เช่น SETTN908001
+      docNo =`${prefix}${nextNumber.toString().padStart(4, '0')}`; // เช่น SETTN908001
 
       const check = await pool.request()
         .input('DocNo', sql.NVarChar(20), docNo)
@@ -205,7 +209,7 @@ exports.GenerateNewDocNo = async (req, res) => {
         `);
 
       const count = check.recordset[0].count;
-      console.log(` ตรวจสอบ DocNo = ${docNo}, พบซ้ำ = ${count} ครั้ง`);
+      console.log(` Check DocNo = ${docNo}, found duplicates = ${count} times`);
 
       if (count === 0) {
         isUnique = true;
@@ -214,7 +218,7 @@ exports.GenerateNewDocNo = async (req, res) => {
       }
     }
 
-    console.log(" DocNo ใหม่ที่จะใช้:", docNo);
+    console.log(" New DocNo to use:", docNo);
     return res.json({ DocNo: docNo });
 
   } catch (err) {

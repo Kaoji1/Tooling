@@ -7,6 +7,7 @@ import { NotificationComponent } from '../../../components/notification/notifica
 import { CartService } from '../../../core/services/cart.service';
 import { SendrequestService } from '../../../core/services/SendRequest.service';
 import { FileUploadSerice } from '../../../core/services/FileUpload.service';
+import { AuthService } from '../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
 
@@ -15,24 +16,61 @@ import Swal from 'sweetalert2';
   standalone: true,
   imports: [RouterOutlet, SidebarComponent, FormsModule, CommonModule, NotificationComponent],
   templateUrl: './cart.component.html',
-  styleUrl: './cart.component.scss'
+  styleUrls: ['./cart.component.scss']
 })
 export class CartComponent implements OnInit {
+
+  userRole: string = 'view';
   groupedCart: { [case_: string]: any[] } = {};
   editingIndex: { [case_: string]: number | null } = {};
   checkedCases: { [case_: string]: boolean } = {};
   file: any;
+  employeeId:string | null = null; //กำหนดตัวแปลสำหรับเก็บค่าไอดีที่อยุ่ในsessionเมื่อlogin
+  Role:string | null = null; //กำหนดตัวแปลสำหรับเก็บค่าไอดีที่อยุ่ในsessionเมื่อlogin
 
   constructor(
     private cartService: CartService,
     private sendrequestService: SendrequestService,
-    private FileUploadSerice : FileUploadSerice
+    private FileUploadSerice : FileUploadSerice,
+    private authService : AuthService
   ) {}
+
+isViewer(): boolean {
+  return this.authService.isViewer();
+}
+
+isAdmin(): boolean {
+  return this.authService.isAdmin();
+}
 
   ngOnInit(): void {
     this.loadCartFromDB();
-    
+    const userJson = sessionStorage.getItem('user'); // ดึง object ทั้งก้อน
+  if (userJson) {
+    try {
+      const user = JSON.parse(userJson); // แปลง string เป็น object
+      this.employeeId = user.Employee_ID; // ดึงเฉพาะ Employee_ID
+      console.log('gggg',this.employeeId)
+      this.Role = user.Role;
+    } catch (e) {
+      console.error('Error parsing user from sessionStorage', e);
+      this.employeeId = null;
+      this.Role = null;
+    }
+  } else {
+    this.employeeId = null; // หรือกำหนด default ถ้าต้องการ
+    this.Role = null;
   }
+  
+if (this.authService.isViewer()) {
+    // console.log('User is viewer: view-only mode');
+    // สามารถทำ logic ซ่อนหรือ disable ปุ่มแก้ไข/ลบได้ที่นี่
+  }
+
+  // console.log('login:', this.employeeId); // จะได้ 6020A
+}
+    
+  
 
   loadCartFromDB() {
   this.cartService.getCartFromDB().subscribe({
@@ -234,7 +272,7 @@ async CreateDocByCase() {
     const imageInfo = this.imageMap[caseKey];
     const fileName = imageInfo?.fileName || null;
     const fileData = imageInfo?.imageData || null;
-    console.log('case:',process)
+    // console.log('case:',process)
 
     if (!case_ || !process || !factory) {
       alert(`The information is incomplete. Please check Case: ${case_} | Process: ${process} | Factory: ${factory}`);
@@ -251,7 +289,7 @@ async CreateDocByCase() {
         item.FileData = fileData;
         item.Employee_Name = employessName;
       });
-      console.log('EMP:',groupItems)
+      // console.log('EMP:',groupItems)
 
       await this.sendrequestService.SendRequest(groupItems).toPromise();
       await this.cartService.deleteItemsByCaseProcessFac(case_, process, factory).toPromise();
@@ -294,26 +332,26 @@ onFileSelected(event: Event, caseKey: string): void {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files.length > 0) {
     this.selectedFiles[caseKey] = input.files[0];
-    console.log(`Selected file for ${caseKey}:`, this.selectedFiles[caseKey]);
+    // console.log(`Selected file for ${caseKey}:`, this.selectedFiles[caseKey]);
     
   }
 }
 
 
 uploadFile(caseKey:string):void {
-  console.log("เลือกก",this.selectedFiles)
-  console.log("caseKey:",caseKey)
-  console.log("file from key:",this.selectedFiles[caseKey]);
+  // console.log("เลือกก",this.selectedFiles)
+  // console.log("caseKey:",caseKey)
+  // console.log("file from key:",this.selectedFiles[caseKey]);
 const file=this.selectedFiles[caseKey];
 if(!file){
   this.uploadStatus = `Please select file`
-  console.log(this.uploadStatus);
+  // console.log(this.uploadStatus);
   return;
 }
 this.FileUploadSerice.FileUpload(file,caseKey).subscribe ({
   
   next : (response) => {
-    console.log('File sent',file);
+    // console.log('File sent',file);
     this.uploadStatus = `Uploaded Complete ${caseKey}`;
     this.selectedFiles[caseKey] = null ;
     this.loadImage(caseKey);

@@ -1,0 +1,99 @@
+<div class="layout">
+  <app-sidebarpurchase></app-sidebarpurchase>
+
+  <div class="content">
+    <!-- Header Group -->
+    <div class="header-group">
+      <div class="header">
+        <h1 class="h1">Printer Permission</h1>
+        <p class="p">Add users who have permission to use this program to print.</p>
+      </div>
+
+      <div class="header-actions">
+        <button class="button" data-bs-toggle="modal" data-bs-target="#Insert">
+          <i class="bi bi-person-fill-add"></i> Add
+        </button>
+      </div>
+    </div>
+
+    <!-- ปุ่ม Back มุมขวาบน -->
+    <div class="top-right-icons">
+      <button onclick="history.back()" class="back-btn">
+        <img src="back arrow.png" alt="Back">
+      </button>
+    </div>
+
+    <!-- ตาราง -->
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Employee ID</th>
+            <th>Employee Name</th>
+            <th>Del</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let emp of Employee; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ emp.Employee_ID }}</td>
+            <td>{{ emp.Employee_Name }}</td>
+            <td>
+              <button class="btn btn-danger btn-sm" (click)="deleteEmployee(emp.Employee_ID)">
+                <i class="bi bi-trash text-white"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="Insert" tabindex="-1" aria-labelledby="InsertLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title" id="InsertLabel">Add Employee Permission</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body">
+            <form id="addForm">
+              <div class="mb-3">
+                <label for="employeeId" class="form-label">Employee ID</label>
+                <input type="text"
+                       class="form-control"
+                       id="employeeId"
+                       placeholder="Enter Employee ID"
+                       [(ngModel)]="newEmployee.Employee_ID"
+                       name="employeeId"
+                       required
+                       (ngModelChange)="newEmployee.Employee_ID = $event.toUpperCase()">
+              </div>
+
+              <div class="mb-3">
+                <label for="employeeName" class="form-label">Employee Name</label>
+                <input type="text"
+                       class="form-control"
+                       id="employeeName"
+                       placeholder="Enter Employee Name"
+                       [(ngModel)]="newEmployee.Employee_Name"
+                       (ngModelChange)="newEmployee.Employee_Name = $event.toUpperCase()"
+                       name="employeeName"
+                       required>
+              </div>
+            </form>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" form="addForm" class="btn btn-primary" (click)="submitAddForm()">Save</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

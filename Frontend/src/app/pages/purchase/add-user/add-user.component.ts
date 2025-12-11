@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { SidebarPurchaseComponent } from "../../../components/sidebar/sidebarPurchase.component";
 import { CommonModule, NgFor } from '@angular/common';
 import { EmployeeService } from '../../../core/services/Employee.service';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { AuthService } from '../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 declare var bootstrap:any;
 
@@ -15,16 +17,17 @@ declare var bootstrap:any;
   styleUrl: './add-user.component.scss'
 })
 export class AddUserComponent {
-  // ข้อมูลพนักงานทั้งหมด
-  Employee: any[] = [];
+  userRole: string = 'view';
+  // users: any[] = [];
+  Employee: any[] = [];// ข้อมูลพนักงานทั้งหมด
+  groupedEmployees: { [key: string]: any[] } = {}; // ข้อมูลพนักงานที่จัดกลุ่มตาม Role
 
-  // ข้อมูลพนักงานที่จัดกลุ่มตาม Role
-  groupedEmployees: { [key: string]: any[] } = {};
-
-  // ตัวเลือก Role
-  Role: any = [
+  Role: any = [ // ตัวเลือก Role
     { label: 'production', value: 'production' },
-    { label: 'purchase', value: 'purchase' }
+    { label: 'purchase', value: 'purchase' },
+    { label: 'view', value: 'view' },
+    { label: 'admin', value: 'admin' },
+    { label: 'engineer', value:'engineer'}
   ];
 
   // รับค่าจากแบบฟอร์ม (เพิ่มใหม่)
@@ -46,11 +49,22 @@ export class AddUserComponent {
     Email: ''
   };
 
-  constructor(private EmployeeService: EmployeeService) {}
+  constructor(private EmployeeService: EmployeeService,
+              private router: Router,
+              private authService : AuthService
+  ) {}
+
+  isViewer(): boolean {
+  return this.authService.isViewer();
+}
+
 
   ngOnInit() {
     this.Get_Employee();
   }
+ goPermission() {
+  this.router.navigate(['/purchase/permission']);
+}
 
   //  ดึงข้อมูลพนักงานและจัดกลุ่มตาม Role
   Get_Employee() {
@@ -96,6 +110,7 @@ export class AddUserComponent {
       }
     });
   }
+  
 
   resetForm() {
     this.Role_ = null;
@@ -201,4 +216,6 @@ export class AddUserComponent {
     Object.keys(grouped).forEach(k => grouped[k].sort((a,b) => (a.Employee_Name||'').localeCompare(b.Employee_Name||'')));
     return grouped;
   }
+
+  
 }

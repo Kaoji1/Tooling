@@ -17,6 +17,34 @@ exports.Get_Division = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };
+// ดึงข้อมูล Fac กรองจาก Division
+exports.get_Facility = async (req, res) => {
+  console.log(req);
+  try {
+    const { Division }= req.body;
+    console.log( Division );
+    
+
+    if (!Division) {
+      return res.status(400).json({ error: "Missing PartNo parameter" });
+    }
+
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("Division", req.body.Division)
+      .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem_Test] @Division");
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ message: "Spec not found for this PartNo" });
+    } else {
+      res.json(result.recordset);
+    }    
+  } catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
 
 // ดึงข้อมูล PartNo กรองจาก Division
 exports.get_PartNo = async (req, res) => {
@@ -112,8 +140,8 @@ exports.Get_Process = async (req, res) => {
 exports.post_ItemNo = async (req, res) => {
   console.log('item:',req.body);
   try {
-    const { Division, PartNo, Process, MC }= req.body;
-    console.log( Division,PartNo, Process, MC );
+    const { Division, FacilityName, PartNo, Process, MC }= req.body;
+    console.log( Division, FacilityName, PartNo, Process, MC );
 
     if (!Division || !PartNo  || !Process || !MC ) {
       return res.status(400).json({ error: "Missing PartNo parameter" });
@@ -123,11 +151,12 @@ exports.post_ItemNo = async (req, res) => {
     const result = await pool
       .request()
       .input("Division",sql.NVarChar, req.body.Division)
+      .input("FacilityName",sql.NVarChar,FacilityName)
       .input("PartNo",sql.NVarChar, req.body.PartNo)
       
       .input("PROCESS",sql.NVarChar, req.body.Process)
       .input("MC",sql.NVarChar, req.body.MC)
-      .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem_QTY] @Division,@PartNo, @PROCESS, @MC ");
+      .query("EXEC [dbo].[Stored_View_CuttingTool_FindItem_Test] @Division, @FacilityName, @PartNo, @PROCESS, @MC ");
 
     if (result.recordset.length === 0) {
       // return res.status(404).json({ message: "Spec not found for this PartNo" });

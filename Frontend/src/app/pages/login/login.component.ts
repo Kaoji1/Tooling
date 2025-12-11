@@ -19,41 +19,58 @@ export class LoginComponent {
 
   constructor(private router: Router, private LoginService: LoginService) {}
 
-  onLogin() {
-
-    const credentials = {Username: this.Username, Password: this.Password};
+ onLogin() {
+    const credentials = { Username: this.Username, Password: this.Password };
+    
     this.LoginService.login(credentials).subscribe({
       next: (res) => {
-        console.log('login res:',res);
-        console.log('Token:',res.token);
-        // Keep token from backend
-        sessionStorage.setItem('token', res.token);
-        sessionStorage.setItem('user', JSON.stringify(res.user));
+        // console.log('Login response:', res);
 
-        console.log('Login response:', res);
-        // ถ้าเข้าสู่ระบบสำเร็จ ให้เปลี่ยนเส้นทางไปยังหน้า dashboard
-        if (res.user.Role === 'production') {
-          this.router.navigate(['/production/request']);
-        }
+        if (res.token && res.user?.Role) {
+          // เก็บ token และ role ไว้ใน sessionStorage
+          sessionStorage.setItem('token', res.token);
+          sessionStorage.setItem('role', res.user.Role); // <-- เพิ่ม role สำหรับ AuthGuard
+          sessionStorage.setItem('user', JSON.stringify(res.user));
 
-        else if (res.user.Role === 'purchase') {
-          this.router.navigate(['/purchase/requestlist']);
-        }
+          // Redirect ตาม role
+          switch (res.user.Role) {
+            case 'view':
+              this.router.navigate(['/production/cart']); // view เข้าได้เฉพาะหน้านี้
+              window.open('/purchase/detail', '_blank');
+              break;
 
-        else {
-          this.errorMessage = 'User access deny';
+            case 'production':
+              this.router.navigate(['/production/request']);
+              break;
+              case 'engineer':
+              this.router.navigate(['/production/request']);
+              break;
+
+            case 'purchase':
+              this.router.navigate(['/purchase/detail']);
+              break;
+
+            case 'admin':
+              this.router.navigate(['/purchase/detail']);
+              window.open('/production/request', '_blank');   // ตัวอย่างเปิดหน้าอื่นพร้อมกัน
+              break;
+            default:
+              this.errorMessage = 'User access denied';
+          }
+        } else {
+          this.errorMessage = 'Invalid login response';
         }
       },
       error: (err) => {
-        // ถ้าเกิดข้อผิดพลาดในการเข้าสู่ระบบ แสดงข้อความผิดพลาด
-        this.errorMessage = 'Username or Password Invalid please try again';
+        this.errorMessage = 'Username or Password Invalid, please try again';
+        console.error('Login error:', err);
       }
     });
   }
-  togglePasswordVisibility() {
+
+  togglePasswordVisibility() { // แสดงรหัสผ่าน
     const input = document.getElementById('passwordinput') as HTMLInputElement;
     input.type = input.type === 'password' ? 'text' : 'password';
   }
 }
-
-console.log()
+// console.log()

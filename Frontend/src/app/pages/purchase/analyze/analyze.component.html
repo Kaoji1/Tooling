@@ -1,0 +1,275 @@
+ <div class="layout">
+   <app-sidebarpurchase></app-sidebarpurchase>
+
+   <div class="content">
+     <div class="header-group">
+       <div class="header">
+         <h1 class="h1">Graph Analyze</h1>
+         <p class="p">Analytic data to Graph</p>
+
+       </div>
+       <div class="button-group">
+            <!-- <button class="excel-button" type="button" class="btn btn-success" (click)="exportexcel()"><i
+                class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL</button> -->
+            <button class="excel-button" type="button" class="btn btn-success" (click)="exportexcel()">
+              <i class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL</button>
+               
+          </div>
+     </div>
+
+     <!-- ส่วนการ์ดกราฟ -->
+     <!-- การ์ดแรก Website Views -->
+     <div class="card-grid">
+    <!-- แถว Overview: Stacked Sales Chart -->
+<div class="card large" 
+     style="width: 100%; height: 850px; grid-column: span 2; padding: 20px; border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); background-color: #fff; 
+            display: flex; flex-direction: column; gap: 15px;">
+
+  <!-- ส่วนหัว -->
+  <div style="display: flex; ">
+    <div>
+    <h3 style="margin:0 0 5px 0; color:#333;">Overview</h3>
+    <p class="sub-text" style="margin:0 0 5px 0; color:#666; font-size:14px;">Show dashboard</p>
+    </div>
+    <!-- Radio Buttons -->
+    <div class="radio-group" style="display:flex; gap:10px; align-items:center;margin-left: 20px;">
+      <label><input type="radio" name="level" value="day" 
+                    [(ngModel)]="selectedLevel" (change)="renderStackedBarChart()"> Day</label>
+      <label><input type="radio" name="level" value="month" 
+                    [(ngModel)]="selectedLevel" (change)="renderStackedBarChart()"> Month</label>
+      <label><input type="radio" name="level" value="year" 
+                    [(ngModel)]="selectedLevel" (change)="renderStackedBarChart()"> Year</label>
+    </div>
+  </div>
+
+  <!-- Controls: Filters + Radio + Toolbar -->
+  <div class="controls" 
+       style="display:flex; flex-wrap:wrap; align-items:flex-end; gap:15px;">
+
+    <!-- Top N -->
+    <div class="filter-item" style="display:flex; flex-direction:column;">
+      <label style="font-size:12px; color:#555;">Top N:</label>
+      <input type="number" min="1" max="20" [(ngModel)]="topN1" 
+             (change)="renderStackedBarChart()" 
+             style="padding:6px 8px; border-radius:5px; border:1px solid #ccc;">
+    </div>
+
+    <!-- Division -->
+    <div class="filter-item" style="display:flex; flex-direction:column;">
+      <label style="font-size:12px; color:#555;">Division:</label>
+      <select [(ngModel)]="selectedDivisionStacked" (change)="renderStackedBarChart()" 
+              style="padding:6px 8px; border-radius:5px; border:1px solid #ccc;">
+        <option value="ALL">Select All</option>
+        <option *ngFor="let d of Divisions" [value]="d">{{ d }}</option>
+      </select>
+    </div>
+
+    <!-- Date Range -->
+    <div class="filter-item" style="display:flex; flex-direction:column;">
+      <label style="font-size:12px; color:#555;">Date Range:</label>
+      <div style="display:flex; gap:5px; align-items:center;">
+        <input type="date" [(ngModel)]="selectDatestart" 
+               style="padding:6px; border-radius:5px; border:1px solid #ccc;" (change)="renderStackedBarChart()">
+        <span>-</span>
+        <input type="date" [(ngModel)]="selectDateend" 
+               style="padding:6px; border-radius:5px; border:1px solid #ccc;" (change)="renderStackedBarChart()">
+      </div>
+    </div>
+
+    <!-- Case -->
+    <div class="filter-item" style="display:flex; flex-direction:column;">
+      <label style="font-size:12px; color:#555;">Case:</label>
+      <select [(ngModel)]="selectedCaseall" (change)="renderStackedBarChart()" 
+              style="padding:6px 8px; border-radius:5px; border:1px solid #ccc;">
+        <option value="ALL">ทั้งหมด</option>
+        <option *ngFor="let c of uniqueCases" [value]="c">{{ c }}</option>
+      </select>
+    </div>
+
+    <!-- Process -->
+    <div class="filter-item" style="display:flex; flex-direction:column;">
+      <label style="font-size:12px; color:#555;">Process:</label>
+      <select [(ngModel)]="selectedprocess" (change)="renderStackedBarChart()" 
+              style="padding:6px 8px; border-radius:5px; border:1px solid #ccc;">
+        <option value="ALL">ทั้งหมด</option>
+        <option *ngFor="let p of uniqueprocess" [value]="p">{{ p }}</option>
+      </select>
+    </div>
+
+    
+
+    <!-- Toolbar -->
+    <div class="toolbar" style="display:flex; gap:10px; align-items:center;">
+      <button type="button" (click)="zoomInStacked()" 
+              style="padding:6px 10px; border-radius:5px; border:none; 
+                     background-color:#4CAF50; color:#fff; cursor:pointer;"><i class="bi bi-zoom-in"></i> Zoom In</button>
+      <button type="button" (click)="zoomOutStacked()" 
+              style="padding:6px 10px; border-radius:5px; border:none; 
+                     background-color:#f39c12; color:#fff; cursor:pointer;"><i class="bi bi-zoom-out"></i> Zoom Out</button>
+      <button type="button" (click)="resetStackedChart()" 
+              style="padding:6px 10px; border-radius:5px; border:none; 
+                     background-color:#3498db; color:#fff; cursor:pointer;"><i class="bi bi-arrows-fullscreen"></i> Reset</button>
+      <button type="button" (click)="exportStackedPNG()" 
+              style="padding:6px 10px; border-radius:5px; border:none; 
+                     background-color:#9b59b6; color:#fff; cursor:pointer;"><i class="bi bi-filetype-png"></i> Save PNG</button>
+
+         <div class="dropdown">
+  <button class="btn btn-secondary dropdown-toggle"style="margin-left: 150px" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Indirect Expense
+  </button>
+  <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="#">Cutting Tool</a></li>
+    <li><a class="dropdown-item" href="#">SetUp Tool</a></li>
+    <li><a class="dropdown-item" href="#">Cutting Oil</a></li>
+  </ul>
+</div>
+    </div>
+  </div>
+
+  <!-- Canvas เต็มพื้นที่ -->
+  <div style="flex:1; overflow:hidden; border:1px solid #eee; border-radius:8px; background-color:#fafafa; padding:5px;">
+    <div #stackedWrapper style="width:100%; height:100%; cursor:grab;">
+      <canvas id="stackedSalesChart" style="width:100%;  "></canvas>
+    </div>
+  </div>
+
+</div>
+       <!-- แถวสอง: Status -->
+<div class="card" 
+     style="width: 100%; height: 700px; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background-color: #fff; display: flex; flex-direction: column; gap: 5px;">
+
+  <!-- ส่วนหัว -->
+  <div>
+    <h3 style="margin: 0 0 5px 0; color: #333;">Status</h3>
+    <p class="sub-text" style="margin: 0 0 5px 0; color: #666; font-size: 14px;">
+      Show Status Complete & Waiting to AS400.
+    </p>
+  </div>
+
+  <!-- Filters + Toolbar -->
+<div class="controls" style="display: block; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
+  
+  <!-- Filters -->
+  <div class="filters" style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-start; align-items: center; margin-bottom: 15px;">
+  <div class="filter-item" style="display: flex; flex-direction: column; margin-bottom: 0;">
+    <label for="divisions" style="font-size: 12px; color: #555; margin-bottom: 2px;">Division:</label>
+    <ng-select class="select" style="width: 300px; margin-bottom: 0;"
+               [items]="divisions"
+               bindLabel="name"
+               bindValue="name"
+               [(ngModel)]="selectedDivisions"
+               [multiple]="true"
+               placeholder="Select Division"
+               (change)="renderStatusChart()">
+    </ng-select>
+  </div>
+</div>
+
+    <!-- Toolbar -->
+    <div class="toolbar" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+      <button type="button" (click)="zoomIn1()" style="padding: 6px 10px; border-radius: 5px; border: none; background-color: #4CAF50; color: #fff; cursor: pointer;">
+        <i class="bi bi-zoom-in"></i> Zoom In
+      </button>
+      <button type="button" (click)="zoomOut1()" style="padding: 6px 10px; border-radius: 5px; border: none; background-color: #f39c12; color: #fff; cursor: pointer;">
+        <i class="bi bi-zoom-out"></i> Zoom Out
+      </button>
+      <button type="button" (click)="resetChart()" style="padding: 6px 10px; border-radius: 5px; border: none; background-color: #3498db; color: #fff; cursor: pointer;">
+        <i class="bi bi-arrows-fullscreen"></i> Reset
+      </button>
+      <button type="button" (click)="exportStatusPNG()" style="padding: 6px 10px; border-radius: 5px; border: none; background-color: #9b59b6; color: #fff; cursor: pointer;">
+        <i class="bi bi-filetype-png"></i> Save PNG
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Canvas -->
+  <div class="canvas" style="flex: 1; overflow: hidden; border: 1px solid #eee; border-radius: 8px; padding: 5px; background-color: #fafafa;">
+    <div #chartWrapper 
+      style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; cursor: grab;">
+      <canvas id="dailySalesChart" style="width: 80%; height: 80%;"></canvas>
+    </div>
+  </div>
+
+</div>
+       <!-- แถวสาม: Most Item Select -->
+      <div class="card" style="width: 800px; height: 700px; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background-color: #fff; display: flex; flex-direction: column;">
+  <h3 style="margin: 0 0 5px 0; color: #333;">Most Item Select</h3>
+  <p class="sub-text" style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Show Most Item Select.</p>
+
+  <!-- Filters + Toolbar -->
+  <div class="controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+    
+    <!-- Filters -->
+    <div class="filters" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+      <div class="filter-item" style="display: flex; flex-direction: column;">
+        <label for="topN" style="font-size: 12px; color: #555;">Number of ItemNo:</label>
+        <input id="topN" type="number" [(ngModel)]="topN" min="1" (change)="renderHorizontalBarChart()" style="padding: 5px 8px; border-radius: 5px; border: 1px solid #ccc;">
+      </div>
+
+      <div class="filter-item" style="display: flex; flex-direction: column;">
+        <label for="division" style="font-size: 12px; color: #555;">Division:</label>
+        <select id="division" [(ngModel)]="selectedDivision" (change)="renderHorizontalBarChart()" style="padding: 5px 8px; border-radius: 5px; border: 1px solid #ccc;">
+          <option value="ALL">Select All</option>
+          <option *ngFor="let d of Divisions" [value]="d">{{ d }}</option>
+        </select>
+      </div>
+
+      <div class="filter-item" style="display: flex; flex-direction: column;">
+        <label for="case" style="font-size: 12px; color: #555;">Case:</label>
+        <select id="case" [(ngModel)]="selectedCase" (change)="renderHorizontalBarChart()" style="padding: 5px 8px; border-radius: 5px; border: 1px solid #ccc;">
+          <option value="ALL">Select All</option>
+          <option *ngFor="let c of Cases" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+
+      <div class="filter-item" style="display: flex; flex-direction: column;">
+        <label for="process" style="font-size: 12px; color: #555;">Process:</label>
+        <select id="process" [(ngModel)]="selectedprocesshoz" (change)="renderHorizontalBarChart()" style="padding: 5px 8px; border-radius: 5px; border: 1px solid #ccc;">
+          <option value="ALL">Select All</option>
+          <option *ngFor="let c of uniqueprocess" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+      <button type="button" (click)="zoomIn()" style="padding: 6px 10px; border-radius: 5px; border: none; background-color: #4CAF50; color: #fff; cursor: pointer;"><i class="bi bi-zoom-in"></i> Zoom In</button>
+      <button type="button" (click)="zoomOut()" style="padding: 6px 10px; border-radius: 5px; border: none; background-color: #f39c12; color: #fff; cursor: pointer;"><i class="bi bi-zoom-out"></i> Zoom Out</button>
+      <button type="button" (click)="resetZoom()" style="padding: 6px 10px; border-radius: 5px; border: none; background-color: #3498db; color: #fff; cursor: pointer;"><i class="bi bi-arrows-fullscreen"></i> Reset</button>
+      <button type="button" (click)="exportHorizontalBarPNG()" style="padding: 6px 10px; border-radius: 5px; border: none; background-color: #9b59b6; color: #fff; cursor: pointer;"><i class="bi bi-filetype-png"></i> Save PNG</button>
+    </div>
+
+  </div>
+
+  <!-- Canvas -->
+  <div class="canvas" style="flex: 1; overflow: hidden; border: 1px solid #eee; border-radius: 8px; padding: 5px; background-color: #fafafa;">
+    <div #horizontalWrapper class="chart-wrapper" style="width: 100%; height: 100%;">
+      <canvas id="horizontalBarChart"></canvas>
+    </div>
+  </div>
+</div>
+     </div>
+   </div>
+ </div>
+
+ <!-- 
+  <div class="card">
+    <h3>Daily Sales</h3>
+    <p class="sub-text">(+15%) increase in today sales.</p>
+    <canvas id="dailySalesChart"></canvas>
+  </div>
+
+
+  <div class="card">
+    <h3>Daily Sales</h3>
+    <p class="sub-text">(+15%) increase in today sales.</p>
+    <canvas id="dailySalesChart"></canvas>
+  </div>
+
+    <div class="card">
+    <h3>Daily Sales</h3>
+    <p class="sub-text">(+15%) increase in today sales.</p>
+    <canvas id="dailySalesChart"></canvas>
+  </div> -->

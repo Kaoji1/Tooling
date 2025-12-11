@@ -6,11 +6,11 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class CartService {
-  
+
   private baseUrl = 'http://PBGM06:3000/api';
 
   constructor(private http: HttpClient) {}
-  
+
   // เพิ่มรายการทั้งหมดลงฐานข้อมูล MSSQL
   addCartToDB(data: any[]): Observable<any> {
     return this.http.post(`${this.baseUrl}/AddCartItems`, data);

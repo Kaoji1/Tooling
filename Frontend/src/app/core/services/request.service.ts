@@ -31,6 +31,9 @@ export class RequestService {
     return this.httpClient.post(`${baseUrl}/get_MC`, data) ;// ส่ง HTTP POST request เพื่อส่งข้อมูล process
   }
 
+  get_Facility(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
+    return this.httpClient.post(`${baseUrl}/get_Facility`, data) ;// ส่ง HTTP POST request เพื่อส่งข้อมูล process
+  }
 
   post_ItemNo(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
     return this.httpClient.post(`${baseUrl}/post_ItemNo`, data); // ส่ง HTTP POST request เพื่อส่งข้อมูล process

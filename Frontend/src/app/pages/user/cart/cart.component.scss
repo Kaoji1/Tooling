@@ -1,9 +1,10 @@
 // ทั้งหน้า
 .cart-layout {
-  display: flex;
+   display: flex;
   flex-direction: row;
-  height: 100vh;
+  height: 100%;
   width: 100%;
+  overflow: hidden;
   background-color: rgb(255, 255, 255);
 
   // ทั้งหน้าเเละตัวข้อมูล
@@ -58,9 +59,10 @@
     }
 
     // ตาราง
-    .table-responsive {
-      max-height: 520px;
-      max-width: 1500px;
+   .table-responsive {
+       max-height: 70vh;  // ตารางสูงไม่เกิน 70% ของจอ
+  width: 100%;      // กว้างเต็ม 100% ของจอ
+  overflow: auto;
 
       table {
         width: 100%;
@@ -154,11 +156,11 @@
       }
 
       .row-orange {
-        background-color: rgb(255, 175, 25);
+        background-color: rgb(255, 210, 128);
       }
 
       .row-red {
-        background-color: rgb(244, 145, 145);
+        background-color: rgb(255, 186, 186);
         color: #000000;
       }
     }

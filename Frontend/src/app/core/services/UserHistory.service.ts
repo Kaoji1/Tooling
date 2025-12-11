@@ -16,5 +16,5 @@ export class UserHistoryService {
   User_History(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
     return this.httpClient.get(`${baseUrl}/User_History`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
   }
- 
+
 }

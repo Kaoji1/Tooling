@@ -10,104 +10,113 @@
         <p class="p"> Add user who have permission to use this program. </p>
       </div>
 
-      <button class="button" data-bs-toggle="modal" data-bs-target="#Insert"> <i class="bi bi-person-fill-add"
-          style="color: rgb(0, 0, 0); font-size: 25px;"></i> Add </button>
+      <button class="button-per" (click)="goPermission()" style="color: white;">
+        <i class="bi bi-printer-fill" style="color: white; font-size: 25px;"></i>
+        Printer Permission
+      </button>
+
+      <button class="button" data-bs-toggle="modal" data-bs-target="#Insert" style="color: white;">
+        <i class="bi bi-person-fill-add" style="color: white; font-size: 25px;"></i>
+        Add
+      </button>
     </div>
 
 
     <div class="table-responsive">
-    <table class="table ">
-      <thead>
-        <tr>
-          <th >No.</th>
-          <th>Employee ID</th>
-          <th>Employee Name</th>
-          <th>Role</th>
-          <th>Username</th>
-          <th>Password</th>
-          <th>Email</th>
-          <th>Edit</th> <!--  เพิ่ม -->
-          <th>Del</th>
-        </tr>
-      </thead>
-      <tbody>
-        <ng-container *ngFor="let group of groupedEmployees | keyvalue">
-          <!-- หัวของกลุ่ม Role -->
-          <tr class="table-secondary">
-            <td colspan="9" class="text-start fw-bold bg-light p-3 rounded border">
-              <span> Role: <strong>{{ group.key }}</strong></span>
-
-            </td>
+      <table class="table ">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Employee ID</th>
+            <th>Employee Name</th>
+            <th>Role</th>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Email</th>
+            <th>Edit</th> <!--  เพิ่ม -->
+            <th>Del</th>
           </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let group of groupedEmployees | keyvalue">
+            <!-- หัวของกลุ่ม Role -->
+            <tr class="table-secondary">
+              <td colspan="9" class="text-start fw-bold bg-light p-3 rounded border">
+                <span> Role: <strong>{{ group.key }}</strong></span>
 
-          <!-- พนักงานในแต่ละกลุ่ม -->
-          <tr *ngFor="let emp of group.value; let i = index">
-            <td>{{ i + 1 }}</td>
+              </td>
+            </tr>
+          
+            <!-- พนักงานในแต่ละกลุ่ม -->
+            <tr *ngFor="let emp of group.value; let i = index">
+              <td>{{ i + 1 }}</td>
 
-            <!-- Employee ID (ไม่ให้แก้) -->
-            <td>{{ emp.Employee_ID }}</td>
+              <!-- Employee ID (ไม่ให้แก้) -->
+              <td>{{ emp.Employee_ID }}</td>
 
-            <!-- Employee Name -->
-            <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Employee_Name }}</td>
-            <td *ngIf="editingId === emp.Employee_ID">
-              <input class="form-control" [(ngModel)]="editForm.Employee_Name">
-            </td>
+              <!-- Employee Name -->
+              <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Employee_Name }}</td>
+              <td *ngIf="editingId === emp.Employee_ID">
+                <input class="form-control" [(ngModel)]="editForm.Employee_Name">
+              </td>
 
-            <!-- Role -->
-            <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Role }}</td>
-            <td *ngIf="editingId === emp.Employee_ID">
-              <ng-select [items]="Role" bindLabel="label" bindValue="value" [(ngModel)]="editForm.Role"
-                placeholder="Select a role">
-              </ng-select>
-            </td>
+              <!-- Role -->
+              <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Role }}</td>
+              <td *ngIf="editingId === emp.Employee_ID">
+                <ng-select [items]="Role" bindLabel="label" bindValue="value" [(ngModel)]="editForm.Role"
+                  placeholder="Select a role">
+                </ng-select>
+              </td>
 
-            <!-- Username -->
-            <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Username }}</td>
-            <td *ngIf="editingId === emp.Employee_ID">
-              <input class="form-control" [(ngModel)]="editForm.Username">
-            </td>
+              <!-- Username -->
+              <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Username }}</td>
+              <td *ngIf="editingId === emp.Employee_ID">
+                <input class="form-control" [(ngModel)]="editForm.Username">
+              </td>
 
-            <!-- Password -->
-            <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Password }}</td>
-            <td *ngIf="editingId === emp.Employee_ID">
-              <input class="form-control" [(ngModel)]="editForm.Password" type="text">
-            </td>
+              <!-- Password -->
+              <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Password }}</td>
+              <td *ngIf="editingId === emp.Employee_ID">
+                <input class="form-control" [(ngModel)]="editForm.Password" type="text">
+              </td>
 
-            <!-- Email -->
-            <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Email }}</td>
-            <td *ngIf="editingId === emp.Employee_ID">
-              <input class="form-control" [(ngModel)]="editForm.Email" type="email">
-            </td>
+              <!-- Email -->
+              <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Email }}</td>
+              <td *ngIf="editingId === emp.Employee_ID">
+                <input class="form-control" [(ngModel)]="editForm.Email" type="email">
+              </td>
 
-            <!-- ปุ่ม Edit / Save / Cancel -->
-            <td>
-              <ng-container *ngIf="editingId !== emp.Employee_ID; else editingBtns">
-                <button class="btn btn-warning btn-sm" (click)="startEdit(emp)">
-                  <i class="bi bi-pencil" style="color: black;"></i> Edit
+              <!-- ปุ่ม Edit / Save / Cancel -->
+              <td>
+                <ng-container *ngIf="editingId !== emp.Employee_ID; else editingBtns">
+                  <button class="btn btn-primary btn-sm" (click)="startEdit(emp)" [disabled]="isViewer()">
+                    <i class="bi bi-pencil-square" style="color: white;"></i>
+                  </button>
+                </ng-container>
+
+                <ng-template #editingBtns>
+                  <div class="btn-group-sm">
+                    <button class="btn btn-success" (click)="saveEdit(emp)" >
+                      <i class="bi bi-check text-white"></i> 
+                    </button>
+                    <!-- <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">
+                      <i class="bi bi-x text-white"></i> Cancel
+                    </button> -->
+                  </div>
+                </ng-template>
+
+              </td>
+
+              <!-- ปุ่ม Delete -->
+              <td>
+                <button class="btn btn-danger btn-sm" (click)="deleteEmployee(emp.Employee_ID)" [disabled]="isViewer()">
+                  <i class="bi bi-trash" style="color: white;"></i>
                 </button>
-              </ng-container>
-
-              <ng-template #editingBtns>
-                <button class="btn btn-success btn-sm me-1" (click)="saveEdit(emp)">
-                  <i class="bi bi-check text-white"></i> Save
-                </button>
-                <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">
-                  <i class="bi bi-x text-white"></i> Cancel
-                </button>
-              </ng-template>
-
-            </td>
-
-            <!-- ปุ่ม Delete -->
-            <td>
-              <button class="btn btn-danger btn-sm" (click)="deleteEmployee(emp.Employee_ID)">
-                <i class="bi bi-trash" style="color: white;"></i> Delete
-              </button>
-            </td>
-          </tr>
-        </ng-container>
-      </tbody>
-    </table>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
     </div>
 
   </div>
@@ -182,7 +191,6 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" (click)="addEmployee()" style="width: 150px;">Save</button>
       </div>
-
     </div>
   </div>
 </div>

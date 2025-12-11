@@ -1,0 +1,75 @@
+<!-- จัดเรียงsidebarและหน้าทั้งหน้า -->
+<div class="history-layout">
+  <!-- sidebarฝั่งuser -->
+  <app-sidebar></app-sidebar>
+
+  <!-- ข้อมูลในหน้านี้ไม่รวมsidebar -->
+  <div class="main">
+    <div class="header">
+      <h4>History Print</h4>
+      <!-- <app-notification class="noti"></app-notification> -->
+    </div>
+
+    <p> History Print</p>
+    <div class="box-input">
+      <div class="form-input">
+      
+        <div class="group-select">
+          <label for="satus">Document</label>
+          <ng-select [items]="docNumbers" bindLabel="label" bindValue="value" [(ngModel)]="selectedDocNo"
+            placeholder="Select a Document">
+          </ng-select>
+        </div>
+
+        
+      </div>
+
+      <!--  ปุ่ม Filter และ Sort -->
+
+         <div class="button-group">
+            
+
+      <div class="btn-group-req">
+        <button class="btn-sort" type="button" (click)="onFilter()">Filter</button>
+        <button class="btn-sort" type="button" (click)="onSort()" ><i class="bi bi-sort-down" ></i>Sort </button>
+      </div>
+    </div>
+
+    </div>
+
+<!-- ตารางที่รับค่ามาจากการกด send request -->
+    <div class="table-responsive">
+      <table class="table table-striped" id="table-data">
+      <!-- <table class="table table-bordered"> -->
+         <thead>
+      <tr>
+        <th>No.</th>
+        <th>EmployeeID</th>
+        <th>Division</th>
+        <th>DocNo</th>
+        <th>PartNo</th>
+        <th>Due_Date</th>
+        <th>TypePrint</th>
+        <th>Print_QTY</th>
+        <th>Date_Print</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of filteredRequests; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ item.EmployeeID }}</td>
+        <td>{{ item.Division }}</td>
+        <td>{{ item.DocNo }}</td>
+        <td>{{ item.PratNo }}</td>
+        <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
+        <td>{{ item.TypePrint }}</td>
+        <td>{{ item.Total }}</td>
+        <td>{{ item.Date_Record | date:'dd/MM/yyyy HH:mm:ss':'UTC'  }}</td>
+      </tr>
+    </tbody>
+      </table>
+    </div>
+
+
+  </div>
+</div>

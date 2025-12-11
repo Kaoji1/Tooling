@@ -16,9 +16,9 @@ export class DetailPurchaseRequestlistService {
   ) { }
 
   Detail_Request(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-      return this.httpClient.get(`${baseUrl}/Detail_Purchase`); // ส่ง HTTP GET Division 
+      return this.httpClient.get(`${baseUrl}/Detail_Purchase`); // ส่ง HTTP GET Division
     }
-  
+
 updateStatusToComplete(idOrIds: number | number[], status: string) {
   return this.httpClient.post(`${baseUrl}/Update_Status_Purchase`, {
     ID_Request: idOrIds,  //  ส่งเป็น array ได้
@@ -26,9 +26,13 @@ updateStatusToComplete(idOrIds: number | number[], status: string) {
   });
 }
 
+  updateQtyAndStatus(payload: { ID_Request: number; QTY: number; Status: string }[]): Observable<any> {
+    return this.httpClient.put(`${baseUrl}/updateQtyAndStatus`, payload);
+  }
+
 updateRequest(updatedItem: any): Observable<any> {
   return this.httpClient.put(`${baseUrl}/Update_Request`, updatedItem);
-} 
+}
 
 insertRequest(data: any): Observable<any> {
   return this.httpClient.post(`${baseUrl}/Insert_Request`, data);

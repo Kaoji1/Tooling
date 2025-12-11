@@ -1,7 +1,7 @@
 .layout {
   display: flex;
   flex-direction: row;
-  height: 100%;
+  height: 100vh;
   width: 100%;
   overflow: hidden;
 
@@ -92,54 +92,105 @@
         display: flex;
         align-content: center;
         justify-content: space-between;
+        margin-right: 160px;
+        gap: 10px;
 
 
+          .btn-clear {
+    width: 120px;
+    height: 50px;
+    background-color: #708090;
+    color: white;
+    border: none;
+    gap: 5px;
+    border-radius: 10px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-top: 5px;
+  }
 
-        .button-filter {
-          width: 100px;
-          display: flex;
-          align-content: center;
-          justify-content: center;
+.btn-filter{
+   width: 120px;
+    height: 50px;
+    background-color: #4db6b6;
+    color: white;
+    border: none;
+    gap: 5px;
+    border-radius: 10px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-top: 5px;
+    
+}
 
-
-          .btn-filter {
-            width: 120px;
-            height: 45px;
-            background-color: #4db6b6;
-            color: white;
-            border: none;
-            display: block;
-            border-radius: 10px;
-            font-size: 18px;
-            align-content: center;
-            justify-self: left;
-
-          }
-        }
-
-            .button-sort {
-            width: 100px;
-            display: flex;
-            align-content: center;
-            justify-content: center;
-
-            .btn-sort {
-              width: 120px;
-              height: 45px;
-              background-color: #4db6b6;
-              color: white;
-              border: none;
-              border-radius: 10px;
-              font-size: 18px;
-              align-content: center;
-              justify-content: space-between;
-            }
-
-          }
-        
-      }
+.btn-sort{
+   width: 120px;
+    height: 50px;
+    background-color: #4db6b6;
+    color: white;
+    border: none;
+    gap: 5px;
+    border-radius: 10px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-top: 5px;
+}
+   }
     }
 
+    // margin-left: 5px;
+        // .button-filter {
+        //   width: 100px;
+        //   display: flex;
+        //   align-content: center;
+        //   justify-content: center;
+
+
+        //   .btn-filter {
+        //     width: 120px;
+        //     height: 45px;
+        //     background-color: #4db6b6;
+        //     color: white;
+        //     border: none;
+        //     display: block;
+        //     border-radius: 10px;
+        //     font-size: 18px;
+        //     align-content: center;
+        //     justify-self: left;
+
+        //   }
+        // }
+
+          //   .button-sort {
+          //   width: 100px;
+          //   display: flex;
+          //   align-content: center;
+          //   justify-content: center;
+
+          //   .btn-sort {
+          //     width: 120px;
+          //     height: 45px;
+          //     background-color: #4db6b6;
+          //     color: white;
+          //     border: none;
+          //     border-radius: 10px;
+          //     font-size: 18px;
+          //     align-content: center;
+          //     justify-content: space-between;
+          //   }
+
+          // }
+        
+   
     .group-select {
       display: flex;
       justify-content: flex-end;
@@ -199,8 +250,9 @@
     }
 
     .table-responsive {
-      max-height: 405px;
-      max-width: 1290px;
+       max-height: 70vh;  // ตารางสูงไม่เกิน 70% ของจอ
+  width: 100%;      // กว้างเต็ม 100% ของจอ
+  overflow: auto;
       margin-top: 30px;
 
       table {

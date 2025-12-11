@@ -9,7 +9,7 @@ const baseUrl = 'http://PBGM06:3000/api';
 })
 
 export class FileReadService {
-   
+
     public user: any;
 
     constructor( // คอนสตรัคเตอร์ของ service
@@ -25,4 +25,3 @@ export class FileReadService {
 
 
  }
- 

@@ -168,8 +168,9 @@
     //.group-req
     //ตารางในbox-main
     .table-responsive {
-      max-height: 390px;
-      max-width: 1290px;
+       max-height: 54vh;  // ตารางสูงไม่เกิน 70% ของจอ
+  width: 100%;      // กว้างเต็ม 100% ของจอ
+  overflow: auto;
 
 
       table {

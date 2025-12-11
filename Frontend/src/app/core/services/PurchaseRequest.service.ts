@@ -14,7 +14,7 @@ export class PurchaseRequestService {
   ) { }
 
   Purchase_Request(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-      return this.httpClient.get(`${baseUrl}/Purchase_Request`); // ส่ง HTTP GET Division 
+      return this.httpClient.get(`${baseUrl}/Purchase_Request`); // ส่ง HTTP GET Division
     }
-    
+
 }
