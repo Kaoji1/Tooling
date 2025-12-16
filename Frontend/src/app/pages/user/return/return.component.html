@@ -1,0 +1,81 @@
+<div class="layout">
+  
+  <app-sidebar></app-sidebar>
+
+  <div class="content-area">
+    
+    <div class="header">
+        <h4>Return Request</h4>
+    </div>
+
+    <div class="header-filters">
+      <div class="form-group">
+        <label>Division</label>
+        <select [(ngModel)]="selectedDivision">
+          <option value="">-- Select --</option>
+          <option *ngFor="let item of divisions" [value]="item">{{ item }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Facility</label>
+        <select [(ngModel)]="selectedFacility">
+          <option value="">-- Select --</option>
+          <option *ngFor="let item of facilities" [value]="item">{{ item }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Process</label>
+        <select [(ngModel)]="selectedProcess">
+          <option value="">-- Select --</option>
+          <option *ngFor="let item of processes" [value]="item">{{ item }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" [(ngModel)]="phoneNumber" placeholder="Ex. 1234">
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 50px;">No.</th>
+            <th>Item No.</th>
+            <th>Item Name</th>
+            <th>Spec</th>
+            <th style="width: 80px;">QTY</th>
+            <th>Remark</th>
+            <th style="width: 50px;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of returnItems; let i = index">
+            <td class="text-center" style="font-weight: bold; color: #555;">
+              {{ i + 1 }}
+            </td>
+            <td><input type="text" [(ngModel)]="item.itemNo" placeholder="Scan/Type"></td>
+            <td><input type="text" [(ngModel)]="item.itemName"></td>
+            <td><input type="text" [(ngModel)]="item.spec"></td>
+            <td><input type="number" [(ngModel)]="item.qty"></td>
+            <td><input type="text" [(ngModel)]="item.remark"></td>
+            <td class="text-center">
+              <button class="btn-delete" (click)="removeRow(i)">x</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-add" (click)="addRow()">+</button>
+      
+      <button class="btn-submit" (click)="onSubmit()">
+        <i class="fa fa-paper-plane"></i> Return
+      </button>
+    </div>
+
+  </div> </div>

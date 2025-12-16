@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login.component';
 import { AuthGuard } from './core/guards/auth.guard';
@@ -6,6 +7,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 // User pages
 import { requestComponent } from './pages/user/request/request.component';
 import { CartComponent } from './pages/user/cart/cart.component';
+import { ReturnComponent } from './pages/user/return/return.component';
 import { HistoryComponent } from './pages/user/history/history.component';
 import { AboutUsComponent } from './pages/user/about-us/about-us.component';
 import { HistoryPrintComponent } from './pages/user/history-print/history-print.component';
@@ -56,6 +58,7 @@ export const routes: Routes = [
   children: [
     { path: 'request', component: requestComponent, data: { roles: ['production', 'admin','engineer'] } },
     { path: 'cart', component: CartComponent, data: { roles: ['production', 'view', 'admin','engineer'] } }, // <-- view เข้าได้เฉพาะหน้านี้
+    { path: 'return', component: ReturnComponent, data: { roles: ['production', 'view', 'admin','engineer'] } }, // <-- เพิ่มตรงนี้
     { path: 'history', component: HistoryComponent, data: { roles: ['production', 'view', 'admin','engineer'] } },
     { path: 'about-us', component: AboutUsComponent, data: { roles: ['production', 'admin','engineer'] } },
     { path: 'historyprint', component: HistoryPrintComponent, data: { roles: ['production', 'view','admin','engineer'] } }
