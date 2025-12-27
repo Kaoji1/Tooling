@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-const baseUrl = 'http://PBGM06:3000/api';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root' // ระบุว่า service นี้จะถูกให้บริการใน root module
 })
 
 export class DetailPurchaseRequestlistService {
+  private baseUrl = environment.apiUrl;
   public user: any;
   snapshot: any;
   constructor( // คอนสตรัคเตอร์ของ service
@@ -16,33 +16,33 @@ export class DetailPurchaseRequestlistService {
   ) { }
 
   Detail_Request(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-      return this.httpClient.get(`${baseUrl}/Detail_Purchase`); // ส่ง HTTP GET Division
+      return this.httpClient.get(`${this.baseUrl}/Detail_Purchase`); // ส่ง HTTP GET Division
     }
 
 updateStatusToComplete(idOrIds: number | number[], status: string) {
-  return this.httpClient.post(`${baseUrl}/Update_Status_Purchase`, {
+  return this.httpClient.post(`${this.baseUrl}/Update_Status_Purchase`, {
     ID_Request: idOrIds,  //  ส่งเป็น array ได้
     Status: status
   });
 }
 
   updateQtyAndStatus(payload: { ID_Request: number; QTY: number; Status: string }[]): Observable<any> {
-    return this.httpClient.put(`${baseUrl}/updateQtyAndStatus`, payload);
+    return this.httpClient.put(`${this.baseUrl}/updateQtyAndStatus`, payload);
   }
 
 updateRequest(updatedItem: any): Observable<any> {
-  return this.httpClient.put(`${baseUrl}/Update_Request`, updatedItem);
+  return this.httpClient.put(`${this.baseUrl}/Update_Request`, updatedItem);
 }
 
 insertRequest(data: any): Observable<any> {
-  return this.httpClient.post(`${baseUrl}/Insert_Request`, data);
+  return this.httpClient.post(`${this.baseUrl}/Insert_Request`, data);
 }
 
 deleteRequest(id: number): Observable<any> {
-  return this.httpClient.delete(`${baseUrl}/Delete_Request/${id}`);
+  return this.httpClient.delete(`${this.baseUrl}/Delete_Request/${id}`);
 }
 
 get_ItemNo(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-    return this.httpClient.get(`${baseUrl}/get_ItemNo`); // ส่ง HTTP GET Division
+    return this.httpClient.get(`${this.baseUrl}/get_ItemNo`); // ส่ง HTTP GET Division
   }
 }

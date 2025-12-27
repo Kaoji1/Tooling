@@ -73,8 +73,34 @@
 
       //row1=row2
       .input-req {
+        .tooling-row {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        margin-top: 5px;
+        margin-bottom: 15px; 
+        
+        width: 100%;           // ✅ บังคับให้กว้างเต็ม
+        justify-content: flex-start; // ✅ บังคับให้ชิดซ้าย
+        
+        .group-select {
+          flex-direction: column;
+          display: flex;
+
+          label {
+            font-size: 16px;
+            color: #2d2c2c;
+            text-align: center;
+            margin-bottom: 5px;
+            font-weight: bold;
+          }
+        }
+      }
+        .ng-select {
+         // บังคับให้ Dropdown ทุกอันในหน้านี้สวยเหมือนกัน (รวมถึงอันใหม่ด้วย)
+         width: 180px;
+         border-radius: 20px;
+         font-size: 16px;
+      }
 
         //row1,row2
         .req-row1,

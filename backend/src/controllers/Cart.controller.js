@@ -48,7 +48,10 @@ exports.AddCartItems = async (req, res) => {
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
-      auth: { user: 'testsystem1508@gmail.com', pass: 'amdo inzi npqq asnd' }
+      auth: { 
+        user: process.env.EMAIL_USER, // 👈 ใช้ตัวแปรจาก .env
+        pass: process.env.EMAIL_PASS  // 👈 ใช้ตัวแปรจาก .env
+      }
     });
 
     // --- ฟังก์ชันสร้าง HTML ตาราง ---
@@ -98,11 +101,11 @@ exports.AddCartItems = async (req, res) => {
 
       if (emailListSet.length > 0) {
         transporter.sendMail({
-          from: '"Indirect expense" <testsystem1508@gmail.com>',
+          from: '"Indirect expense" <${process.env.EMAIL_USER}>',
           to: emailListSet,
           subject: 'New SET items added to cart',
           html: `<h3>📦 New SET items added 📦</h3>${createTableHTML(setItems)}
-       <h3>Come in and check 👉 <a href="http://pbgm06:4200/login">Indirect expense</a></h3>`
+       <h3>Come in and check 👉 <a href="${frontendLink}/login">Indirect expense</a></h3>`
         }).then(info => console.log('SET email sent:', info.response))
           .catch(err => console.error('SET email error:', err));
       }
@@ -116,11 +119,11 @@ exports.AddCartItems = async (req, res) => {
 
       if (emailListEng.length > 0) {
         transporter.sendMail({
-          from: '"Indirect expense" <testsystem1508@gmail.com>',
+          from: '"Indirect expense" <${process.env.EMAIL_USER}>',
           to: emailListEng,
           subject: 'New BUR/BRO items added to cart',
           html: `<h3>📦 New BUR/BRO items added 📦</h3>${createTableHTML(burBroItems)}
-       <h3>Come in and check 👉 <a href="http://pbgm06:4200/login">Indirect expense</a></h3>`
+       <h3>Come in and check 👉 <a href="${frontendLink}/login">Indirect expense</a></h3>`
         }).then(info => console.log('BUR/BRO email sent:', info.response))
           .catch(err => console.error('BUR/BRO email error:', err));
       }

@@ -26,6 +26,20 @@ import Swal from 'sweetalert2';
 })
 export class requestComponent {
 
+  Tooling_: string = 'Cutting tool'; // ค่าเริ่มต้น
+  ToolingList = [
+    { label: 'Cutting tool', value: 'Cutting tool' },
+    { label: 'Setup tool', value: 'Setup tool' }
+  ];
+  onToolingChange() {
+    this.items = []; // ✅ สั่งล้างข้อมูลในตารางทันทีที่เปลี่ยนโหมด
+    
+    // แถม: ถ้าต้องการให้ล้าง PartNo หรือ Process ที่เลือกค้างไว้ด้วย (เพราะคนละโหมดกัน)
+    // ให้เรียก this.ClearFilters() หรือเคลียร์ค่าตัวแปรตรงนี้เพิ่มได้ครับ เช่น:
+    // this.PartNo_ = null;
+    // this.Process_ = null;
+    // this.MCNo_ = '';
+  }
   // Dropdown data
   Div_: any ;
   Fac_: any;
@@ -232,7 +246,7 @@ Setview() {
   const DueDate_ = this.DueDate_;
   const Case_ = this.Case_;
 
-  // ===== ตรวจสอบฟิลด์ =====
+  // ===== ตรวจสอบฟิลด์ (เหมือนเดิม) =====
   const missingFields: string[] = [];
   if (!Division) missingFields.push("Division");
   if (!FacilityName) missingFields.push("FacilityName");
@@ -246,65 +260,99 @@ Setview() {
     Swal.fire({
       icon: 'warning',
       title: 'Incomplete Data',
-      html:
-        'Missing fields:<br><ul style="text-align:left;">' +
-        missingFields.map(f => `<li>${f}</li>`).join('') +
-        '</ul>',
+      html: 'Missing fields:<br><ul style="text-align:left;">' +
+        missingFields.map(f => `<li>${f}</li>`).join('') + '</ul>',
       confirmButtonText: 'ตกลง'
     });
     return;
   }
 
   this.loading = true;
+  const data = { Division, PartNo, Process, MC }; // เตรียมข้อมูลส่ง
 
-  const data = { Division, PartNo, Process, MC };
-  console.log('ส่งไป API:', data);
+  // ⭐⭐ แยกทางเดินตรงนี้ครับ ⭐⭐
+  if (this.Tooling_ === 'Setup tool') {
+    
+    // ==================================================
+    // 🟢 ทางเดินที่ 1: สำหรับ Setup Tool (Table ใหม่)
+    // ==================================================
+    console.log('Fetching Setup Tool Data...', data);
 
-  this.api.post_ItemNo(data).subscribe({
-    next: (response: any[]) => {
-      const itemMap = new Map<string, any>();
+    // ⚠️ ต้องสร้าง service ใหม่ชื่อ get_SetupItems ใน request.service.ts ก่อนนะครับ
+    // หรือถ้ามีแล้วให้เปลี่ยนชื่อตรงนี้ให้ตรงกับของจริง
+    this.api.get_SetupItems(data).subscribe({ 
+      next: (response: any[]) => {
+        
+        // Setup Tool อาจจะไม่ซับซ้อนเรื่อง Fresh/Reuse เหมือน Cutting
+        // รับมาแล้วโชว์เลย
+        this.items = response.map(item => ({
+          ...item,
+          checked: true, // ติ๊กถูกให้อัตโนมัติ
+          QTY: item.QTY ?? 1 // ถ้าไม่มี QTY ส่งมา ให้ default เป็น 1
+        }));
 
-      response.forEach(item => {
-        const key = `${item.PartNo}|${item.Process}|${item.MC}|${item.SPEC}|${item.ItemNo}`;
+        this.loading = false;
+      },
+      error: (e) => {
+        console.error('API Setup Tool Error:', e);
+        this.loading = false;
+        Swal.fire('Error', 'ไม่สามารถดึงข้อมูล Setup Tool ได้', 'error');
+      }
+    });
 
-        if (!itemMap.has(key)) {
-          // กำหนดค่าเริ่มต้นเป็น 0
-          itemMap.set(key, {
-            ...item,
-            FreshQty: 0,
-            ReuseQty: 0,
-            checked: true,
-            qty: null
-          });
-        }
+  } else {
 
-        // ถ้า Fac ตรงกับ dropdown → update Fresh/Reuse ถ้าผลรวมมากกว่าเดิม
-        if (item.FacilityName === FacilityName) {
-          const existing = itemMap.get(key);
-          const existingSum = (existing.FreshQty ?? 0) + (existing.ReuseQty ?? 0);
-          const currentSum = (item.FreshQty ?? 0) + (item.ReuseQty ?? 0);
+    // ==================================================
+    // 🔵 ทางเดินที่ 2: สำหรับ Cutting Tool (Table เดิม Logic เดิม)
+    // ==================================================
+    console.log('Fetching Cutting Tool Data...', data);
 
-          if (currentSum > existingSum) {
+    this.api.post_ItemNo(data).subscribe({
+      next: (response: any[]) => {
+        const itemMap = new Map<string, any>();
+
+        response.forEach(item => {
+          // Key สำหรับรวมยอด (สังเกตว่าใช้ SPEC, ItemNo)
+          const key = `${item.PartNo}|${item.Process}|${item.MC}|${item.SPEC}|${item.ItemNo}`;
+
+          if (!itemMap.has(key)) {
             itemMap.set(key, {
-              ...existing,
-              FreshQty: item.FreshQty ?? 0,
-              ReuseQty: item.ReuseQty ?? 0
+              ...item,
+              FreshQty: 0,
+              ReuseQty: 0,
+              checked: true,
+              qty: null
             });
           }
-        }
-      });
 
-      this.items = Array.from(itemMap.values()).map(item => ({
-        ...item,
-        QTY: item.QTY ?? 1   // ถ้า QTY ยังไม่มีค่า ให้เป็น 1
-      }));
-      this.loading = false;
-    },
-    error: (e) => {
-      console.error('API Error:', e);
-      this.loading = false;
-    }
-  });
+          // Logic เดิม: รวมยอด Fresh/Reuse ตาม Facility
+          if (item.FacilityName === FacilityName) {
+            const existing = itemMap.get(key);
+            const existingSum = (existing.FreshQty ?? 0) + (existing.ReuseQty ?? 0);
+            const currentSum = (item.FreshQty ?? 0) + (item.ReuseQty ?? 0);
+
+            if (currentSum > existingSum) {
+              itemMap.set(key, {
+                ...existing,
+                FreshQty: item.FreshQty ?? 0,
+                ReuseQty: item.ReuseQty ?? 0
+              });
+            }
+          }
+        });
+
+        this.items = Array.from(itemMap.values()).map(item => ({
+          ...item,
+          QTY: item.QTY ?? 1
+        }));
+        this.loading = false;
+      },
+      error: (e) => {
+        console.error('API Cutting Tool Error:', e);
+        this.loading = false;
+      }
+    });
+  }
 }
 
 

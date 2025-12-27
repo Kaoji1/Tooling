@@ -587,7 +587,7 @@ exports.Update_Status_Purchase= async (req, res) => {
               </thead>
               <tbody>${rowsHtml}</tbody>
             </table>
-            <h3>Come in and check 👉 <a href="http://pbgm06:4200/login">Indirect expense</a></h3>
+            <h3>Come in and check 👉 <a href="http://${frontendLink}/login">Indirect expense</a></h3>
           `
         });
 

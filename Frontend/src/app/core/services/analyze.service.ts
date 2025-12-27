@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
-const baseUrl = 'http://PBGM06:3000/api';
 @Injectable({
   providedIn: 'root' // ระบุว่า service นี้จะถูกให้บริการใน root module
 })
 export class AnalyzeService {
+
+    private baseUrl = environment.apiUrl;
+
     public user: any;
 
   constructor(
@@ -14,6 +17,6 @@ export class AnalyzeService {
   ) { }
 
 getdataall(): Observable<any> {
-    return this.httpClient.get(`${baseUrl}/getdataall`);
+    return this.httpClient.get(`${this.baseUrl}/getdataall`);
     }
 }

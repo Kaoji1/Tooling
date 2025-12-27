@@ -81,6 +81,7 @@
 //   console.log(`Server is running on http://localhost:${port}`);
 // });
 
+require('dotenv').config();
 
 const express = require('express');
 const http = require('http'); // สำหรับสร้าง server ให้ Socket.IO ใช้งาน
