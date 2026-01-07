@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+//import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPurchase.component';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RouterOutlet } from '@angular/router';
@@ -12,6 +13,7 @@ import { FileReadService } from '../../../core/services/FileRead.service';
 import { AuthService } from '../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx'
+import { isPlatformBrowser } from '@angular/common'; // นำเข้าตัวนี้
 
 
 @Component({
@@ -114,18 +116,21 @@ export class DetailComponent implements OnInit {
   toggleAllDocuments(event: any) {
     this.allDocsSelected = event.target.checked;
     this.request.forEach(r => r.Selection = this.allDocsSelected);
+    if (isPlatformBrowser(this.platformId)) {
     localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-  }
+  }}
 
    // เปลี่ยนสถานะ checkbox ของเอกสาร
   onDocumentCheckboxChange(doc: any) {
     const item = this.request.find(r => r.DocNo === doc.DocNo);
     if (item) item.Selection = doc.selected;
+    if (isPlatformBrowser(this.platformId)) {
     localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-  }
+  }}
 
   // services
   constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
     private route: ActivatedRoute,
     private router: Router,
     private DetailPurchase: DetailPurchaseRequestlistService,
@@ -149,6 +154,7 @@ export class DetailComponent implements OnInit {
     this.get_ItemNo();
 
     // โหลดค่า QTY จาก localStorage ถ้ามี
+    if (isPlatformBrowser(this.platformId)) {
 const savedRequests = localStorage.getItem('purchaseRequest');
 if (savedRequests) {
   const parsed = JSON.parse(savedRequests);
@@ -158,7 +164,7 @@ if (savedRequests) {
       QTY: r.QTY ?? r.Req_QTY
     }));
   }
-}
+}}
   }
 
   //  ดึงข้อมูล request ทั้งหมด จาก backend ฝังในตัวแปร allRequests และ request (แสดงในตาราง)
@@ -254,14 +260,16 @@ if (savedRequests) {
     if (index > -1) {
       this.request[index].QTY = row.QTY;
     }
+    if (isPlatformBrowser(this.platformId)) {
     localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-  }
+  }}
 
   // เลือก/ยกเลิกเลือก checkbox ทั้งหมด
   toggleAllCheckboxes() { 
     this.request.forEach(item => item.Selection = this.selectAllChecked);
+    if (isPlatformBrowser(this.platformId)) {
     localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-  }
+  }}
 
   // เพิ่มแถวใหม่ด้านล่างแถวที่เลือก
   addNewRequest(newRequestData: any, rowIndex: number) {

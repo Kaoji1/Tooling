@@ -90,6 +90,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const fileupload = require('express-fileupload');
  //นำเข้าroutesทุกroutesที่ใช้ในการรับส่งข้อมูล
+const pcPlanRoutes = require('./src/routes/PCPlan.route');
 const Request= require('./src/routes/Request.route.js');
 const SendRequestRoutes = require('./src/routes/SendRequest.route.js');
 const UserHistory = require('./src/routes/UserHistory.route.js');
@@ -122,6 +123,7 @@ app.use(bodyParser.json({ limit: '9000mb'}))
 app.use(bodyParser.raw())
 
 // นำเข้าpathของrouterทุกหน้า
+app.use('/api/pc-plan', pcPlanRoutes);
 app.use('/api', Request);
 app.use('/api', SendRequestRoutes);
 app.use('/api', UserHistory);

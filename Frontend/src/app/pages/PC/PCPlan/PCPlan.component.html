@@ -1,0 +1,128 @@
+<div class="layout">
+  <app-sidebar></app-sidebar>
+
+  <div class="content-area">
+    
+    <h2 style="margin-bottom: 20px; color: #333;">PC Plan</h2>
+
+    <div class="top-controls">
+      <div class="form-group" style="width: 280px;">
+        <label>Division</label>
+        <div class="search-input-wrapper">
+          
+          <select class="custom-dropdown form-control" 
+                  [(ngModel)]="selectedDivisionCode" 
+                  (change)="onDivisionChange()"
+                  style="height: 38px; width: 100%;">
+            
+            <option value="" disabled selected>-- Select Division --</option>
+            
+            <option *ngFor="let div of divisionOptions" [value]="div.code">
+              {{ div.label }}
+            </option>
+          
+          </select>
+
+        </div>
+      </div>
+
+      <div class="excel-buttons">
+        <button class="btn-excel upload">UPLOAD FOR EXCEL</button>
+        <button class="btn-excel download">DOWNLOAD FORMAT</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 130px;">Date</th>
+            <th>Machine Type</th>
+            <th style="width: 100px;">Fac</th>
+            <th style="width: 100px;">MC No.</th>
+            <th>Process</th>
+            <th>Part Before</th>
+            <th>Part No.</th>
+            <th style="width: 60px;">QTY</th>
+            <th style="width: 60px;">Time</th>
+            <th>Comment</th>
+            <th style="width: 50px;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of planItems; let i = index">
+            
+            <td><input type="date" [(ngModel)]="item.date"></td>
+            
+            <td>
+              <div class="search-input-wrapper">
+                <select class="custom-dropdown" [(ngModel)]="item.machineType"
+                style="width: 100%;">
+                  <option value="">Select</option>
+                  <option *ngFor="let m of machineTypes" [value]="m">{{ m }}</option>
+                </select>
+              </div>
+            </td>
+
+            <td>
+              <div class="search-input-wrapper">
+                <select class="custom-dropdown" [(ngModel)]="item.fac" style="width: 100%;">
+                  <option value="">Select</option>
+                  <option *ngFor="let f of facs" [value]="f">{{ f }}</option>
+                </select>
+              </div>
+            </td>
+
+            <td>
+              <input type="text" [(ngModel)]="item.mcNo" placeholder="MC No." (focus)="selectAllText($event)">
+            </td>
+
+            <td>
+              <div class="search-input-wrapper">
+                <select class="custom-dropdown" [(ngModel)]="item.process" style="width: 100%;">
+                  <option value="">Select</option>
+                  <option *ngFor="let p of processes" [value]="p">{{ p }}</option>
+                </select>
+              </div>
+            </td>
+
+            <td>
+               <div class="search-input-wrapper">
+                  <input type="text" list="partBeforeList" [(ngModel)]="item.partBefore" 
+                         placeholder="Select/Type" class="custom-dropdown"
+                         (focus)="selectAllText($event)">
+               </div>
+            </td>
+
+            <td>
+              <div class="search-input-wrapper">
+                <select class="custom-dropdown" [(ngModel)]="item.partNo" style="width: 100%;">
+                   <option value="">Select</option>
+                   <option *ngFor="let pn of partNos" [value]="pn">{{ pn }}</option>
+                </select>
+              </div>
+            </td>
+
+            <td><input type="number" [(ngModel)]="item.qty" (focus)="selectAllText($event)"></td>
+            <td><input type="text" [(ngModel)]="item.time" (focus)="selectAllText($event)"></td>
+            <td><input type="text" [(ngModel)]="item.comment" (focus)="selectAllText($event)"></td>
+            
+            <td style="text-align: center;">
+              <button class="btn-delete" (click)="removeRow(i)">x</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-add" (click)="addRow()">+</button>
+      <button class="btn-submit" (click)="onSubmit()">Send</button>
+    </div>
+
+  </div>
+</div>
+
+<datalist id="partBeforeList">
+  <option *ngFor="let pb of partBefores" [value]="pb"></option>
+</datalist>

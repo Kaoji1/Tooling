@@ -1,0 +1,86 @@
+<div class="layout">
+  <app-sidebar></app-sidebar>
+
+  <div class="content-area">
+    
+    <h2 style="margin-bottom: 20px; color: #333;">PC Plan List</h2>
+
+    <div class="filter-section">
+      
+      <div class="filter-group">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="filterDate">
+      </div>
+
+      <div class="filter-group">
+        <label>Division</label>
+        <select [(ngModel)]="filterDivision">
+          <option value="">All</option>
+          <option *ngFor="let div of divisions" [value]="div">{{ div }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Machine Type</label>
+        <select [(ngModel)]="filterMachineType">
+          <option value="">All</option>
+          <option *ngFor="let m of machineTypes" [value]="m">{{ m }}</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>MC Type</th>
+            <th>Division</th>
+            <th>Fac</th>
+            <th>Process</th>
+            <th>Part Before</th>
+            <th>MC No.</th>
+            <th>Part No.</th>
+            <th>QTY</th>
+            <th>Time</th>
+            <th>Comment</th>
+            <th>Path Dwg</th>
+            <th>Path Layout</th>
+            <th>IIQC</th>
+            <th>Edit</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of planList; let i = index" class="data-row">
+            <td>{{ item.mcType }}</td>
+            <td>{{ item.division }}</td>
+            <td>{{ item.fac }}</td>
+            <td>{{ item.process }}</td>
+            <td>{{ item.partBefore }}</td>
+            <td>{{ item.mcNo }}</td>
+            <td>{{ item.partNo }}</td>
+            <td>{{ item.qty }}</td>
+            <td>{{ item.time }}</td>
+            <td>{{ item.comment }}</td>
+            <td>{{ item.pathDwg }}</td>
+            <td>{{ item.pathLayout }}</td>
+            <td>{{ item.iiqc }}</td>
+            
+            <td style="text-align: center;">
+              <button class="btn-action edit" (click)="onEdit(item)">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+            </td>
+            <td style="text-align: center;">
+              <button class="btn-action delete" (click)="onDelete(i)">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>

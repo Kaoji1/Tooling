@@ -1,0 +1,36 @@
+<nav class="sidebar">
+    <!-- แถบของเมนูแยกกับusername -->
+    <div class="top">
+        <img src="logominebea.png" width="205px" />
+        <ul class="nav-links">
+            <li routerLinkActive="active">
+                <a routerLink="/production/PCPlan"> <i class="bi bi-newspaper"></i> PC Plan </a>
+            </li>
+
+            <li routerLinkActive="active">
+                <a routerLink="/production/PlanList"> <i class="bi bi-arrow-counterclockwise"></i> Plan List </a>
+            </li>
+
+            <li routerLinkActive="active">
+                <a routerLink="/production/request"> <i class="bi bi-newspaper"></i> Request </a>
+            </li>
+
+            <li routerLinkActive="active">
+                <a routerLink="/production/return"> <i class="bi bi-arrow-counterclockwise"></i> Return </a>
+            </li>
+
+            <li routerLinkActive="active">
+                <a routerLink="/production/history"> <i class="bi bi-clock-history"></i> History </a>
+            </li>
+
+            <li routerLinkActive="active">
+                <a routerLink="/production/historyprint"> <i class="bi bi-printer-fill"></i> History Print </a>
+            </li>
+        </ul>
+    </div>
+    <!-- ฝั่งแสดงแถบUsernameและปุ่มlogout -->
+    <div class="bottom">
+        <div class="user-info" style="font-size: 18px;"> {{ Employee_Name }} </div>
+        <button (click)="logout()" class="logout-btn"><i class="bi bi-box-arrow-right" style="color: red;"></i></button>
+    </div>
+</nav>

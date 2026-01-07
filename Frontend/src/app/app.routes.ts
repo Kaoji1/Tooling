@@ -5,6 +5,8 @@ import { LoginComponent } from './pages/login/login.component';
 import { AuthGuard } from './core/guards/auth.guard';
 
 // User pages
+import { PCPlanComponent } from './pages/PC/PCPlan/PCPlan.component';
+import { PlanListComponent } from './pages/PC/PlanList/PlanList.component';
 import { requestComponent } from './pages/user/request/request.component';
 import { CartComponent } from './pages/user/cart/cart.component';
 import { ReturnComponent } from './pages/user/return/return.component';
@@ -38,61 +40,64 @@ export const routes: Routes = [
 
 
   // Production role
-// {
-//   path: 'production',
-//   canActivate: [AuthGuard],
-//   canActivateChild: [AuthGuard], // <--- เพิ่มอันนี้ถ้ามี child routes
-//   children: [
-//     { path: 'request', component: requestComponent },
-//     { path: 'cart', component: CartComponent },
-//     { path: 'history', component: HistoryComponent },
-//     { path: 'about-us', component: AboutUsComponent }
-//   ]
-// },
+  // {
+  //   path: 'production',
+  //   canActivate: [AuthGuard],
+  //   canActivateChild: [AuthGuard], // <--- เพิ่มอันนี้ถ้ามี child routes
+  //   children: [
+  //     { path: 'request', component: requestComponent },
+  //     { path: 'cart', component: CartComponent },
+  //     { path: 'history', component: HistoryComponent },
+  //     { path: 'about-us', component: AboutUsComponent }
+  //   ]
+  // },
 
-{
-  path: 'production',
-  canActivate: [AuthGuard],
-  canActivateChild: [AuthGuard],
-  data: { roles: ['production', 'view', 'admin','engineer'] }, // view เข้าได้แค่ child ที่กำหนด
-  children: [
-    { path: 'request', component: requestComponent, data: { roles: ['production', 'admin','engineer'] } },
-    { path: 'cart', component: CartComponent, data: { roles: ['production', 'view', 'admin','engineer'] } }, // <-- view เข้าได้เฉพาะหน้านี้
-    { path: 'return', component: ReturnComponent, data: { roles: ['production', 'view', 'admin','engineer'] } }, // <-- เพิ่มตรงนี้
-    { path: 'history', component: HistoryComponent, data: { roles: ['production', 'view', 'admin','engineer'] } },
-    { path: 'about-us', component: AboutUsComponent, data: { roles: ['production', 'admin','engineer'] } },
-    { path: 'historyprint', component: HistoryPrintComponent, data: { roles: ['production', 'view','admin','engineer'] } }
-  ]
-},
+  {
+    path: 'production',
+    canActivate: [AuthGuard],
+    canActivateChild: [AuthGuard],
+    data: { roles: ['production', 'view', 'admin', 'engineer', 'PC'] }, // view เข้าได้แค่ child ที่กำหนด
+    children: [
+      { path: 'PCPlan', component: PCPlanComponent, data: { roles: ['PC', 'view', 'admin',] } },
+      { path: 'PlanList', component: PlanListComponent, data: { roles: ['production', 'PC', 'view', 'admin', 'engineer'] } },
+      { path: 'request', component: requestComponent, data: { roles: ['production','PC', 'admin', 'engineer'] } },
+      { path: 'cart', component: CartComponent, data: { roles: ['production', 'view', 'admin', 'engineer'] } }, // <-- view เข้าได้เฉพาะหน้านี้
+      { path: 'return', component: ReturnComponent, data: { roles: ['production', 'view', 'admin', 'engineer'] } }, // <-- เพิ่มตรงนี้
+      { path: 'history', component: HistoryComponent, data: { roles: ['production', 'view', 'admin', 'engineer'] } },
+      { path: 'about-us', component: AboutUsComponent, data: { roles: ['production', 'admin', 'engineer'] } },
+      { path: 'historyprint', component: HistoryPrintComponent, data: { roles: ['production', 'view', 'admin', 'engineer'] } }
+    ]
+  },
 
   // Purchase role
   {
     path: 'purchase',
     canActivate: [AuthGuard],
     canActivateChild: [AuthGuard],
-      data: { roles: ['purchase', 'view', 'admin'] }, // view เข้าได้แค่ child ที่กำหนด
+    data: { roles: ['purchase', 'view', 'admin'] }, // view เข้าได้แค่ child ที่กำหนด
     children: [
-      { path: 'detail', component: DetailComponent,data: { roles: ['purchase', 'view', 'admin'] } },
-      { path: 'requestlist', component: RequestlistComponent,data: { roles: ['purchase', 'view', 'admin'] } },
-      { path: 'history-request', component: HistoryRequestComponent,data: { roles: ['purchase', 'view', 'admin'] } },
-      { path: 'add-user', component: AddUserComponent,data: { roles: ['purchase', 'admin'] } },
-      { path: 'permission', component: PermissionComponent,data: { roles: ['purchase', 'view', 'admin'] } },
-      { path: 'analyze', component: AnalyzeComponent,data: { roles: ['purchase', 'view', 'admin'] } },
-     
-      { path: 'analyzeSmartRack', component: AnalyzeSmartRackComponent,data: {roles: ['purchase', 'view', 'admin']}}
+      { path: 'detail', component: DetailComponent, data: { roles: ['purchase', 'view', 'admin'] } },
+      { path: 'requestlist', component: RequestlistComponent, data: { roles: ['purchase', 'view', 'admin'] } },
+      { path: 'history-request', component: HistoryRequestComponent, data: { roles: ['purchase', 'view', 'admin'] } },
+      { path: 'add-user', component: AddUserComponent, data: { roles: ['purchase', 'admin'] } },
+      { path: 'permission', component: PermissionComponent, data: { roles: ['purchase', 'view', 'admin'] } },
+      { path: 'analyze', component: AnalyzeComponent, data: { roles: ['purchase', 'view', 'admin'] } },
+
+      { path: 'analyzeSmartRack', component: AnalyzeSmartRackComponent, data: { roles: ['purchase', 'view', 'admin'] } }
     ],
   },
 
-    // Production role
-// {
-//   path: 'view',
-//   canActivate: [AuthGuard],
-//   canActivateChild: [AuthGuard],
-//   children: [
-//     { path: 'cart', component: CartComponent },
-//     { path: 'history', component: HistoryComponent }
-//   ]
-// },
+
+  // Production role
+  // {
+  //   path: 'view',
+  //   canActivate: [AuthGuard],
+  //   canActivateChild: [AuthGuard],
+  //   children: [
+  //     { path: 'cart', component: CartComponent },
+  //     { path: 'history', component: HistoryComponent }
+  //   ]
+  // },
 
   // {
   //   path: 'Admin',

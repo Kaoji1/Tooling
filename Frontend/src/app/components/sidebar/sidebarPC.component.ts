@@ -17,7 +17,6 @@ export class SidebarComponent implements OnInit {
   Employee_Name: any;             // เก็บชื่อพนักงานที่ Login เข้ามา
   imagePath = 'assets/images/1.png'; // Path รูปภาพโปรไฟล์เริ่มต้น
   cartCount: number = 0;          // ตัวนับจำนวนสินค้าในตะกร้า (Badge Notification)
-  role: any;
 
   // --- Constructor: การ Inject Dependencies ---
   constructor(
@@ -42,46 +41,14 @@ export class SidebarComponent implements OnInit {
           const user = JSON.parse(userData);
           // กำหนดชื่อที่จะแสดง ถ้าไม่มีให้ใช้ 'Guest'
           this.Employee_Name = user.Employee_Name || 'Guest';
-          // *** เพิ่ม logic ดึงค่า Role ตรงนี้ ***
-          // พยายามหาจาก user.role หรือ user.Role หรือหาจาก sessionStorage โดยตรง
-          this.role = user.role || user.Role || sessionStorage.getItem('role');
-          console.log('Current Role:', this.role); 
         } catch (e) {
           // [Error Handling]: กรณีข้อมูล JSON เสียหาย
           console.error('Error parsing user data:', e);
           this.Employee_Name = 'Guest';
         }
       }
-      
-      // เรียกฟังก์ชันนับจำนวนสินค้าในตะกร้าทันทีที่โหลดหน้า
-      this.updateCartCount();
     }
   }
-
-
-  // ฟังก์ชันสำหรับดึงข้อมูลตะกร้าจาก Storage มานับจำนวน
-  updateCartCount() {
-    if (isPlatformBrowser(this.platformId)) {
-      const cartData = sessionStorage.getItem('cart');
-      
-      if (cartData) {
-        try {
-          const cartItems = JSON.parse(cartData);
-          // นับจำนวนสินค้าจากความยาวของ Array
-          this.cartCount = cartItems.length;
-        } catch (e) {
-          console.error('Invalid cart data:', e);
-          this.cartCount = 0;
-        }
-      } else {
-        // ถ้าไม่มีข้อมูลในตะกร้า ให้เซ็ตเป็น 0
-        this.cartCount = 0;
-      }
-    }
-  }
-
-
-
   // 1. แสดง Popup ถามยืนยัน (SweetAlert2)
   // 2. ถ้าผู้ใช้กด "Yes" -> ล้างข้อมูล Session -> เด้งไปหน้า Login
   logout() {

@@ -1,0 +1,116 @@
+// Layout หลัก
+.layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+
+  .content-area {
+    flex: 1;
+    padding: 20px;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+}
+
+// ส่วน Filter ด้านบน
+.filter-section {
+  display: flex;
+  gap: 30px; // ระยะห่างระหว่างช่อง
+  margin-bottom: 25px;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+
+    label {
+      font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    input, select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      outline: none;
+
+      &:focus {
+        border-color: #007bff;
+      }
+    }
+  }
+}
+
+// ตารางข้อมูล
+.table-container {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    min-width: 1400px; // กันตารางบีบตัวเกินไป
+    border-collapse: collapse; // ให้ขอบตารางติดกัน
+
+    th {
+      background-color: #e0e0e0; // สีเทา (Header)
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      border: 1px solid #ccc; // เส้นขอบสีขาว/เทา
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    // แถวข้อมูล (Data Row)
+    .data-row {
+      background-color: #ff9999; // *** สีชมพูตามรูป ***
+      
+      td {
+        padding: 8px;
+        border: 1px solid #fff; // เส้นคั่นสีขาวเพื่อให้เห็นช่องชัดเจน
+        text-align: center;
+        color: #333;
+        font-size: 14px;
+      }
+
+      &:hover {
+        background-color: #ff8080; // เข้มขึ้นนิดนึงตอนเอาเมาส์ชี้
+      }
+    }
+  }
+}
+
+// ปุ่ม Action (Edit / Delete)
+.btn-action {
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  transition: opacity 0.2s;
+
+  &:hover { opacity: 0.8; }
+
+  &.edit {
+    background-color: #007bff; // สีฟ้า
+  }
+
+  &.delete {
+    background-color: #dc3545; // สีแดง
+  }
+}
