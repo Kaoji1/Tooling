@@ -16,14 +16,9 @@
         <div class="tooling-row">
           <div class="group-select">
             <label> Tooling </label>
-            <ng-select [items]="ToolingList" 
-                        bindLabel="label" 
-                        bindValue="value" 
-                        [(ngModel)]="Tooling_"
-                        [clearable]="false" 
-                        placeholder="Select Tooling" 
-                        (change)="onToolingChange()"> 
-              </ng-select>
+            <ng-select [items]="ToolingList" bindLabel="label" bindValue="value" [(ngModel)]="Tooling_"
+              [clearable]="false" placeholder="Select Tooling" (change)="onToolingChange()">
+            </ng-select>
           </div>
         </div>
 
@@ -163,6 +158,35 @@
         </tbody>
       </table>
     </div>
+
+    <div *ngIf="Tooling_ === 'Cutting tool' && Case_ === 'SET' && relatedSetupItems.length > 0" style="margin-top: 30px;">
+
+      <h5 style="color: #2d2c2c; margin-bottom: 10px;">
+        <i class="bi bi-tools"></i> Related Setup Tools
+      </h5>
+
+      <div class="table-responsive" style="max-height: 40vh;">
+        <table class="table table-bordered table-hover align-middle text-center">
+          <thead class="table-light" style="background-color: #f0f0f0;">
+            <tr>
+              <th>Item Name</th>
+              <th>Spec</th>
+              <th style="width: 150px;">QTY</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let setup of relatedSetupItems">
+              <td>{{ setup.ItemName }}</td>
+              <td>{{ setup.SPEC }}</td>
+              <td>
+                <input type="number" class="yoyu" [(ngModel)]="setup.QTY" min="1"
+                  style="text-align: center; border: 0.5px solid; width: 60px;" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
     <button class="btn-sendrequest" type="button" (click)="AddToCart()">
       <i class="bi" [ngClass]="Tooling_ === 'Setup tool' ? 'bi-send-fill' : 'bi-cart-plus'"></i>
       &nbsp;
@@ -170,4 +194,4 @@
     </button>
 
   </div>
-</div> ```
+</div>

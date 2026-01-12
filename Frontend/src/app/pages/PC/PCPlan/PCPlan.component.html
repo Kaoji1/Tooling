@@ -2,33 +2,42 @@
   <app-sidebar></app-sidebar>
 
   <div class="content-area">
-    
+
     <h2 style="margin-bottom: 20px; color: #333;">PC Plan</h2>
 
     <div class="top-controls">
       <div class="form-group" style="width: 280px;">
         <label>Division</label>
         <div class="search-input-wrapper">
-          
-          <select class="custom-dropdown form-control" 
-                  [(ngModel)]="selectedDivisionCode" 
-                  (change)="onDivisionChange()"
-                  style="height: 38px; width: 100%;">
-            
+
+          <select class="custom-dropdown form-control" [(ngModel)]="selectedDivisionCode" (change)="onDivisionChange()"
+            [disabled]="isLoadingMasterData" style="height: 38px; width: 100%;">
+
             <option value="" disabled selected>-- Select Division --</option>
-            
+
             <option *ngFor="let div of divisionOptions" [value]="div.code">
               {{ div.label }}
             </option>
-          
-          </select>
 
+          </select>
         </div>
+        <small *ngIf="isLoadingMasterData" style="color: red; margin-top: 5px; display: block;">
+          ⏳ กำลังดึงข้อมูล กรุณารอสักครู่...
+        </small>
       </div>
 
-      <div class="excel-buttons">
-        <button class="btn-excel upload">UPLOAD FOR EXCEL</button>
-        <button class="btn-excel download">DOWNLOAD FORMAT</button>
+<div class="excel-buttons">
+        
+        <input type="file" #fileInput (change)="onFileChange($event)" style="display: none;" accept=".xlsx, .xls" />
+
+        <button class="btn-excel upload" (click)="fileInput.click()">
+          UPLOAD FOR EXCEL
+        </button>
+        
+        <button class="btn-excel download" (click)="downloadFormat()">
+          DOWNLOAD FORMAT
+        </button>
+
       </div>
     </div>
 
@@ -51,13 +60,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let item of planItems; let i = index">
-            
+
             <td><input type="date" [(ngModel)]="item.date"></td>
-            
+
             <td>
               <div class="search-input-wrapper">
-                <select class="custom-dropdown" [(ngModel)]="item.machineType"
-                style="width: 100%;">
+                <select class="custom-dropdown" [(ngModel)]="item.machineType" style="width: 100%;">
                   <option value="">Select</option>
                   <option *ngFor="let m of machineTypes" [value]="m">{{ m }}</option>
                 </select>
@@ -87,18 +95,17 @@
             </td>
 
             <td>
-               <div class="search-input-wrapper">
-                  <input type="text" list="partBeforeList" [(ngModel)]="item.partBefore" 
-                         placeholder="Select/Type" class="custom-dropdown"
-                         (focus)="selectAllText($event)">
-               </div>
+              <div class="search-input-wrapper">
+                <input type="text" list="partBeforeList" [(ngModel)]="item.partBef" placeholder="Select/Type"
+                  class="custom-dropdown" (focus)="selectAllText($event)">
+              </div>
             </td>
 
             <td>
               <div class="search-input-wrapper">
                 <select class="custom-dropdown" [(ngModel)]="item.partNo" style="width: 100%;">
-                   <option value="">Select</option>
-                   <option *ngFor="let pn of partNos" [value]="pn">{{ pn }}</option>
+                  <option value="">Select</option>
+                  <option *ngFor="let pn of partNos" [value]="pn">{{ pn }}</option>
                 </select>
               </div>
             </td>
@@ -106,7 +113,7 @@
             <td><input type="number" [(ngModel)]="item.qty" (focus)="selectAllText($event)"></td>
             <td><input type="text" [(ngModel)]="item.time" (focus)="selectAllText($event)"></td>
             <td><input type="text" [(ngModel)]="item.comment" (focus)="selectAllText($event)"></td>
-            
+
             <td style="text-align: center;">
               <button class="btn-delete" (click)="removeRow(i)">x</button>
             </td>
@@ -116,7 +123,9 @@
     </div>
 
     <div class="action-buttons">
-      <button class="btn-add" (click)="addRow()">+</button>
+      <button class="btn-add" (click)="addRow()" [disabled]="isLoadingMasterData">
+        {{ isLoadingMasterData ? '...' : '+' }}
+      </button>
       <button class="btn-submit" (click)="onSubmit()">Send</button>
     </div>
 
@@ -124,5 +133,5 @@
 </div>
 
 <datalist id="partBeforeList">
-  <option *ngFor="let pb of partBefores" [value]="pb"></option>
+  <option *ngFor="let pb of partBef" [value]="pb"></option>
 </datalist>
