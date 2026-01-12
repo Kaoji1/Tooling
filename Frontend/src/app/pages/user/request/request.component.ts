@@ -286,9 +286,9 @@ export class requestComponent implements OnInit {
       if (this.Case_ === 'SET') {
         // ใส่ Mock Data หรือเรียก API จริงตรงนี้
         this.relatedSetupItems = [
-          { ItemName: 'Holder BT40', SPEC: 'CAT40-ER32', QTY: 1 },
-          { ItemName: 'Collet', SPEC: 'ER32-6mm', QTY: 2 },
-          { ItemName: 'Pull Stud', SPEC: 'PS-BT40', QTY: 1 }
+          { ItemName: 'A', SPEC: 'a1', QTY: 1 },
+          { ItemName: 'B', SPEC: 'b1', QTY: 2 },
+          { ItemName: 'C', SPEC: 'c1', QTY: 1 }
         ];
       } else {
         this.relatedSetupItems = []; // ถ้าไม่ใช่เคส SET ไม่ต้องโชว์
