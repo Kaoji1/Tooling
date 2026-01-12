@@ -101,7 +101,6 @@ export class DetailComponent implements OnInit {
     }));
   }
 
-  // filter เอกสารตาม search
   filteredDocuments() {
     return this.documentItems.filter(doc =>
       doc.DocNo?.toLowerCase().includes(this.searchDocText.toLowerCase())
