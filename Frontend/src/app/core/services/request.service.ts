@@ -1,55 +1,85 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { tap, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root' // ระบุว่า service นี้จะถูกให้บริการใน root module
+  providedIn: 'root'
 })
 
 export class RequestService {
   private baseUrl = environment.apiUrl
-  public user: any; // ตัวแปรสำหรับเก็บข้อมูลผู้ใช้
+  public user: any;
 
-  constructor( // คอนสตรัคเตอร์ของ service
-    private httpClient: HttpClient // เก็บ HttpClient สำหรับทำ HTTP requests
+  // Cache Storage
+  private divisionCache$: Observable<any> | null = null;
+  private cache = new Map<string, any>(); // Simple cache for parameterized calls
+
+  constructor(
+    private httpClient: HttpClient
   ) { }
 
-  get_Division(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-    return this.httpClient.get(`${this.baseUrl}/get_Division`); // ส่ง HTTP GET Division
+  get_Division(): Observable<any> {
+    if (!this.divisionCache$) {
+      this.divisionCache$ = this.httpClient.get(`${this.baseUrl}/get_Division`).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.divisionCache$;
   }
 
-  get_PartNo(data: any): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-    return this.httpClient.post(`${this.baseUrl}/get_PartNo`, data); // ส่ง HTTP Post partno  เพื่อส่งข้อมูล
+  // Generic Cache Helper
+  private getCachedRequest(endpoint: string, data: any): Observable<any> {
+    const key = `${endpoint}:${JSON.stringify(data)}`;
+    if (this.cache.has(key)) {
+      // Return cached observable (using 'of' for immediate value if stored as value, 
+      // but simpler to store the observable or just value. Let's store value to avoid observable cold/hot issues or duplicate in-flight?)
+      // Actually RxJS shareReplay is better for in-flight + cache.
+      // But for parameterized, creating 1000s of observables is messy. 
+      // Let's store the response data:
+      return of(this.cache.get(key));
+    }
+
+    return this.httpClient.post(`${this.baseUrl}/${endpoint}`, data).pipe(
+      tap(res => this.cache.set(key, res))
+    );
   }
 
-  get_Process(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
-    return this.httpClient.post(`${this.baseUrl}/get_Process`, data) ;// ส่ง HTTP POST Process เพื่อส่งข้อมูล process
+  get_PartNo(data: any): Observable<any> {
+    return this.getCachedRequest('get_PartNo', data);
   }
 
-  get_MC(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
-    return this.httpClient.post(`${this.baseUrl}/get_MC`, data) ;// ส่ง HTTP POST request เพื่อส่งข้อมูล process
+  get_Process(data: any): Observable<any> {
+    return this.getCachedRequest('get_Process', data);
   }
 
-  get_Facility(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
-    return this.httpClient.post(`${this.baseUrl}/get_Facility`, data) ;// ส่ง HTTP POST request เพื่อส่งข้อมูล process
+  get_MC(data: any): Observable<any> {
+    return this.getCachedRequest('get_MC', data);
   }
 
-  post_ItemNo(data: any): Observable<any> { // ฟังก์ชันสำหรับส่งข้อมูล process
-    return this.httpClient.post(`${this.baseUrl}/post_ItemNo`, data); // ส่ง HTTP POST request เพื่อส่งข้อมูล process
+  get_Facility(data: any): Observable<any> {
+    return this.getCachedRequest('get_Facility', data);
+  }
+
+  post_ItemNo(data: any): Observable<any> {
+    // Usually ItemNo specific queries shouldn't be cached aggressively if stock changes
+    // But user asked for it. Let's assume Master Data logic.
+    return this.httpClient.post(`${this.baseUrl}/post_ItemNo`, data);
   }
 
   // ของใหม่ (Setup - Table ใหม่)
-get_SetupItems(data: any) {
-  // เปลี่ยน /GetSetupItems เป็นชื่อ Path ของ Backend จริงๆ ที่คุณจะทำ
-  return this.httpClient.post<any>(`${this.baseUrl}/GetSetupItems`, data); 
-}
-
-  get_SPEC(data: any): Observable<any> {
-    return this.httpClient.post(`${this.baseUrl}/get_SPEC`, data);
+  get_SetupItems(data: any) {
+    // เปลี่ยน /GetSetupItems เป็นชื่อ Path ของ Backend จริงๆ ที่จะทำ
+    return this.httpClient.post<any>(`${this.baseUrl}/GetSetupItems`, data);
   }
 
-  // get_Fac(data: any): Observable<any> {
-  //   return this.httpClient.post(`${this.baseUrl}/get_Fac`, data);
-  // }
+  get_SPEC(data: any): Observable<any> {
+    return this.getCachedRequest('get_SPEC', data);
+  }
+
+  clearCache() {
+    this.divisionCache$ = null;
+    this.cache.clear();
+  }
 }

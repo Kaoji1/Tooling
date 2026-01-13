@@ -1,10 +1,10 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPurchase.component';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RouterOutlet } from '@angular/router';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { CommonModule, isPlatformBrowser } from '@angular/common'; // รวม import
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
@@ -25,7 +25,8 @@ import * as XLSX from 'xlsx';
     NgSelectModule
   ],
   templateUrl: './detail.component.html',
-  styleUrls: ['./detail.component.scss']
+  styleUrls: ['./detail.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DetailComponent implements OnInit {
   userRole: string = 'view';
@@ -33,18 +34,23 @@ export class DetailComponent implements OnInit {
   filteredRequests: any[] = [];
   request: any[] = [];
 
-  // ตัวแปรสำหรับกรองตามวันที่
+  // Pagination
+  currentPage: number = 1;
+  pageSize: number = 50;
+  totalPages: number = 1;
+  displayedRequests: any[] = [];
+  pages: number[] = [];
+
+  // Date Filter
   dateFilterType: 'both' | 'req' | 'due' = 'both';
   fromDate: string = '';
   toDate: string = '';
 
-  // dropdown division
+  // Dropdown Lists
   divisionList = [
     { label: 'GM', value: '7122' },
     { label: 'PMC', value: '71DZ' }
   ];
-
-  // dropdown filter list
   PartNoList: any[] = [];
   ItemNoList: any[] = [];
   SpecList: any[] = [];
@@ -54,7 +60,7 @@ export class DetailComponent implements OnInit {
   CaseList: any[] = [];
   DocumentNoList: any[] = [];
 
-  // ตัวกรองที่เลือก
+  // Selected Filters
   Division_: string | null = null;
   PartNo_: string | null = null;
   ItemNo_: string | null = null;
@@ -65,12 +71,12 @@ export class DetailComponent implements OnInit {
   Case_: string | null = null;
   DocumentNo_: string | null = null;
 
-  // เก็บข้อมูล ItemNo และ SPEC
+  // Selected Item Details
   PartNo: any[] = [];
   ItemNo: any[] = [];
   SPEC: any[] = [];
 
-  // การ sort ตาราง
+  // Sorting & Editing
   sortKey: string = '';
   sortAsc: boolean = true;
   editingIndex: { [key: string]: number | null } = {};
@@ -82,7 +88,7 @@ export class DetailComponent implements OnInit {
   items: any[] = [];
   highlightedRow: number | null = null;
 
-  // สำหรับ filter เอกสาร
+  // Document Filter
   showDocumentFilter = false;
   searchDocText = '';
   allDocsSelected = false;
@@ -126,40 +132,61 @@ export class DetailComponent implements OnInit {
     private router: Router,
     private DetailPurchase: DetailPurchaseRequestlistService,
     private FileReadService: FileReadService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   isViewer(): boolean {
     return this.authService.isViewer();
   }
 
-  // ============================================
-  // 🔥 จุดสำคัญที่แก้ไข: ngOnInit
-  // ============================================
   ngOnInit() {
-    // อ่านค่า param จาก route (ทำได้ทั้ง Server และ Browser)
     this.route.paramMap.subscribe(p => {
       this.itemNo = p.get('itemNo') || '';
     });
 
-    // ✅ ย้ายการโหลดข้อมูลมาไว้ในนี้ เพื่อให้ทำ "เฉพาะบน Browser"
-    // Server จะข้ามส่วนนี้ไป ทำให้ไม่ติด Timeout รอ API
     if (isPlatformBrowser(this.platformId)) {
-      
-      this.Detail_Purchase(); // โหลดข้อมูล Request
-      this.get_ItemNo();      // โหลดข้อมูล ItemNo
+      this.Detail_Purchase();
+      this.get_ItemNo();
 
-      // โหลดค่า QTY จาก localStorage
       const savedRequests = localStorage.getItem('purchaseRequest');
       if (savedRequests) {
-        const parsed = JSON.parse(savedRequests);
-        if (Array.isArray(parsed)) {
-          this.request = parsed.map(r => ({
-            ...r,
-            QTY: r.QTY ?? r.Req_QTY
-          }));
+        try {
+          const parsed = JSON.parse(savedRequests);
+          if (Array.isArray(parsed)) {
+            this.request = parsed.map(r => ({
+              ...r,
+              QTY: r.QTY ?? r.Req_QTY,
+              _parsedRequestDate: r.DateTime_Record ? new Date(r.DateTime_Record) : null,
+              _parsedDueDate: r.DueDate ? new Date(r.DueDate) : null
+            }));
+            this.updatePagination();
+          }
+        } catch (e) {
+          console.error("Error parsing localStorage", e);
         }
       }
+    }
+  }
+
+  updatePagination() {
+    this.totalPages = Math.ceil(this.request.length / this.pageSize) || 1;
+    this.pages = Array.from({ length: Math.min(5, this.totalPages) }, (_, i) => i + 1);
+
+    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+    if (this.currentPage < 1) this.currentPage = 1;
+
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.displayedRequests = this.request.slice(startIndex, endIndex);
+
+    this.cdr.markForCheck();
+  }
+
+  onPageChange(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
     }
   }
 
@@ -169,6 +196,7 @@ export class DetailComponent implements OnInit {
         if (!Array.isArray(response)) {
           this.allRequests = [];
           this.request = [];
+          this.updatePagination();
           return;
         }
 
@@ -177,7 +205,9 @@ export class DetailComponent implements OnInit {
           ID_Request: Number(it.ID_Request),
           Selection: false,
           QTY: it.QTY ?? it.Req_QTY,
-          ACCOUNT: it.ACCOUNT ?? it.account
+          ACCOUNT: it.ACCOUNT ?? it.account,
+          _parsedRequestDate: it.DateTime_Record ? new Date(it.DateTime_Record) : null,
+          _parsedDueDate: it.DueDate ? new Date(it.DueDate) : null
         }));
 
         const seen = new Set<number>();
@@ -191,6 +221,7 @@ export class DetailComponent implements OnInit {
 
         this.allRequests = unique;
         this.request = [...unique];
+        this.updatePagination();
 
         this.SpecList = Array.from(new Set(this.allRequests.map(x => x.SPEC))).map(x => ({ label: x, value: x }));
         this.ProcessList = Array.from(new Set(this.allRequests.map(x => x.Process))).map(x => ({ label: x, value: x }));
@@ -198,6 +229,8 @@ export class DetailComponent implements OnInit {
         this.PartNoList = Array.from(new Set(this.allRequests.map(x => x.PartNo))).map(x => ({ label: x, value: x }));
         this.ItemNoList = Array.from(new Set(this.allRequests.map(x => x.ItemNo))).map(x => ({ label: x, value: x }));
         this.DocumentNoList = Array.from(new Set(this.allRequests.map(x => x.DocNo))).map(x => ({ label: x, value: x }));
+
+        this.cdr.markForCheck();
       },
       error: e => console.error('❌ Error Detail_Purchase:', e)
     });
@@ -212,7 +245,7 @@ export class DetailComponent implements OnInit {
         })).filter((item, index, self) =>
           index === self.findIndex(obj => obj.ItemNo === item.ItemNo)
         );
-        console.log('ItemNo list:', this.ItemNo);
+        this.cdr.markForCheck();
       },
       error: (e: any) => console.error("Error API get_ItemNo:", e),
     });
@@ -260,6 +293,7 @@ export class DetailComponent implements OnInit {
 
         this.request.splice(rowIndex + 1, 0, newRow);
         this.editingIndex[newRow.ID_Request] = rowIndex + 1;
+        this.updatePagination();
 
         if (isPlatformBrowser(this.platformId)) {
           localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
@@ -271,11 +305,16 @@ export class DetailComponent implements OnInit {
   }
 
   startEdit(caseKey: number, rowIndex: number) {
+    // Note: rowIndex passed here is likely likely from displayedRequests (0-49) if called from template
+    // Ideally, pass ID_Request instead of index to be safe
     this.editingIndex[caseKey] = rowIndex;
   }
 
   saveEdit(caseKey: number, rowIndex: number) {
-    const item = this.request[rowIndex];
+    // Use ID to find the actual item in the full list
+    const realIndex = this.request.findIndex(r => r.ID_Request === caseKey);
+    const item = this.request[realIndex];
+
     if (!item) return;
 
     this.syncSpecWithItemNo(item);
@@ -296,30 +335,32 @@ export class DetailComponent implements OnInit {
     if (!hasId) {
       this.DetailPurchase.insertRequest(item).subscribe({
         next: (res) => {
-          this.request[rowIndex] = mergeSafe(item, res);
+          this.request[realIndex] = mergeSafe(item, res);
           delete this.editingIndex[caseKey];
           if (isPlatformBrowser(this.platformId)) {
             localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
           }
+          this.updatePagination();
           Swal.fire({ icon: 'success', title: 'Your work has been saved', showConfirmButton: false, timer: 1330 });
         },
         error: (err) => {
-          this.request[rowIndex] = snapshot;
+          this.request[realIndex] = snapshot;
           alert('เกิดข้อผิดพลาดในการบันทึกแถวใหม่');
         }
       });
     } else {
       this.DetailPurchase.updateRequest(item).subscribe({
         next: (res) => {
-          this.request[rowIndex] = mergeSafe(item, res);
+          this.request[realIndex] = mergeSafe(item, res);
           delete this.editingIndex[caseKey];
           if (isPlatformBrowser(this.platformId)) {
             localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
           }
+          this.updatePagination();
           Swal.fire({ icon: 'success', title: 'Your work has been saved', showConfirmButton: false, timer: 1330 });
         },
         error: (err) => {
-          this.request[rowIndex] = snapshot;
+          this.request[realIndex] = snapshot;
           alert('เกิดข้อผิดพลาดในการบันทึกแถว');
         }
       });
@@ -339,24 +380,29 @@ export class DetailComponent implements OnInit {
   }
 
   deleteRow(rowIndex: number) {
-    const item = this.request[rowIndex];
+    // Determine real index based on current page
+    const realIndex = (this.currentPage - 1) * this.pageSize + rowIndex;
+    const item = this.request[realIndex];
+
     if (!item) return;
 
     if (item.isNew) {
-      this.request.splice(rowIndex, 1);
+      this.request.splice(realIndex, 1);
       delete this.editingIndex[item.ID_Request];
       if (isPlatformBrowser(this.platformId)) {
         localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
       }
+      this.updatePagination();
       alert('ลบแถวเรียบร้อย');
     } else {
       this.DetailPurchase.deleteRequest(item.ID_Request).subscribe({
         next: () => {
-          this.request.splice(rowIndex, 1);
+          this.request.splice(realIndex, 1);
           delete this.editingIndex[item.ID_Request];
           if (isPlatformBrowser(this.platformId)) {
             localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
           }
+          this.updatePagination();
           alert('ลบข้อมูลสำเร็จ');
         },
         error: err => { alert('ไม่สามารถลบข้อมูลได้'); }
@@ -414,14 +460,22 @@ export class DetailComponent implements OnInit {
             }
             this.Detail_Purchase();
             Swal.fire({ icon: 'success', title: 'Complete!', text: `Updated ${ids.length} items.` });
+            this.cdr.markForCheck();
           },
-          error: err => Swal.fire({ icon: 'error', title: 'Bulk update failed', text: err?.error?.message || '' }),
-          complete: () => { this.isCompleting = false; }
+          error: err => {
+            Swal.fire({ icon: 'error', title: 'Bulk update failed', text: err?.error?.message || '' });
+            this.cdr.markForCheck();
+          },
+          complete: () => {
+            this.isCompleting = false;
+            this.cdr.markForCheck();
+          }
         });
       },
       error: err => {
         Swal.fire({ icon: 'error', title: 'Update QTY failed', text: err?.error?.message || '' });
         this.isCompleting = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -449,70 +503,56 @@ export class DetailComponent implements OnInit {
 
   fileName = "ExcelSheet.xlsx";
 
-  // ✅ แก้ไขส่วนนี้ด้วย เพื่อความปลอดภัยของ SSR (เพราะใช้ document)
   exportexcel() {
     if (!isPlatformBrowser(this.platformId)) {
-      return; // ห้ามรันบน server
-    }
-
-    const table = document.getElementById("table-data") as HTMLTableElement;
-    if (!table) {
-      console.error("Table not found!");
       return;
     }
 
-    const theads = table.querySelectorAll("thead");
-    if (theads.length < 2) {
-      console.error("Table head not found!");
-      return;
-    }
-    const thead = theads[1];
+    // 1. Get filtered items that are selected
+    const selectedItems = this.request.filter(item => item.Selection);
 
-    const tbody = table.querySelector("tbody");
-    if (!tbody) {
-      console.error("Table body not found!");
-      return;
-    }
-
-    const selectedRows = Array.from(tbody.querySelectorAll("tr")).filter(row => {
-      const checkbox = row.querySelector<HTMLInputElement>('input[type="checkbox"]');
-      return checkbox?.checked;
-    });
-
-    if (selectedRows.length === 0) {
+    if (selectedItems.length === 0) {
       Swal.fire({ icon: 'warning', title: 'No rows selected', text: 'Please select at least one row to export.' });
       return;
     }
 
-    const tempTable = document.createElement("table");
-    const exportThead = document.createElement("thead");
-    const headerRow = document.createElement("tr");
-
-    thead.querySelectorAll("th").forEach((th, index) => {
-      if (!["0", "1", "25", "26"].includes(index.toString())) {
-        const newTh = document.createElement("th");
-        newTh.textContent = th.textContent?.trim() || '';
-        headerRow.appendChild(newTh);
-      }
+    // 2. Map data to match the table structure
+    const dataToExport = selectedItems.map((item, index) => {
+      // Find original index if needed, or just use current loop index + 1
+      return {
+        'No.': index + 1,
+        'Document': item.DocNo || '',
+        'Requester': item.Requester || '',
+        'Account': item.ACCOUNT || '',
+        'Division': item.Division || '',
+        'Part No.': item.PartNo || '',
+        'Item No.': item.ItemNo || '',
+        'Spec': item.SPEC || '',
+        'Process': item.Process || '',
+        'MC Type': item.MCType || '',
+        'Fac': item.Fac || '',
+        'DWG': item.DwgRev || '',
+        'On Hand': item.ON_HAND || '',
+        'Req QTY': item.Req_QTY || '',
+        'QTY': item.QTY || '',
+        'MC No.': item.MCQTY || '',
+        'Req Date': item.DateTime_Record ? new Date(item.DateTime_Record).toLocaleDateString('en-GB') : '',
+        'Due Date': item.DueDate ? new Date(item.DueDate).toLocaleDateString('en-GB') : '',
+        'Case': item.CASE || '',
+        'Status': item.Status || '',
+        'Phone Number': item.PhoneNo || '',
+        'Remark': item.Remark || ''
+      };
     });
-    exportThead.appendChild(headerRow);
-    tempTable.appendChild(exportThead);
 
-    selectedRows.forEach(row => {
-      const clonedRow = document.createElement("tr");
-      row.querySelectorAll("td").forEach((td, index) => {
-        if (!["0", "1", "24", "25"].includes(index.toString())) {
-          const newTd = document.createElement("td");
-          newTd.textContent = td.textContent?.trim() || '';
-          clonedRow.appendChild(newTd);
-        }
-      });
-      tempTable.appendChild(clonedRow);
-    });
+    // 3. Generate Worksheet
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
 
-    const ws: XLSX.WorkSheet = XLSX.utils.table_to_sheet(tempTable);
+    // 4. Create Workbook and Append Sheet
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+    // 5. Save File
     XLSX.writeFile(wb, this.fileName);
   }
 
@@ -530,6 +570,7 @@ export class DetailComponent implements OnInit {
         this.DetailPurchase.deleteRequest(Number(id)).subscribe({
           next: () => {
             this.request = this.request.filter(item => item.ID_Request !== id);
+            this.updatePagination();
             Swal.fire({ title: 'Delete Success!', icon: 'success' });
           },
           error: err => Swal.fire({ title: 'เกิดข้อผิดพลาดในการลบ', icon: 'error' })
@@ -553,21 +594,15 @@ export class DetailComponent implements OnInit {
       const matchCase = !this.Case_?.length || this.Case_.includes(item.CASE);
       const matchDocNo = !this.DocumentNo_?.length || this.DocumentNo_.includes(item.DocNo);
 
+      const requestDate = item._parsedRequestDate;
+      const dueDate = item._parsedDueDate;
+
       const fromDateObj = this.fromDate ? new Date(this.fromDate) : null;
       const toDateObj = this.toDate ? new Date(this.toDate) : null;
 
-      const requestDate = item.DateTime_Record ? new Date(item.DateTime_Record) : null;
-      const dueDate = item.DueDate ? new Date(item.DueDate) : null;
-
       let matchDate: boolean = true;
-
       if (fromDateObj && toDateObj) {
-        matchDate = !!(
-          requestDate &&
-          dueDate &&
-          requestDate.toDateString() === fromDateObj.toDateString() &&
-          dueDate.toDateString() === toDateObj.toDateString()
-        );
+        matchDate = !!(requestDate && dueDate && requestDate.toDateString() === fromDateObj.toDateString() && dueDate.toDateString() === toDateObj.toDateString());
       } else if (fromDateObj) {
         matchDate = !!(requestDate && requestDate.toDateString() === fromDateObj.toDateString());
       } else if (toDateObj) {
@@ -576,6 +611,9 @@ export class DetailComponent implements OnInit {
 
       return matchStatus && matchDivision && matchPartNo && matchItemNo && matchDate && matchSpec && matchProcess && matchCase && matchDocNo;
     });
+
+    this.currentPage = 1;
+    this.updatePagination();
   }
 
   onSort(key: string) {
@@ -596,19 +634,14 @@ export class DetailComponent implements OnInit {
           if (typeof val === 'string') {
             const parts = val.includes('-') ? val.split('-') : val.split('/');
             if (parts.length === 3) {
-              if (parts[0].length === 4) {
-                return new Date(val).getTime();
-              } else {
-                const [d, m, y] = parts.map(Number);
-                return new Date(y, m - 1, d).getTime();
-              }
+              if (parts[0].length === 4) { return new Date(val).getTime(); }
+              else { const [d, m, y] = parts.map(Number); return new Date(y, m - 1, d).getTime(); }
             }
           }
           if (val instanceof Date) return val.getTime();
           const t = new Date(val).getTime();
           return isNaN(t) ? 0 : t;
         };
-
         const dateA = parseDate(valA);
         const dateB = parseDate(valB);
         return this.sortAsc ? dateA - dateB : dateB - dateA;
@@ -622,6 +655,12 @@ export class DetailComponent implements OnInit {
         ? String(valA ?? '').localeCompare(String(valB ?? ''))
         : String(valB ?? '').localeCompare(String(valA ?? ''));
     });
+    this.updatePagination();
+  }
+
+  // Helper for template
+  min(a: number, b: number): number {
+    return Math.min(a, b);
   }
 
   clearFilters() {
@@ -635,5 +674,9 @@ export class DetailComponent implements OnInit {
     this.fromDate = '';
     this.toDate = '';
     this.onFilter();
+  }
+
+  trackByRequestId(index: number, item: any): number {
+    return item.ID_Request;
   }
 }

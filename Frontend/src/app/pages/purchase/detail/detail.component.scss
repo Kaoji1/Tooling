@@ -2,17 +2,22 @@
 .detail-layout {
   display: flex;
   flex-direction: row;
-  height: 100vh;        /* สูงเต็มหน้าจอ */
-  width: 100vw;         /* กว้างเต็มหน้าจอ */
-  overflow: hidden;     /* กัน scroll ทั้งหน้า */
+  height: 100vh;
+  /* สูงเต็มหน้าจอ */
+  width: 100vw;
+  /* กว้างเต็มหน้าจอ */
+  overflow: hidden;
+  /* กัน scroll ทั้งหน้า */
   background-color: #ffffff;
 
   /* พื้นที่เนื้อหาหลักด้านขวา */
   .main {
     flex: 1;
     width: 100%;
-    height: 100%;        /* กินเต็ม */
-    overflow: hidden;    /* ❌ ไม่ให้ scroll main */
+    height: 100%;
+    /* กินเต็ม */
+    overflow: auto;
+    /* ✅ Allow scroll if content overflows */
     box-sizing: border-box;
     padding-bottom: 60px;
 
@@ -47,13 +52,15 @@
       }
     }
 
-  .button-container {
-  display: flex;
-  justify-content: flex-start; /* จัดปุ่มทั้งหมดไปด้านขวา */
-  gap: 10px; /* เว้นระยะห่างระหว่างปุ่ม */
-  // margin: 20px;
-  // margin-right: 40px;
-  }
+    .button-container {
+      display: flex;
+      justify-content: flex-start;
+      /* จัดปุ่มทั้งหมดไปด้านขวา */
+      gap: 10px;
+      /* เว้นระยะห่างระหว่างปุ่ม */
+      // margin: 20px;
+      // margin-right: 40px;
+    }
 
     .group-header {
       display: flex;
@@ -144,7 +151,7 @@
     position: relative;
   }
 
-    .button-group {
+  .button-group {
     display: flex;
     flex-direction: column;
     /* เรียงปุ่มในแนวตั้ง */
@@ -152,7 +159,7 @@
     /* ระยะห่างระหว่างปุ่ม */
     // align-items: center;
     justify-content: flex-start;
-margin-bottom: 20px;
+    margin-bottom: 20px;
     /* จัดปุ่มให้อยู่ตรงกลาง (ในแนวขวาง) */
 
 
@@ -218,7 +225,7 @@ margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    
+
   }
 
   .button-group button {
@@ -233,7 +240,7 @@ margin-bottom: 20px;
     border-radius: 8px;
     width: 220px;
     cursor: pointer;
-    
+
   }
 
 
@@ -253,6 +260,7 @@ margin-bottom: 20px;
     margin-top: 5px;
     margin-left: 870px;
   }
+
   /* ปุ่ม filter และ sort */
   .btn-filter,
   .btn-sort {
@@ -320,9 +328,12 @@ input {
 
 /* ✅ ตาราง responsive เลื่อนแทน */
 .table-responsive {
-  width: 1660px;                   /* เต็มความกว้างของ main */
-  max-height: calc(100vh - 200px); /* สูงเต็มจอ ลบ header/footer */
-  overflow: auto;                /* ✅ scroll เฉพาะตาราง */
+  width: 1660px;
+  /* เต็มความกว้างของ main */
+  max-height: calc(100vh - 250px);
+  /* สูงเต็มจอ ลบ header/footer/pagination */
+  overflow: auto;
+  /* ✅ scroll เฉพาะตาราง */
   margin-top: 30px;
   margin-left: 20px;
   border-collapse: collapse;
@@ -348,7 +359,8 @@ input {
   thead th {
     position: sticky;
     top: 0;
-    font-weight: 50;  /* ตัวหนามาก */
+    font-weight: 50;
+    /* ตัวหนามาก */
     font-size: 20px;
     background-color: #E3E3E3;
     // z-index: 10;
@@ -450,16 +462,18 @@ input {
 
 /* แถบเปลี่ยนหน้าด้านล่าง */
 .pagination-wrapper {
-  position: fixed; /* fix bottom */
-  bottom: 30px;
-  left: 0;
+  /* position: fixed;  <-- เอาออก เพื่อไม่ให้บัง scrollbar */
+  margin-top: 10px;
   width: 100%;
-  text-align: center;
-  padding: 10px 0;
+  text-align: right;
+  /* ชิดขวา หรือ center ตามชอบ */
+  padding: 10px 20px;
+  background-color: #fff;
+  /* พื้นหลังขาวกันจม */
+  box-sizing: border-box;
 
   .pagination {
-    display: flex;
-    justify-content: center;
+    display: inline-flex;
     padding: 0;
     margin: 0;
     list-style: none;
@@ -471,10 +485,23 @@ input {
         color: #0066B3;
         text-decoration: none;
         background-color: #f9f9f9;
+        cursor: pointer;
       }
 
       .page-link:hover {
         background-color: #e2f0ff;
+        border-color: #0066B3;
+      }
+
+      &.disabled .page-link {
+        color: #ccc;
+        pointer-events: none;
+        background-color: #eee;
+      }
+
+      &.active .page-link {
+        background-color: #0066B3;
+        color: white;
         border-color: #0066B3;
       }
     }
@@ -482,31 +509,43 @@ input {
 }
 
 ::ng-deep .no-expand .ng-select-container {
-  max-width: 180px !important; /* คุมความกว้าง */
-  overflow: hidden;             /* กันล้น */
-  text-overflow: ellipsis;      /* ขึ้น … */
-  white-space: nowrap;          /* ไม่ขึ้นบรรทัดใหม่ */
+  max-width: 180px !important;
+  /* คุมความกว้าง */
+  overflow: hidden;
+  /* กันล้น */
+  text-overflow: ellipsis;
+  /* ขึ้น … */
+  white-space: nowrap;
+  /* ไม่ขึ้นบรรทัดใหม่ */
 }
 
 ::ng-deep .no-expand .ng-value-container {
-  flex-wrap: nowrap !important; /* กัน tag หลายตัวขึ้นบรรทัดใหม่ */
+  flex-wrap: nowrap !important;
+  /* กัน tag หลายตัวขึ้นบรรทัดใหม่ */
 }
 
 ::ng-deep .checkbox-option {
   display: flex;
   align-items: center;
-  gap: 6px; /* ระยะห่างระหว่าง checkbox กับ label */
+  gap: 6px;
+  /* ระยะห่างระหว่าง checkbox กับ label */
 }
 
 ::ng-deep .ng-option {
   display: flex;
   align-items: center;
 }
-  .custom-btn {
-    background-color: #FF6A6A !important; /* กำหนดสีพื้นหลัง */
-    color: white; /* กำหนดสีตัวอักษร */
-    border: none; /* เอาขอบออกถ้าไม่ต้องการ */
-  }
-  .custom-btn:hover {
-    background-color: #8B3A3A !important; /* เปลี่ยนสีตอน hover */
-  }
+
+.custom-btn {
+  background-color: #FF6A6A !important;
+  /* กำหนดสีพื้นหลัง */
+  color: white;
+  /* กำหนดสีตัวอักษร */
+  border: none;
+  /* เอาขอบออกถ้าไม่ต้องการ */
+}
+
+.custom-btn:hover {
+  background-color: #8B3A3A !important;
+  /* เปลี่ยนสีตอน hover */
+}

@@ -2,7 +2,7 @@ const { poolPromise } = require("../config/database");
 const sql = require('mssql');
 const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
 
-
+const frontendLink = process.env.FRONTEND_URL || 'http://localhost:4200';
 
 // เพิ่มรายการลงฐานข้อมูล
 exports.AddCartItems = async (req, res) => {
@@ -48,7 +48,7 @@ exports.AddCartItems = async (req, res) => {
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
-      auth: { 
+      auth: {
         user: process.env.EMAIL_USER, // 👈 ใช้ตัวแปรจาก .env
         pass: process.env.EMAIL_PASS  // 👈 ใช้ตัวแปรจาก .env
       }

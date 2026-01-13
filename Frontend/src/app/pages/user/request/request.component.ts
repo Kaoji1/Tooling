@@ -101,6 +101,7 @@ export class requestComponent implements OnInit {
       { label: 'REC', value: 'REC' },
       { label: 'INV', value: 'INV' },
       { label: 'SPA', value: 'SPA' },
+      { label: 'CBD', value: 'CBD' },
     ];
   }
 

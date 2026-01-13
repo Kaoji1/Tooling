@@ -3,6 +3,8 @@ const Type = require("mssql").TYPES;
 const sql = require("mssql");
 const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
 
+const frontendLink = process.env.FRONTEND_URL || 'http://localhost:4200';
+
 // insert data to table
 exports.Send_Request = async (req, res) => {
   console.log("data re:", req.body);
@@ -11,21 +13,21 @@ exports.Send_Request = async (req, res) => {
     //  กรณีรับมาเป็น array
     const items = req.body; // สมมุติว่าเป็น array ของ item ทั้งหมดใน Doc
     for (const item of items) {
-      console.log("item:",item);
+      console.log("item:", item);
       // แมปชื่อให้ตรงกับ ตารางmssql
       const {
         Doc_no,
         Division,
-        Fac,                
-        ItemNo,                
+        Fac,
+        ItemNo,
         PartNo,
-        DwgRev = '0',          
+        DwgRev = '0',
         Process,
         MCNo,
-        MCType,                     
+        MCType,
         QTY,
-        Due_Date,               
-        Status = 'Waiting',    
+        Due_Date,
+        Status = 'Waiting',
         FileData,
         FileName,
         PathDwg,
@@ -38,10 +40,10 @@ exports.Send_Request = async (req, res) => {
 
       await pool
         .request()
-        .input('DocNo',sql.NVarChar(50),Doc_no)
-        .input('Requester',sql.NVarChar(50),item.Employee_Name) // สมมุติใช้ default
+        .input('DocNo', sql.NVarChar(50), Doc_no)
+        .input('Requester', sql.NVarChar(50), item.Employee_Name) // สมมุติใช้ default
         .input('Division', sql.NVarChar(50), Division)
-        .input('Fac', sql.Int, Fac )
+        .input('Fac', sql.Int, Fac)
         .input('CASE', sql.NVarChar(50), item.CASE || item.Case_ || '') // จาก key Case_
         .input('PartNo', sql.NVarChar(50), PartNo)
         .input('ItemNo', sql.NVarChar(50), ItemNo)
@@ -49,13 +51,13 @@ exports.Send_Request = async (req, res) => {
         .input('DwgRev', sql.NVarChar(50), DwgRev)
         .input('Process', sql.NVarChar(50), Process)
         .input('MCType', sql.NVarChar(50), MCType)
-        .input('MCNo',sql.NVarChar,MCNo)
+        .input('MCNo', sql.NVarChar, MCNo)
         .input('Req_QTY', sql.Int, QTY)
-        .input('DueDate', sql.DateTime,new Date(Due_Date))
+        .input('DueDate', sql.DateTime, new Date(Due_Date))
         .input('Status', sql.NVarChar(50), Status)
-        .input('PathDwg',sql.NVarChar(255),PathDwg)
-        .input('PathLayout',sql.NVarChar(255),PathLayout)
-        .input('ON_HAND',sql.Int,ON_HAND)
+        .input('PathDwg', sql.NVarChar(255), PathDwg)
+        .input('PathLayout', sql.NVarChar(255), PathLayout)
+        .input('ON_HAND', sql.Int, ON_HAND)
         .input('PhoneNo', sql.NVarChar(50), PhoneNo ? String(PhoneNo) : '')
         .execute('[dbo].[stored_IssueCuttingTool_SendRequest]');
     }
@@ -166,7 +168,7 @@ exports.GenerateNewDocNo = async (req, res) => {
       processPart = 'TN';
     } else if (process.toLowerCase() === 'milling') {
       processPart = 'ML';
-    }else if (process.toLowerCase() === 'milling2') {
+    } else if (process.toLowerCase() === 'milling2') {
       processPart = 'ML';
     } else if (process.toLowerCase() === 'f&boring1') {
       processPart = 'RL';
@@ -178,9 +180,9 @@ exports.GenerateNewDocNo = async (req, res) => {
       processPart = 'RL';
     } else if (process.toLowerCase() === 'rl') {
       processPart = 'RL';
-    } 
-     else {
-      return res.status(400).json({ error:` Process '${process}' is not mapped.` });
+    }
+    else {
+      return res.status(400).json({ error: ` Process '${process}' is not mapped.` });
     }
     // 1.3กำหนดfacที่เลือก
     const factoryPart = factory.toString().toUpperCase();
@@ -198,7 +200,7 @@ exports.GenerateNewDocNo = async (req, res) => {
     let isUnique = false;
 
     while (!isUnique) {
-      docNo =`${prefix}${nextNumber.toString().padStart(4, '0')}`; // เช่น SETTN908001
+      docNo = `${prefix}${nextNumber.toString().padStart(4, '0')}`; // เช่น SETTN908001
 
       const check = await pool.request()
         .input('DocNo', sql.NVarChar(20), docNo)

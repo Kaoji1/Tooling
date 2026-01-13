@@ -122,12 +122,13 @@
 
             <th>QTY</th>
             <th>Case</th>
+            <th>Position</th>
           </tr>
         </thead>
 
         <tbody *ngIf="!Case_ || items.length === 0">
           <tr>
-            <td [attr.colspan]="Tooling_ === 'Setup tool' ? 9 : 10" class="text-center text-muted">
+            <td [attr.colspan]="Tooling_ === 'Setup tool' ? 10 : 11" class="text-center text-muted">
               <i class="bi bi-exclamation-circle-fill"></i> Please select item to view.
             </td>
           </tr>
@@ -154,12 +155,14 @@
             <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="1"
                 style="text-align: center; border: 0.5px solid; " /></td>
             <td [ngClass]="getRowClass(item)"> {{ Case_ }} </td>
+            <td [ngClass]="getRowClass(item)"> {{ item.Position }} </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div *ngIf="Tooling_ === 'Cutting tool' && Case_ === 'SET' && relatedSetupItems.length > 0" style="margin-top: 30px;">
+    <div *ngIf="Tooling_ === 'Cutting tool' && Case_ === 'SET' && relatedSetupItems.length > 0"
+      style="margin-top: 30px;">
 
       <h5 style="color: #2d2c2c; margin-bottom: 10px;">
         <i class="bi bi-tools"></i> Related Setup Tools

@@ -1,14 +1,14 @@
-  <div class="detail-layout">
+<div class="detail-layout">
 
-    <app-sidebarpurchase></app-sidebarpurchase>
+  <app-sidebarpurchase></app-sidebarpurchase>
 
-    <div class="main">
-      <!-- ข้อความข้างบน   -->
-      <div class="toptext">
-        <h1>Request List</h1>
-        <p>The loan withdrawal request is here.</p>
+  <div class="main">
+    <!-- ข้อความข้างบน   -->
+    <div class="toptext">
+      <h1>Request List</h1>
+      <p>The loan withdrawal request is here.</p>
 
-        <!-- <div class="box-input">
+      <!-- <div class="box-input">
       <div class="form-input">
         <div class="group-select">
           <label for="division">Division</label>
@@ -21,171 +21,170 @@
           <input type="date" [(ngModel)]="fromDate" placeholder="datesetup">
         </div> -->
 
-        <!-- <h6>TO</h6> -->
+      <!-- <h6>TO</h6> -->
 
-        <!-- <div class="group-select">
+      <!-- <div class="group-select">
           <label for="duedate">Date</label>
           <input type="date" [(ngModel)]="toDate" placeholder="duedate">
         </div> -->
 
 
 
-        <div class="top-right-icons">
-          <!-- <button onclick="history.back()" class="back-btn">
+      <div class="top-right-icons">
+        <!-- <button onclick="history.back()" class="back-btn">
           <img src="back arrow.png" alt="Back"> BACK
         </button> -->
 
-          <div class="bell-container">
-            <!-- <app-notification class="noti"></app-notification> -->
-          </div>
+        <div class="bell-container">
+          <!-- <app-notification class="noti"></app-notification> -->
         </div>
+      </div>
 
-        <!-- <div class="group-header"> -->
+      <!-- <div class="group-header"> -->
 
-        <!-- <div class="Box-itemNo">
+      <!-- <div class="Box-itemNo">
           <h4>ItemNo: {{ itemNo }}</h4>
         </div> -->
 
-        <div class="button-container">
+      <div class="button-container">
 
 
 
-          <div class="button-group">
-            <button class="excel-button" type="button" class="btn btn-success" (click)="exportexcel()">
-              <i class="bi bi-file-earmark-spreadsheet text-white"></i> EXPORT TO EXCEL</button>
-          </div>
-          
-
-          <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle custom-btn" type="button" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              <i class="bi bi-layout-text-sidebar-reverse text-white"></i> Indirect Expense
-            </button>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#" onclick="return false;">Cutting Tool</a></li>
-              <li><a class="dropdown-item" href="#" onclick="return false;">SetUp Tool</a></li>
-              <li><a class="dropdown-item" href="#" onclick="return false;">Cutting Oil</a></li>
-            </ul>
-          </div>
-
-          <div class="button-clear">
-            <button class="btn btn-clear" type="button" (click)="clearFilters()"><i
-                class="bi bi-x-circle-fill text-white"></i> Clear</button>
-          </div>
-
-          <div class="button-filter">
-            <button class="btn btn-filter" type="button" (click)="onFilter()"><i
-                class="bi bi-funnel-fill text-white"></i> Filter</button>
-          </div>
-
-
-
-
-          <div class="button-Complete">
-            <button class="btn-Complete" type="button" (click)="completeSelected()"
-              [disabled]="isViewer() || isCompleting">
-
-              <ng-container *ngIf="!isCompleting; else loadingTpl">
-                <i class="bi bi-check-circle-fill text-white"></i> Complete
-              </ng-container>
-              <ng-template #loadingTpl>
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                Loading...
-              </ng-template>
-            </button>
-          </div>
+        <div class="button-group">
+          <button class="excel-button" type="button" class="btn btn-success" (click)="exportexcel()">
+            <i class="bi bi-file-earmark-spreadsheet text-white"></i> EXPORT TO EXCEL</button>
         </div>
-        <!-- </div> -->
+
+
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle custom-btn" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            <i class="bi bi-layout-text-sidebar-reverse text-white"></i> Indirect Expense
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" onclick="return false;">Cutting Tool</a></li>
+            <li><a class="dropdown-item" href="#" onclick="return false;">SetUp Tool</a></li>
+            <li><a class="dropdown-item" href="#" onclick="return false;">Cutting Oil</a></li>
+          </ul>
+        </div>
+
+        <div class="button-clear">
+          <button class="btn btn-clear" type="button" (click)="clearFilters()"><i
+              class="bi bi-x-circle-fill text-white"></i> Clear</button>
+        </div>
+
+        <div class="button-filter">
+          <button class="btn btn-filter" type="button" (click)="onFilter()"><i class="bi bi-funnel-fill text-white"></i>
+            Filter</button>
+        </div>
+
+
+
+
+        <div class="button-Complete">
+          <button class="btn-Complete" type="button" (click)="completeSelected()"
+            [disabled]="isViewer() || isCompleting">
+
+            <ng-container *ngIf="!isCompleting; else loadingTpl">
+              <i class="bi bi-check-circle-fill text-white"></i> Complete
+            </ng-container>
+            <ng-template #loadingTpl>
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Loading...
+            </ng-template>
+          </button>
+        </div>
       </div>
+      <!-- </div> -->
+    </div>
 
-      <!-- กล่อง item no -->
-      <!-- ตาราง -->
+    <!-- กล่อง item no -->
+    <!-- ตาราง -->
 
-      <div class="table-responsive">
-        <table id="table-data" class="table table-bordered text-center">
+    <div class="table-responsive">
+      <table id="table-data" class="table table-bordered text-center">
 
 
-          <thead>
-            <tr [ngStyle]="{'border': 'none'}">
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}">
-                <ng-select style="width: 180px;" class="no-expand" [items]="DocumentNoList" bindLabel="label"
-                  bindValue="value" [(ngModel)]="DocumentNo_" [multiple]="true" [closeOnSelect]="false"
-                  placeholder="Select a Document">
-                </ng-select>
-              </td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}">
-                <ng-select style="width: 180px;" class="no-expand" [items]="divisionList" bindLabel="label"
-                  bindValue="value" [(ngModel)]="Division_" [multiple]="true" [closeOnSelect]="false"
-                  placeholder="Select a Division">
-                </ng-select>
-              </td>
-              <td [ngStyle]="{'border': 'none'}">
-                <ng-select style="width: 180px;" class="no-expand" [items]="PartNoList" bindLabel="label"
-                  bindValue="value" [(ngModel)]="PartNo_" [multiple]="true" [closeOnSelect]="false"
-                  placeholder="Select a PartNo">
-                </ng-select>
-              </td>
+        <thead>
+          <tr [ngStyle]="{'border': 'none'}">
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}">
+              <ng-select style="width: 180px;" class="no-expand" [items]="DocumentNoList" bindLabel="label"
+                bindValue="value" [(ngModel)]="DocumentNo_" [multiple]="true" [closeOnSelect]="false"
+                placeholder="Select a Document">
+              </ng-select>
+            </td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}">
+              <ng-select style="width: 180px;" class="no-expand" [items]="divisionList" bindLabel="label"
+                bindValue="value" [(ngModel)]="Division_" [multiple]="true" [closeOnSelect]="false"
+                placeholder="Select a Division">
+              </ng-select>
+            </td>
+            <td [ngStyle]="{'border': 'none'}">
+              <ng-select style="width: 180px;" class="no-expand" [items]="PartNoList" bindLabel="label"
+                bindValue="value" [(ngModel)]="PartNo_" [multiple]="true" [closeOnSelect]="false"
+                placeholder="Select a PartNo">
+              </ng-select>
+            </td>
 
-              <td [ngStyle]="{'border': 'none'}">
-                <ng-select style="width: 180px;" class="no-expand" [items]="ItemNoList" bindLabel="label"
-                  bindValue="value" [(ngModel)]="ItemNo_" [multiple]="true" [closeOnSelect]="false"
-                  placeholder="Select a ItemNo">
-                </ng-select>
-              </td>
+            <td [ngStyle]="{'border': 'none'}">
+              <ng-select style="width: 180px;" class="no-expand" [items]="ItemNoList" bindLabel="label"
+                bindValue="value" [(ngModel)]="ItemNo_" [multiple]="true" [closeOnSelect]="false"
+                placeholder="Select a ItemNo">
+              </ng-select>
+            </td>
 
-              <td [ngStyle]="{'border': 'none'}">
-                <ng-select [items]="SpecList" class="no-expand" bindLabel="label" bindValue="value" [(ngModel)]="Spec_"
-                  [multiple]="true" [closeOnSelect]="false" placeholder="Select a Spec"></ng-select>
-              </td>
+            <td [ngStyle]="{'border': 'none'}">
+              <ng-select [items]="SpecList" class="no-expand" bindLabel="label" bindValue="value" [(ngModel)]="Spec_"
+                [multiple]="true" [closeOnSelect]="false" placeholder="Select a Spec"></ng-select>
+            </td>
 
-              <td [ngStyle]="{'border': 'none'}">
-                <ng-select style="width: 180px;" class="no-expand" [items]="ProcessList" bindLabel="label"
-                  bindValue="value" [(ngModel)]="Process_" [multiple]="true" [closeOnSelect]="false"
-                  placeholder="Select a Process"></ng-select>
+            <td [ngStyle]="{'border': 'none'}">
+              <ng-select style="width: 180px;" class="no-expand" [items]="ProcessList" bindLabel="label"
+                bindValue="value" [(ngModel)]="Process_" [multiple]="true" [closeOnSelect]="false"
+                placeholder="Select a Process"></ng-select>
 
-              </td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
+            </td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
 
-              <td [ngStyle]="{'border': 'none'}"><input type="date" [(ngModel)]="fromDate" placeholder="datesetup">
-              </td>
+            <td [ngStyle]="{'border': 'none'}"><input type="date" [(ngModel)]="fromDate" placeholder="datesetup">
+            </td>
 
-              <td [ngStyle]="{'border': 'none'}"><input type="date" [(ngModel)]="toDate" placeholder="duedate">
-              </td>
+            <td [ngStyle]="{'border': 'none'}"><input type="date" [(ngModel)]="toDate" placeholder="duedate">
+            </td>
 
-              <td [ngStyle]="{'border': 'none'}">
-                <ng-select style="width: 180px;" class="no-expand" [items]="CaseList" bindLabel="label"
-                  bindValue="value" [(ngModel)]="Case_" [multiple]="true" [closeOnSelect]="false"
-                  placeholder="Select a Case"></ng-select>
-              </td>
+            <td [ngStyle]="{'border': 'none'}">
+              <ng-select style="width: 180px;" class="no-expand" [items]="CaseList" bindLabel="label" bindValue="value"
+                [(ngModel)]="Case_" [multiple]="true" [closeOnSelect]="false" placeholder="Select a Case"></ng-select>
+            </td>
 
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}"></td>
-              <td [ngStyle]="{'border': 'none'}">
-          </thead>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}"></td>
+            <td [ngStyle]="{'border': 'none'}">
+        </thead>
 
-            <thead>
-              <tr>
-                <th>
-                  <input type="checkbox" [(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"
-                    [disabled]="isViewer()" />
-                </th>
-                <th style="width: 60px;">No.</th>
-                <th (click)="onSort('DocNo')" style="cursor: pointer;">Document<span
-                    *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                <!-- <span style="cursor:pointer;" (click)="toggleDocumentFilter()">🔽</span>
+        <thead>
+          <tr>
+            <th>
+              <input type="checkbox" [(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"
+                [disabled]="isViewer()" />
+            </th>
+            <th style="width: 60px;">No.</th>
+            <th (click)="onSort('DocNo')" style="cursor: pointer;">Document<span *ngIf="sortKey === 'DocNo'">{{ sortAsc
+                ? '↑' : '↓' }}</span></th>
+            <!-- <span style="cursor:pointer;" (click)="toggleDocumentFilter()">🔽</span>
 
     <div *ngIf="showDocumentFilter" class="filter-box" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #ccc; z-index: 10; padding: 5px;">
       <input type="text" [(ngModel)]="searchDocText" placeholder="Search Document..." />
@@ -198,136 +197,133 @@
         </label>
       </div>
     </div> -->
-                <th>Requester</th>
-                <th style="min-width: 200px;">Account</th>
-                <th (click)="onSort('Division')" style="cursor: pointer;">Division <span
-                    *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                <th style="white-space: nowrap;" style="min-width: 200px;" (click)="onSort('PartNo')"
-                  style="cursor: pointer;">Part No.<span *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span>
-                </th>
-                <th style="width: 600px;" (click)="onSort('ItemNo')" style="cursor: pointer;"> Item No.<span
-                    *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                <th class="spec-column" style="min-width: 250px;" (click)="onSort('SPEC')" style="cursor: pointer;">Spec
-                  <span *ngIf="sortKey === 'SPEC'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                <th (click)="onSort('Process')" style="cursor: pointer;">Process <span
-                    *ngIf="sortKey === 'Process'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                <!-- <th>ItemNo</th> chaeck itemno -->
-                <th style="white-space: nowrap;">MC Type</th>
-                <th>Fac</th>
-                <th>DWG</th>
-                <th style="white-space: nowrap;">On Hand</th>
-                <th style="white-space: nowrap;">Req QTY</th>
-                <th style="width: 120px;">QTY</th>
-                <th style="min-width: 200px;">MC No.</th>
-                <th (click)="onSort('DateTime_Record')" style="cursor: pointer; white-space: nowrap;">Req Date<span
-                    *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                <th style="white-space: nowrap;" (click)="onSort('DueDate')"
-                  style="cursor: pointer; white-space: nowrap;">Due Date<span
-                    *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                <th (click)="onSort('CASE')" style="cursor: pointer;">Case<span
-                    *ngIf="sortKey === 'CASE'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                <th>Status</th>
-                <th>Dwg</th>
-                <th>Layout</th>
-                <th style="white-space: nowrap;">Phone Number</th>
-                <th>Remark</th>
-                <th style="white-space: nowrap;">Edit</th>
-                <th>Del</th>
+            <th>Requester</th>
+            <th style="min-width: 200px;">Account</th>
+            <th (click)="onSort('Division')" style="cursor: pointer;">Division <span *ngIf="sortKey === 'Division'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
+            <th style="white-space: nowrap;" style="min-width: 200px;" (click)="onSort('PartNo')"
+              style="cursor: pointer;">Part No.<span *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span>
+            </th>
+            <th style="width: 600px;" (click)="onSort('ItemNo')" style="cursor: pointer;"> Item No.<span
+                *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th class="spec-column" style="min-width: 250px;" (click)="onSort('SPEC')" style="cursor: pointer;">Spec
+              <span *ngIf="sortKey === 'SPEC'">{{ sortAsc ? '↑' : '↓' }}</span>
+            </th>
+            <th (click)="onSort('Process')" style="cursor: pointer;">Process <span *ngIf="sortKey === 'Process'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
+            <!-- <th>ItemNo</th> chaeck itemno -->
+            <th style="white-space: nowrap;">MC Type</th>
+            <th>Fac</th>
+            <th>DWG</th>
+            <th style="white-space: nowrap;">On Hand</th>
+            <th style="white-space: nowrap;">Req QTY</th>
+            <th style="width: 120px;">QTY</th>
+            <th style="min-width: 200px;">MC No.</th>
+            <th (click)="onSort('DateTime_Record')" style="cursor: pointer; white-space: nowrap;">Req Date<span
+                *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th style="white-space: nowrap;" (click)="onSort('DueDate')" style="cursor: pointer; white-space: nowrap;">
+              Due Date<span *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('CASE')" style="cursor: pointer;">Case<span *ngIf="sortKey === 'CASE'">{{ sortAsc ? '↑'
+                : '↓' }}</span></th>
+            <th>Status</th>
+            <th>Dwg</th>
+            <th>Layout</th>
+            <th style="white-space: nowrap;">Phone Number</th>
+            <th>Remark</th>
+            <th style="white-space: nowrap;">Edit</th>
+            <th>Del</th>
 
 
-              </tr>
-            </thead>
+          </tr>
+        </thead>
 
 
-            <!-- ในตาราง -->
-            <tbody>
-              <tr *ngIf="request.length === 0">
-                <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please
-                  select the to view item.</td>
-              </tr>
-              <tr *ngFor="let item of request; let i = index" [ngClass]="{
+        <!-- ในตาราง -->
+        <tbody>
+          <tr *ngIf="request.length === 0">
+            <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please
+              select the to view item.</td>
+          </tr>
+          <tr *ngFor="let item of displayedRequests; let i = index; trackBy: trackByRequestId" [ngClass]="{
                 'editing-row': editingIndex[item.ID_Request] === i,
                 'highlight-row': highlightedRow === i}">
 
-                <td><input type="checkbox" [(ngModel)]="item.Selection" [disabled]="isViewer()" /></td>
-                <!--เชื่อม checkbox-->
-                <td>{{ i + 1 }}</td>
-                <td>{{ item.DocNo }}</td>
-                <td>{{ item.Requester }}</td>
-                <td>{{ item.ACCOUNT  }}</td>
-                <td>{{ item.Division}}</td>
-                <td class="PartNo-column" style="min-width: 200px;">{{ item.PartNo }}</td>
-                <td>
-                  <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.ItemNo }}</span>
+            <td><input type="checkbox" [(ngModel)]="item.Selection" [disabled]="isViewer()" /></td>
+            <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td>{{ item.DocNo }}</td>
+            <td>{{ item.Requester }}</td>
+            <td>{{ item.ACCOUNT }}</td>
+            <td>{{ item.Division}}</td>
+            <td class="PartNo-column" style="min-width: 200px;">{{ item.PartNo }}</td>
+            <td>
+              <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.ItemNo }}</span>
 
-                  <ng-select *ngIf="editingIndex[item.ID_Request] === i" [items]="ItemNo" bindLabel="ItemNo"
-                    bindValue="ItemNo" [(ngModel)]="item.ItemNo" [searchable]="true" [virtualScroll]="true"
-                    (ngModelChange)="onItemNoChange($event, item)" [clearable]="true" placeholder="Select Item No"
-                    style="width:150px;">
-                  </ng-select>
-                </td>
+              <ng-select *ngIf="editingIndex[item.ID_Request] === i" [items]="ItemNo" bindLabel="ItemNo"
+                bindValue="ItemNo" [(ngModel)]="item.ItemNo" [searchable]="true" [virtualScroll]="true"
+                (ngModelChange)="onItemNoChange($event, item)" [clearable]="true" placeholder="Select Item No"
+                style="width:150px;">
+              </ng-select>
+            </td>
 
-                <td class="spec-column" style="min-width: 250px;">{{ item.SPEC }}</td>
-                <td>{{ item.Process }}</td>
-                <td>{{ item.MCType }}</td>
-                <td>{{ item.Fac }}</td>
-                <td>{{ item.DwgRev }}</td>
-                <td>{{ item.ON_HAND }}</td>
-                <td>{{ item.Req_QTY }}</td>
+            <td class="spec-column" style="min-width: 250px;">{{ item.SPEC }}</td>
+            <td>{{ item.Process }}</td>
+            <td>{{ item.MCType }}</td>
+            <td>{{ item.Fac }}</td>
+            <td>{{ item.DwgRev }}</td>
+            <td>{{ item.ON_HAND }}</td>
+            <td>{{ item.Req_QTY }}</td>
 
 
-              <td>
-                <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showQty">
-                  <input [(ngModel)]="item.QTY" type="number" class="form-control" style="width:100px;" min="0" />
-                  <!-- <input [(ngModel)]="item.QTY" type="number" class="form-control" style="width:100px;"(ngModelChange)="checkQty(item)" /> -->
+            <td>
+              <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showQty">
+                <input [(ngModel)]="item.QTY" type="number" class="form-control" style="width:100px;" min="0" />
+                <!-- <input [(ngModel)]="item.QTY" type="number" class="form-control" style="width:100px;"(ngModelChange)="checkQty(item)" /> -->
 
-                </ng-container>
-                <ng-template #showQty>{{ item.QTY }}</ng-template>
-              </td>
-              <td>{{ item.MCQTY }}</td>
-              <td>{{ item.DateTime_Record | date:'dd/MM/yyyy'}}</td>
-              <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
-              <td>{{ item.CASE }}</td>
-              <td>{{ item.Status }}</td>
+              </ng-container>
+              <ng-template #showQty>{{ item.QTY }}</ng-template>
+            </td>
+            <td>{{ item.MCQTY }}</td>
+            <td>{{ item.DateTime_Record | date:'dd/MM/yyyy'}}</td>
+            <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
+            <td>{{ item.CASE }}</td>
+            <td>{{ item.Status }}</td>
 
-              <td>
-                <!-- {{ item.PathDwg }} -->
-                <div class="text-break"></div>
-                <button *ngIf="item.PathDwg" class="btn btn-link btn-sm text-primary p-0 mt-1"
-                  (click)="openPdfFromPath(item.PathDwg)">
-                  <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
-                </button>
-              </td>
+            <td>
+              <div class="text-break"></div>
+              <button *ngIf="item.PathDwg" class="btn btn-link btn-sm text-primary p-0 mt-1"
+                (click)="openPdfFromPath(item.PathDwg)">
+                <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+              </button>
+            </td>
 
-              <td>
-                <!-- {{ item.PathLayout }} -->
-                <div class="text-break"></div>
-                <button *ngIf="item.PathLayout" class="btn btn-link btn-sm text-primary p-0 mt-1"
-                  (click)="openPdfFromPath(item.PathLayout)">
-                  <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
-                </button>
-              </td>
+            <td>
+              <div class="text-break"></div>
+              <button *ngIf="item.PathLayout" class="btn btn-link btn-sm text-primary p-0 mt-1"
+                (click)="openPdfFromPath(item.PathLayout)">
+                <i class="bi bi-file-earmark-pdf-fill text-danger"></i> View
+              </button>
+            </td>
 
-              <td>{{ item.PhoneNo }}</td>
+            <td>{{ item.PhoneNo }}</td>
 
-              <td>
-                <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.Remark }}</span>
-                <input *ngIf="editingIndex[item.ID_Request] === i" type="text" class="form-control" style="width:150px"
-                  [(ngModel)]="item.Remark" type="text" />
-              </td>
-              <td>
+            <td>
+              <span *ngIf="editingIndex[item.ID_Request] !== i">{{ item.Remark }}</span>
+              <input *ngIf="editingIndex[item.ID_Request] === i" type="text" class="form-control" style="width:150px"
+                [(ngModel)]="item.Remark" type="text" />
+            </td>
+            <td>
 
-                <button *ngIf="editingIndex[item.ID_Request] !== i" class="btn btn-primary btn-sm"
-                  (click)="startEdit(item.ID_Request, i)" [disabled]="isViewer()">
-                  <i class="bi bi-pencil-square text-white"></i>
-                </button>
+              <button *ngIf="editingIndex[item.ID_Request] !== i" class="btn btn-primary btn-sm"
+                (click)="startEdit(item.ID_Request, i)" [disabled]="isViewer()">
+                <i class="bi bi-pencil-square text-white"></i>
+              </button>
 
-                <button *ngIf="editingIndex[item.ID_Request] === i" class="btn btn-success btn-sm"
-                  (click)="saveEdit(item.ID_Request, i)">
-                  <i class="bi bi-check-lg text-white"></i>
-                </button>
+              <button *ngIf="editingIndex[item.ID_Request] === i" class="btn btn-success btn-sm"
+                (click)="saveEdit(item.ID_Request, i)">
+                <i class="bi bi-check-lg text-white"></i>
+              </button>
 
-                <button *ngIf="!item.isNew && editingIndex[item.ID_Request] === i" class="btn btn-lg" (click)="addNewRequest({ 
+              <button *ngIf="!item.isNew && editingIndex[item.ID_Request] === i" class="btn btn-lg" (click)="addNewRequest({ 
               DocNo: item.DocNo,
               Division: item.Division,
               Requester: item.Requester,
@@ -350,18 +346,45 @@
               PathLayout: item.PathLayout
               
           }, i)">
-                  <i class="bi bi-plus-circle text-black"></i>
-                </button>
-              </td>
+                <i class="bi bi-plus-circle text-black"></i>
+              </button>
+            </td>
 
-              <td>
-                <button class="btn btn-danger btn-sm" (click)="deleteItem(item.ID_Request)" [disabled]="isViewer()">
-                  <i class="bi bi-trash text-white"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            <td>
+              <button class="btn btn-danger btn-sm" (click)="deleteItem(item.ID_Request)" [disabled]="isViewer()">
+                <i class="bi bi-trash text-white"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls (Fixed Bottom) -->
+    <div class="pagination-wrapper" *ngIf="totalPages > 1">
+      <div class="d-inline-block bg-white p-2 rounded shadow-sm border">
+        <span class="me-3">
+          Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ min((currentPage * pageSize), request.length) }} of {{
+          request.length }}
+        </span>
+        <div class="d-inline-block">
+          <nav aria-label="Page navigation">
+            <ul class="pagination mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link" (click)="onPageChange(currentPage - 1)">Previous</button>
+              </li>
+
+              <li class="page-item" [class.active]="page === currentPage" *ngFor="let page of pages">
+                <button class="page-link" (click)="onPageChange(page)">{{ page }}</button>
+              </li>
+
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link" (click)="onPageChange(currentPage + 1)">Next</button>
+              </li>
+            </ul>
+          </nav>
+        </div>
       </div>
     </div>
   </div>
+</div>

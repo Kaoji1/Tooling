@@ -138,7 +138,9 @@ export class RequestlistComponent implements OnInit {
 
           this.request = Array.from(groupedMap.values()).map(group => ({
             ...group.item,
-            Req_QTY: group.Req_QTY
+            Req_QTY: group.Req_QTY,
+            // Pre-calculate Date objects
+            _parsedDateRecord: group.item.DateTime_Record ? new Date(group.item.DateTime_Record) : null
           }));
 
           this.filteredRequests = [...this.request];
@@ -181,8 +183,9 @@ export class RequestlistComponent implements OnInit {
       const toDateObj = this.toDate ? new Date(this.toDate) : null;
       if (toDateObj) toDateObj.setHours(23, 59, 59, 999);
 
-      const reqDate = item.DateTime_Record ? new Date(item.DateTime_Record) : null;
-      
+      // Use pre-calculated date
+      const reqDate = item._parsedDateRecord;
+
       let matchDate: boolean = true;
       if (reqDate) {
         if (fromDateObj && toDateObj) {
@@ -234,11 +237,11 @@ export class RequestlistComponent implements OnInit {
     this.Item_ = null;
     this.fromDate = null;
     this.toDate = null;
-    
+
     if (isPlatformBrowser(this.platformId)) {
-        sessionStorage.removeItem('request_filters');
+      sessionStorage.removeItem('request_filters');
     }
-    
+
     this.onFilter();
   }
 }

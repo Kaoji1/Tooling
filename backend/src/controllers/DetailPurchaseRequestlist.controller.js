@@ -182,7 +182,7 @@
 
         
 //         await transporter.sendMail({
-//           from: `"Indirect expense" <${process.env.MAIL_USER || 'testsystem1508@gmail.com'}>`,
+//           from: `"Indirect expense" <${process.env.EMAIL_USER}>`,
 //           to: emailList,
 //           subject: `รายการเสร็จสิ้น ${rows.recordset.length} รายการ`,
 //           html: `
@@ -440,6 +440,8 @@ const Type = require("mssql").TYPES;
 const sql = require("mssql");
 const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
 
+const frontendLink = process.env.FRONTEND_URL || 'http://localhost:4200';
+
 
 
 exports.Detail_Purchase = async (req, res) => {
@@ -558,12 +560,12 @@ exports.Update_Status_Purchase= async (req, res) => {
 
         const transporter = nodemailer.createTransport({
           service: "gmail",
-          auth: { user: process.env.MAIL_USER || 'testsystem1508@gmail.com',
-                  pass: process.env.MAIL_PASS || 'amdo inzi npqq asnd' }
+          auth: { user: process.env.EMAIL_USER,
+                  pass: process.env.EMAIL_PASS }
         });
 
         await transporter.sendMail({
-          from: `"Indirect expense" <${process.env.MAIL_USER || 'testsystem1508@gmail.com'}>`,
+          from: `"Indirect expense" <${process.env.EMAIL_USER}>`,
           to: emailList,
           subject: `รายการเสร็จสิ้น ${rows.recordset.length} รายการ`,
           html: `
@@ -674,13 +676,13 @@ exports.Update_Status_Purchase= async (req, res) => {
 //           const transporter = nodemailer.createTransport({
 //             service: 'gmail',
 //             auth: {
-//               user: 'testsystem1508@gmail.com',
-//               pass: 'amdo inzi npqq asnd' // App Password
+//               user: process.env.EMAIL_USER,
+//               pass: process.env.EMAIL_PASS // App Password
 //             }
 //           });
 
 //           const mailOptions = {
-//             from: '"Material Disbursement System" <testsystem1508@gmail.com>',
+//             from: `"Material Disbursement System" <${process.env.EMAIL_USER}>`,
 //             to: emailList,
 //             subject: 'รายการเสร็จสิ้น',
 //             html: `
