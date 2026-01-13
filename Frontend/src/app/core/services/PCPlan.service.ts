@@ -18,12 +18,13 @@ export class PCPlanService {
 
   // 1. ดึง Division List (Cached)
   getDivisions(): Observable<any[]> {
-    if (!this.divisionsCache$) {
+    if (!this.divisionsCache$) {      // 1. เช็คก่อนว่าเคยดึงหรือยัง?
+      // 2. ถ้ายังไม่เคย ให้ยิงไปดึง แล้วสั่ง shareReplay(1)
       this.divisionsCache$ = this.http.get<any[]>(`${this.baseUrl}/divisions`).pipe(
         shareReplay(1)
       );
     }
-    return this.divisionsCache$;
+    return this.divisionsCache$;      // 3. ส่งของเดิมที่ดึงไว้แล้วกลับไป
   }
 
   // 2. *** ฟังก์ชันใหม่: ดึง Master Data ทั้งหมดในครั้งเดียว (Cached) ***
