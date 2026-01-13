@@ -1,0 +1,176 @@
+<div class="row m-0 p-0 g-0" style="height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: row;">
+
+    <div class="col-2 p-0 m-0" style="height: 100%; overflow-y: auto;">
+        <app-sidebar></app-sidebar>
+    </div>
+
+    <div class="col-10 main" style="height: 100%; overflow: auto; padding: 20px;">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Master PH Data (PMC)</h2>
+            <div>
+                <input type="file" (change)="onFileChange($event)" style="display: none;" #fileInput
+                    accept=".xlsx, .xls" />
+                <button class="btn btn-success me-2" (click)="fileInput.click()" [disabled]="loading">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Import Excel
+                </button>
+                <button class="btn btn-primary" (click)="loadData()" [disabled]="loading">
+                    <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="loading" class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <div class="table-responsive" *ngIf="!loading" style="max-height: 80vh; overflow-y: auto;">
+            <table class="table table-bordered table-hover text-nowrap">
+                <thead class="table-dark sticky-top">
+                    <tr>
+                        <th>PHGM ID</th>
+                        <th>DVS ID</th>
+                        <th>Item No</th>
+                        <th>Item Name</th>
+                        <th>Spec ID</th>
+                        <th>Spec</th>
+                        <th>DW</th>
+                        <th>Class Code</th>
+                        <th>Item Type</th>
+                        <th>Dept</th>
+                        <th>Product Code</th>
+                        <th>Source Code</th>
+                        <th>Organisation</th>
+                        <th>Item Class</th>
+                        <th>Commodity</th>
+                        <th>CL</th>
+                        <th>Account Code</th>
+                        <th>Stock Type</th>
+                        <th>Main W/H</th>
+                        <th>Stock Loc</th>
+                        <th>MatL Type</th>
+                        <th>Stock Unit</th>
+                        <th>Purch Unit 1</th>
+                        <th>Conv 1</th>
+                        <th>Purch Unit 2</th>
+                        <th>Conv 2</th>
+                        <th>WC Code</th>
+                        <th>Model Group</th>
+                        <th>Pay Duty</th>
+                        <th>Line</th>
+                        <th>Hard Alloc</th>
+                        <th>ECN</th>
+                        <th>Order Policy</th>
+                        <th>Order Point</th>
+                        <th>WOS</th>
+                        <th>Safty Code</th>
+                        <th>Maker Code</th>
+                        <th>Maker Name</th>
+                        <th>Maker Spec</th>
+                        <th>WPC No</th>
+                        <th>Vendor</th>
+                        <th>Vendor Name</th>
+                        <th>Unit Price</th>
+                        <th>Currency</th>
+                        <th>Pur Leadtime</th>
+                        <th>Std Qty</th>
+                        <th>Basic Order</th>
+                        <th>Max Order</th>
+                        <th>Min Order</th>
+                        <th>Yield</th>
+                        <th>BOI Code</th>
+                        <th>Remark</th>
+                        <th>Safty Stock</th>
+                        <th>Order Bal</th>
+                        <th>Allocated</th>
+                        <th>On Hand</th>
+                        <th>Pending Code</th>
+                        <th>Reason Pending</th>
+                        <th>Last Issued</th>
+                        <th>Last Stock In</th>
+                        <th>Last Maint</th>
+                        <th>Time</th>
+                        <th>Operator</th>
+                        <th>File Name</th>
+                        <th>Modify Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of masterData">
+                        <td>{{ item.PHGM_ID }}</td>
+                        <td>{{ item.DVS_Id }}</td>
+                        <td>{{ item.ItemNo }}</td>
+                        <td>{{ item.ItemName }}</td>
+                        <td>{{ item.Spec_ID }}</td>
+                        <td>{{ item.Spec }}</td>
+                        <td>{{ item.DW }}</td>
+                        <td>{{ item.ClassCode }}</td>
+                        <td>{{ item.ItemType }}</td>
+                        <td>{{ item.Dept }}</td>
+                        <td>{{ item.ProductCode }}</td>
+                        <td>{{ item['Source Code'] }}</td>
+                        <td>{{ item.Organisation }}</td>
+                        <td>{{ item.ItemClass }}</td>
+                        <td>{{ item.Commodity }}</td>
+                        <td>{{ item.CL }}</td>
+                        <td>{{ item.AccountCode }}</td>
+                        <td>{{ item.StockType }}</td>
+                        <td>{{ item.MainWH }}</td>
+                        <td>{{ item.StockLoc }}</td>
+                        <td>{{ item.MatL_Type }}</td>
+                        <td>{{ item.StockUnit }}</td>
+                        <td>{{ item.PurchaseUnit1 }}</td>
+                        <td>{{ item.Conversion1 }}</td>
+                        <td>{{ item.PurchaseUnit2 }}</td>
+                        <td>{{ item.Conversion2 }}</td>
+                        <td>{{ item.WC_Code }}</td>
+                        <td>{{ item.ModelGroup }}</td>
+                        <td>{{ item.PayDuty }}</td>
+                        <td>{{ item.Line }}</td>
+                        <td>{{ item.HardAllocation }}</td>
+                        <td>{{ item.ECN }}</td>
+                        <td>{{ item.OrderPolicy }}</td>
+                        <td>{{ item.OrderPoint }}</td>
+                        <td>{{ item.WOS }}</td>
+                        <td>{{ item.SaftyCode }}</td>
+                        <td>{{ item.MakerCode }}</td>
+                        <td>{{ item.MakerName }}</td>
+                        <td>{{ item.MakerSpec }}</td>
+                        <td>{{ item.WPC_No }}</td>
+                        <td>{{ item.Vendor }}</td>
+                        <td>{{ item.VendorName }}</td>
+                        <td>{{ item.UnitPrice }}</td>
+                        <td>{{ item.Currency }}</td>
+                        <td>{{ item.PurLeadtime }}</td>
+                        <td>{{ item.Standard_Qty }}</td>
+                        <td>{{ item.BasicOrder }}</td>
+                        <td>{{ item.MaxximumOrder }}</td>
+                        <td>{{ item.MinimumOrder }}</td>
+                        <td>{{ item.Yield }}</td>
+                        <td>{{ item.BOI_Code }}</td>
+                        <td>{{ item.Remark }}</td>
+                        <td>{{ item.SaftyStock }}</td>
+                        <td>{{ item.OrderBal }}</td>
+                        <td>{{ item.Allocated }}</td>
+                        <td>{{ item.OnHand }}</td>
+                        <td>{{ item.PendingCode }}</td>
+                        <td>{{ item.ReasonPending }}</td>
+                        <td>{{ item.Last_Issued | date:'shortDate' }}</td>
+                        <td>{{ item.Last_StockIn | date:'shortDate' }}</td>
+                        <td>{{ item.Last_Maint | date:'shortDate' }}</td>
+                        <td>{{ item.Time }}</td>
+                        <td>{{ item.Operator }}</td>
+                        <td>{{ item.FileName }}</td>
+                        <td>{{ item.ModifyDate | date:'medium' }}</td>
+                    </tr>
+                    <tr *ngIf="masterData.length === 0 && !loading">
+                        <td colspan="65" class="text-center text-muted">No data available.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>

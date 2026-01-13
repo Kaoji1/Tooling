@@ -25,6 +25,8 @@ const PurchaseHistory = require('./src/routes/PurchaseHistory.route.js');
 const Employee = require('./src/routes/Employee.route.js')
 const Permission = require('./src/routes/Permission.route.js');
 const HistoryPrint = require('./src/routes/HistoryPrint.route.js')
+const MasterPH = require('./src/routes/MasterPH.route.js');
+
 // const FileSaver = require('/src/routes/FileSaver.route.js');
 // const ExportToExcel = require('./src/routes/ExportToExcel.route.js');
 // const updateItem = require('./src/routes/DetailPurchaseRequestlist.route.js');
@@ -57,6 +59,7 @@ app.use('/api', PurchaseHistory);
 app.use('/api', Employee);
 app.use('/api', Permission);
 app.use('/api', HistoryPrint);
+app.use('/api', MasterPH);
 // app.use('/api',FileSaver);
 // app.use('/api',ExportToExcel);
 // app.use('/api', updateItem);

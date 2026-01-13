@@ -105,6 +105,11 @@ export const routes: Routes = [
         path: 'analyzeSmartRack',
         loadComponent: () => import('./pages/purchase/analyzeSmartrack/analyzeSmartrack.component').then(m => m.AnalyzeSmartRackComponent),
         data: { roles: ['purchase', 'view', 'admin'] }
+      },
+      {
+        path: 'master-ph',
+        loadComponent: () => import('./pages/purchase/MasterPH/MasterPH.component').then(m => m.MasterPHComponent),
+        data: { roles: ['purchase', 'view', 'admin'] }
       }
     ],
   },
