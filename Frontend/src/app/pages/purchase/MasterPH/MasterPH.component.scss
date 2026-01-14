@@ -1,3 +1,98 @@
+/* Modern Color Palette */
+$primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+$success-gradient: linear-gradient(135deg, #28a745 0%, #218838 100%);
+$card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+$hover-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+
+.layout {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+
+    .content-area {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        background-color: white;
+        /* Ensure seamless white background */
+    }
+}
+
+.nav-btn {
+    width: 200px;
+    height: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    background: #e9ecef;
+    /* Inactive state lighter */
+    color: #495057;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    &.active {
+        background: $primary-gradient;
+        color: white;
+        box-shadow: $hover-shadow;
+        transform: translateY(-2px);
+    }
+
+    &:hover:not(.active) {
+        background-color: #dee2e6;
+        transform: translateY(-1px);
+    }
+}
+
+.btn-custom-green {
+    background: $success-gradient;
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 10px 24px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
+
+    &:hover {
+        background: linear-gradient(135deg, #34ce57 0%, #28a745 100%);
+        box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+.card {
+    border: none;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.95);
+    /* Glass-morphism hint */
+    backdrop-filter: blur(10px);
+    box-shadow: $card-shadow !important;
+}
+
+/* Enhancing Form Controls */
+.form-control {
+    border-radius: 8px;
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    transition: all 0.2s;
+
+    &:focus {
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+        border-color: #86b7fe;
+    }
+}
+
+/* Spinner and Table Styles (Preserved just in case) */
 .spin {
     animation: spin 1s linear infinite;
 }
@@ -14,9 +109,4 @@
 
 .table-responsive {
     scrollbar-width: thin;
-}
-
-th,
-td {
-    vertical-align: middle;
 }

@@ -4,45 +4,61 @@ import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { PCPlanService } from '../../../core/services/PCPlan.service';
 import * as XLSX from 'xlsx';
+import Swal from 'sweetalert2';
+
+import { NgSelectModule } from '@ng-select/ng-select';
+
+export interface PlanItem {
+  date: string;
+  machineType: string | null;
+  fac: string | null;
+  mcNo: string;
+  process: string | null;
+  partBef: string | null;
+  partNo: string | null;
+  qty: number | null;
+  time: string;
+  comment: string;
+}
 
 @Component({
   selector: 'app-pc-plan',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, NgSelectModule],
   templateUrl: './PCPlan.component.html',
   styleUrls: ['./PCPlan.component.scss']
 })
 export class PCPlanComponent implements OnInit {
 
   // --- ตัวแปรสำหรับ Dropdown ---
-  divisionOptions: { code: string, label: string }[] = []; 
-  selectedDivisionCode: string = ''; 
+  divisionOptions: { code: string, label: string }[] = [];
+  selectedDivisionCode: string = '';
 
   // ลิสต์ตัวเลือก
   machineTypes: string[] = [];
   facs: string[] = [];
   processes: string[] = [];
   partNos: string[] = [];
-  partBef: string[] = []; 
-  
+  partBef: string[] = [];
+
   // ข้อมูลในตาราง
-  planItems: any[] = [];
+  planItems: PlanItem[] = [];
   isLoadingMasterData: boolean = false; // (Optional) ตัวแปรเช็คสถานะโหลด
 
   constructor(private pcPlanService: PCPlanService) { }
 
   ngOnInit(): void {
     this.loadDivisions();
-    this.addRow(); 
+    this.addRow();
   }
 
   // --- ส่วนที่ 1: Download Format ---
-downloadFormat() {
+  downloadFormat() {
     // 1. สร้างข้อมูลตัวอย่าง (Template)
     // ตรงนี้คือหัวตารางที่คุณอยากให้ User เห็นในไฟล์ Excel
     const templateData = [
       {
-        'Date': '2025-01-01',   
+        'Date': '2025-01-01',
         'Div': '7122',         // ต้องมี Div เพื่อเอาไปเลือก Dropdown
         'Machine Type': 'BM165',
         'Fac': 'Turning F.3',
@@ -67,13 +83,17 @@ downloadFormat() {
     XLSX.writeFile(wb, 'PCPlan_Template.xlsx');
   }
   // --- ส่วนที่ 2: Upload Excel ---
-  
+
   // ฟังก์ชันนี้จะถูกเรียกเมื่อ User เลือกไฟล์
   onFileChange(evt: any) {
     const target: DataTransfer = <DataTransfer>(evt.target);
-    
+
     // เช็คว่าเป็นไฟล์เดียวหรือไม่
-    if (target.files.length !== 1) throw new Error('Cannot use multiple files');
+    // เช็คว่าเป็นไฟล์เดียวหรือไม่
+    if (target.files.length !== 1) {
+      Swal.fire('Error', 'Cannot use multiple files', 'error');
+      return;
+    }
 
     const reader: FileReader = new FileReader();
 
@@ -88,7 +108,7 @@ downloadFormat() {
 
       // 3. แปลง Excel เป็น JSON Array
       const data = XLSX.utils.sheet_to_json(ws);
-      
+
       console.log('Excel Data:', data); // ดูข้อมูลดิบก่อน map
 
       // 4. Map ข้อมูลเข้าตาราง planItems
@@ -96,9 +116,9 @@ downloadFormat() {
     };
 
     reader.readAsBinaryString(target.files[0]);
-    
+
     // Reset input เพื่อให้เลือกไฟล์เดิมซ้ำได้ถ้าต้องการ
-    evt.target.value = ''; 
+    evt.target.value = '';
   }
 
   mapExcelToTable(data: any[]) {
@@ -116,30 +136,41 @@ downloadFormat() {
       // เพื่อให้ Dropdown ในตารางมีข้อมูลให้เลือก
       this.loadMasterData(this.selectedDivisionCode);
     } else {
-      alert('ไม่พบข้อมูล Division (Div) ในไฟล์ Excel กรุณาตรวจสอบ');
+      Swal.fire('Error', 'ไม่พบข้อมูล Division (Div) ในไฟล์ Excel กรุณาตรวจสอบ', 'error');
       return;
     }
 
-    // 4. เคลียร์ตารางเก่าทิ้ง (ถ้าต้องการ)
-    this.planItems = []; 
+    // 4. เตรียมตาราง (ไม่ลบของเก่าทิ้งถ้ามีข้อมูลอยู่)
+    // ลบเฉพาะแถวว่างๆ ที่ไม่มีข้อมูลอะไรเลยออก (Clean empty rows)
+    this.planItems = this.planItems.filter(item => !this.isRowEmpty(item));
 
-    // 5. วนลูปเอาข้อมูลลงตาราง (ไม่ต้อง map 'Div' ลงใน item แล้ว)
+    // ถ้าไม่มีข้อมูลเหลือเลย (หรือข้อมูลเดิมเป็นแถวว่างทั้งหมด) -> ก็ถือว่าเริ่มใหม่
+    // ถ้ามีข้อมูลค้างอยู่ -> ก็จะต่อท้ายไปเลย
+
+    // 5. วนลูปเอาข้อมูลลงตาราง
     data.forEach(row => {
       this.planItems.push({
         date: this.excelDateToJSDate(row['Date']),
-        machineType: row['Machine Type'] || '',
-        fac: row['Fac'] || '',
-        mcNo: row['MC No.'] || '',
-        process: row['Process'] || '',
-        partBef: row['Part Before'] || '', 
-        partNo: row['Part No.'] || '',
-        qty: row['QTY'] || 0,
+        machineType: row['Machine Type'] || null,
+        fac: row['Fac'] || null,
+        mcNo: (row['MC No.'] || '').toString(),
+        process: row['Process'] || null,
+        partBef: row['Part Before'] || null,
+        partNo: row['Part No.'] || null,
+        qty: row['QTY'] || null,
         time: row['Time'] || '',
         comment: row['Comment'] || ''
       });
     });
 
-    console.log('Import Success. Division selected:', this.selectedDivisionCode);
+    // Optional: แจ้งเตือนหลัง Import ว่าข้อมูลมาแล้ว แต่ยังไม่ Save
+    Swal.fire({
+      title: 'Import Successful',
+      text: `Loaded ${this.planItems.length} rows. Please check data and click Send.`,
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    });
   }
 
   // ฟังก์ชันช่วยแปลงวันที่จาก Excel (ที่เป็นตัวเลข) เป็น string YYYY-MM-DD
@@ -149,10 +180,10 @@ downloadFormat() {
     if (typeof serial === 'string') return serial;
 
     // ถ้าเป็น Serial Number ของ Excel
-    const utc_days  = Math.floor(serial - 25569);
-    const utc_value = utc_days * 86400;                                        
+    const utc_days = Math.floor(serial - 25569);
+    const utc_value = utc_days * 86400;
     const date_info = new Date(utc_value * 1000);
-    
+
     // แปลงเป็น format yyyy-mm-dd เพื่อใส่ใน input type="date"
     return date_info.toISOString().split('T')[0];
   }
@@ -161,8 +192,8 @@ downloadFormat() {
     this.pcPlanService.getDivisions().subscribe({
       next: (data: any[]) => {
         this.divisionOptions = data.map(item => ({
-            code: item.Division,
-            label: this.mapDivisionName(item.Division)
+          code: item.Division,
+          label: this.mapDivisionName(item.Division)
         }));
       },
       error: (err) => console.error('Error loading divisions:', err)
@@ -190,13 +221,13 @@ downloadFormat() {
       next: (res) => {
         // รับข้อมูลก้อนใหญ่มาแล้ว map ใส่ตัวแปร array
         // หมายเหตุ: เช็คชื่อ Property ให้ตรงกับที่ Backend ส่งมา (machines, facilities, etc.)
-        this.machineTypes = res.machines.map((x:any) => x.MachineType);
-        this.facs = res.facilities.map((x:any) => x.Facility);
-        this.processes = res.processes.map((x:any) => x.Process);
-        
+        this.machineTypes = res.machines.map((x: any) => x.MachineType);
+        this.facs = res.facilities.map((x: any) => x.Facility);
+        this.processes = res.processes.map((x: any) => x.Process);
+
         // PartNo กับ PartBef ใช้ข้อมูลชุดเดียวกันตามที่คุยกัน
-        this.partNos = res.partNos.map((x:any) => x.PartNo);
-        this.partBef = res.partBefs.map((x:any) => x.PartNo); // Backend ส่ง key 'PartNo' กลับมาในชุด partBefs
+        this.partNos = res.partNos.map((x: any) => x.PartNo);
+        this.partBef = res.partBefs.map((x: any) => x.PartNo); // Backend ส่ง key 'PartNo' กลับมาในชุด partBefs
 
         this.isLoadingMasterData = false; // โหลดเสร็จแล้ว
       },
@@ -207,7 +238,7 @@ downloadFormat() {
     });
   }
 
-  
+
 
   clearMasterData() {
     this.machineTypes = [];
@@ -219,18 +250,23 @@ downloadFormat() {
 
   // --- ส่วนจัดการตาราง (เหมือนเดิม) ---
   addRow() {
-     this.planItems.push({
-       date: '',
-       machineType: '',
-       fac: '',
-       process: '',
-       partBef: '',
-       partNo: '',
-       mcNo: '',     
-       qty: 0,       
-       time: '',     
-       comment: ''   
-     });
+    this.planItems.push({
+      date: '',
+      machineType: null,
+      fac: null,
+      process: null,
+      partBef: null,
+      partNo: null,
+      mcNo: '',
+      qty: null,
+      time: '',
+      comment: ''
+    });
+  }
+
+  isRowEmpty(item: PlanItem): boolean {
+    // เช็คว่าแถวนี้ว่างเปล่าหรือไม่ (ไม่มีข้อมูลสำคัญ)
+    return !item.date && !item.machineType && !item.fac && !item.mcNo && !item.partNo;
   }
 
   removeRow(index: number) {
@@ -242,6 +278,134 @@ downloadFormat() {
   }
 
   onSubmit() {
-    console.log('Sending Data:', this.planItems);
+    // 1. ตรวจสอบว่ามีข้อมูลไหม
+    if (this.planItems.length === 0) {
+      Swal.fire('Warning', 'No data to save', 'warning');
+      return;
+    }
+
+    // 2. ตรวจสอบว่าเลือก Division หรือยัง
+    if (!this.selectedDivisionCode) {
+      Swal.fire('Warning', 'Please select Division', 'warning');
+      return;
+    }
+
+    // 3. VALIDATION: ตรวจสอบข้อมูลแต่ละแถว
+    const errors: string[] = [];
+    this.planItems.forEach((item, index) => {
+      const rowNum = index + 1;
+      const errorMsg = this.validateRow(item);
+      if (errorMsg) {
+        errors.push(`Row ${rowNum}: ${errorMsg}`);
+      }
+    });
+
+    if (errors.length > 0) {
+      // แสดง Error ทั้งหมด
+      const errorHtml = `
+        <div style="text-align: left; max-height: 300px; overflow-y: auto; color: red;">
+          ${errors.map(e => `<div>• ${e}</div>`).join('')}
+        </div>
+      `;
+      Swal.fire({
+        title: 'Validation Failed',
+        html: `Found ${errors.length} errors.<br>Please fix before sending again.<br><hr>${errorHtml}`,
+        icon: 'error'
+      });
+      return; // หยุดการทำงาน ไม่ส่งไป Backend
+    }
+
+    // 4. ถ้าผ่าน Validation ทั้งหมดค่อยส่ง
+    Swal.fire({
+      title: 'Saving...',
+      text: `Saving ${this.planItems.length} records.`,
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    // 5. เตรียมข้อมูล (ใส่ Division และ EmployeeID ให้ครบทุกแถว)
+    let empId = 'Unknown';
+    const userStr = sessionStorage.getItem('user');
+    if (userStr) {
+      try {
+        const userObj = JSON.parse(userStr);
+        empId = userObj.Username || userObj.Employee_ID || 'Unknown';
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+
+    const payload = this.planItems.map(item => ({
+      ...item,
+      division: this.selectedDivisionCode,
+      employeeId: empId
+    }));
+
+    // 6. ส่งไป Backend
+    this.pcPlanService.savePlan(payload).subscribe({
+      next: (res) => {
+        if (res.fail > 0) {
+          // สร้าง html list รายการที่ Error (จาก Database)
+          let errorHtml = '<div style="text-align: left; max-height: 200px; overflow-y: auto;">';
+          res.errors.forEach((err: any) => {
+            errorHtml += `<p><strong>Row ${err.index + 1}:</strong> ${err.error}</p>`;
+          });
+          errorHtml += '</div>';
+
+          Swal.fire({
+            title: 'Completed with Errors',
+            html: `Success: ${res.count}<br>Failed: ${res.fail}<br><hr>${errorHtml}`,
+            icon: 'warning'
+          });
+        } else {
+          Swal.fire('Success', `Saved ${res.count} records successfully!`, 'success');
+          this.planItems = []; // เคลียร์ตารางหลังบันทึก
+        }
+      },
+      error: (err) => {
+        console.error('Save Error:', err);
+        Swal.fire('Error', 'Failed to save data. Please try again.', 'error');
+      }
+    });
+  }
+
+  // ฟังก์ชันตรวจสอบความถูกต้องของข้อมูลในแต่ละแถว
+  validateRow(item: PlanItem): string | null {
+    const missing: string[] = [];
+
+    if (!item.date) missing.push('Date');
+    if (!item.mcNo) missing.push('MC No.');
+
+    // เช็ค Dropdown ว่าต้องเลือก และต้องเป็นค่าที่มีอยู่จริงใน Master Data
+    if (!item.machineType) {
+      missing.push('Machine Type');
+    } else if (this.machineTypes.length > 0 && !this.machineTypes.includes(item.machineType)) {
+      return `Machine Type '${item.machineType}' is invalid.`;
+    }
+
+    if (!item.fac) {
+      missing.push('Fac');
+    } else if (this.facs.length > 0 && !this.facs.includes(item.fac)) {
+      return `Facility '${item.fac}' is invalid.`;
+    }
+
+    if (!item.process) {
+      missing.push('Process');
+    } else if (this.processes.length > 0 && !this.processes.includes(item.process)) {
+      return `Process '${item.process}' is invalid.`;
+    }
+
+    // PartNo สำคัญมาก
+    if (!item.partNo) {
+      missing.push('Part No.');
+    } else if (this.partNos.length > 0 && !this.partNos.includes(item.partNo)) {
+      return `Part No '${item.partNo}' is invalid.`;
+    }
+
+    if (missing.length > 0) {
+      return `Missing required fields: ${missing.join(', ')}`;
+    }
+
+    return null; // ผ่าน
   }
 }

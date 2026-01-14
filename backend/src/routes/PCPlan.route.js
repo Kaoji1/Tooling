@@ -10,4 +10,12 @@ router.get('/divisions', controller.getDivisions);
 // URL: /api/pc-plan/master-data/:divCode
 router.get('/master-data/:divCode', controller.getMasterDataByDivision);
 
+// 3. Route สำหรับบันทึกข้อมูล (Insert)
+// URL: /api/pc-plan/insert
+router.post('/insert', controller.insertPCPlan);
+
+// 4. Route สำหรับดึงรายการ (Get List)
+// URL: /api/pc-plan/list
+router.get('/list', controller.getPlanList);
+
 module.exports = router;

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SidebarComponent } from '../../../components/sidebar/sidebar.component'; // เช็ค Path ให้ถูกนะครับ
+import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
+import { PCPlanService } from '../../../core/services/PCPlan.service';
 
 @Component({
   selector: 'app-plan-list',
@@ -21,43 +22,42 @@ export class PlanListComponent implements OnInit {
   divisions: string[] = ['GM', 'PMC', 'Production'];
   machineTypes: string[] = ['CNC', 'Lathe', 'Milling'];
 
-  // ข้อมูลจำลองในตาราง (เพื่อให้เห็นภาพตามรูป)
-  planList: any[] = [
-    {
-      mcType: 'BM165',
-      division: 'GM',
-      fac: 'Turning F.3',
-      process: 'TURNING',
-      partBefore: 'D30292AAP2S3',
-      mcNo: '62',
-      partNo: 'D30175ACDP5S1',
-      qty: 1,
-      time: '8',
-      comment: '',
-      pathDwg: '-',
-      pathLayout: '-',
-      iiqc: '-'
-    },
-    {
-      mcType: '',
-      division: '',
-      fac: '',
-      process: '',
-      partBefore: '',
-      mcNo: '',
-      partNo: '',
-      qty: '',
-      time: '',
-      comment: '',
-      pathDwg: '-',
-      pathLayout: '-',
-      iiqc: '-'
-    }
-  ];
+  // ข้อมูลตาราง
+  planList: any[] = [];
 
-  constructor() { }
+  constructor(private pcPlanService: PCPlanService) { }
 
   ngOnInit(): void {
+    this.loadPlanList();
+  }
+
+  loadPlanList() {
+    this.pcPlanService.getPlanList().subscribe({
+      next: (res) => {
+        // Map ข้อมูลจาก Backend (PascalCase) -> Frontend (camelCase)
+        this.planList = res.map((item: any) => ({
+          id: item.Plan_ID,
+          date: item.PlanDate ? item.PlanDate.split('T')[0] : '', // แปลงวันที่ตัดเวลาออก
+          // empId: item.Employee_ID,
+          division: item.Division,
+          mcType: item.MC_Type, // HTML ใช้ mcType
+          fac: item.Facility,
+          process: item.Process,
+          partBefore: item.Before_Part,
+          mcNo: item.MC_No,
+          partNo: item.PartNo,
+          qty: item.QTY,
+          time: item.Time,
+          comment: item.Comment,
+          pathDwg: item.Path_Dwg || '-',
+          pathLayout: item.Path_Layout || '-',
+          iiqc: item.Path_IIQC || '-'
+        }));
+      },
+      error: (err) => {
+        console.error('Error loading plan list:', err);
+      }
+    });
   }
 
   // ฟังก์ชันเมื่อกดปุ่ม Edit
@@ -68,7 +68,7 @@ export class PlanListComponent implements OnInit {
 
   // ฟังก์ชันเมื่อกดปุ่ม Delete
   onDelete(index: number) {
-    if(confirm('Are you sure you want to delete this row?')) {
+    if (confirm('Are you sure you want to delete this row?')) {
       this.planList.splice(index, 1);
     }
   }

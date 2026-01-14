@@ -1,176 +1,227 @@
-<div class="row m-0 p-0 g-0" style="height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: row;">
+<div class="layout">
 
-    <div class="col-2 p-0 m-0" style="height: 100%; overflow-y: auto;">
-        <app-sidebar></app-sidebar>
-    </div>
+    <app-sidebarpurchase></app-sidebarpurchase>
 
-    <div class="col-10 main" style="height: 100%; overflow: auto; padding: 20px;">
+    <div class="content-area">
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>Master PH Data (PMC)</h2>
-            <div>
-                <input type="file" (change)="onFileChange($event)" style="display: none;" #fileInput
-                    accept=".xlsx, .xls" />
-                <button class="btn btn-success me-2" (click)="fileInput.click()" [disabled]="loading">
-                    <i class="bi bi-file-earmark-spreadsheet"></i> Import Excel
-                </button>
-                <button class="btn btn-primary" (click)="loadData()" [disabled]="loading">
-                    <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i> Refresh
-                </button>
+        <h3 class="mb-4 fw-bold text-dark">Upload Master</h3>
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-center gap-4 mb-5 flex-shrink-0">
+            <button class="btn btn-primary nav-btn" [class.active]="currentTab === 'purchase'"
+                (click)="setTab('purchase')">
+                Purchase Master
+            </button>
+            <button class="btn btn-primary nav-btn" [class.active]="currentTab === 'setup'" (click)="setTab('setup')">
+                Setup Tool
+            </button>
+            <button class="btn btn-primary nav-btn" [class.active]="currentTab === 'cutting'"
+                (click)="setTab('cutting')">
+                Cutting Tool
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-grow-1 d-flex flex-column" style="min-height: 0;">
+
+            <!-- PURCHASE MASTER TAB -->
+            <div *ngIf="currentTab === 'purchase'">
+                <h5 class="fw-bold mb-4">Upload Master Purchase</h5>
+
+                <div class="row mb-5 justify-content-center">
+                    <div class="col-md-8">
+                        <!-- PMC File -->
+                        <div class="d-flex align-items-center mb-4">
+                            <input type="file" #fileInputPMC style="display: none;" (change)="onFileChangePMC($event)"
+                                accept=".xlsx, .xls" />
+                            <button class="btn btn-success btn-custom-green me-3" (click)="fileInputPMC.click()">
+                                Select file PMC
+                            </button>
+                            <input type="text" class="form-control" placeholder="No files" readonly
+                                [value]="pmcFileName">
+                        </div>
+
+                        <!-- GM File -->
+                        <div class="d-flex align-items-center">
+                            <input type="file" #fileInputGM style="display: none;" (change)="onFileChangeGM($event)"
+                                accept=".xlsx, .xls" />
+                            <button class="btn btn-success btn-custom-green me-3" (click)="fileInputGM.click()">
+                                Select file GM
+                            </button>
+                            <input type="text" class="form-control" placeholder="No files" readonly
+                                [value]="gmFileName">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-5">
+                    <button class="btn btn-success btn-custom-green" (click)="exportTemplate('purchase')">
+                        Export file
+                    </button>
+                    <button class="btn btn-success btn-custom-green" (click)="uploadData('purchase')">
+                        <i class="bi bi-upload me-2"></i> Upload Master
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <div *ngIf="loading" class="text-center my-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+            <!-- SETUP TOOL TAB -->
+            <div *ngIf="currentTab === 'setup'">
+                <h5 class="fw-bold mb-4">Upload Master Setup Tool</h5>
+
+                <div class="d-flex align-items-center mb-4" style="max-width: 600px;">
+                    <input type="file" #fileInputSetup style="display: none;" (change)="onFileChangeSetup($event)"
+                        accept=".xlsx, .xls" />
+                    <button class="btn btn-success btn-custom-green me-3" (click)="fileInputSetup.click()">
+                        Select file
+                    </button>
+                    <input type="text" class="form-control bg-light" placeholder="No files" readonly
+                        [value]="setupFileName">
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Part No.</label>
+                        <input type="text" class="form-control" [(ngModel)]="setupForm.partNo">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">DwgNo</label>
+                        <input type="text" class="form-control" [(ngModel)]="setupForm.dwgNo">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end justify-content-end w-100">
+                        <!-- Action buttons moved to side or keeping typical flow? 
+                              Design shows buttons on Right side distinct from form. 
+                              I'll use a float or flex behavior similar to design.
+                         -->
+                    </div>
+                </div>
+
+                <!-- Use a grid that leaves space on the right for buttons if needed, or put buttons at bottom properly -->
+                <div class="row">
+                    <div class="col-8">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Item No.</label>
+                                <input type="text" class="form-control" [(ngModel)]="setupForm.itemNo">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">DwgRev</label>
+                                <input type="text" class="form-control" [(ngModel)]="setupForm.dwgRev">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Item name</label>
+                                <input type="text" class="form-control" [(ngModel)]="setupForm.itemName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">DwgUpdate</label>
+                                <input type="text" class="form-control" [(ngModel)]="setupForm.dwgUpdate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Spec</label>
+                                <input type="text" class="form-control" [(ngModel)]="setupForm.spec">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Usag</label>
+                                <input type="text" class="form-control" [(ngModel)]="setupForm.usag">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Process</label>
+                                <input type="text" class="form-control" [(ngModel)]="setupForm.process">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">CT_sec</label>
+                                <input type="text" class="form-control" [(ngModel)]="setupForm.ctSec">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">MC</label>
+                                <input type="text" class="form-control" [(ngModel)]="setupForm.mc">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4 d-flex flex-column align-items-end gap-4">
+                        <button class="btn btn-success btn-custom-green w-50" (click)="exportTemplate('setup')">
+                            Export file
+                        </button>
+                        <button class="btn btn-success btn-custom-green w-50" (click)="uploadData('setup')">
+                            <i class="bi bi-upload me-2"></i> Upload Master
+                        </button>
+                    </div>
+                </div>
             </div>
+
+            <!-- CUTTING TOOL TAB -->
+            <div *ngIf="currentTab === 'cutting'">
+                <h5 class="fw-bold mb-4">Upload Master Cutting Tool</h5>
+
+                <div class="d-flex align-items-center mb-4" style="max-width: 600px;">
+                    <input type="file" #fileInputCutting style="display: none;" (change)="onFileChangeCutting($event)"
+                        accept=".xlsx, .xls" />
+                    <button class="btn btn-success btn-custom-green me-3" (click)="fileInputCutting.click()">
+                        Select file
+                    </button>
+                    <input type="text" class="form-control bg-light" placeholder="No files" readonly
+                        [value]="cuttingFileName">
+                </div>
+
+                <div class="row">
+                    <div class="col-8">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Part No.</label>
+                                <input type="text" class="form-control" [(ngModel)]="cuttingForm.partNo">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">DwgNo</label>
+                                <input type="text" class="form-control" [(ngModel)]="cuttingForm.dwgNo">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Item No.</label>
+                                <input type="text" class="form-control" [(ngModel)]="cuttingForm.itemNo">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">DwgRev</label>
+                                <input type="text" class="form-control" [(ngModel)]="cuttingForm.dwgRev">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Process</label>
+                                <input type="text" class="form-control" [(ngModel)]="cuttingForm.process">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">DwgUpdate</label>
+                                <input type="text" class="form-control" [(ngModel)]="cuttingForm.dwgUpdate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">MC</label>
+                                <input type="text" class="form-control" [(ngModel)]="cuttingForm.mc">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">CT_sec</label>
+                                <input type="text" class="form-control" [(ngModel)]="cuttingForm.ctSec">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Usage pcs</label>
+                                <input type="text" class="form-control" [(ngModel)]="cuttingForm.usagePcs">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Position</label>
+                                <input type="text" class="form-control" [(ngModel)]="cuttingForm.position">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4 d-flex flex-column align-items-end gap-4">
+                        <button class="btn btn-success btn-custom-green w-50" (click)="exportTemplate('cutting')">
+                            Export file
+                        </button>
+                        <button class="btn btn-success btn-custom-green w-50" (click)="uploadData('cutting')">
+                            <i class="bi bi-upload me-2"></i> Upload Master
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <div class="table-responsive" *ngIf="!loading" style="max-height: 80vh; overflow-y: auto;">
-            <table class="table table-bordered table-hover text-nowrap">
-                <thead class="table-dark sticky-top">
-                    <tr>
-                        <th>PHGM ID</th>
-                        <th>DVS ID</th>
-                        <th>Item No</th>
-                        <th>Item Name</th>
-                        <th>Spec ID</th>
-                        <th>Spec</th>
-                        <th>DW</th>
-                        <th>Class Code</th>
-                        <th>Item Type</th>
-                        <th>Dept</th>
-                        <th>Product Code</th>
-                        <th>Source Code</th>
-                        <th>Organisation</th>
-                        <th>Item Class</th>
-                        <th>Commodity</th>
-                        <th>CL</th>
-                        <th>Account Code</th>
-                        <th>Stock Type</th>
-                        <th>Main W/H</th>
-                        <th>Stock Loc</th>
-                        <th>MatL Type</th>
-                        <th>Stock Unit</th>
-                        <th>Purch Unit 1</th>
-                        <th>Conv 1</th>
-                        <th>Purch Unit 2</th>
-                        <th>Conv 2</th>
-                        <th>WC Code</th>
-                        <th>Model Group</th>
-                        <th>Pay Duty</th>
-                        <th>Line</th>
-                        <th>Hard Alloc</th>
-                        <th>ECN</th>
-                        <th>Order Policy</th>
-                        <th>Order Point</th>
-                        <th>WOS</th>
-                        <th>Safty Code</th>
-                        <th>Maker Code</th>
-                        <th>Maker Name</th>
-                        <th>Maker Spec</th>
-                        <th>WPC No</th>
-                        <th>Vendor</th>
-                        <th>Vendor Name</th>
-                        <th>Unit Price</th>
-                        <th>Currency</th>
-                        <th>Pur Leadtime</th>
-                        <th>Std Qty</th>
-                        <th>Basic Order</th>
-                        <th>Max Order</th>
-                        <th>Min Order</th>
-                        <th>Yield</th>
-                        <th>BOI Code</th>
-                        <th>Remark</th>
-                        <th>Safty Stock</th>
-                        <th>Order Bal</th>
-                        <th>Allocated</th>
-                        <th>On Hand</th>
-                        <th>Pending Code</th>
-                        <th>Reason Pending</th>
-                        <th>Last Issued</th>
-                        <th>Last Stock In</th>
-                        <th>Last Maint</th>
-                        <th>Time</th>
-                        <th>Operator</th>
-                        <th>File Name</th>
-                        <th>Modify Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of masterData">
-                        <td>{{ item.PHGM_ID }}</td>
-                        <td>{{ item.DVS_Id }}</td>
-                        <td>{{ item.ItemNo }}</td>
-                        <td>{{ item.ItemName }}</td>
-                        <td>{{ item.Spec_ID }}</td>
-                        <td>{{ item.Spec }}</td>
-                        <td>{{ item.DW }}</td>
-                        <td>{{ item.ClassCode }}</td>
-                        <td>{{ item.ItemType }}</td>
-                        <td>{{ item.Dept }}</td>
-                        <td>{{ item.ProductCode }}</td>
-                        <td>{{ item['Source Code'] }}</td>
-                        <td>{{ item.Organisation }}</td>
-                        <td>{{ item.ItemClass }}</td>
-                        <td>{{ item.Commodity }}</td>
-                        <td>{{ item.CL }}</td>
-                        <td>{{ item.AccountCode }}</td>
-                        <td>{{ item.StockType }}</td>
-                        <td>{{ item.MainWH }}</td>
-                        <td>{{ item.StockLoc }}</td>
-                        <td>{{ item.MatL_Type }}</td>
-                        <td>{{ item.StockUnit }}</td>
-                        <td>{{ item.PurchaseUnit1 }}</td>
-                        <td>{{ item.Conversion1 }}</td>
-                        <td>{{ item.PurchaseUnit2 }}</td>
-                        <td>{{ item.Conversion2 }}</td>
-                        <td>{{ item.WC_Code }}</td>
-                        <td>{{ item.ModelGroup }}</td>
-                        <td>{{ item.PayDuty }}</td>
-                        <td>{{ item.Line }}</td>
-                        <td>{{ item.HardAllocation }}</td>
-                        <td>{{ item.ECN }}</td>
-                        <td>{{ item.OrderPolicy }}</td>
-                        <td>{{ item.OrderPoint }}</td>
-                        <td>{{ item.WOS }}</td>
-                        <td>{{ item.SaftyCode }}</td>
-                        <td>{{ item.MakerCode }}</td>
-                        <td>{{ item.MakerName }}</td>
-                        <td>{{ item.MakerSpec }}</td>
-                        <td>{{ item.WPC_No }}</td>
-                        <td>{{ item.Vendor }}</td>
-                        <td>{{ item.VendorName }}</td>
-                        <td>{{ item.UnitPrice }}</td>
-                        <td>{{ item.Currency }}</td>
-                        <td>{{ item.PurLeadtime }}</td>
-                        <td>{{ item.Standard_Qty }}</td>
-                        <td>{{ item.BasicOrder }}</td>
-                        <td>{{ item.MaxximumOrder }}</td>
-                        <td>{{ item.MinimumOrder }}</td>
-                        <td>{{ item.Yield }}</td>
-                        <td>{{ item.BOI_Code }}</td>
-                        <td>{{ item.Remark }}</td>
-                        <td>{{ item.SaftyStock }}</td>
-                        <td>{{ item.OrderBal }}</td>
-                        <td>{{ item.Allocated }}</td>
-                        <td>{{ item.OnHand }}</td>
-                        <td>{{ item.PendingCode }}</td>
-                        <td>{{ item.ReasonPending }}</td>
-                        <td>{{ item.Last_Issued | date:'shortDate' }}</td>
-                        <td>{{ item.Last_StockIn | date:'shortDate' }}</td>
-                        <td>{{ item.Last_Maint | date:'shortDate' }}</td>
-                        <td>{{ item.Time }}</td>
-                        <td>{{ item.Operator }}</td>
-                        <td>{{ item.FileName }}</td>
-                        <td>{{ item.ModifyDate | date:'medium' }}</td>
-                    </tr>
-                    <tr *ngIf="masterData.length === 0 && !loading">
-                        <td colspan="65" class="text-center text-muted">No data available.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <!-- Optional: Keep existing table below purely for dev verification or future use, or conditionally hide -->
+        <!-- For now, I will omit it to match the clean design requested, or I can put it in a separate section below if needed. The request "ทำโครงไว้ก่อนเพราะยังไม่ทำTeble" suggests Table is not the priority or might not be needed in this view yet. I'll remove it to ensure the UI looks exactly like the design first. -->
 
     </div>
 </div>

@@ -8,32 +8,27 @@
     <div class="top-controls">
       <div class="form-group" style="width: 280px;">
         <label>Division</label>
-        <div class="search-input-wrapper">
-
-          <select class="custom-dropdown form-control" [(ngModel)]="selectedDivisionCode" (change)="onDivisionChange()"
-            [disabled]="isLoadingMasterData" style="height: 38px; width: 100%;">
-
-            <option value="" disabled selected>-- Select Division --</option>
-
-            <option *ngFor="let div of divisionOptions" [value]="div.code">
-              {{ div.label }}
-            </option>
-
-          </select>
-        </div>
+        <ng-select [(ngModel)]="selectedDivisionCode" (change)="onDivisionChange()" [disabled]="isLoadingMasterData"
+          placeholder="-- Select Division --" [clearable]="false" style="width: 100%;">
+          <ng-option *ngFor="let div of divisionOptions" [value]="div.code">
+            {{ div.label }}
+          </ng-option>
+        </ng-select>
         <small *ngIf="isLoadingMasterData" style="color: red; margin-top: 5px; display: block;">
           ⏳ กำลังดึงข้อมูล กรุณารอสักครู่...
         </small>
       </div>
 
-<div class="excel-buttons">
-        
+
+
+      <div class="excel-buttons">
+
         <input type="file" #fileInput (change)="onFileChange($event)" style="display: none;" accept=".xlsx, .xls" />
 
         <button class="btn-excel upload" (click)="fileInput.click()">
           UPLOAD FOR EXCEL
         </button>
-        
+
         <button class="btn-excel download" (click)="downloadFormat()">
           DOWNLOAD FORMAT
         </button>
@@ -45,13 +40,13 @@
       <table>
         <thead>
           <tr>
-            <th style="width: 130px;">Date</th>
-            <th>Machine Type</th>
-            <th style="width: 100px;">Fac</th>
-            <th style="width: 100px;">MC No.</th>
-            <th>Process</th>
+            <th style="width: 130px;">Date <span style="color: red">*</span></th>
+            <th>Machine Type <span style="color: red">*</span></th>
+            <th style="width: 100px;">Fac <span style="color: red">*</span></th>
+            <th style="width: 100px;">MC No. <span style="color: red">*</span></th>
+            <th>Process <span style="color: red">*</span></th>
             <th>Part Before</th>
-            <th>Part No.</th>
+            <th>Part No. <span style="color: red">*</span></th>
             <th style="width: 60px;">QTY</th>
             <th style="width: 60px;">Time</th>
             <th>Comment</th>
@@ -64,21 +59,15 @@
             <td><input type="date" [(ngModel)]="item.date"></td>
 
             <td>
-              <div class="search-input-wrapper">
-                <select class="custom-dropdown" [(ngModel)]="item.machineType" style="width: 100%;">
-                  <option value="">Select</option>
-                  <option *ngFor="let m of machineTypes" [value]="m">{{ m }}</option>
-                </select>
-              </div>
+              <ng-select [(ngModel)]="item.machineType" [items]="machineTypes" appendTo="body" placeholder="Select"
+                [clearable]="true" style="width: 100%; min-width: 120px;">
+              </ng-select>
             </td>
 
             <td>
-              <div class="search-input-wrapper">
-                <select class="custom-dropdown" [(ngModel)]="item.fac" style="width: 100%;">
-                  <option value="">Select</option>
-                  <option *ngFor="let f of facs" [value]="f">{{ f }}</option>
-                </select>
-              </div>
+              <ng-select [(ngModel)]="item.fac" [items]="facs" appendTo="body" placeholder="Select" [clearable]="true"
+                style="width: 100%; min-width: 100px;">
+              </ng-select>
             </td>
 
             <td>
@@ -86,28 +75,21 @@
             </td>
 
             <td>
-              <div class="search-input-wrapper">
-                <select class="custom-dropdown" [(ngModel)]="item.process" style="width: 100%;">
-                  <option value="">Select</option>
-                  <option *ngFor="let p of processes" [value]="p">{{ p }}</option>
-                </select>
-              </div>
+              <ng-select [(ngModel)]="item.process" [items]="processes" appendTo="body" placeholder="Select"
+                [clearable]="true" style="width: 100%; min-width: 100px;">
+              </ng-select>
             </td>
 
             <td>
-              <div class="search-input-wrapper">
-                <input type="text" list="partBeforeList" [(ngModel)]="item.partBef" placeholder="Select/Type"
-                  class="custom-dropdown" (focus)="selectAllText($event)">
-              </div>
+              <ng-select [(ngModel)]="item.partBef" [items]="partBef" appendTo="body" placeholder="Select"
+                [clearable]="true" style="width: 100%; min-width: 120px;">
+              </ng-select>
             </td>
 
             <td>
-              <div class="search-input-wrapper">
-                <select class="custom-dropdown" [(ngModel)]="item.partNo" style="width: 100%;">
-                  <option value="">Select</option>
-                  <option *ngFor="let pn of partNos" [value]="pn">{{ pn }}</option>
-                </select>
-              </div>
+              <ng-select [(ngModel)]="item.partNo" [items]="partNos" appendTo="body" placeholder="Select"
+                [clearable]="true" style="width: 100%; min-width: 120px;">
+              </ng-select>
             </td>
 
             <td><input type="number" [(ngModel)]="item.qty" (focus)="selectAllText($event)"></td>
@@ -131,7 +113,3 @@
 
   </div>
 </div>
-
-<datalist id="partBeforeList">
-  <option *ngFor="let pb of partBef" [value]="pb"></option>
-</datalist>

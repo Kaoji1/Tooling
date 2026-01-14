@@ -45,4 +45,14 @@ export class PCPlanService {
     this.masterDataCache.clear();
   }
 
+  // 4. บันทึกข้อมูล (Insert)
+  savePlan(data: any[]): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/insert`, data);
+  }
+
+  // 5. ดึงรายการ (Get List)
+  getPlanList(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/list`);
+  }
+
 }

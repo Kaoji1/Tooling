@@ -51,12 +51,18 @@
 
       &.upload {
         background-color: #198754; // สีเขียวเข้ม
-        &:hover { background-color: #157347; }
+
+        &:hover {
+          background-color: #157347;
+        }
       }
 
       &.download {
         background-color: #198754;
-        &:hover { background-color: #157347; }
+
+        &:hover {
+          background-color: #157347;
+        }
       }
     }
   }
@@ -78,13 +84,13 @@
     border-radius: 4px;
     outline: none;
     background-color: white;
-    
+
 
     &:focus {
       border-color: #007bff; // เปลี่ยนสีขอบตอนพิมพ์
-      box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
     }
-    
+
     // ซ่อนลูกศรเดิมของ Browser (Webkit) เพื่อไม่ให้ซ้อนกัน
     &::-webkit-calendar-picker-indicator {
       opacity: 0;
@@ -157,7 +163,7 @@
         border-radius: 4px;
         box-sizing: border-box;
         outline: none;
-        
+
         &:focus {
           border-color: #007bff;
         }
@@ -228,4 +234,45 @@
   &:hover {
     background-color: #ffe6e6;
   }
+}
+
+// ปรับแต่งเฉพาะ ng-select ที่อยู่ในตาราง (ให้ไม่มีขอบขาวๆ รอบๆ)
+::ng-deep .table-container {
+  .ng-select {
+    padding-bottom: 0px;
+
+    .ng-select-container {
+      min-height: 38px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+    }
+
+    .ng-value-container {
+      padding-left: 5px;
+    }
+
+    // ปรับขนาด Font
+    .ng-value-label,
+    .ng-input>input {
+      font-size: 14px;
+    }
+  }
+
+  // ซ่อนปุ่มเพิ่ม-ลดตัวเลข (Spinners) สำหรับ input type="number"
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+}
+
+// Global Override for appendTo="body" dropdowns to make them consistent
+::ng-deep .ng-dropdown-panel {
+  z-index: 9999 !important; // อยู่บนสุดเสมอ
 }
