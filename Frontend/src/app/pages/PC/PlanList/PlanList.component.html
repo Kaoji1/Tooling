@@ -2,11 +2,11 @@
   <app-sidebar></app-sidebar>
 
   <div class="content-area">
-    
+
     <h2 style="margin-bottom: 20px; color: #333;">PC Plan List</h2>
 
     <div class="filter-section">
-      
+
       <div class="filter-group">
         <label>Date</label>
         <input type="date" [(ngModel)]="filterDate">
@@ -66,14 +66,14 @@
             <td>{{ item.pathDwg }}</td>
             <td>{{ item.pathLayout }}</td>
             <td>{{ item.iiqc }}</td>
-            
+
             <td style="text-align: center;">
               <button class="btn-action edit" (click)="onEdit(item)">
                 <i class="bi bi-pencil-square"></i>
               </button>
             </td>
             <td style="text-align: center;">
-              <button class="btn-action delete" (click)="onDelete(i)">
+              <button class="btn-action delete" (click)="onDelete(item)">
                 <i class="bi bi-trash-fill"></i>
               </button>
             </td>

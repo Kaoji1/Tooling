@@ -148,3 +148,25 @@ exports.getPlanList = async (req, res) => {
         res.status(500).send({ message: err.message });
     }
 };
+
+// 5. ฟังก์ชันลบข้อมูล (Delete PC Plan)
+exports.deletePCPlan = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        if (!id) {
+            return res.status(400).send({ message: "Plan ID is required." });
+        }
+
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('Plan_ID', sql.Int, id)
+            .execute('trans.Stored_PCPlan_Delete');
+
+        res.status(200).json({ message: "Deleted successfully", id: id });
+
+    } catch (err) {
+        console.error('Error deletePCPlan:', err);
+        res.status(500).send({ message: err.message });
+    }
+};

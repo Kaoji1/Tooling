@@ -55,4 +55,9 @@ export class PCPlanService {
     return this.http.get<any[]>(`${this.baseUrl}/list`);
   }
 
+  // 6. ลบข้อมูล (Delete)
+  deletePlan(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/delete/${id}`);
+  }
+
 }

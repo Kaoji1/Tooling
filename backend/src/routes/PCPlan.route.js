@@ -18,4 +18,8 @@ router.post('/insert', controller.insertPCPlan);
 // URL: /api/pc-plan/list
 router.get('/list', controller.getPlanList);
 
+// 5. Route สำหรับลบข้อมูล (Delete)
+// URL: /api/pc-plan/delete/:id
+router.delete('/delete/:id', controller.deletePCPlan);
+
 module.exports = router;

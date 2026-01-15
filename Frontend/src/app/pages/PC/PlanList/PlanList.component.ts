@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { PCPlanService } from '../../../core/services/PCPlan.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-plan-list',
@@ -67,10 +68,39 @@ export class PlanListComponent implements OnInit {
   }
 
   // ฟังก์ชันเมื่อกดปุ่ม Delete
-  onDelete(index: number) {
-    if (confirm('Are you sure you want to delete this row?')) {
-      this.planList.splice(index, 1);
-    }
+  // ฟังก์ชันเมื่อกดปุ่ม Delete
+  onDelete(item: any) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.pcPlanService.deletePlan(item.id).subscribe({
+          next: () => {
+            Swal.fire(
+              'Deleted!',
+              'Your file has been deleted.',
+              'success'
+            );
+            // Reload ตารางใหม่
+            this.loadPlanList();
+          },
+          error: (err) => {
+            console.error('Delete error:', err);
+            Swal.fire(
+              'Error!',
+              'Failed to delete. Please try again.',
+              'error'
+            );
+          }
+        });
+      }
+    });
   }
 
 }
