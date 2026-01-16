@@ -1,6 +1,6 @@
-<div class="layout">           <!-- เพื่อกำหนดการจัดวางหน้าจอแบบ Flexbox -->
+<div class="layout"> <!-- เพื่อกำหนดการจัดวางหน้าจอแบบ Flexbox -->
 
-  <app-sidebar></app-sidebar>  <!-- แสดงเมนูทางซ้ายมือ -->
+  <app-sidebar></app-sidebar> <!-- แสดงเมนูทางซ้ายมือ -->
 
   <div class="content-area">
 
@@ -53,12 +53,15 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of returnItems; let i = index">                    <!-- ใช้ *ngFor วนลูปสร้างแถวตารางตามจำนวนข้อมูลใน Array returnItems -->
-            <td class="text-center" style="font-weight: bold; color: #555;">    <!-- ตัวแปร let i = index ใช้เก็บลำดับแถว (เริ่มจาก 0) เพื่อใช้ในการอ้างอิงและแสดงลำดับที่ -->
-             <!-- แสดง {{ i + 1 }} เพื่อให้ลำดับเริ่มจาก 1 (เพราะ index เริ่มที่ 0) -->
+          <tr *ngFor="let item of returnItems; let i = index">
+            <!-- ใช้ *ngFor วนลูปสร้างแถวตารางตามจำนวนข้อมูลใน Array returnItems -->
+            <td class="text-center" style="font-weight: bold; color: #555;">
+              <!-- ตัวแปร let i = index ใช้เก็บลำดับแถว (เริ่มจาก 0) เพื่อใช้ในการอ้างอิงและแสดงลำดับที่ -->
+              <!-- แสดง {{ i + 1 }} เพื่อให้ลำดับเริ่มจาก 1 (เพราะ index เริ่มที่ 0) -->
               {{ i + 1 }}
             </td>
-            <td><input type="text" [(ngModel)]="item.itemNo" placeholder="Scan/Type"></td>
+            <td><input type="text" [(ngModel)]="item.itemNo" (change)="onItemNoChange(i, item.itemNo)"
+                placeholder="Scan/Type"></td>
             <td><input type="text" [(ngModel)]="item.itemName"></td>
             <td><input type="text" [(ngModel)]="item.spec"></td>
             <td><input type="number" [(ngModel)]="item.qty"></td>

@@ -42,7 +42,7 @@
                         </div>
 
                         <!-- GM File -->
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center mb-4">
                             <input type="file" #fileInputGM style="display: none;" (change)="onFileChangeGM($event)"
                                 accept=".xlsx, .xls" />
                             <button class="btn btn-success btn-custom-green me-3" (click)="fileInputGM.click()">
@@ -50,6 +50,17 @@
                             </button>
                             <input type="text" class="form-control" placeholder="No files" readonly
                                 [value]="gmFileName">
+                        </div>
+
+                        <!-- IReport File (New) -->
+                        <div class="d-flex align-items-center">
+                            <input type="file" #fileInputIReport style="display: none;"
+                                (change)="onFileChangeIReport($event)" accept=".xlsx, .xls" />
+                            <button class="btn btn-success btn-custom-green me-3" (click)="fileInputIReport.click()">
+                                Select file IReport
+                            </button>
+                            <input type="text" class="form-control" placeholder="No files" readonly
+                                [value]="iReportFileName">
                         </div>
                     </div>
                 </div>

@@ -19,4 +19,8 @@ export class MasterPHService {
     importData(data: any[]): Observable<any> {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import`, data);
     }
+
+    importIReport(data: any[]): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/master-ph/import-ireport`, data);
+    }
 }

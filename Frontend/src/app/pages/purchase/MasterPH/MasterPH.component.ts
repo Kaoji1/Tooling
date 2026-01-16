@@ -23,6 +23,7 @@ export class MasterPHComponent {
     // Purchase
     pmcFileName: string = '';
     gmFileName: string = '';
+    iReportFileName: string = ''; // New
 
     // Setup Tool
     setupFileName: string = '';
@@ -64,7 +65,7 @@ export class MasterPHComponent {
     }
 
     // Generic file handler helper
-    handleFile(evt: any, type: 'pmc' | 'gm' | 'setup' | 'cutting') {
+    handleFile(evt: any, type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'ireport') {
         const target: DataTransfer = <DataTransfer>(evt.target);
         if (target.files.length !== 1) {
             Swal.fire('Error', 'Cannot use multiple files', 'error');
@@ -77,6 +78,7 @@ export class MasterPHComponent {
         // Update file name display based on type
         if (type === 'pmc') this.pmcFileName = fileName;
         else if (type === 'gm') this.gmFileName = fileName;
+        else if (type === 'ireport') this.iReportFileName = fileName; // New
         else if (type === 'setup') this.setupFileName = fileName;
         else if (type === 'cutting') this.cuttingFileName = fileName;
 
@@ -86,21 +88,37 @@ export class MasterPHComponent {
             const wb: XLSX.WorkBook = XLSX.read(bstr, { type: 'binary' });
             const wsname: string = wb.SheetNames[0];
             const ws: XLSX.WorkSheet = wb.Sheets[wsname];
-            const data = XLSX.utils.sheet_to_json(ws);
+
+            // 1. Convert to array of arrays to find the header row
+            const aoa: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+            let headerRowIndex = 0;
+            // Search based on type? Or generic?
+            // For PMC/GM uses 'Item No'. For IReport it might be 'ITEM_NO' or similar.
+            // Let's make it generic for 'Item No' or 'ITEM_NO' or 'DIVISION'
+            const keywords = ['item no', 'itemno', 'division', 'department'];
+
+            // Search for the row containing keywords
+            for (let i = 0; i < Math.min(aoa.length, 20); i++) { // Search first 20 rows
+                const row = aoa[i];
+                if (row && row.some((cell: any) => {
+                    if (typeof cell !== 'string') return false;
+                    const val = cell.toLowerCase();
+                    return keywords.some(k => val.includes(k));
+                })) {
+                    headerRowIndex = i;
+                    console.log(`Found header at row ${i} for ${type}`);
+                    break;
+                }
+            }
+
+            // 2. Parse again with the correct range
+            // range: headerRowIndex tells it to skip rows before the header
+            const data = XLSX.utils.sheet_to_json(ws, { range: headerRowIndex });
 
             if (data.length > 0) {
-                // Store data temporarily or process it
-                // For now, we might just store it to a variable if we need to differentiate specific actions
-                // or directly call import if the user clicks "Upload" immediately? 
-                // The design has a separate "Upload" button. 
-                // So we should probably just hold the data until they click "Upload".
-                // But existing logic called importData immediately. 
-                // I will modify importData to take an optional type or just keep it simple for now
-                // and assume the user clicks the upload button which will trigger the actual process
-                // BUT, the current code imports immediately on change. 
-                // The NEW design has an "Upload" button. So I should store the data first.
-
                 this.tempData[type] = data; // Need to define tempData
+                console.log(`Parsed ${data.length} rows from ${type} file. First row keys:`, Object.keys(data[0] as any));
             } else {
                 Swal.fire('Info', 'File is empty', 'info');
             }
@@ -114,12 +132,14 @@ export class MasterPHComponent {
     tempData: any = {
         pmc: [],
         gm: [],
+        ireport: [], // New
         setup: [],
         cutting: []
     };
 
     onFileChangePMC(evt: any) { this.handleFile(evt, 'pmc'); }
     onFileChangeGM(evt: any) { this.handleFile(evt, 'gm'); }
+    onFileChangeIReport(evt: any) { this.handleFile(evt, 'ireport'); } // New
     onFileChangeSetup(evt: any) { this.handleFile(evt, 'setup'); }
     onFileChangeCutting(evt: any) { this.handleFile(evt, 'cutting'); }
 
@@ -127,28 +147,26 @@ export class MasterPHComponent {
         if (type === 'purchase') {
             const hasPMC = this.tempData.pmc && this.tempData.pmc.length > 0;
             const hasGM = this.tempData.gm && this.tempData.gm.length > 0;
+            const hasIReport = this.tempData.ireport && this.tempData.ireport.length > 0; // New
 
-            if (!hasPMC && !hasGM) {
+            if (!hasPMC && !hasGM && !hasIReport) {
                 Swal.fire('Warning', 'No file selected for Purchase', 'warning');
                 return;
             }
 
-            // Upload sequence: PMC then GM (or just one if only one selected)
+            // Upload sequence
             if (hasPMC) {
                 this.importData(this.tempData.pmc);
             }
-
-            // Note: If both are selected, this simple logic triggers import twice in parallel/sequence 
-            // which might be acceptable but ideally should be batched. 
-            // Given the existing service structure, we'll just trigger them. 
-            // A delay or check might be needed if the backend locks. 
-            // For now, we assume independent processing.
             if (hasGM) {
-                // If PMC is also uploading, this might overwrite loading state or UI messages.
-                // We'll add a small delay or just fire it. 
                 setTimeout(() => {
                     this.importData(this.tempData.gm);
                 }, 500);
+            }
+            if (hasIReport) { // New IReport Upload
+                setTimeout(() => {
+                    this.importIReportData(this.tempData.ireport);
+                }, 1000); // Trigger after others
             }
         } else {
             const data = this.tempData[type];
@@ -183,6 +201,45 @@ export class MasterPHComponent {
                 console.error('Import Error:', err);
                 const errorMsg = err.error?.message || err.error?.error || err.message || 'Unknown error';
                 Swal.fire('Error', `Failed to import data: ${errorMsg}`, 'error');
+                this.loading = false;
+            }
+        });
+    }
+
+    // Special import for IReport
+    importIReportData(data: any[]) {
+        this.loading = true;
+        Swal.fire({
+            title: 'Importing IReport...',
+            text: `Uploading ${data.length} records. Please wait.`,
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        this.masterPHService.importIReport(data).subscribe({
+            next: (res) => {
+                if (res.errors && res.errors.length > 0) {
+                    // Partial success or total failure
+                    let msg = `Imported ${res.count} records. Failed ${res.errors.length} records.`;
+                    if (res.count === 0) msg = `Failed to import all ${res.errors.length} records.`;
+
+                    console.warn('Import Warnings:', res.errors);
+                    // Show first 5 errors in the alert
+                    const errorDetails = res.errors.slice(0, 5).join('<br>');
+                    Swal.fire({
+                        title: res.count === 0 ? 'Import Failed' : 'Completed with Errors',
+                        html: `${msg}<br><div class="text-danger text-start small mt-2">${errorDetails}${res.errors.length > 5 ? '<br>...' : ''}</div>`,
+                        icon: res.count === 0 ? 'error' : 'warning'
+                    });
+                } else {
+                    Swal.fire('Success', `Imported IReport ${res.count} records successfully!`, 'success');
+                }
+                this.loading = false;
+            },
+            error: (err) => {
+                console.error('Import IReport Error:', err);
+                const errorMsg = err.error?.message || err.error?.error || err.message || 'Unknown error';
+                Swal.fire('Error', `Failed to import IReport data: ${errorMsg}`, 'error');
                 this.loading = false;
             }
         });

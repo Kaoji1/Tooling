@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
+import { ReturnService } from '../../../core/services/return.service';
+import { HttpClientModule } from '@angular/common/http';
 
 
 // สร้าง Interface เพื่อกำหนดหน้าตาข้อมูลใน 1 แถว
@@ -21,7 +23,8 @@ interface ReturnItem {
   imports: [
     CommonModule,                             //  นำเข้า module พื้นฐาน (เช่น *ngFor, *ngIf)
     FormsModule,                              //  นำเข้า module สำหรับทำ Two-way binding ([(ngModel)])
-    SidebarComponent                          //  นำเข้า Sidebar เพื่อมาแสดงผลในหน้านี้
+    SidebarComponent,                          //  นำเข้า Sidebar เพื่อมาแสดงผลในหน้านี้
+    HttpClientModule
   ]
 })
 export class ReturnComponent implements OnInit {
@@ -43,7 +46,7 @@ export class ReturnComponent implements OnInit {
     { itemNo: '', itemName: '', spec: '', qty: 0, remark: '' }
   ];
 
-  constructor() { }
+  constructor(private returnService: ReturnService) { }
 
   ngOnInit(): void {
     // ตรงนี้เดี๋ยวค่อยใส่โค้ดเรียก API ดึง Division มาโชว์
@@ -71,6 +74,26 @@ export class ReturnComponent implements OnInit {
     } else {
       alert("ต้องมีอย่างน้อย 1 รายการครับ");
     }
+  }
+
+  // ฟังก์ชันดึงข้อมูล Item
+  onItemNoChange(index: number, itemNo: string) {
+    if (!itemNo) return;
+    this.returnService.getItemDetails(itemNo).subscribe({
+      next: (data) => {
+        if (data) {
+          this.returnItems[index].itemName = data.ItemName;
+          this.returnItems[index].spec = data.Spec;
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching item:', err);
+        // Optional: clear fields or alert
+        this.returnItems[index].itemName = '';
+        this.returnItems[index].spec = '';
+        alert('Item not found / ไม่พบข้อมูลสินค้า');
+      }
+    });
   }
 
   // ฟังก์ชันกดปุ่ม Return (ส่งข้อมูล)

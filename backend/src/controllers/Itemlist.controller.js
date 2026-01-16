@@ -170,3 +170,134 @@ exports.post_ItemNo = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };
+
+// ==========================================
+//              SETUP TOOL
+// ==========================================
+
+// 1. Get Setup Division
+exports.get_Setup_Division = async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .query("EXEC [trans].[Stored_Setup_Dropdown_Division]");
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// 2. Get Setup Facility by Division
+exports.get_Setup_Facility = async (req, res) => {
+  try {
+    const { Division } = req.body;
+    if (!Division) return res.status(400).json({ error: "Missing Division parameter" });
+
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("InputDivision", sql.NVarChar, Division)
+      .query("EXEC [trans].[Stored_Setup_Dropdown_Facility_By_Division] @InputDivision");
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// 3. Get Setup PartNo by Division
+exports.get_Setup_PartNo = async (req, res) => {
+  try {
+    const { Division } = req.body;
+    if (!Division) return res.status(400).json({ error: "Missing Division parameter" });
+
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("InputDivision", sql.NVarChar, Division)
+      .query("EXEC [trans].[Stored_Setup_Dropdown_PartNo_By_Division] @InputDivision");
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// 4. Get Setup Process by Division and PartNo
+exports.get_Setup_Process = async (req, res) => {
+  try {
+    const { Division, PartNo } = req.body;
+    if (!Division || !PartNo) return res.status(400).json({ error: "Missing parameters" });
+
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("InputDivision", sql.NVarChar, Division)
+      .input("InputPartNo", sql.NVarChar, PartNo)
+      .query("EXEC [trans].[Stored_Setup_Dropdown_Process_By_Division_PartNo] @InputDivision, @InputPartNo");
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// 5. Get Setup MC by Division, PartNo, Process
+exports.get_Setup_MC = async (req, res) => {
+  try {
+    const { Division, PartNo, Process } = req.body;
+    if (!Division || !PartNo || !Process) return res.status(400).json({ error: "Missing parameters" });
+
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("InputDivision", sql.NVarChar, Division)
+      .input("InputPartNo", sql.NVarChar, PartNo)
+      .input("InputProcess", sql.NVarChar, Process)
+      .query("EXEC [trans].[Stored_Setup_Dropdown_MC_By_Division_PartNo_Process] @InputDivision, @InputPartNo, @InputProcess");
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// 6. Search Setup Items Result
+exports.get_Setup_Items_Result = async (req, res) => {
+  console.time('SetupDetails_QueryTime'); // Start timer
+  try {
+    const { Division, PartNo, Process, MC } = req.body;
+    console.log('Search Setup Params:', { Division, PartNo, Process, MC });
+
+    const pool = await poolPromise;
+    const request = pool.request();
+
+    // Use .execute with .input safely
+    // If param is null/undefined/empty, we don't pass it (let SP use default NULL) 
+    // OR we pass explicit NULL. The SP has defaults = NULL, so we can skip or pass NULL.
+    // Explicit is better for clarity.
+
+    if (Division) request.input("Input_Division", sql.NVarChar, Division);
+    if (PartNo) request.input("Input_PartNo", sql.NVarChar, PartNo);
+    if (Process) request.input("Input_Process", sql.NVarChar, Process);
+    if (MC) request.input("Input_MC", sql.NVarChar, MC);
+
+    // Use .execute instead of .query for better plan caching and performance
+    const result = await request.execute("[trans].[Stored_Search_Setup_Item_Result]");
+
+    console.timeEnd('SetupDetails_QueryTime'); // End timer and log
+    console.log(`Found ${result.recordset.length} items.`);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.timeEnd('SetupDetails_QueryTime');
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};

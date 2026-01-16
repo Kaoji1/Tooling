@@ -69,9 +69,29 @@ export class RequestService {
   }
 
   // ของใหม่ (Setup - Table ใหม่)
-  get_SetupItems(data: any) {
-    // เปลี่ยน /GetSetupItems เป็นชื่อ Path ของ Backend จริงๆ ที่จะทำ
-    return this.httpClient.post<any>(`${this.baseUrl}/GetSetupItems`, data);
+  get_SetupItems(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_Setup_Items`, data);
+  }
+
+  // Setup Tool Dropdowns
+  get_Setup_Division(): Observable<any> {
+    return this.httpClient.get(`${this.baseUrl}/get_Setup_Division`);
+  }
+
+  get_Setup_Facility(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_Setup_Facility`, data);
+  }
+
+  get_Setup_PartNo(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_Setup_PartNo`, data);
+  }
+
+  get_Setup_Process(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_Setup_Process`, data);
+  }
+
+  get_Setup_MC(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_Setup_MC`, data);
   }
 
   get_SPEC(data: any): Observable<any> {
