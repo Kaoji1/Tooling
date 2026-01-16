@@ -34,16 +34,16 @@ export class PCPlanComponent implements OnInit {
   divisionOptions: { code: string, label: string }[] = [];
   selectedDivisionCode: string = '';
 
-  // ลิสต์ตัวเลือก
+  // ลิสต์ตัวเลือก (สำหรับ Dropdown ในตาราง)
   machineTypes: string[] = [];
   facs: string[] = [];
   processes: string[] = [];
   partNos: string[] = [];
   partBef: string[] = [];
 
-  // ข้อมูลในตาราง
+  // ข้อมูลในตาราง (Main Data)
   planItems: PlanItem[] = [];
-  isLoadingMasterData: boolean = false; // (Optional) ตัวแปรเช็คสถานะโหลด
+  isLoadingMasterData: boolean = false; // (Optional) ตัวแปรเช็คสถานะการโหลดข้อมูล Master Data
 
   constructor(private pcPlanService: PCPlanService) { }
 
@@ -52,10 +52,10 @@ export class PCPlanComponent implements OnInit {
     this.addRow();
   }
 
-  // --- ส่วนที่ 1: Download Format ---
+  // --- ส่วนที่ 1: Download Format (ดาวน์โหลดฟอร์ม Excel) ---
   downloadFormat() {
     // 1. สร้างข้อมูลตัวอย่าง (Template)
-    // ตรงนี้คือหัวตารางที่คุณอยากให้ User เห็นในไฟล์ Excel
+    // ตรงนี้คือหัวตารางที่ให้ User เห็นในไฟล์ Excel สำหรับกรอกข้อมูล
     const templateData = [
       {
         'Date': '2025-01-01',
@@ -82,13 +82,12 @@ export class PCPlanComponent implements OnInit {
     // 4. สั่ง Browser ให้ดาวน์โหลดไฟล์ทันที (ชื่อไฟล์ PCPlan_Template.xlsx)
     XLSX.writeFile(wb, 'PCPlan_Template.xlsx');
   }
-  // --- ส่วนที่ 2: Upload Excel ---
+  // --- ส่วนที่ 2: Upload Excel (Import ข้อมูลจาก Excel) ---
 
-  // ฟังก์ชันนี้จะถูกเรียกเมื่อ User เลือกไฟล์
+  // ฟังก์ชันนี้จะถูกเรียกเมื่อ User เลือกไฟล์ (Change Loop)
   onFileChange(evt: any) {
     const target: DataTransfer = <DataTransfer>(evt.target);
 
-    // เช็คว่าเป็นไฟล์เดียวหรือไม่
     // เช็คว่าเป็นไฟล์เดียวหรือไม่
     if (target.files.length !== 1) {
       Swal.fire('Error', 'Cannot use multiple files', 'error');
@@ -140,12 +139,12 @@ export class PCPlanComponent implements OnInit {
       return;
     }
 
-    // 4. เตรียมตาราง (ไม่ลบของเก่าทิ้งถ้ามีข้อมูลอยู่)
+    // 4. เตรียมตาราง (ไม่ลบของเก่าทิ้งถ้ามีข้อมูลอยู่ แต่กรองแถวว่างออกก่อน)
     // ลบเฉพาะแถวว่างๆ ที่ไม่มีข้อมูลอะไรเลยออก (Clean empty rows)
     this.planItems = this.planItems.filter(item => !this.isRowEmpty(item));
 
     // ถ้าไม่มีข้อมูลเหลือเลย (หรือข้อมูลเดิมเป็นแถวว่างทั้งหมด) -> ก็ถือว่าเริ่มใหม่
-    // ถ้ามีข้อมูลค้างอยู่ -> ก็จะต่อท้ายไปเลย
+    // ถ้ามีข้อมูลค้างอยู่ -> ก็จะต่อท้ายข้อมูลใหม่เข้าไปเลย
 
     // 5. วนลูปเอาข้อมูลลงตาราง
     data.forEach(row => {
@@ -206,20 +205,21 @@ export class PCPlanComponent implements OnInit {
     return code;
   }
 
+  // เมื่อมีการเปลี่ยน Division -> ให้โหลด Master Data ใหม่
   onDivisionChange() {
     if (this.selectedDivisionCode) {
       this.loadMasterData(this.selectedDivisionCode);
     } else {
-      this.clearMasterData();
+      this.clearMasterData(); // ถ้าไม่เลือกอะไร ให้เคลียร์ค่าทิ้ง
     }
   }
 
-  // *** แก้ไขตรงนี้ครับ ***
+  // โหลดข้อมูล Master Data (Machine, Fac, Process, PartNo) จาก Division ที่เลือก
   loadMasterData(divCode: string) {
-    this.isLoadingMasterData = true; // เริ่มโหลด
+    this.isLoadingMasterData = true; // เริ่มสถานะกำลังโหลด
     this.pcPlanService.getMasterData(divCode).subscribe({
       next: (res) => {
-        // รับข้อมูลก้อนใหญ่มาแล้ว map ใส่ตัวแปร array
+        // รับข้อมูลก้อนใหญ่มาจาก Backend แล้ว map ใส่ตัวแปร array แยกตามประเภท
         // หมายเหตุ: เช็คชื่อ Property ให้ตรงกับที่ Backend ส่งมา (machines, facilities, etc.)
         this.machineTypes = res.machines.map((x: any) => x.MachineType);
         this.facs = res.facilities.map((x: any) => x.Facility);
@@ -229,7 +229,7 @@ export class PCPlanComponent implements OnInit {
         this.partNos = res.partNos.map((x: any) => x.PartNo);
         this.partBef = res.partBefs.map((x: any) => x.PartNo); // Backend ส่ง key 'PartNo' กลับมาในชุด partBefs
 
-        this.isLoadingMasterData = false; // โหลดเสร็จแล้ว
+        this.isLoadingMasterData = false; // โหลดเสร็จแล้ว ปิดสถานะ
       },
       error: (err) => {
         console.error('Error loading master data:', err);
@@ -277,8 +277,9 @@ export class PCPlanComponent implements OnInit {
     event.target.select();
   }
 
+  // ฟังก์ชันบันทึกข้อมูลเมือกดปุ่ม Send
   onSubmit() {
-    // 1. ตรวจสอบว่ามีข้อมูลไหม
+    // 1. ตรวจสอบว่ามีข้อมูลในตารางไหม
     if (this.planItems.length === 0) {
       Swal.fire('Warning', 'No data to save', 'warning');
       return;

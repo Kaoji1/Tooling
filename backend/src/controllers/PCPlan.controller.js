@@ -1,7 +1,8 @@
 const sql = require('mssql');
 const { poolPromise } = require('../config/database'); // ตรวจสอบ path config database ว่าถูกต้อง
 
-// 1. ฟังก์ชันดึง Division (อันนี้ต้องมี เพราะ Frontend ยังเรียกใช้ตอนเริ่มหน้าเว็บ)
+// 1. ฟังก์ชันดึง Division (สำหรับ Dropdown เลือกแผนก)
+// อันนี้ต้องมี เพราะ Frontend จะเรียกใช้ตอนเริ่มโหลดหน้าเว็บ เพื่อแสดงตัวเลือก Division
 exports.getDivisions = async (req, res) => {
     try {
         const pool = await poolPromise;
@@ -15,7 +16,8 @@ exports.getDivisions = async (req, res) => {
     }
 };
 
-// 2. ฟังก์ชันดึง Master Data รวม (Machines, Facilities, Processes, PartNos)
+// 2. ฟังก์ชันดึง Master Data รวม (Machines, Facilities, Processes, PartNos) ตาม Division ที่เลือก
+// ฟังก์ชันนี้จะยิง Stored Procedure 4 ตัวพร้อมกันเพื่อประสิทธิภาพ แล้วส่งกลับไปให้ Frontend ทีเดียว
 exports.getMasterDataByDivision = async (req, res) => {
     try {
         const divCode = req.params.divCode;
@@ -27,9 +29,9 @@ exports.getMasterDataByDivision = async (req, res) => {
         const pool = await poolPromise;
         console.log(`Fetching Master Data for Division: ${divCode}...`);
 
-        // ยิง 4 Query พร้อมกัน
+        // ยิง 4 Query พร้อมกันแบบ Parallel (เพื่อให้เสร็จเร็วขึ้น ไม่ต้องรอทีละอัน)
         const [machines, facilities, processes, partNos] = await Promise.all([
-            // 1. Machine
+            // 1. ดึงข้อมูล Machine Type
             pool.request()
                 .input('InputDivision', sql.NVarChar, divCode)
                 .execute('trans.Stored_Get_Dropdown_Machine_By_Division'),
@@ -65,9 +67,10 @@ exports.getMasterDataByDivision = async (req, res) => {
 };
 
 // 3. ฟังก์ชันบันทึกข้อมูล (Insert PC Plan)
+// รับข้อมูลเป็น Array (หลายแถว) จาก Frontend แล้ววนลูปบันทึกลงฐานข้อมูล
 exports.insertPCPlan = async (req, res) => {
     try {
-        const items = req.body; // รับ array ของ plan items จาก frontend
+        const items = req.body; // รับค่า array ของ plan items ที่ส่งมาจากหน้าบ้าน
 
         if (!Array.isArray(items) || items.length === 0) {
             return res.status(400).send({ message: "No data provided." });
@@ -135,7 +138,8 @@ exports.insertPCPlan = async (req, res) => {
     }
 };
 
-// 4. ฟังก์ชันดึงรายการ (Get List)
+// 4. ฟังก์ชันดึงรายการ PC Plan ทั้งหมด (Get List)
+// สำหรับแสดงผลในหน้า List ว่ามี Plan อะไรบ้างที่เคยบันทึกไว้
 exports.getPlanList = async (req, res) => {
     try {
         const pool = await poolPromise;
@@ -149,7 +153,8 @@ exports.getPlanList = async (req, res) => {
     }
 };
 
-// 5. ฟังก์ชันลบข้อมูล (Delete PC Plan)
+// 5. ฟังก์ชันลบข้อมูล PC Plan (Delete)
+// รับ ID ที่ต้องการลบ แล้วส่งคำสั่งลบไปยัง Stored Procedure
 exports.deletePCPlan = async (req, res) => {
     try {
         const id = req.params.id;

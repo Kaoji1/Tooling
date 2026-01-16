@@ -124,10 +124,16 @@ export class requestComponent implements OnInit {
       // เรียก API ใหม่สำหรับ Setup Tool โดยเฉพาะ
       this.api.get_Setup_Division().subscribe({
         next: (response: any[]) => {
-          this.Division = response.map(d => ({
-            Division: d.Division,
-            DivisionName: d.Division // Map ให้ตรงกับ bindLabel ใน HTML
-          }));
+          this.Division = response.map(d => {
+            let name = d.Division;
+            if (d.Division === '7122') name = 'GM';
+            else if (d.Division === '71DZ') name = 'PMC';
+
+            return {
+              Division: d.Division,
+              DivisionName: name // Map ให้ตรงกับ bindLabel ใน HTML (7122->GM, 71DZ->PMC)
+            };
+          });
         },
         error: (e: any) => console.error(e),
       });
