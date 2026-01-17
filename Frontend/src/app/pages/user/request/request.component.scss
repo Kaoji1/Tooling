@@ -1,268 +1,312 @@
 .layout {
   display: flex;
-  flex-direction: row;
-  height: 100vh;
+  min-height: 100vh;
   width: 100%;
-  overflow: hidden;
+  background-color: var(--color-bg);
+
+  app-sidebar {
+    // Sidebar logic managed by sidebar component
+  }
 
   .content-area {
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    display: block;
+    flex: 1;
+    display: flex;
     flex-direction: column;
-    align-items: start;
-    padding: 20px;
-    background-color: white;
+    gap: 1.5rem; // Increased gap for better separation
+    padding: 1.5rem 2rem;
+    background-color: var(--color-bg);
 
-    .row-selected {
-      background-color: #ebebeb !important;
-      /* ฟ้าอ่อน */
-    }
-
+    // Header
     .header {
       display: flex;
       justify-content: space-between;
-      flex-direction: row;
-
-      .noti {
-        justify-self: end;
-
-      }
+      align-items: center;
+      margin-bottom: 0.5rem;
 
       h4 {
-        margin-bottom: 5px;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--color-text-main);
+        margin: 0;
 
-      }
-
-      .lol {
-        border: none;
-        background-color: white;
-
-        i {
-          color: #000000;
-          font-size: 25px;
-          margin-right: 10px;
-
-        }
-
+        background: linear-gradient(90deg, var(--color-primary), #1e40af);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
     }
 
     p {
-      color: rgb(16, 3, 114);
-      margin-bottom: 5px;
+      color: var(--color-text-sub);
+      font-size: 0.85rem;
+      margin-top: -0.25rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
     }
 
-
-    //row1+row2+button
+    // Filter/Input Card
     .group-req {
+      background-color: var(--color-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 1.5rem;
+      border: 1px solid var(--color-border);
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 1rem;
+      z-index: 2; // Ensure it sits above if anything overlaps
 
-      .group-select {
-        flex-direction: column;
+      // .input-req removed from HTML, so promoting styles directly under .group-req
+
+      .ng-select .ng-select-container,
+      input.form-control {
+        min-height: 38px;
+        height: 38px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
+        font-size: 0.9rem;
+        background-color: #f9fafb;
+        transition: all 0.2s;
+
+        &:focus,
+        &:focus-within {
+          background-color: white;
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+      }
+
+      .ng-select.ng-select-single .ng-select-container {
+        height: 38px;
         display: flex;
+        align-items: center;
+      }
+
+      .req-row1 {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr); // Force 5 columns side-by-side
+        gap: 1.5rem;
+        align-items: flex-end;
+        margin-bottom: 1rem;
+
+        @media (max-width: 1200px) {
+          grid-template-columns: repeat(3, 1fr); // Break to 3 cols on medium screens
+        }
+
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr; // Stack on mobile
+        }
+      }
+
+      .req-row2 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); // Force 4 columns side-by-side
+        gap: 1.5rem;
+        align-items: flex-end;
+
+        @media (max-width: 1200px) {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      // Common style for inputs to ensure they fill the grid cell
+      .group-select {
+        width: 100%;
 
         label {
-          font-size: 16px;
-          color: #2d2c2c;
-          text-align: center;
-          margin-bottom: 5px;
-        }
-      }
-
-      //row1=row2
-      .input-req {
-        .tooling-row {
-        display: flex;
-        flex-direction: row;
-        margin-top: 5px;
-        margin-bottom: 15px; 
-        
-        width: 100%;           // ✅ บังคับให้กว้างเต็ม
-        justify-content: flex-start; // ✅ บังคับให้ชิดซ้าย
-        
-        .group-select {
-          flex-direction: column;
-          display: flex;
-
-          label {
-            font-size: 16px;
-            color: #2d2c2c;
-            text-align: center;
-            margin-bottom: 5px;
-            font-weight: bold;
-          }
-        }
-      }
-        .ng-select {
-         // บังคับให้ Dropdown ทุกอันในหน้านี้สวยเหมือนกัน (รวมถึงอันใหม่ด้วย)
-         width: 180px;
-         border-radius: 20px;
-         font-size: 16px;
-      }
-
-        //row1,row2
-        .req-row1,
-        .req-row2 {
-          display: flex;
-          flex-direction: row;
-          margin: 5px 0 5px 0;
-          gap: 25px;
-
-          //label+select
-          .group-select {
-            flex-direction: column;
-            display: flex;
-
-            label {
-              font-size: 16px;
-              color: #2d2c2c;
-              text-align: center;
-              margin-bottom: 5px;
-            }
-
-            .ng-select {
-
-              width: 180px;
-              border-radius: 20px;
-              font-size: 16px;
-
-            }
-
-            input {
-              padding: 8px;
-              border-radius: 5px;
-              font-size: 14px;
-              color: #7a7878;
-              width: 180px;
-
-            }
-          }
-        }
-
-        // .group-select  
-      }
-
-      // .input-req
-
-      .btn-group-req {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        margin: 5px;
-
-        .btn-viewall {
-          width: 140px;
-          height: 45px;
-          background-color: #545455;
-          color: white;
-          border: none;
-          border-radius: 10px;
-          font-size: 18px;
-          cursor: pointer;
-          margin-top: 10px;
-        }
-
-        .btn-view {
-          width: 140px;
-          height: 45px;
-          background-color: #0b65b9;
-          color: white;
-          border: none;
-          border-radius: 10px;
-          font-size: 18px;
-          cursor: pointer;
-          margin-top: 10px;
-        }
-
-        .btn-import {
-          width: 120px;
-          height: 45px;
-          background-color: #00a5b5;
-          color: white;
-          border: none;
-          border-radius: 10px;
-          font-size: 18px;
-          cursor: pointer;
-          margin-top: 10px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: var(--color-text-sub);
+          margin-bottom: 0.25rem;
+          display: block;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
       }
     }
 
-    //.group-req
-    //ตารางในbox-main
-    .table-responsive {
-       max-height: 54vh;  // ตารางสูงไม่เกิน 70% ของจอ
-  width: 100%;      // กว้างเต็ม 100% ของจอ
-  overflow: auto;
+    // End of .group-req
 
+    .btn-group-req {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+      // Ensure it's visually separate but aligned
+      margin-top: -1rem;
+      padding-right: 2rem;
+      position: relative; // Enable z-index
+      z-index: 5; // Ensure it sits ABOVE the group-req (which is z-index 2)
+
+      button {
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px; // Rounded pills
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+
+        &.btn-viewall {
+          background-color: white;
+          border: 1px solid #d1d5db;
+          color: #6b7280;
+
+          &:hover {
+            background-color: #fee2e2;
+            color: #ef4444;
+            border-color: #ef4444;
+            transform: translateY(-1px);
+          }
+        }
+
+        &.btn-view {
+          background: linear-gradient(135deg, var(--color-primary), #2563eb);
+          color: white;
+          box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px -1px rgba(59, 130, 246, 0.6);
+          }
+
+          &:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+          }
+        }
+      }
+    }
+
+    // Main Table Section - ROBUST FIX
+    .table-responsive {
+      display: block; // Force block layout
+      width: 100%;
+      min-height: 250px; // Ensure it always has height even if empty logic fails
+      background-color: var(--color-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+
+      overflow-x: auto; // Horizontal scroll for table content
+      overflow-y: visible; // No vertical clipping
 
       table {
         width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        color: #4a4949;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 800px; // Ensure table has width to trigger scroll if needed
 
+        thead {
 
-        th,
-        td {
-          padding: 6px;
-          text-align: center;
-          border: 1px solid #D2D2D2;
-          font-size: 16px;
+          // Static positioning to avoid z-index/clipping issues
+          th {
+            background-color: #f8fafc;
+            padding: 0.75rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--color-text-sub);
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--color-border);
+            white-space: nowrap;
 
-          .yoyu {
-            width: 50px;
-
-
-          }
-
-          .ng-select {
-            width: 100px;
-
-
+            &:nth-child(1) {
+              width: 40px;
+            }
           }
         }
 
-        th {
-          background-color: #E3E3E3;
-          padding: 15px;
-          font-size: 16px;
-          font-weight: 100;
+        tbody {
+          background-color: white;
 
+          tr {
+            transition: background-color 0.15s;
 
-        }
+            &:hover {
+              background-color: #eff6ff;
+            }
 
-        .selected-row {
-          background-color: #84c4d6 !important;
+            td {
+              padding: 0.6rem;
+              font-size: 0.9rem;
+              color: var(--color-text-main);
+              border-bottom: 1px solid var(--color-border);
+              vertical-align: middle;
+
+              input.yoyu {
+                width: 60px;
+                text-align: center;
+                border: 1px solid var(--color-border);
+                border-radius: 4px;
+                padding: 4px;
+                font-weight: 600;
+                color: var(--color-primary);
+              }
+            }
+          }
+
+          tr td.text-muted {
+            padding: 3rem;
+            font-style: italic;
+            text-align: center;
+            color: var(--color-text-sub);
+          }
         }
       }
-
-
-
-    }
-  }
-
-  .btn-sendrequest {
-    margin: 20px;
-    background-color: rgb(235, 51, 51);
-    color: white;
-    justify-self: end;
-    display: block;
-    border: none;
-    border-radius: 15px;
-    font-size: 22px;
-    padding: 8px;
-
-    .btn-sendrequest::hover {
-      background-color: #000000;
     }
 
-    // .box-main
+    h5 {
+      font-weight: 700;
+      color: var(--color-text-main);
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+
+      i {
+        color: var(--color-primary);
+      }
+    }
+
+    .btn-sendrequest {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--color-primary) 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      padding: 0.6rem 2rem;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 700;
+      box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 2rem;
+
+      &:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.6);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
   }
-
-
 }

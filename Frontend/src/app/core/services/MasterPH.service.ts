@@ -23,4 +23,8 @@ export class MasterPHService {
     importIReport(data: any[]): Observable<any> {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import-ireport`, data);
     }
+
+    importTypeTooling(data: any[]): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/master-ph/import-type-tooling`, data);
+    }
 }

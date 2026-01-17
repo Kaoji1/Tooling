@@ -412,3 +412,103 @@ exports.importIReport = async (req, res) => {
         res.status(500).send({ message: "Internal Server Error", error: err.message });
     }
 };
+
+exports.importTypeTooling = async (req, res) => {
+    try {
+        const items = req.body;
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).send({ message: "No data provided." });
+        }
+
+        const pool = await poolPromise;
+        const totalItems = items.length;
+        let successCount = 0;
+        let errorCount = 0;
+        const errors = [];
+
+        console.log(`[Import Type Tooling] Starting import of ${totalItems} items...`);
+
+        if (totalItems > 0) {
+            console.log('[DEBUG Type Tooling] Sample Item Keys:', Object.keys(items[0]));
+            console.log('[DEBUG Type Tooling] Sample Item Data:', items[0]);
+        }
+
+        // Helper to find value with fuzzy key matching
+        const findValue = (item, candidates) => {
+            const itemKeys = Object.keys(item);
+            // 1. Exact match
+            for (const key of candidates) {
+                if (item[key] !== undefined && item[key] !== null) return item[key];
+            }
+            // 2. Case-insensitive
+            for (const key of candidates) {
+                const lowerKey = key.toLowerCase();
+                const foundKey = itemKeys.find(k => k.toLowerCase() === lowerKey);
+                if (foundKey && item[foundKey] !== undefined && item[foundKey] !== null) return item[foundKey];
+            }
+            // 3. Fuzzy match
+            for (const key of candidates) {
+                const normalizedCandidate = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const foundKey = itemKeys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === normalizedCandidate);
+                if (foundKey && item[foundKey] !== undefined && item[foundKey] !== null) return item[foundKey];
+            }
+            return null;
+        };
+
+        const getString = (val) => (val === "" || val == null) ? null : String(val).trim();
+
+        const BATCH_SIZE = 1000;
+
+        const processItem = async (item, index) => {
+            try {
+                const request = pool.request();
+
+                // Parameters mapping for [trans].[Stored_Import_tb_Master_AccountCode]
+                request.input('AC_CODE', sql.NVarChar(50), getString(findValue(item, ['AC_CODE', 'AC CODE'])));
+                request.input('AC_NAME', sql.NVarChar(255), getString(findValue(item, ['AC_NAME', 'AC NAME'])));
+                request.input('COMPANY', sql.NVarChar(50), getString(findValue(item, ['COMPANY'])));
+                request.input('AC_TYPE', sql.NVarChar(50), getString(findValue(item, ['AC_TYPE', 'AC TYPE'])));
+                request.input('DI_CODE', sql.NVarChar(50), getString(findValue(item, ['DI_CODE', 'DI CODE'])));
+                request.input('GROUP_AC', sql.NVarChar(50), getString(findValue(item, ['GROUP_AC', 'GROUP AC'])));
+                request.input('LATEST_UPDATE', sql.NVarChar(50), getString(findValue(item, ['LATEST_UPDATE', 'LATEST UPDATE'])));
+                request.input('LATEST_UPDATE_TIME', sql.NVarChar(50), getString(findValue(item, ['LATEST_UPDATE_TIME', 'LATEST UPDATE TIME'])));
+                request.input('LATEST_UPDATE_BY', sql.NVarChar(100), getString(findValue(item, ['LATEST_UPDATE_BY', 'LATEST UPDATE BY', 'Update By'])));
+                request.input('ACC_GROUP', sql.NVarChar(50), getString(findValue(item, ['ACC_GROUP', 'ACC GROUP'])));
+                request.input('Type', sql.NVarChar(100), getString(findValue(item, ['Type', 'TYPE'])));
+
+                await request.execute('[db_Tooling].[trans].[Stored_Import_tb_Master_AccountCode]');
+                successCount++;
+            } catch (err) {
+                console.error(`[Import Type Tooling] Error at row ${index}:`, err);
+                errorCount++;
+                errors.push(`Row ${index + 1}: ${err.message}`);
+            }
+        };
+
+        for (let i = 0; i < totalItems; i += BATCH_SIZE) {
+            const batch = items.slice(i, i + BATCH_SIZE);
+            const batchPromises = batch.map((item, batchIndex) => processItem(item, i + batchIndex));
+            await Promise.all(batchPromises);
+
+            if ((i + BATCH_SIZE) % 1000 < BATCH_SIZE) {
+                console.log(`[Import Type Tooling] Progress: ${Math.min(i + BATCH_SIZE, totalItems)}/${totalItems} finished.`);
+            }
+        }
+
+        console.log(`[Import Type Tooling] Finished. Success: ${successCount}, Errors: ${errorCount}`);
+
+        if (errorCount > 0) {
+            res.status(207).send({
+                message: `Imported ${successCount} items. Failed ${errorCount} items.`,
+                count: successCount,
+                errors: errors
+            });
+        } else {
+            res.status(200).send({ message: "Import successful", count: successCount });
+        }
+
+    } catch (err) {
+        console.error("Import Type Tooling Error:", err);
+        res.status(500).send({ message: "Internal Server Error", error: err.message });
+    }
+};

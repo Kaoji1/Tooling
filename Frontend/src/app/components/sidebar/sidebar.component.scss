@@ -1,105 +1,134 @@
-// จัดฝั่งsidebarทั้งหมด
+// Sidebar Modern Styles
 .sidebar {
-  height: 100vh;
-  width: 200px;
-  background-color:#d6e6f2;
+  min-height: 100vh;
+  width: 250px;
+  background-color: var(--color-surface);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-sizing: border-box;
-
-  // border-right: 0.5px solid rgb(255, 0, 0);
-
-
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+  border-right: 1px solid var(--color-border);
+  z-index: 50;
 
   .top {
-    //active ตอนอยู่ในหน้านั้นๆ
-    .nav-links li.active a{  
-          color: white;
-            background-color: #005eb8;
-}
-    // ปรับแต่งlogo
-    .logo {
-      font-size: 36px;
-      font-weight: bolder;
-      text-align: center;
-      margin: 10px 0px 10px 0px;
 
+    // Logo Section
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      text-align: center;
+      margin: 1.5rem 0;
+      color: var(--color-primary);
+      letter-spacing: -0.5px;
+
+      // Optional: Add a tagline or subtext if needed
     }
 
-
+    // Navigation Links
     .nav-links {
       list-style: none;
-      margin: auto;
-      padding: 0;
-      font-size: 18px;
+      margin: 0;
+      padding: 0 1rem;
+      font-size: 0.95rem;
       cursor: pointer;
-      // ระยะห่างระหว่างเมนู
+
       li {
-        margin: 5px 0px 20px 0px;
-
-
+        margin-bottom: 0.5rem;
 
         a {
-          color: rgb(74, 74, 74);
-          display: block;
-          padding: 20px;
-          padding-left: 50px;
-          // text-align: center;
+          color: var(--color-text-sub);
+          display: flex;
+          align-items: center;
+          padding: 0.8rem 1rem;
+          border-radius: var(--radius-md);
           text-decoration: none;
-          // แสดงการเคลื่อนไหวเมื่อเอาเม้าส์ชี้
-           position: relative;
-          &:hover {
-            color: #ffffff;
-            background-color: #005eb8;
-          }
-          
+          position: relative;
+          transition: all 0.2s ease;
+          font-weight: 500;
+          gap: 0.75rem;
 
-            //ตัวแจ้งเตือนของ Cart
-              span {
-              position: absolute;     
-              top: 21px;              
-              right: 48px;            
-              background-color: red;
-              color: white;
-              padding: 5px;
-              border-radius: 10px;
-              font-size: 13px;
-              min-width: 20px;
-              text-align: center;
-              line-height: 1;
+          // Icons (assuming icons are used, or add gap for text)
+          i {
+            font-size: 1.1rem;
+            color: var(--color-secondary);
+            transition: color 0.2s;
+          }
+
+          &:hover {
+            background-color: #f1f5f9; // Light slate hover
+            color: var(--color-primary);
+
+            i {
+              color: var(--color-primary);
             }
+          }
+
+          // Badge (Cart Notification)
+          span {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            background-color: #ef4444; // Red-500
+            color: white;
+            padding: 0.15rem 0.4rem;
+            border-radius: 99px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: normal;
+          }
+        }
+
+        // Active State
+        &.active a {
+          background: linear-gradient(90deg, var(--color-primary), #2563eb);
+          color: white;
+          box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+
+          i {
+            color: white;
+          }
+
+          &:hover {
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+          }
         }
       }
     }
   }
-// ปุ่มlogoutด้่นล่าง
+
+  // Bottom Section (Logout)
   .bottom {
-    display:flex;
-    text-align: center;
+    display: flex;
     align-items: center;
-    font-size: 20px;
-    justify-content: space-around;
-    padding: 15px;
-    box-shadow: 20px 0 20px rgba(0,0,0,0.1);
-    background-color: #e3effa;
+    justify-content: center;
+    padding: 1rem;
+    background-color: #f8fafc; // Light footer
+    border-top: 1px solid var(--color-border);
 
     .logout-btn {
       border: none;
       background: none;
       cursor: pointer;
+      color: var(--color-text-sub);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
 
-      i{
-        font-size: 25px;
+      i {
+        font-size: 1.2rem;
       }
 
-      // &:hover {
-      //   background-color: #ed1111;
-      //   border-color: transparent;
-      // }
-
+      &:hover {
+        background-color: #fee2e2;
+        color: #ef4444;
+      }
     }
   }
 }
-
-

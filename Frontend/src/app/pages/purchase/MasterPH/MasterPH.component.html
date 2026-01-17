@@ -19,6 +19,10 @@
                 (click)="setTab('cutting')">
                 Cutting Tool
             </button>
+            <button class="btn btn-primary nav-btn" [class.active]="currentTab === 'typeTooling'"
+                (click)="setTab('typeTooling')">
+                Type Tooling
+            </button>
         </div>
 
         <!-- Content Area -->
@@ -223,6 +227,31 @@
                             Export file
                         </button>
                         <button class="btn btn-success btn-custom-green w-50" (click)="uploadData('cutting')">
+                            <i class="bi bi-upload me-2"></i> Upload Master
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TYPE TOOLING TAB -->
+            <div *ngIf="currentTab === 'typeTooling'">
+                <h5 class="fw-bold mb-4">Upload Master Type Tooling</h5>
+
+                <div class="d-flex align-items-center mb-4" style="max-width: 600px;">
+                    <input type="file" #fileInputTypeTooling style="display: none;"
+                        (change)="onFileChangeTypeTooling($event)" accept=".xlsx, .xls" />
+                    <button class="btn btn-success btn-custom-green me-3" (click)="fileInputTypeTooling.click()">
+                        Select file
+                    </button>
+                    <input type="text" class="form-control bg-light" placeholder="No files" readonly
+                        [value]="typeToolingFileName">
+                </div>
+
+                <div class="row">
+                    <!-- Currently no form fields requested, just upload button as per description "press button select file Type Tooling" -->
+                    <!-- But if we need to show preview or inputs later we can add here. For now keeping it simple as per request. -->
+                    <div class="col-12 d-flex justify-content-end">
+                        <button class="btn btn-success btn-custom-green" (click)="uploadData('typeTooling')">
                             <i class="bi bi-upload me-2"></i> Upload Master
                         </button>
                     </div>

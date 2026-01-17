@@ -3,7 +3,7 @@
 
   <div class="content-area">
 
-    <h2 style="margin-bottom: 20px; color: #333;">PC Plan List</h2>
+    <h2 class="mb-4">PC Plan List</h2>
 
     <div class="filter-section">
 
@@ -34,6 +34,7 @@
       <table>
         <thead>
           <tr>
+            <th>Plan Date</th>
             <th>MC Type</th>
             <th>Division</th>
             <th>Fac</th>
@@ -47,12 +48,15 @@
             <th>Path Dwg</th>
             <th>Path Layout</th>
             <th>IIQC</th>
-            <th>Edit</th>
-            <th>Delete</th>
+            <th class="text-center">Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of planList; let i = index" class="data-row">
+          <tr *ngFor="let item of planList; let i = index" [ngClass]="{
+                'row-complete': (item.pathDwg && item.pathDwg !== '-' && item.pathLayout && item.pathLayout !== '-' && item.iiqc && item.iiqc !== '-'),
+                'row-incomplete': (!item.pathDwg || item.pathDwg === '-' || !item.pathLayout || item.pathLayout === '-' || !item.iiqc || item.iiqc === '-')
+              }">
+            <td>{{ item.date }}</td>
             <td>{{ item.mcType }}</td>
             <td>{{ item.division }}</td>
             <td>{{ item.fac }}</td>
@@ -67,16 +71,17 @@
             <td>{{ item.pathLayout }}</td>
             <td>{{ item.iiqc }}</td>
 
-            <td style="text-align: center;">
-              <button class="btn-action edit" (click)="onEdit(item)">
+            <td style="text-align: center; white-space: nowrap;">
+              <button class="btn-action edit me-1" (click)="onEdit(item)" title="Edit">
                 <i class="bi bi-pencil-square"></i>
               </button>
-            </td>
-            <td style="text-align: center;">
-              <button class="btn-action delete" (click)="onDelete(item)">
+              <button class="btn-action delete" (click)="onDelete(item)" title="Delete">
                 <i class="bi bi-trash-fill"></i>
               </button>
             </td>
+          </tr>
+          <tr *ngIf="planList.length === 0">
+            <td colspan="15" style="text-align: center; padding: 2rem; color: #64748b;">No data found</td>
           </tr>
         </tbody>
       </table>

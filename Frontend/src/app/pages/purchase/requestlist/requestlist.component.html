@@ -3,7 +3,7 @@
   <!-- sidebarฝั่งuser -->
   <app-sidebarpurchase></app-sidebarpurchase>
   <router-outlet></router-outlet>
-  
+
   <!-- ข้อมูลในหน้านี้ไม่รวมsidebar -->
   <div class="content">
     <div class="header">
@@ -37,72 +37,54 @@
         </div>  -->
         <div class="group-select">
           <label for="case">Division</label>
-            <ng-select
-              [items]="divisionList"
-              bindLabel="label"
-              bindValue="value"
-              [(ngModel)]="Division_"
-              placeholder="Select Division"
-              style="width: 100%; min-width: 150px;">
-            </ng-select>
-        </div>
-
-        <div class="group-select">
-          <label for="case">Case</label>
-          <ng-select style="width: 150px; " 
-            [items]="categoryList"
-            bindLabel="label"
-            bindValue="value"
-            [(ngModel)]="Catagory_"
-            placeholder="Select a Case"
-            style="width: 100%; min-width: 150px;">
+          <ng-select [items]="divisionList" bindLabel="label" bindValue="value" [(ngModel)]="Division_"
+            placeholder="Select Division" style="width: 100%; min-width: 150px;">
           </ng-select>
         </div>
 
         <div class="group-select">
-        <label for="case">ItemNo</label>
-        <ng-select
-          [items]="itemList"
-          bindLabel="label"
-          bindValue="value"
-          placeholder="Select ItemNo"
-          [(ngModel)]="Item_"
-          style="width: 100%; min-width: 150px;">
-        </ng-select>
+          <label for="case">Case</label>
+          <ng-select style="width: 150px; " [items]="categoryList" bindLabel="label" bindValue="value"
+            [(ngModel)]="Catagory_" placeholder="Select a Case" style="width: 100%; min-width: 150px;">
+          </ng-select>
         </div>
-         
+
+        <div class="group-select">
+          <label for="case">ItemNo</label>
+          <ng-select [items]="itemList" bindLabel="label" bindValue="value" placeholder="Select ItemNo"
+            [(ngModel)]="Item_" style="width: 100%; min-width: 150px;">
+          </ng-select>
+        </div>
+
         <div class="group-select">
           <label for="case">Process</label>
-              <ng-select
-              [items]="processList"
-              bindLabel="label"
-              bindValue="value"
-              placeholder="Select Process"
-              [(ngModel)]="Process_"
-              style="width: 100%; min-width: 150px;">
-              </ng-select>
+          <ng-select [items]="processList" bindLabel="label" bindValue="value" placeholder="Select Process"
+            [(ngModel)]="Process_" style="width: 100%; min-width: 150px;">
+          </ng-select>
         </div>
 
       </div>
 
       <div class="button-group">
 
-      <div class="button-clear">
-        <button class="btn btn-clear" type="button" (click)="clearFilters()"><i class="bi bi-x-circle-fill text-white"></i> Clear</button>
-      </div>
+        <div class="button-clear">
+          <button class="btn btn-clear" type="button" (click)="clearFilters()"><i
+              class="bi bi-x-circle-fill text-white"></i> Clear</button>
+        </div>
 
-      <div class="button-filter">
-        <button class="btn btn-filter" type="button" (click)="onFilter()"><i class="bi bi-funnel-fill text-white"></i> Filter</button>
-      </div>
+        <div class="button-filter">
+          <button class="btn btn-filter" type="button" (click)="onFilter()"><i class="bi bi-funnel-fill text-white"></i>
+            Filter</button>
+        </div>
 
-      <!-- <div class="button-sort">
+        <!-- <div class="button-sort">
         <button class="btn-sort" type="button" (click)="onSort()" >
           <i class="bi bi-sort-down">Sort</i>
         </button>
       </div> -->
 
       </div>
-      
+
 
     </div>
 
@@ -113,12 +95,17 @@
         <thead>
           <tr>
             <th>ItemNo</th>
-            <th (click)="onSort('Division')" style="cursor: pointer;">Division<span *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th (click)="onSort('Process')" style="cursor: pointer;">Process<span *ngIf="sortKey === 'Process'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th (click)="onSort('Case')" style="cursor: pointer;">Case<span *ngIf="sortKey === 'Case'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Division')" style="cursor: pointer;">Division<span *ngIf="sortKey === 'Division'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Process')" style="cursor: pointer;">Process<span *ngIf="sortKey === 'Process'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Case')" style="cursor: pointer;">Case<span *ngIf="sortKey === 'Case'">{{ sortAsc ? '↑'
+                : '↓' }}</span></th>
             <th>Total</th>
-            <th (click)="onSort('DateTime_Record')" style="cursor: pointer;">ReqDate<span *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th (click)="onSort('DueDate')" style="cursor: pointer; white-space: nowrap;">DueDate<span *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('DateTime_Record')" style="cursor: pointer;">ReqDate<span
+                *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('DueDate')" style="cursor: pointer; white-space: nowrap;">DueDate<span
+                *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span></th>
             <!-- <th>ShowAll</th> -->
           </tr>
         </thead>
@@ -126,24 +113,26 @@
         <!-- ในตาราง -->
         <tbody>
           <tr *ngIf="request.length === 0">
-            <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select the  to view item.</td>
+            <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select
+              the to view item.</td>
           </tr>
           <tr *ngFor="let item of filteredRequests">
-            <td >{{ item.ItemNo }}</td>
+            <td>{{ item.ItemNo }}</td>
             <td>{{ item.Division }}</td>
             <td>{{ item.Process }}</td>
             <td>{{ item.Category }}</td>
             <td>{{ item.Req_QTY }}</td>
-            <td>{{ item.DateTime_Record | date:'yyyy-MM-dd' }}</td>
-            <td>{{ item.DueDate | date:'yyyy-MM-dd' }}</td>
+            <td>{{ item.Req_QTY }}</td>
+            <td>{{ item.DateTime_Record | date:'MM/dd/yyyy' }}</td>
+            <td>{{ item.DueDate | date:'MM/dd/yyyy' }}</td>
           </tr>
         </tbody>
       </table>
-            <!-- <td> -->
-              <!-- <button  class="detailicon" type="button">
+      <!-- <td> -->
+      <!-- <button  class="detailicon" type="button">
                 <i class="bi bi-eye-fill" style="font-size: 20px;"></i>
               </button> -->
-              <!-- <button class="goToDetail" type="button" (click)="goToDetail(item.ItemNo,item.Category)">
+      <!-- <button class="goToDetail" type="button" (click)="goToDetail(item.ItemNo,item.Category)">
                 <i class="bi bi-eye-fill" style="font-size: 20px;"></i></button>
 
             </td> -->

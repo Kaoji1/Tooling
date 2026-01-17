@@ -17,10 +17,15 @@
   }
 }
 
-.container {
-  padding: 20px;
-  background-color: #f8f9fa;
-  min-height: 100vh;
+// .container styles removed/ignored as likely unused.
+.header h4 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  background: linear-gradient(90deg, #2563eb, #1e40af);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
 }
 
 // จัดสไตล์ส่วน Header (Dropdowns)

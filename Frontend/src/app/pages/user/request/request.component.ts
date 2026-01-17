@@ -25,7 +25,7 @@ import Swal from 'sweetalert2';
 })
 export class requestComponent implements OnInit {
 
-  Tooling_: string = 'Cutting tool'; // ค่าเริ่มต้น
+  Tooling_: string | null = null; // เริ่มต้นเป็น null
   ToolingList = [
     { label: 'Cutting tool', value: 'Cutting tool' },
     { label: 'Setup tool', value: 'Setup tool' }
@@ -34,11 +34,7 @@ export class requestComponent implements OnInit {
   // เพิ่มตัวแปรเก็บข้อมูล Setup Tool ที่เกี่ยวข้อง
   relatedSetupItems: any[] = [];
 
-  // ฟังก์ชันเปลี่ยนประเภท Tool (Setup Tool <-> Cutting Tool)
-  onToolingChange() {
-    this.Clearall(); // เรียก Clearall เพื่อล้างค่าทั้งหมดและรีเซ็ตหน้าจอ
-    this.Get_Division(); // เรียก Get_Division ใหม่เพื่อโหลด Dropdown Division ตามประเภท Tool ที่เลือก
-  }
+  // ไม่ใช้แล้ว (onToolingChange) เพราะ logic เปลี่ยน
 
   // Dropdown data
   Div_: any;
@@ -118,43 +114,66 @@ export class requestComponent implements OnInit {
 
   // เรียกใช้ตัวดึงapi (ดึงข้อมูล Division)
   Get_Division() {
-    // เช็คว่าเลือกเป็น Setup Tool หรือไม่
-    if (this.Tooling_ === 'Setup tool') {
-      // === ส่วนของ Setup Tool ===
-      // เรียก API ใหม่สำหรับ Setup Tool โดยเฉพาะ
-      this.api.get_Setup_Division().subscribe({
-        next: (response: any[]) => {
-          this.Division = response.map(d => {
-            let name = d.Division;
-            if (d.Division === '7122') name = 'GM';
-            else if (d.Division === '71DZ') name = 'PMC';
+    // โหลด Division แบบ Cutting Tool (เป็น Master List อยู่แล้ว)
+    this.api.get_Division().subscribe({
+      next: (response: any[]) => {
+        // แปลงและกรองให้เหลือแค่ GM กับ PMC
+        this.Division = [
+          { Division: '7122', DivisionName: 'GM' },
+          { Division: '71DZ', DivisionName: 'PMC' }
+        ];
+      },
+      error: (e: any) => console.error(e),
+    });
+  }
 
-            return {
-              Division: d.Division,
-              DivisionName: name // Map ให้ตรงกับ bindLabel ใน HTML (7122->GM, 71DZ->PMC)
-            };
-          });
-        },
-        error: (e: any) => console.error(e),
-      });
+  // Logic เมื่อเลือก Case
+  onCaseChange() {
+    // Reset ค่า PartNo/Process/MC ทุกครั้งที่เปลี่ยน Case
+    this.PartNo_ = null;
+    this.Process_ = null;
+    this.MachineType_ = null;
+    this.MCNo_ = '';
+    this.items = [];
+    this.relatedSetupItems = [];
+
+    if (this.Case_ === 'SET') {
+      // ถ้าเป็น SET ให้ Default เป็น Cutting tool (และจะโชว์ Setup items ใน table แยก)
+      this.Tooling_ = 'Cutting tool';
+      // โหลด PartNo ใหม่ทันทีตาม Division ที่เลือกไว้
+      if (this.Div_) {
+        this.get_PartNo(this.Div_);
+      }
     } else {
-      // === ส่วนของ Cutting Tool (ของเดิม) ===
-      this.api.get_Division().subscribe({
-        next: (response: any[]) => {
-          // แปลงและกรองให้เหลือแค่ GM กับ PMC
-          this.Division = [
-            { Division: '7122', DivisionName: 'GM' },
-            { Division: '71DZ', DivisionName: 'PMC' }
-          ];
-        },
-        error: (e: any) => console.error(e),
-      });
+      // ถ้าเคสอื่น ให้เคลียร์ Tooling_ เพื่อรอ User กดเลือกปุ่ม
+      this.Tooling_ = null;
     }
   }
 
+  // Logic เมื่อกดปุ่มเลือกประเภท Tool (Setup/Cutting)
+  selectTooling(type: string) {
+    this.Tooling_ = type;
+    // Reset ข้อมูล
+    this.PartNo_ = null;
+    this.Process_ = null;
+    this.MachineType_ = null;
+    this.MCNo_ = '';
+    this.items = [];
+    this.relatedSetupItems = [];
+
+    // โหลด PartNo ใหม่
+    if (this.Div_) {
+      this.get_PartNo(this.Div_);
+    }
+  }
+
+
   // เรียกใช้ตัวดึงapi (ดึงข้อมูล PartNo เมื่อเลือก Division)
   async get_PartNo(event: any) {
-    if (!event) return; // ✅ เพิ่มดัก Null กันโปรแกรมพัง
+    if (!event) return;
+
+    // ถ้ายังไม่ได้เลือก Tooling (เช่นยังไม่กดปุ่ม) ไม่ต้องโหลด
+    if (!this.Tooling_) return;
 
     const division = event.Division ?? event;
     if (division) {
@@ -162,7 +181,6 @@ export class requestComponent implements OnInit {
         // === Setup Tool: เรียก API ใหม่ ===
         this.api.get_Setup_PartNo({ Division: division }).subscribe({
           next: (response: any[]) => {
-            // Map ข้อมูล Setup_PartNo -> PartNo เพื่อให้ Dropdown แสดงผลได้
             this.PartNo = response.map(p => ({
               PartNo: p.Setup_PartNo
             }));
@@ -173,7 +191,6 @@ export class requestComponent implements OnInit {
         // === Cutting Tool: เรียก API เดิม ===
         this.api.get_PartNo({ Division: division }).subscribe({
           next: (response: any[]) => {
-            // กรอง PartNo ไม่ให้ซ้ำ
             this.PartNo = response.filter((item, index, self) =>
               index === self.findIndex(obj => obj.PartNo === item.PartNo)
             );
@@ -185,9 +202,12 @@ export class requestComponent implements OnInit {
   }
 
   onDivisionChange(value: any) {
-    // เรียกหลายฟังก์ชันพร้อมกัน
+    // เมื่อเปลี่ยน Division
     this.get_Facility(value);
-    this.get_PartNo(value);
+    // ถ้าเลือก Case และ Tooling แล้ว ให้โหลด PartNo ใหม่ด้วย
+    if (this.Tooling_) {
+      this.get_PartNo(value);
+    }
   }
 
   async get_Facility(event: any) {
@@ -245,11 +265,14 @@ export class requestComponent implements OnInit {
         });
       }
     } else {
-      // Cutting Tool Logic (Existing)
-      if (event && event.PartNo !== undefined) {
+      // Cutting Tool Logic (Existing) - Fix: Use stored state for Division
+      const partNo = event?.PartNo ?? event;
+      const division = this.Div_?.Division || this.Div_;
+
+      if (partNo && division) {
         const data = {
-          Division: event.Division,
-          PartNo: event.PartNo,
+          Division: division,
+          PartNo: partNo,
         }
         this.api.get_Process(data).subscribe({
           next: (response: any[]) => {
@@ -284,13 +307,18 @@ export class requestComponent implements OnInit {
         });
       }
     } else {
-      // Cutting Tool Logic (Existing)
-      if (event && event.PartNo !== undefined) {
+      // Cutting Tool Logic (Existing) - Fix: Use stored state for params
+      const process = event?.Process ?? event;
+      const division = this.Div_?.Division || this.Div_;
+      const partNo = this.PartNo_?.PartNo || this.PartNo_;
+      const spec = this.PartNo_?.SPEC || ''; // Attempt to get SPEC if available found in PartNo object
+
+      if (process && division && partNo) {
         const data = {
-          Division: event.Division,
-          PartNo: event.PartNo,
-          Spec: event.SPEC,
-          Process: event.Process
+          Division: division,
+          PartNo: partNo,
+          Spec: spec,  // Note: Spec might be optional or handled by API if empty string
+          Process: process
         }
         this.api.get_MC(data).subscribe({
           next: (response: any[]) => {
@@ -341,7 +369,8 @@ export class requestComponent implements OnInit {
     }
 
     this.loading = true;
-    const data = { Division, PartNo, Process, MC };
+    this.loading = true;
+    const data = { Division, FacilityName, PartNo, Process, MC };
 
     // ⭐⭐ แยกทางเดินระบบ (Logic Search) ⭐⭐
     if (this.Tooling_ === 'Setup tool') {
@@ -541,6 +570,7 @@ export class requestComponent implements OnInit {
   // function clearall
   Clearall() {
     // Delete select group
+    this.Tooling_ = null; // ✅ Reset Tooling Selection
     this.Div_ = null;
     this.Fac_ = null;
     this.DueDate_ = '';

@@ -17,7 +17,7 @@ export class MasterPHComponent {
 
     masterData: any[] = [];
     loading: boolean = false;
-    currentTab: 'purchase' | 'setup' | 'cutting' = 'purchase';
+    currentTab: 'purchase' | 'setup' | 'cutting' | 'typeTooling' = 'purchase';
 
     // Form Binding Variables
     // Purchase
@@ -39,13 +39,24 @@ export class MasterPHComponent {
         mc: '', ctSec: '', usagePcs: '', position: ''
     };
 
+    // Type Tooling
+    typeToolingFileName: string = '';
+    tempData: any = {
+        pmc: [],
+        gm: [],
+        ireport: [],
+        setup: [],
+        cutting: [],
+        typeTooling: [] // New
+    };
+
     constructor(private masterPHService: MasterPHService) {
         // afterNextRender(() => {
         //     this.loadData();
         // });
     }
 
-    setTab(tab: 'purchase' | 'setup' | 'cutting') {
+    setTab(tab: 'purchase' | 'setup' | 'cutting' | 'typeTooling') {
         this.currentTab = tab;
     }
 
@@ -65,7 +76,7 @@ export class MasterPHComponent {
     }
 
     // Generic file handler helper
-    handleFile(evt: any, type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'ireport') {
+    handleFile(evt: any, type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'ireport' | 'typeTooling') {
         const target: DataTransfer = <DataTransfer>(evt.target);
         if (target.files.length !== 1) {
             Swal.fire('Error', 'Cannot use multiple files', 'error');
@@ -78,9 +89,10 @@ export class MasterPHComponent {
         // Update file name display based on type
         if (type === 'pmc') this.pmcFileName = fileName;
         else if (type === 'gm') this.gmFileName = fileName;
-        else if (type === 'ireport') this.iReportFileName = fileName; // New
+        else if (type === 'ireport') this.iReportFileName = fileName;
         else if (type === 'setup') this.setupFileName = fileName;
         else if (type === 'cutting') this.cuttingFileName = fileName;
+        else if (type === 'typeTooling') this.typeToolingFileName = fileName;
 
         const reader: FileReader = new FileReader();
         reader.onload = (e: any) => {
@@ -95,8 +107,14 @@ export class MasterPHComponent {
             let headerRowIndex = 0;
             // Search based on type? Or generic?
             // For PMC/GM uses 'Item No'. For IReport it might be 'ITEM_NO' or similar.
-            // Let's make it generic for 'Item No' or 'ITEM_NO' or 'DIVISION'
-            const keywords = ['item no', 'itemno', 'division', 'department'];
+            // Define keywords based on type to prevent false positives (like "Division" in title string)
+            let keywords = ['item no', 'itemno', 'division', 'department']; // Default for PMC/GM
+
+            if (type === 'typeTooling') {
+                keywords = ['a/c code', 'ac code', 'ac_code', 'ac type']; // Specific for Type Tooling
+            } else if (type === 'ireport') {
+                keywords = ['item_no', 'item no', 'vendor'];
+            }
 
             // Search for the row containing keywords
             for (let i = 0; i < Math.min(aoa.length, 20); i++) { // Search first 20 rows
@@ -129,21 +147,17 @@ export class MasterPHComponent {
         reader.readAsBinaryString(file);
     }
 
-    tempData: any = {
-        pmc: [],
-        gm: [],
-        ireport: [], // New
-        setup: [],
-        cutting: []
-    };
+    // tempData definition removed from here as it was moved up to be cleaner
+
 
     onFileChangePMC(evt: any) { this.handleFile(evt, 'pmc'); }
     onFileChangeGM(evt: any) { this.handleFile(evt, 'gm'); }
-    onFileChangeIReport(evt: any) { this.handleFile(evt, 'ireport'); } // New
+    onFileChangeIReport(evt: any) { this.handleFile(evt, 'ireport'); }
     onFileChangeSetup(evt: any) { this.handleFile(evt, 'setup'); }
     onFileChangeCutting(evt: any) { this.handleFile(evt, 'cutting'); }
+    onFileChangeTypeTooling(evt: any) { this.handleFile(evt, 'typeTooling'); }
 
-    uploadData(type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'purchase') {
+    uploadData(type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'purchase' | 'typeTooling') {
         if (type === 'purchase') {
             const hasPMC = this.tempData.pmc && this.tempData.pmc.length > 0;
             const hasGM = this.tempData.gm && this.tempData.gm.length > 0;
@@ -174,7 +188,11 @@ export class MasterPHComponent {
                 Swal.fire('Warning', 'No file selected or file is empty', 'warning');
                 return;
             }
-            this.importData(data);
+            if (type === 'typeTooling') {
+                this.importTypeToolingData(data);
+            } else {
+                this.importData(data);
+            }
         }
     }
 
@@ -219,12 +237,9 @@ export class MasterPHComponent {
         this.masterPHService.importIReport(data).subscribe({
             next: (res) => {
                 if (res.errors && res.errors.length > 0) {
-                    // Partial success or total failure
                     let msg = `Imported ${res.count} records. Failed ${res.errors.length} records.`;
                     if (res.count === 0) msg = `Failed to import all ${res.errors.length} records.`;
-
                     console.warn('Import Warnings:', res.errors);
-                    // Show first 5 errors in the alert
                     const errorDetails = res.errors.slice(0, 5).join('<br>');
                     Swal.fire({
                         title: res.count === 0 ? 'Import Failed' : 'Completed with Errors',
@@ -240,6 +255,42 @@ export class MasterPHComponent {
                 console.error('Import IReport Error:', err);
                 const errorMsg = err.error?.message || err.error?.error || err.message || 'Unknown error';
                 Swal.fire('Error', `Failed to import IReport data: ${errorMsg}`, 'error');
+                this.loading = false;
+            }
+        });
+    }
+
+    importTypeToolingData(data: any[]) {
+        this.loading = true;
+        Swal.fire({
+            title: 'Importing Type Tooling...',
+            text: `Uploading ${data.length} records. Please wait.`,
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        this.masterPHService.importTypeTooling(data).subscribe({
+            next: (res) => {
+                if (res.errors && res.errors.length > 0) {
+                    let msg = `Imported ${res.count} records. Failed ${res.errors.length} records.`;
+                    if (res.count === 0) msg = `Failed to import all ${res.errors.length} records.`;
+
+                    console.warn('Import Warnings:', res.errors);
+                    const errorDetails = res.errors.slice(0, 5).join('<br>');
+                    Swal.fire({
+                        title: res.count === 0 ? 'Import Failed' : 'Completed with Errors',
+                        html: `${msg}<br><div class="text-danger text-start small mt-2">${errorDetails}${res.errors.length > 5 ? '<br>...' : ''}</div>`,
+                        icon: res.count === 0 ? 'error' : 'warning'
+                    });
+                } else {
+                    Swal.fire('Success', `Imported Type Tooling ${res.count} records successfully!`, 'success');
+                }
+                this.loading = false;
+            },
+            error: (err) => {
+                console.error('Import Type Tooling Error:', err);
+                const errorMsg = err.error?.message || err.error?.error || err.message || 'Unknown error';
+                Swal.fire('Error', `Failed to import Type Tooling data: ${errorMsg}`, 'error');
                 this.loading = false;
             }
         });

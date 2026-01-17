@@ -1,278 +1,255 @@
-// --- 1. โครงสร้างหลัก (Layout) ---
+// --- 1. Main Layout ---
 .layout {
   display: flex;
-  height: 100vh;
+  min-height: 100vh; // Allow scrolling
   width: 100%;
+  background-color: var(--color-bg);
 
   .content-area {
     flex: 1;
-    padding: 20px;
-    background-color: #f8f9fa; // สีพื้นหลังเทาอ่อนสบายตา
+    padding: 1.5rem 2rem;
     display: flex;
     flex-direction: column;
-    overflow-y: auto; // ให้ Scroll เฉพาะเนื้อหา
+    gap: 1.5rem;
+    background-color: var(--color-bg);
+    overflow: visible; // Let window scroll
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-text-main);
+      margin: 0;
+      // Gradient text matching other pages
+      background: linear-gradient(90deg, var(--color-primary), #1e40af);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
   }
 }
 
-// --- 2. ส่วนควบคุมด้านบน (Top Controls) ---
+// --- 2. Top Controls ---
 .top-controls {
+  background-color: var(--color-surface);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
-  align-items: flex-end; // จัดให้ปุ่มกับช่องกรอกอยู่ระดับล่างสุดเท่ากัน
-  margin-bottom: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap; // Responsive wrapping
+  gap: 1.5rem;
 
   .form-group {
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
+    width: 300px;
+    max-width: 100%;
 
     label {
-      font-weight: bold;
-      margin-bottom: 5px;
-      color: #333;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--color-text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    // Modernize ng-select
+    ::ng-deep .ng-select-container {
+      min-height: 42px !important;
+      border-radius: var(--radius-md) !important;
+      border-color: var(--color-border) !important;
+      background-color: #f9fafb !important;
+
+      &:hover {
+        border-color: var(--color-primary) !important;
+      }
     }
   }
 
-  // ปุ่ม Excel ด้านขวา
   .excel-buttons {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    gap: 1rem;
 
     .btn-excel {
       color: white;
       border: none;
-      padding: 8px 15px;
-      border-radius: 4px;
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-md);
       cursor: pointer;
-      font-weight: bold;
-      font-size: 14px;
-      width: 180px;
-      transition: background-color 0.2s;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
 
-      &.upload {
-        background-color: #198754; // สีเขียวเข้ม
-
-        &:hover {
-          background-color: #157347;
-        }
-      }
-
+      &.upload,
       &.download {
-        background-color: #198754;
+        background-color: #10b981; // Emerald-500
 
         &:hover {
-          background-color: #157347;
+          background-color: #059669;
+          transform: translateY(-1px);
         }
       }
     }
   }
 }
 
-// --- 3. Style ของช่องค้นหาพิเศษ (Searchable Dropdown + Clear Button) ---
-// ใช้ร่วมกันทั้ง Division ด้านบน และ Input ในตาราง
-.search-input-wrapper {
-  position: relative; // สำคัญ! เป็นจุดอ้างอิงให้ปุ่ม X
-  display: flex;
-  align-items: center;
-  width: 100%; // ขยายเต็มพื้นที่ที่มันอยู่
-
-  // ตัวช่อง Input
-  .custom-dropdown {
-    width: 100%;
-    padding: 8px 35px 8px 8px; // เว้นขวา 35px เผื่อที่ให้ปุ่ม X และลูกศร
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    outline: none;
-    background-color: white;
-
-
-    &:focus {
-      border-color: #007bff; // เปลี่ยนสีขอบตอนพิมพ์
-      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
-    }
-
-    // ซ่อนลูกศรเดิมของ Browser (Webkit) เพื่อไม่ให้ซ้อนกัน
-    &::-webkit-calendar-picker-indicator {
-      opacity: 0;
-      position: absolute;
-      right: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
-  }
-
-  // ปุ่มกากบาท (X)
-  .clear-btn {
-    position: absolute;
-    right: 22px; // วางถัดจากลูกศรเข้ามาด้านใน
-    cursor: pointer;
-    color: #999;
-    font-weight: bold;
-    font-size: 16px;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10; // ให้อยู่บนสุด กดโดนแน่นอน
-
-    &:hover {
-      color: #ff5252; // เมาส์ชี้เป็นสีแดง
-      background-color: #fff0f0;
-      border-radius: 50%;
-    }
-  }
-}
-
-// --- 4. ตารางข้อมูล (Table) ---
+// --- 3. Table Container ---
 .table-container {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  overflow-x: auto; // Scroll แนวนอนถ้าตารางยาวเกิน
-  margin-bottom: 20px;
+  background: var(--color-surface);
+  padding: 0; // Padding handled by cells
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  overflow-x: auto;
+  min-height: 300px; // Prevent collapse
 
   table {
     width: 100%;
-    min-width: 1200px; // ความกว้างขั้นต่ำ กันตารางบีบตัว
+    min-width: 1200px;
     border-collapse: collapse;
 
-    th {
-      background-color: #e0e0e0;
-      padding: 10px;
-      text-align: center;
-      font-weight: bold;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      white-space: nowrap;
+    thead {
+      th {
+        background-color: #f8fafc;
+        padding: 1rem;
+        text-align: left; // Modern tables usually align left
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--color-text-sub);
+        text-transform: uppercase;
+        border-bottom: 2px solid var(--color-border);
+        white-space: nowrap;
+
+        span {
+          margin-left: 2px;
+        }
+      }
     }
 
-    td {
-      padding: 5px;
-      border: 1px solid #ccc;
-      vertical-align: middle;
+    tbody {
+      tr {
+        transition: background-color 0.15s;
 
-      // ช่อง Input ปกติที่ไม่มี Dropdown (เช่น Date, MC No.)
-      input:not(.custom-dropdown) {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-        outline: none;
+        &:hover {
+          background-color: #eff6ff;
+        }
 
-        &:focus {
-          border-color: #007bff;
+        td {
+          padding: 0.75rem 1rem;
+          border-bottom: 1px solid var(--color-border);
+          vertical-align: middle;
+
+          input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            color: var(--color-text-main);
+            transition: all 0.2s;
+
+            &:focus {
+              border-color: var(--color-primary);
+              box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+              outline: none;
+            }
+          }
+
+          // Fix nested ng-selects in table
+          ::ng-deep .ng-select .ng-select-container {
+            min-height: 36px;
+            border-color: var(--color-border);
+            border-radius: var(--radius-md);
+          }
         }
       }
     }
   }
 }
 
-// --- 5. ปุ่ม Action ด้านล่าง (Add, Send, Delete) ---
+// --- 4. Action Buttons ---
 .action-buttons {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-bottom: 2rem;
 
-  // ปุ่มบวกสีเขียว
   .btn-add {
-    background-color: #bdf5bd;
-    color: #2e7d32;
-    font-size: 24px;
-    width: 45px;
-    height: 45px;
-    border: none;
-    border-radius: 6px;
+    background-color: #ecfdf5; // Light green bg
+    color: #059669; // Green text
+    font-size: 1.5rem;
+    width: 48px;
+    height: 48px;
+    border: 1px solid #d1fae5;
+    border-radius: 50%;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
 
     &:hover {
-      background-color: #a5e6a5;
+      background-color: #10b981;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 
-  // ปุ่ม Send สีแดง
   .btn-submit {
-    background-color: #ff5252;
+    background: linear-gradient(135deg, var(--color-primary), #2563eb);
     color: white;
-    padding: 12px 40px;
+    padding: 0.8rem 3rem;
     border: none;
-    border-radius: 6px;
-    font-size: 16px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 700;
     cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s;
+    box-shadow: var(--shadow-md);
+    transition: all 0.2s;
 
     &:hover {
-      background-color: #e04141;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
     }
   }
 }
 
-// ปุ่มลบแถวเล็กๆ (x) สีแดง
+// Delete Button
 .btn-delete {
-  background-color: transparent;
-  color: red;
-  border: 1px solid red;
+  background-color: white;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
   border-radius: 50%;
-  width: 25px;
-  height: 25px;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 14px;
-  padding: 0;
+  font-size: 1rem;
+  transition: all 0.2s;
 
   &:hover {
-    background-color: #ffe6e6;
+    background-color: #ef4444;
+    color: white;
+    border-color: #ef4444;
   }
 }
 
-// ปรับแต่งเฉพาะ ng-select ที่อยู่ในตาราง (ให้ไม่มีขอบขาวๆ รอบๆ)
-::ng-deep .table-container {
-  .ng-select {
-    padding-bottom: 0px;
-
-    .ng-select-container {
-      min-height: 38px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #fff;
-    }
-
-    .ng-value-container {
-      padding-left: 5px;
-    }
-
-    // ปรับขนาด Font
-    .ng-value-label,
-    .ng-input>input {
-      font-size: 14px;
-    }
-  }
-
-  // ซ่อนปุ่มเพิ่ม-ลดตัวเลข (Spinners) สำหรับ input type="number"
-  input[type=number]::-webkit-inner-spin-button,
-  input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  input[type=number] {
-    -moz-appearance: textfield;
-    appearance: textfield;
-  }
-}
-
-// Global Override for appendTo="body" dropdowns to make them consistent
+// Global overrides
 ::ng-deep .ng-dropdown-panel {
-  z-index: 9999 !important; // อยู่บนสุดเสมอ
+  z-index: 1050; // Bootstrap z-index compatibility
 }

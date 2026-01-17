@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { PCPlanService } from '../../../core/services/PCPlan.service';
 import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
 import Swal from 'sweetalert2';
 
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -53,34 +54,101 @@ export class PCPlanComponent implements OnInit {
   }
 
   // --- ส่วนที่ 1: Download Format (ดาวน์โหลดฟอร์ม Excel) ---
+  // --- ส่วนที่ 1: Download Format (ดาวน์โหลดฟอร์ม Excel แบบสวยงาม) ---
   downloadFormat() {
-    // 1. สร้างข้อมูลตัวอย่าง (Template)
-    // ตรงนี้คือหัวตารางที่ให้ User เห็นในไฟล์ Excel สำหรับกรอกข้อมูล
-    const templateData = [
-      {
-        'Date': '2025-01-01',
-        'Div': '7122',         // ต้องมี Div เพื่อเอาไปเลือก Dropdown
-        'Machine Type': 'BM165',
-        'Fac': 'Turning F.3',
-        'MC No.': '1',
-        'Process': 'TURNING',
-        'Part Before': 'D30292AAP2S3',
-        'Part No.': 'D30175ACDP5S1',
-        'QTY': 1,
-        'Time': '8',
-        'Comment': ''
-      }
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Format PC Plan');
+
+    // 1. กำหนด Columns และ Width
+    worksheet.columns = [
+      { header: 'Date', key: 'Date', width: 15 },
+      { header: 'Div', key: 'Div', width: 10 },
+      { header: 'Machine Type', key: 'MachineType', width: 15 },
+      { header: 'Fac', key: 'Fac', width: 15 },
+      { header: 'MC No.', key: 'MCNo', width: 10 },
+      { header: 'Process', key: 'Process', width: 15 },
+      { header: 'Part Before', key: 'PartBefore', width: 20 },
+      { header: 'Part No.', key: 'PartNo', width: 20 },
+      { header: 'QTY', key: 'QTY', width: 20 },
+      { header: 'Time', key: 'Time', width: 20 },
+      { header: 'Comment', key: 'Comment', width: 20 },
     ];
 
-    // 2. แปลงข้อมูล JSON ให้เป็น Excel Sheet
-    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(templateData);
+    // 2. ใส่ข้อมูลตัวอย่าง
+    const row = worksheet.addRow({
+      Date: 'mm/dd/yyyy',
+      Div: '7122',
+      MachineType: 'BM165',
+      Fac: 'Turning F.3',
+      MCNo: '1',
+      Process: 'TURNING',
+      PartBefore: 'D30292AAP2S3',
+      PartNo: 'D30175ACDP5S1',
+      QTY: 1,
+      Time: '8',
+      Comment: ''
+    });
 
-    // 3. สร้างสมุดงาน (Workbook) ใหม่ แล้วเอา Sheet ใส่เข้าไป
-    const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Format PC Plan');
+    // 3. จัดรูปแบบ Header (แถวที่ 1)
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      // สีพื้นหลังเขียวเข้ม
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF1B5E20' } // Green 900
+      };
+      // ตัวหนังสือสีขาว + ตัวหนา
+      cell.font = {
+        color: { argb: 'FFFFFFFF' },
+        bold: true,
+        size: 11
+      };
+      // จัดกึ่งกลาง
+      cell.alignment = {
+        vertical: 'middle',
+        horizontal: 'center'
+      };
+      // เส้นขอบ
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
 
-    // 4. สั่ง Browser ให้ดาวน์โหลดไฟล์ทันที (ชื่อไฟล์ PCPlan_Template.xlsx)
-    XLSX.writeFile(wb, 'PCPlan_Template.xlsx');
+    // 4. จัดรูปแบบข้อมูล (แถวอื่นๆ)
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) {
+        row.eachCell((cell) => {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
+      }
+    });
+
+    // 5. เปิด AutoFilter
+    worksheet.autoFilter = {
+      from: 'A1',
+      to: 'K1',
+    };
+
+    // 6. Export ไฟล์
+    workbook.xlsx.writeBuffer().then((buffer: ArrayBuffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'PCPlan_Template.xlsx';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
   }
   // --- ส่วนที่ 2: Upload Excel (Import ข้อมูลจาก Excel) ---
 
@@ -175,8 +243,23 @@ export class PCPlanComponent implements OnInit {
   // ฟังก์ชันช่วยแปลงวันที่จาก Excel (ที่เป็นตัวเลข) เป็น string YYYY-MM-DD
   excelDateToJSDate(serial: any) {
     if (!serial) return '';
-    // ถ้า Excel ส่งมาเป็น String อยู่แล้ว (เช่น '2025-12-19') ก็ใช้ได้เลย
-    if (typeof serial === 'string') return serial;
+
+    // ถ้า Excel ส่งมาเป็น String
+    if (typeof serial === 'string') {
+      // Case 1: Already yyyy-MM-dd (e.g. 2025-12-19) -> Return as is
+      if (serial.match(/^\d{4}-\d{2}-\d{2}$/)) return serial;
+
+      // Case 2: mm/dd/yyyy (e.g. 01/22/2026) -> Convert to yyyy-MM-dd
+      const mmddyyyy = serial.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+      if (mmddyyyy) {
+        const m = mmddyyyy[1].padStart(2, '0');
+        const d = mmddyyyy[2].padStart(2, '0');
+        const y = mmddyyyy[3];
+        return `${y}-${m}-${d}`;
+      }
+
+      return serial;
+    }
 
     // ถ้าเป็น Serial Number ของ Excel
     const utc_days = Math.floor(serial - 25569);

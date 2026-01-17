@@ -23,7 +23,12 @@
 
       h4 {
         margin-bottom: 5px;
-
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #2563eb, #1e40af);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
       }
 
       i {
@@ -38,13 +43,14 @@
       color: rgb(16, 3, 114);
       margin-bottom: 20px;
     }
+
     .box-input {
       display: flex;
       justify-content: space-between;
 
 
-      
-    .group-select {
+
+      .group-select {
         flex-direction: column;
         display: flex;
         width: 400px;
@@ -55,65 +61,75 @@
           text-align: center;
           margin-bottom: 5px;
         }
-        
+
       }
 
-   .button-group button {
+      .button-group button {
 
-    align-items: center;
-    justify-content: center;
-    gap:20px;
-    /* ระยะห่าง icon กับข้อความ */
-    font-size: 16px;
-    font-weight: bold;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    width: 210px;
-    /* ให้ปุ่มกว้างเท่ากัน */
-    cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        /* ระยะห่าง icon กับข้อความ */
+        font-size: 16px;
+        font-weight: bold;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        width: 210px;
+        /* ให้ปุ่มกว้างเท่ากัน */
+        cursor: pointer;
 
 
-  }
-.btn-group-req {
-  display: flex;               /* จัดปุ่มให้อยู่ในแนวนอน */
-  gap: 10px;                   /* ช่องว่างระหว่างปุ่ม */
-  justify-content: flex-start; /* จัดปุ่มชิดซ้าย */
-  margin: 10px 0;              /* เว้นระยะขอบด้านบนและล่าง */
+      }
 
-.btn-sort{
-  display: block;
-  background-color: #4db6b6;
-  margin: 10px;
-  border: none; /* ปรับให้เป็น none ดีกว่า */
-  border-radius: 10px;
-  height: 45px;
-  width: 120px;
-  font-size: 18px;
-  color: #fff; /* ให้ตัวหนังสือสีขาว */
-  cursor: pointer;
-  transition: 0.2s; /* transition นุ่มขึ้น */
-}
+      .btn-group-req {
+        display: flex;
+        /* จัดปุ่มให้อยู่ในแนวนอน */
+        gap: 10px;
+        /* ช่องว่างระหว่างปุ่ม */
+        justify-content: flex-start;
+        /* จัดปุ่มชิดซ้าย */
+        margin: 10px 0;
+        /* เว้นระยะขอบด้านบนและล่าง */
 
-.button-sort:hover {
- background-color: #3a9999;  /* เปลี่ยนสีเข้มขึ้น */
-color: rgrgb(255, 255, 255)
-}
-}
+        .btn-sort {
+          display: block;
+          background-color: #4db6b6;
+          margin: 10px;
+          border: none;
+          /* ปรับให้เป็น none ดีกว่า */
+          border-radius: 10px;
+          height: 45px;
+          width: 120px;
+          font-size: 18px;
+          color: #fff;
+          /* ให้ตัวหนังสือสีขาว */
+          cursor: pointer;
+          transition: 0.2s;
+          /* transition นุ่มขึ้น */
+        }
+
+        .button-sort:hover {
+          background-color: #3a9999;
+          /* เปลี่ยนสีเข้มขึ้น */
+          color: rgrgb(255, 255, 255)
+        }
+      }
     }
-.table-responsive {
-      max-height: 70vh;  // ตารางสูงไม่เกิน 70% ของจอ
-    width: 100%;
+
+    .table-responsive {
+      max-height: 70vh; // ตารางสูงไม่เกิน 70% ของจอ
+      width: 100%;
       margin-top: 30px;
-      
+
 
       table {
         width: 100%;
         border-collapse: collapse;
         color: #4a4949;
-        
 
-        
+
+
 
         th,
         td {
@@ -128,11 +144,16 @@ color: rgrgb(255, 255, 255)
           .ng-select {
             width: 100px;
           }
+
           .print-button {
-            background: none;      /* ไม่มีพื้นหลัง */
-            border: none;          /* ไม่มีขอบ */
-            align-items: center;   /* จัดไอคอนกับข้อความให้อยู่กลาง */
-            gap: 5px;              /* ระยะห่างระหว่างไอคอนกับข้อความ */
+            background: none;
+            /* ไม่มีพื้นหลัง */
+            border: none;
+            /* ไม่มีขอบ */
+            align-items: center;
+            /* จัดไอคอนกับข้อความให้อยู่กลาง */
+            gap: 5px;
+            /* ระยะห่างระหว่างไอคอนกับข้อความ */
           }
 
           .print-button i {
@@ -155,4 +176,4 @@ color: rgrgb(255, 255, 255)
 
   }
 
-  }
+}

@@ -5,56 +5,66 @@
 
     <div class="header">
       <h4 *ngIf="Tooling_ === 'Setup tool'"> Request Setup Tool </h4>
-      <h4 *ngIf="Tooling_ !== 'Setup tool'"> Request Cutting Tool</h4>
+      <h4 *ngIf="Tooling_ !== 'Setup tool'"> Request Tooling</h4>
     </div>
     <p>Product Requisition</p>
 
     <div class="group-req">
 
-      <div class="input-req">
-
-        <div class="tooling-row">
-          <div class="group-select">
-            <label> Tooling </label>
-            <ng-select [items]="ToolingList" bindLabel="label" bindValue="value" [(ngModel)]="Tooling_"
-              [clearable]="false" placeholder="Select Tooling" (change)="onToolingChange()">
-            </ng-select>
-          </div>
+      <div class="req-row1">
+        <div class="group-select">
+          <label> Division </label>
+          <ng-select [items]="Division" bindLabel="DivisionName" [(ngModel)]="Div_"
+            (ngModelChange)="onDivisionChange($event)" [virtualScroll]="true" placeholder="Select Division">
+          </ng-select>
         </div>
 
-        <div class="req-row1">
-          <div class="group-select">
-            <label> Division </label>
-            <ng-select [items]="Division" bindLabel="DivisionName" [(ngModel)]="Div_"
-              (ngModelChange)="onDivisionChange($event)" [virtualScroll]="true" placeholder="Select Division">
-            </ng-select>
-          </div>
+        <div class="group-select">
+          <label> Fac </label>
+          <ng-select [items]="Fac" bindLabel="FacilityName" [(ngModel)]="Fac_" placeholder="Select a Fac"
+            [virtualScroll]="true">
+          </ng-select>
+        </div>
 
-          <div class="group-select">
-            <label> Fac </label>
-            <ng-select [items]="Fac" bindLabel="FacilityName" [(ngModel)]="Fac_" placeholder="Select a Fac"
-              [virtualScroll]="true">
-            </ng-select>
-          </div>
+        <div class="group-select">
+          <label for="phonenumber"> Phone Number </label>
+          <input type="tel" class="form-control" placeholder="Enter your phone number" id="phonenumber"
+            [(ngModel)]="phone_" />
+        </div>
 
-          <div class="group-select">
-            <label for="phonenumber"> Phone Number </label>
-            <input type="tel" class="form-control" placeholder="Enter your phone number" id="phonenumber"
-              [(ngModel)]="phone_" />
-          </div>
+        <div class="group-select">
+          <label for="date"> DueDate </label>
+          <input type="date" class="form-control" placeholder="Enter date" id="date" [min]="today_"
+            [(ngModel)]="DueDate_" />
+        </div>
 
-          <div class="group-select">
-            <label for="date"> DueDate </label>
-            <input type="date" class="form-control" placeholder="Enter date" id="date" [min]="today_"
-              [(ngModel)]="DueDate_" />
-          </div>
+        <div class="group-select" style="width: 180px;">
+          <label> Case </label>
+          <ng-select [items]="Case" bindLabel="label" bindValue="value" [(ngModel)]="Case_" [virtualScroll]="true"
+            placeholder="Select a case" (change)="onCaseChange()">
+          </ng-select>
+        </div>
+      </div>
 
-          <div class="group-select" style="width: 180px;">
-            <label> Case </label>
-            <ng-select [items]="Case" bindLabel="label" bindValue="value" [(ngModel)]="Case_" [virtualScroll]="true"
-              placeholder="Select a case">
-            </ng-select>
-          </div>
+      <!-- Section to choose Tooling Type when Case is NOT SET -->
+      <div class="tooling-selection" *ngIf="Case_ && Case_ !== 'SET' && !Tooling_"
+        style="margin: 20px 0; text-align: center;">
+        <h5 style="margin-bottom: 15px; color: #555;">Please select Request Type:</h5>
+        <div style="display: flex; gap: 20px; justify-content: center;">
+          <button class="btn btn-primary" (click)="selectTooling('Cutting tool')" style="padding: 10px 20px;">
+            <i class="bi bi-scissors"></i> Cutting Tool
+          </button>
+          <button class="btn btn-warning" (click)="selectTooling('Setup tool')" style="padding: 10px 20px;">
+            <i class="bi bi-tools"></i> Setup Tool
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="Tooling_">
+        <div style="width: 100%; margin-bottom: 10px; font-weight: bold; color: #1e3a8a;">
+          Selected Mode:
+          <span class="badge bg-info text-dark" *ngIf="Case_ !== 'SET'">{{ Tooling_ }}</span>
+          <span class="badge bg-success" *ngIf="Case_ === 'SET'">Cutting & Setup Tools</span>
         </div>
 
         <div class="req-row2">
@@ -81,12 +91,12 @@
           <div class="group-select">
             <label for="MCQTY">MC No</label>
             <input type="text" pattern="[0-9,]*" class="form-control" placeholder="Enter your MC No" id="MCQTY"
-              [(ngModel)]="MCNo_" style="width: 150px;" />
+              [(ngModel)]="MCNo_" />
             <small class="form-text text-muted" style="opacity: 0.7;"> Ex: 100,200,300</small>
           </div>
         </div>
-
       </div>
+
       <div class="btn-group-req">
         <button class="btn-viewall" type="button" (click)="Clearall()"> CLEARALL <i class="bi bi-trash3"
             style="margin-right: 3px;"></i></button>
@@ -102,6 +112,7 @@
       </div>
 
     </div>
+
     <div class="table-responsive">
       <table class="table table-bordered table-hover align-middle text-center">
         <thead class="table-light">
@@ -195,6 +206,5 @@
       &nbsp;
       {{ Tooling_ === 'Setup tool' ? 'Send Request' : 'Add To Cart' }}
     </button>
-
   </div>
 </div>

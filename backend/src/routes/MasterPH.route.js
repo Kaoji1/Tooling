@@ -5,6 +5,7 @@ const controller = require('../controllers/MasterPH.controller');
 // Routes
 router.get('/master-ph', controller.getAllMasterPHValues);
 router.post('/master-ph/import', controller.importMasterData);
-router.post('/master-ph/import-ireport', controller.importIReport); // New Route
+router.post('/master-ph/import-ireport', controller.importIReport);
+router.post('/master-ph/import-type-tooling', controller.importTypeTooling); // New Route Type Tooling
 
 module.exports = router;

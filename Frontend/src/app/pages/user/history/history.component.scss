@@ -1,5 +1,5 @@
 .history-layout {
-   display: flex;
+  display: flex;
   flex-direction: row;
   height: 100%;
   width: 100%;
@@ -24,7 +24,12 @@
 
       h4 {
         margin-bottom: 5px;
-
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #2563eb, #1e40af);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
       }
 
       i {
@@ -43,59 +48,62 @@
     .box-input {
       display: flex;
       justify-content: space-between;
-      
+
 
       .button-group {
-  display: flex;
-  flex-direction: row;
-  gap: 15px; /* เว้นระยะระหว่างปุ่ม */
-  margin-bottom: 5px; /* เพิ่มระยะด้านล่างถ้าต้องการ */
-}
+        display: flex;
+        flex-direction: row;
+        gap: 15px;
+        /* เว้นระยะระหว่างปุ่ม */
+        margin-bottom: 5px;
+        /* เพิ่มระยะด้านล่างถ้าต้องการ */
+      }
 
-   .button-group button {
+      .button-group button {
 
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    /* ระยะห่าง icon กับข้อความ */
-    font-size: 16px;
-    font-weight: bold;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    width: 210px;
-    /* ให้ปุ่มกว้างเท่ากัน */
-    cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        /* ระยะห่าง icon กับข้อความ */
+        font-size: 16px;
+        font-weight: bold;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        width: 210px;
+        /* ให้ปุ่มกว้างเท่ากัน */
+        cursor: pointer;
 
 
-  }
+      }
 
-    .excel-button {
-    width: 170px;
-    /* กำหนดให้เท่ากัน */
-    height: 45px;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 0;
-    box-sizing: border-box;
-    white-space: nowrap;
-    gap: 5px;
-    margin: 5px;
-    margin-left: 30px;
+      .excel-button {
+        width: 170px;
+        /* กำหนดให้เท่ากัน */
+        height: 45px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+        box-sizing: border-box;
+        white-space: nowrap;
+        gap: 5px;
+        margin: 5px;
+        margin-left: 30px;
 
-  }
+      }
 
-  /* สีปุ่ม export Excel */
-  .excel-button {
-    background-color: #2e8b57;
-    color: white;
-    gap: 25px;
-  }
+      /* สีปุ่ม export Excel */
+      .excel-button {
+        background-color: #2e8b57;
+        color: white;
+        gap: 25px;
+      }
+
       .btn-group-req {
 
 
@@ -170,9 +178,9 @@
     }
 
     .table-responsive {
-       max-height: 70vh;  // ตารางสูงไม่เกิน 70% ของจอ
-  width: 100%;      // กว้างเต็ม 100% ของจอ
-  overflow: auto;
+      max-height: 70vh; // ตารางสูงไม่เกิน 70% ของจอ
+      width: 100%; // กว้างเต็ม 100% ของจอ
+      overflow: auto;
       margin-top: 30px;
 
       table {
@@ -185,12 +193,13 @@
           background-color: #04fb3d !important; // เขียวอ่อนอ่านง่าย
           color: #155724 !important;
         }
-// .docno-group-row {
-//     background-color: #00d9ff; /* สีฟ้าอ่อน */
-//     font-weight: bold;
-//     text-align: center;
-//     vertical-align: middle;
-// }
+
+        // .docno-group-row {
+        //     background-color: #00d9ff; /* สีฟ้าอ่อน */
+        //     font-weight: bold;
+        //     text-align: center;
+        //     vertical-align: middle;
+        // }
         tr.row-waiting {
           background-color: #ffffff !important;
           color: #000000 !important;
@@ -209,11 +218,16 @@
           .ng-select {
             width: 100px;
           }
+
           .print-button {
-            background: none;      /* ไม่มีพื้นหลัง */
-            border: none;          /* ไม่มีขอบ */
-            align-items: center;   /* จัดไอคอนกับข้อความให้อยู่กลาง */
-            gap: 5px;              /* ระยะห่างระหว่างไอคอนกับข้อความ */
+            background: none;
+            /* ไม่มีพื้นหลัง */
+            border: none;
+            /* ไม่มีขอบ */
+            align-items: center;
+            /* จัดไอคอนกับข้อความให้อยู่กลาง */
+            gap: 5px;
+            /* ระยะห่างระหว่างไอคอนกับข้อความ */
           }
 
           .print-button i {

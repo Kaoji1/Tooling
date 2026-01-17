@@ -38,7 +38,7 @@ export class PlanListComponent implements OnInit {
         // Map ข้อมูลจาก Backend (PascalCase) -> Frontend (camelCase)
         this.planList = res.map((item: any) => ({
           id: item.Plan_ID,
-          date: item.PlanDate ? item.PlanDate.split('T')[0] : '', // แปลงวันที่ตัดเวลาออก
+          date: item.PlanDate ? new Date(item.PlanDate).toLocaleDateString('en-US') : '', // mm/dd/yyyy
           // empId: item.Employee_ID,
           division: item.Division,
           mcType: item.MC_Type, // HTML ใช้ mcType

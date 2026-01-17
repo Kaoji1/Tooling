@@ -1,116 +1,217 @@
-// Layout หลัก
+// Use Global Variables
 .layout {
   display: flex;
   height: 100vh;
-  width: 100%;
+  width: 100vw;
+  overflow: hidden;
 
   .content-area {
     flex: 1;
-    padding: 20px;
-    background-color: #f8f9fa;
     display: flex;
     flex-direction: column;
+    padding: 20px;
+    background-color: var(--color-bg);
     overflow-y: auto;
+    height: 100%;
+    min-width: 0; // Prevent flex item overflow
   }
 }
 
-// ส่วน Filter ด้านบน
+h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin-bottom: 24px;
+  // Gradient text matching other pages
+  background: linear-gradient(90deg, var(--color-primary), #1e40af);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+// Filter Section (Card Style)
 .filter-section {
   display: flex;
-  gap: 30px; // ระยะห่างระหว่างช่อง
-  margin-bottom: 25px;
-  background: white;
+  flex-wrap: wrap;
+  align-items: flex-end; // Align bottom with inputs
+  gap: 20px;
+  background-color: var(--color-surface);
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+  border: 1px solid var(--color-border);
 
   .filter-group {
     display: flex;
     flex-direction: column;
-    width: 200px;
+    min-width: 200px;
 
     label {
-      font-weight: bold;
+      font-weight: 600;
       margin-bottom: 8px;
       font-size: 14px;
-      color: #333;
+      color: var(--color-text-secondary);
     }
 
-    input, select {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      outline: none;
+    input,
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background-color: #fff;
+      font-size: 14px;
+      color: var(--color-text-primary);
+      transition: all 0.2s;
 
       &:focus {
-        border-color: #007bff;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        outline: none;
       }
     }
   }
 }
 
-// ตารางข้อมูล
+// Table Container (Card Style)
 .table-container {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1rem;
   overflow-x: auto;
+  border: 1px solid var(--color-border);
+  flex: 1; // Take remaining height
+  display: flex;
+  flex-direction: column;
+  min-height: 400px; // Ensure visible
 
   table {
     width: 100%;
-    min-width: 1400px; // กันตารางบีบตัวเกินไป
-    border-collapse: collapse; // ให้ขอบตารางติดกัน
+    border-collapse: collapse;
+    min-width: 1200px; // Ensure scrolling on small screens
 
-    th {
-      background-color: #e0e0e0; // สีเทา (Header)
-      padding: 12px;
-      text-align: center;
-      font-weight: bold;
-      border: 1px solid #ccc; // เส้นขอบสีขาว/เทา
-      font-size: 14px;
-      white-space: nowrap;
+    thead {
+      background-color: #f1f5f9;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+
+      th {
+        padding: 12px 16px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        font-size: 0.875rem;
+        border-bottom: 2px solid var(--color-border);
+        white-space: nowrap;
+      }
     }
 
-    // แถวข้อมูล (Data Row)
-    .data-row {
-      background-color: #ff9999; // *** สีชมพูตามรูป ***
-      
-      td {
-        padding: 8px;
-        border: 1px solid #fff; // เส้นคั่นสีขาวเพื่อให้เห็นช่องชัดเจน
-        text-align: center;
-        color: #333;
-        font-size: 14px;
-      }
+    tbody {
+      tr {
+        border-bottom: 1px solid var(--color-border);
+        transition: background-color 0.15s;
 
-      &:hover {
-        background-color: #ff8080; // เข้มขึ้นนิดนึงตอนเอาเมาส์ชี้
+        // Default state (if needed)
+
+        // Status: Incomplete (Red/Pink)
+        &.row-incomplete {
+          background-color: #fee2e2; // Tailwind red-100
+
+          &:hover {
+            background-color: #fecaca; // Tailwind red-200
+          }
+
+          td {
+            color: #991b1b; // Tailwind red-800
+          }
+        }
+
+        // Status: Complete (Green)
+        &.row-complete {
+          background-color: #dcfce7; // Tailwind green-100
+
+          &:hover {
+            background-color: #bbf7d0; // Tailwind green-200
+          }
+
+          td {
+            color: #166534; // Tailwind green-800
+          }
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        td {
+          padding: 12px 16px;
+          // color: var(--color-text-primary); // Overridden by specific classes
+          font-size: 0.875rem;
+          vertical-align: middle;
+          white-space: nowrap;
+        }
       }
     }
   }
 }
 
-// ปุ่ม Action (Edit / Delete)
+// Action Buttons
 .btn-action {
-  border: none;
   width: 32px;
   height: 32px;
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: var(--radius-md);
+  border: none;
   display: inline-flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
   color: white;
-  transition: opacity 0.2s;
-
-  &:hover { opacity: 0.8; }
+  margin: 0 2px;
 
   &.edit {
-    background-color: #007bff; // สีฟ้า
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+    }
   }
 
   &.delete {
-    background-color: #dc3545; // สีแดง
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
+    }
+  }
+
+  i {
+    font-size: 14px;
+  }
+}
+
+// Scrollbars
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+
+  &:hover {
+    background: #94a3b8;
   }
 }

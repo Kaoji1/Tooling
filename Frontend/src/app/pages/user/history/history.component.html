@@ -15,16 +15,16 @@
     <div class="box-input">
 
       <div class="btn-group-req">
-               <div class="button-group">
+        <div class="button-group">
           <button class="excel-button" type="button" class="btn btn-success" (click)="exportexcel()"><i
-            class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL</button>
+              class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL</button>
 
-            <button class="btn-sort" type="button"  (click)="clearFilters()">Clear</button>
-        <button class="btn-sort me-2" type="button" (click)="onFilter()">Filter</button>
-        <!-- <button class="btn-sort" type="button" (click)="onSort()">Sort ↓</button> -->
+          <button class="btn-sort" type="button" (click)="clearFilters()">Clear</button>
+          <button class="btn-sort me-2" type="button" (click)="onFilter()">Filter</button>
+          <!-- <button class="btn-sort" type="button" (click)="onSort()">Sort ↓</button> -->
+        </div>
       </div>
-      </div>
-     </div>
+    </div>
 
     <!-- ฝั่ง dropdown รับค่า -->
     <div class="box-input">
@@ -53,7 +53,7 @@
           </ng-select>
         </div>
 
-         <div class="group-select">
+        <div class="group-select">
           <label>Division</label>
           <ng-select [items]="divisionList" bindLabel="label" bindValue="value" [(ngModel)]="selectedDivision"
             [virtualScroll]="true" placeholder="Select a Division">
@@ -74,7 +74,7 @@
           </ng-select>
         </div>
 
-       
+
       </div>
 
       <!--  ปุ่ม Filter และ Sort -->
@@ -85,70 +85,78 @@
 
     <!-- ตารางที่รับค่ามาจากการกด send request -->
     <div class="table-responsive">
-     <table class="table table-bordered table-hover align-middle text-center" id="table-data">
-  <thead style="background-color:#f1f1f1;">
-    <tr>
-      <th>No.</th>
-      <th (click)="onSort('DocNo')" style="cursor: pointer;">Doc No<span *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-      <th (click)="onSort('Requester')" style="cursor: pointer;">Requester<span *ngIf="sortKey === 'Requester'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-      <th (click)="onSort('Division')" style="cursor: pointer;">Division<span *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-      <th>Fac</th>
-      <th (click)="onSort('PartNo')" style="cursor: pointer;">Part No<span *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-      <th>ItemNo</th>
-      <th>Spec</th>
-      <th>Process</th>
-      <th>QTY</th>
-      <th (click)="onSort('Status')" style="cursor: pointer;">Status<span *ngIf="sortKey === 'Status'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-      <th>Remark</th>
-      <th>ReqDate</th>
-      <th>DueDate</th>
-      <th>Print</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- วนลูปตาม DocNo -->
-    <ng-container *ngFor="let docNoGroup of groupedByDocNo()">
-      <!-- Header ของแต่ละ DocNo -->
-      <tr class="docno-group-row">
-  <td colspan="15" style="background-color: rgb(237, 255, 159);">
-    Doc No: {{ docNoGroup.docNo }}    |   
-    Total QTY: {{ getTotalQTY(docNoGroup.items) }}
-  </td>
-</tr>
-
-      <tr *ngFor="let item of docNoGroup.items; let i = index" >
-            <td [ngClass]="getStatusClass(item.Status)">{{ i + 1 }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">{{ item.DocNo }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">{{ item.Requester }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">{{ item.Division }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">{{ item.Fac }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">{{ item.PartNo }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">{{ item.ItemNo }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">{{ item.SPEC }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">{{ item.Process }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">{{ item.Req_QTY }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">
-              {{ item.Status === 'CompleteToExcel' ? 'Complete' : item.Status }}
-            </td>
-            <td [ngClass]="getStatusClass(item.Status, item.Remark)">{{ item.Remark }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">{{ item.DateTime_Record | date:'dd/MM/yyyy HH:mm:ss':'UTC' }}</td>
-            <td [ngClass]="getStatusClass(item.Status)">{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
-            <td [ngClass]="getStatusClass(item.Status)" style="width: 100px;" >
-              <div class="hihi" style="background-color: rgba(255, 255, 255, 0.548);border-radius: 5px; box-shadow: 0 4px 5px rgba(0,0,0,0.2);margin: 4px;">
-              <button class="print-button" (click)="openPrintModal(item)" data-bs-toggle="modal" data-bs-target="#Insert" [disabled]="!canPrint">
-                <i class="bi bi-printer-fill" style="color: black; font-size: 25px;"></i> 
-              </button>
-              <br>
-              <span style="font-size: 13px; color: rgb(151, 4, 4); font-weight: bold;">
-                Layout: {{ item.PrintLayoutCount || 0 }}<br>
-                Dwg: {{ item.PrintDwgCount || 0 }}
-              </span>
-              </div>
-            </td>
+      <table class="table table-bordered table-hover align-middle text-center" id="table-data">
+        <thead style="background-color:#f1f1f1;">
+          <tr>
+            <th>No.</th>
+            <th (click)="onSort('DocNo')" style="cursor: pointer;">Doc No<span *ngIf="sortKey === 'DocNo'">{{ sortAsc ?
+                '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Requester')" style="cursor: pointer;">Requester<span *ngIf="sortKey === 'Requester'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Division')" style="cursor: pointer;">Division<span *ngIf="sortKey === 'Division'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
+            <th>Fac</th>
+            <th (click)="onSort('PartNo')" style="cursor: pointer;">Part No<span *ngIf="sortKey === 'PartNo'">{{ sortAsc
+                ? '↑' : '↓' }}</span></th>
+            <th>ItemNo</th>
+            <th>Spec</th>
+            <th>Process</th>
+            <th>QTY</th>
+            <th (click)="onSort('Status')" style="cursor: pointer;">Status<span *ngIf="sortKey === 'Status'">{{ sortAsc
+                ? '↑' : '↓' }}</span></th>
+            <th>Remark</th>
+            <th>ReqDate</th>
+            <th>DueDate</th>
+            <th>Print</th>
           </tr>
-    </ng-container>
-  </tbody>
-</table>
+        </thead>
+        <tbody>
+          <!-- วนลูปตาม DocNo -->
+          <ng-container *ngFor="let docNoGroup of groupedByDocNo()">
+            <!-- Header ของแต่ละ DocNo -->
+            <tr class="docno-group-row">
+              <td colspan="15" style="background-color: rgb(237, 255, 159);">
+                Doc No: {{ docNoGroup.docNo }} |
+                Total QTY: {{ getTotalQTY(docNoGroup.items) }}
+              </td>
+            </tr>
+
+            <tr *ngFor="let item of docNoGroup.items; let i = index">
+              <td [ngClass]="getStatusClass(item.Status)">{{ i + 1 }}</td>
+              <td [ngClass]="getStatusClass(item.Status)">{{ item.DocNo }}</td>
+              <td [ngClass]="getStatusClass(item.Status)">{{ item.Requester }}</td>
+              <td [ngClass]="getStatusClass(item.Status)">{{ item.Division }}</td>
+              <td [ngClass]="getStatusClass(item.Status)">{{ item.Fac }}</td>
+              <td [ngClass]="getStatusClass(item.Status)">{{ item.PartNo }}</td>
+              <td [ngClass]="getStatusClass(item.Status)">{{ item.ItemNo }}</td>
+              <td [ngClass]="getStatusClass(item.Status)">{{ item.SPEC }}</td>
+              <td [ngClass]="getStatusClass(item.Status)">{{ item.Process }}</td>
+              <td [ngClass]="getStatusClass(item.Status)">{{ item.Req_QTY }}</td>
+              <td [ngClass]="getStatusClass(item.Status)">
+                {{ item.Status === 'CompleteToExcel' ? 'Complete' : item.Status }}
+              </td>
+              <td [ngClass]="getStatusClass(item.Status, item.Remark)">{{ item.Remark }}</td>
+              <td [ngClass]="getStatusClass(item.Status)">{{ item.DateTime_Record | date:'MM/dd/yyyy HH:mm:ss':'UTC' }}
+              </td>
+              <td [ngClass]="getStatusClass(item.Status)">{{ item.DueDate | date:'MM/dd/yyyy' }}</td>
+              <td [ngClass]="getStatusClass(item.Status)" style="width: 100px;">
+                <div class="hihi"
+                  style="background-color: rgba(255, 255, 255, 0.548);border-radius: 5px; box-shadow: 0 4px 5px rgba(0,0,0,0.2);margin: 4px;">
+                  <button class="print-button" (click)="openPrintModal(item)" data-bs-toggle="modal"
+                    data-bs-target="#Insert" [disabled]="!canPrint">
+                    <i class="bi bi-printer-fill" style="color: black; font-size: 25px;"></i>
+                  </button>
+                  <br>
+                  <span style="font-size: 13px; color: rgb(151, 4, 4); font-weight: bold;">
+                    Layout: {{ item.PrintLayoutCount || 0 }}<br>
+                    Dwg: {{ item.PrintDwgCount || 0 }}
+                  </span>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
     </div>
 
     <!--table-->
@@ -163,10 +171,10 @@
     <div class="modal-content" *ngIf="selectedItem">
       <div class="modal-header">
         <h5 class="modal-title" id="InsertLabel">Detail Preview</h5>
-        
+
         <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="closeModal()"></button>
       </div>
-      
+
 
       <div class="modal-body">
         <!-- ข้อมูลแถวที่เลือก -->
@@ -178,19 +186,18 @@
             <p><strong>Item No:</strong> {{ selectedItem.ItemNo }}</p>
             <p><strong>QTY:</strong> {{ selectedItem.Req_QTY }}</p>
             <div class="total-qty">
-              <strong>Total QTY For:</strong> {{ selectedItem.DocNo }}: 
+              <strong>Total QTY For:</strong> {{ selectedItem.DocNo }}:
               {{ getTotalQTYForSelectedDoc() }}
             </div>
-        </div>
-        
+          </div>
 
-        <!-- เลือก Type -->
-        
+
+          <!-- เลือก Type -->
+
           <div class="col">
             <label for="Type" class="form-label">Type</label>
-            <ng-select [items]="Type" bindLabel="label" bindValue="value"
-                       [(ngModel)]="Type_" (change)="onTypeChange()"
-                       placeholder="Select Type">
+            <ng-select [items]="Type" bindLabel="label" bindValue="value" [(ngModel)]="Type_" (change)="onTypeChange()"
+              placeholder="Select Type">
             </ng-select>
           </div>
           <div class="col">
@@ -205,9 +212,9 @@
         </div>
       </div>
 
-     <div class="modal-footer">
+      <div class="modal-footer">
         <div style="color: red; font-weight: bold; margin-right: auto; font-size: 0.95rem;">
-         " Please have the printer ready before pressing print"
+          " Please have the printer ready before pressing print"
         </div>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeModal()">Close</button>
         <button type="button" class="btn btn-primary" style="width:150px;" (click)="printPdf()">Print</button>
