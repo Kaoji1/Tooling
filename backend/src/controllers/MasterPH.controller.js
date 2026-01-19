@@ -4,76 +4,155 @@ const sql = require("mssql");
 exports.getAllMasterPHValues = async (req, res) => {
     try {
         const pool = await poolPromise;
-        const result = await pool.request().query(`
-      SELECT 
-                 a.[PHGM_ID]
-                ,a.[Division_Id]
-                ,a.[ItemNo]
-                ,a.[ItemName]
-                ,a.[Spec_ID]
-                ,b.[Spec] AS Spec  -- ดึงชื่อ Spec จากตาราง b (tb_Spec_PMC)
-                ,a.[DW]
-                ,a.[ClassCode]
-                ,a.[ItemType]
-                ,a.[Dept]
-                ,a.[ProductCode]
-                ,a.[Source Code] AS SourceCode
-                ,a.[Organisation]
-                ,a.[ItemClass]
-                ,a.[Commodity]
-                ,a.[CL]
-                ,a.[AccountCode]
-                ,a.[StockType]
-                ,a.[MainWH]
-                ,a.[StockLoc]
-                ,a.[MatL_Type]
-                ,a.[StockUnit]
-                ,a.[PurchaseUnit1]
-                ,a.[Conversion1]
-                ,a.[PurchaseUnit2]
-                ,a.[Conversion2]
-                ,a.[WC_Code]
-                ,a.[ModelGroup]
-                ,a.[PayDuty]
-                ,a.[Line]
-                ,a.[HardAllocation]
-                ,a.[ECN]
-                ,a.[OrderPolicy]
-                ,a.[OrderPoint]
-                ,a.[WOS]
-                ,a.[SaftyCode]
-                ,a.[MakerCode]
-                ,a.[MakerName]
-                ,a.[MakerSpec]
-                ,a.[WPC_No]
-                ,a.[Vendor]
-                ,a.[VendorName]
-                ,a.[UnitPrice]
-                ,a.[Currency]
-                ,a.[PurLeadtime]
-                ,a.[Standard_Qty]
-                ,a.[BasicOrder]
-                ,a.[MaxximumOrder]
-                ,a.[MinimumOrder]
-                ,a.[Yield]
-                ,a.[BOI_Code]
-                ,a.[Remark]
-                ,a.[SaftyStock]
-                ,a.[OrderBal]
-                ,a.[Allocated]
-                ,a.[OnHand]
-                ,a.[PendingCode]
-                ,a.[ReasonPending]
-                ,a.[Last_Issued]
-                ,a.[Last_StockIn]
-                ,a.[Last_Maint]
-                ,a.[Time]
-                ,a.[Operator]
-                ,a.[FileName]
-                ,a.[ModifyDate]
-            FROM [db_Tooling].[master].[tb_Purchase_Item_Master_PMC] a
-            LEFT JOIN [master].[tb_Spec_PMC] b ON a.Spec_ID = b.Spec_ID
-        `);
+        const type = req.query.type || 'pmc'; // Default to pmc
+
+        let query = '';
+
+        if (type === 'gm') {
+            query = `
+                SELECT 
+                     a.[PHGM_ID]
+                    ,a.[Division_Id]
+                    ,a.[ItemNo]
+                    ,a.[ItemName]
+                    ,a.[Spec_ID]
+                    ,b.[Spec] AS Spec
+                    ,a.[DW]
+                    ,a.[ClassCode]
+                    ,a.[ItemType]
+                    ,a.[Dept]
+                    ,a.[ProductCode]
+                    ,a.[Source Code] AS SourceCode
+                    ,a.[Organisation]
+                    ,a.[ItemClass]
+                    ,a.[Commodity]
+                    ,a.[CL]
+                    ,a.[AccountCode]
+                    ,a.[StockType]
+                    ,a.[MainWH]
+                    ,a.[StockLoc]
+                    ,a.[MatL_Type]
+                    ,a.[StockUnit]
+                    ,a.[PurchaseUnit1]
+                    ,a.[Conversion1]
+                    ,a.[PurchaseUnit2]
+                    ,a.[Conversion2]
+                    ,a.[WC_Code]
+                    ,a.[ModelGroup]
+                    ,a.[PayDuty]
+                    ,a.[Line]
+                    ,a.[HardAllocation]
+                    ,a.[ECN]
+                    ,a.[OrderPolicy]
+                    ,a.[OrderPoint]
+                    ,a.[WOS]
+                    ,a.[SaftyCode]
+                    ,a.[MakerCode]
+                    ,a.[MakerName]
+                    ,a.[MakerSpec]
+                    ,a.[WPC_No]
+                    ,a.[Vendor]
+                    ,a.[VendorName]
+                    ,a.[UnitPrice]
+                    ,a.[Currency]
+                    ,a.[PurLeadtime]
+                    ,a.[Standard_Qty]
+                    ,a.[BasicOrder]
+                    ,a.[MaxximumOrder]
+                    ,a.[MinimumOrder]
+                    ,a.[Yield]
+                    ,a.[BOI_Code]
+                    ,a.[Remark]
+                    ,a.[SaftyStock]
+                    ,a.[OrderBal]
+                    ,a.[Allocated]
+                    ,a.[OnHand]
+                    ,a.[PendingCode]
+                    ,a.[ReasonPending]
+                    ,a.[Last_Issued]
+                    ,a.[Last_StockIn]
+                    ,a.[Last_Maint]
+                    ,a.[Time]
+                    ,a.[Operator]
+                    ,a.[FileName]
+                    ,a.[ModifyDate]
+                FROM [db_Tooling].[master].[tb_Purchase_Item_Master_GM] a
+                LEFT JOIN [master].[tb_Spec_GM] b ON a.Spec_ID = b.Spec_ID
+            `;
+        } else {
+            // PMC Query - Removing PHGM_ID as it doesn't exist in PMC table
+            query = `
+                SELECT 
+                     a.[Division_Id]
+                    ,a.[ItemNo]
+                    ,a.[ItemName]
+                    ,a.[Spec_ID]
+                    ,b.[Spec] AS Spec
+                    ,a.[DW]
+                    ,a.[ClassCode]
+                    ,a.[ItemType]
+                    ,a.[Dept]
+                    ,a.[ProductCode]
+                    ,a.[Source Code] AS SourceCode
+                    ,a.[Organisation]
+                    ,a.[ItemClass]
+                    ,a.[Commodity]
+                    ,a.[CL]
+                    ,a.[AccountCode]
+                    ,a.[StockType]
+                    ,a.[MainWH]
+                    ,a.[StockLoc]
+                    ,a.[MatL_Type]
+                    ,a.[StockUnit]
+                    ,a.[PurchaseUnit1]
+                    ,a.[Conversion1]
+                    ,a.[PurchaseUnit2]
+                    ,a.[Conversion2]
+                    ,a.[WC_Code]
+                    ,a.[ModelGroup]
+                    ,a.[PayDuty]
+                    ,a.[Line]
+                    ,a.[HardAllocation]
+                    ,a.[ECN]
+                    ,a.[OrderPolicy]
+                    ,a.[OrderPoint]
+                    ,a.[WOS]
+                    ,a.[SaftyCode]
+                    ,a.[MakerCode]
+                    ,a.[MakerName]
+                    ,a.[MakerSpec]
+                    ,a.[WPC_No]
+                    ,a.[Vendor]
+                    ,a.[VendorName]
+                    ,a.[UnitPrice]
+                    ,a.[Currency]
+                    ,a.[PurLeadtime]
+                    ,a.[Standard_Qty]
+                    ,a.[BasicOrder]
+                    ,a.[MaxximumOrder]
+                    ,a.[MinimumOrder]
+                    ,a.[Yield]
+                    ,a.[BOI_Code]
+                    ,a.[Remark]
+                    ,a.[SaftyStock]
+                    ,a.[OrderBal]
+                    ,a.[Allocated]
+                    ,a.[OnHand]
+                    ,a.[PendingCode]
+                    ,a.[ReasonPending]
+                    ,a.[Last_Issued]
+                    ,a.[Last_StockIn]
+                    ,a.[Last_Maint]
+                    ,a.[Time]
+                    ,a.[Operator]
+                    ,a.[FileName]
+                    ,a.[ModifyDate]
+                FROM [db_Tooling].[master].[tb_Purchase_Item_Master_PMC] a
+                LEFT JOIN [master].[tb_Spec_PMC] b ON a.Spec_ID = b.Spec_ID
+            `;
+        }
+
+        const result = await pool.request().query(query);
 
         res.status(200).json(result.recordset);
     } catch (err) {
@@ -120,17 +199,54 @@ exports.importMasterData = async (req, res) => {
             return isNaN(d.getTime()) ? null : d;
         };
 
-        // OPTIMIZATION 1: Pre-fetch all existing ItemNos
-        const existingItemsSet = new Set();
+        const type = req.query.type || 'pmc';
+        let tableName = '[db_Tooling].[master].[tb_Purchase_Item_Master_PMC]';
+        let spInsert = '[db_Tooling].[trans].[Stored_Import_ItemMaster_Test]';
+        let spUpdate = '[db_Tooling].[trans].[Stored_ItemMaster_PH_PMC_Update]';
+
+        if (type === 'gm') {
+            tableName = '[db_Tooling].[master].[tb_Purchase_Item_Master_GM]';
+            spInsert = '[db_Tooling].[trans].[Stored_Import_ItemMaster_GM_Test]';
+            spUpdate = '[db_Tooling].[trans].[Stored_ItemMaster_PH_GM_Update]';
+        }
+
+        console.log(`[Import] Processing type: ${type.toUpperCase()}`);
+
+        // OPTIMIZATION 1: Pre-fetch all existing Items for check
+        // For GM: We need ItemNo + Spec to identify uniqueness.
+        // For PMC: ItemNo is unique enough (or at least used to be).
+        const existingItemsMap = new Set();
+
         try {
-            const checkResult = await pool.request().query("SELECT ItemNo FROM [db_Tooling].[master].[tb_Purchase_Item_Master_PMC]");
+            let checkQuery = "";
+            if (type === 'gm') {
+                // For GM, fetch ItemNo and Spec Name
+                checkQuery = `
+                    SELECT a.ItemNo, b.Spec 
+                    FROM ${tableName} a 
+                    LEFT JOIN [master].[tb_Spec_GM] b ON a.Spec_ID = b.Spec_ID
+                `;
+            } else {
+                checkQuery = `SELECT ItemNo FROM ${tableName}`;
+            }
+
+            const checkResult = await pool.request().query(checkQuery);
+
             checkResult.recordset.forEach(row => {
-                if (row.ItemNo) existingItemsSet.add(row.ItemNo);
+                if (type === 'gm') {
+                    if (row.ItemNo) {
+                        // Create composite key: "ITEMNO|SPEC"
+                        const specVal = row.Spec ? String(row.Spec).trim().toLowerCase() : '';
+                        const key = `${String(row.ItemNo).trim().toLowerCase()}|${specVal}`;
+                        existingItemsMap.add(key);
+                    }
+                } else {
+                    if (row.ItemNo) existingItemsMap.add(String(row.ItemNo).trim().toLowerCase());
+                }
             });
-            console.log(`[Import] Loaded ${existingItemsSet.size} existing items for check.`);
+            console.log(`[Import] Loaded ${existingItemsMap.size} existing keys from ${tableName}.`);
         } catch (err) {
             console.error("[Import] Failed to pre-fetch existing items:", err);
-            // Continue but fallback or fail? Failing safer for consistency, but we'll try to continue.
         }
 
         // Helper to find value with fuzzy key matching
@@ -159,16 +275,27 @@ exports.importMasterData = async (req, res) => {
             try {
                 const request = pool.request();
 
+                // ... (Mapping Inputs - Same as before, omitted for brevity if I could, but I need to include them to be safe or just focus on the logic block)
+                // To be safe and since I'm replacing a block, I will include the core mapping logic or I effectively need to rewrite processItem. 
+                // Since I cannot partial replace easily without context, I will rewrite the relevant logic part.
+
+                // Let's assume the mapping part is mostly effectively the same, I need to re-output it.
+                // Or I can use the existing 'findValue' and helper functions if they are in scope.
+
                 // --- 1. Map ข้อมูล (Use Fuzzy Search) ---
                 request.input('Division_Id', sql.Int, getInt(findValue(item, ['DVS_Id', 'DVS_ID', 'Division_Id'])));
 
                 const itemNoVal = getString(findValue(item, ['Item No.', 'ItemNo', 'ITEM_NO', 'Item Number']));
                 request.input('ItemNo', sql.NVarChar(50), itemNoVal);
 
-                request.input('ItemName', sql.NVarChar(50), getString(findValue(item, ['Item Name', 'ItemName', 'ITEM_NAME'])));
+                const itemNameVal = getString(findValue(item, ['Item Name', 'ItemName', 'ITEM_NAME']));
+                request.input('ItemName', sql.NVarChar(50), itemNameVal);
+
+                const specValRaw = getString(findValue(item, ['Spec', 'SPEC'])); // Get Spec for Key Check
+
                 request.input('Spec_ID', sql.Int, getInt(findValue(item, ['Spec_ID', 'SPEC_ID'])));
-                request.input('Spec', sql.NVarChar(50), getString(findValue(item, ['Spec', 'SPEC'])));
-                request.input('DW', sql.NVarChar(50), getString(findValue(item, ['DW', 'D.W.', 'Drawing'])));
+                request.input('Spec', sql.NVarChar(50), specValRaw);
+                request.input('DW', sql.NVarChar, getString(findValue(item, ['DW', 'D.W.', 'Drawing'])));
                 request.input('ClassCode', sql.NVarChar(50), getString(findValue(item, ['Class Code', 'ClassCode'])));
                 request.input('ItemType', sql.NVarChar(50), getString(findValue(item, ['Item Type', 'ItemType'])));
                 request.input('Dept', sql.NVarChar(50), getString(findValue(item, ['Dept', 'DEPT_CODE'])));
@@ -231,26 +358,43 @@ exports.importMasterData = async (req, res) => {
                 request.input('FileName', sql.NVarChar(100), getString(findValue(item, ['FileName'])));
 
                 // Logic: Insert or Update
-                const itemNoCheck = itemNoVal;
-
-                // VALIDATION: ถ้าไม่มี ItemNo ให้ข้ามไปเลย ไม่ไม่ต้องทำต่อ
-                if (!itemNoCheck) {
+                if (!itemNoVal) {
                     console.warn(`[Import] Insert Ignored at row ${index}: ItemNo is missing.`);
                     return;
                 }
 
-                let spName = '[db_Tooling].[trans].[Stored_Import_ItemMaster_Test]';
+                let spName = spInsert;
+                let performAction = true;
 
-                // เช็คว่ามีใน DB ไหม ถ้ามีให้ไปใช้ SP Update ที่แก้แล้ว
-                if (existingItemsSet.has(itemNoCheck)) {
-                    spName = '[db_Tooling].[trans].[Stored_ItemMaster_PH_PMC_Fixed_Update]'; // ใช้ชื่อ SP ที่เรามั่นใจ
-                    // หรือถ้าท่านแก้ชื่อ SP เดิมแล้ว ก็ใช้ชื่อเดิมได้ '[trans].[Stored_ItemMaster_PH_PMC_Update]'
-                    // เพื่อความชัวร์ ผมแนะนำให้ใช้ชื่อเดิมที่ท่านน่าจะแก้ไปแล้ว
-                    spName = '[db_Tooling].[trans].[Stored_ItemMaster_PH_PMC_Update]';
+                if (type === 'gm') {
+                    // Smart Append Logic for GM: Match by ItemNo + Spec
+                    const specStr = specValRaw ? specValRaw.trim().toLowerCase() : '';
+                    const checkKey = `${itemNoVal.trim().toLowerCase()}|${specStr}`;
+
+                    if (existingItemsMap.has(checkKey)) {
+                        // Found Exact Duplicate (ItemNo + Spec) -> SKIP (To protect existing data)
+                        // console.log(`[Import GM] Skipping existing item: ${checkKey}`);
+                        performAction = false;
+                    } else {
+                        // New Combo -> Insert
+                        spName = spInsert;
+                    }
+                } else {
+                    // Default Logic for PMC: Match by ItemNo only -> Update
+                    const checkKey = itemNoVal.trim().toLowerCase();
+                    if (existingItemsMap.has(checkKey)) {
+                        spName = spUpdate;
+                    }
                 }
 
-                await request.execute(spName);
-                successCount++;
+                if (performAction) {
+                    await request.execute(spName);
+                    successCount++;
+                } else {
+                    // Count as success or ignored? Let's count as success but log nothing to avoid noise
+                    // or maybe just ignore it.
+                    // successCount++; // Optional: count skipped as processed?
+                }
             } catch (err) {
                 failCount++;
                 errors.push({ index, error: err.message, item_no: item['Item No.'] ?? item.ItemNo });

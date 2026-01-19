@@ -62,14 +62,26 @@ export class MasterPHComponent {
 
     loadData() {
         this.loading = true;
-        this.masterPHService.getAllValues().subscribe({
+        // Determine type based on currentTab? 
+        // For now, if currentTab is 'purchase', we can just load PMC by default or both.
+        // But since we only have one variable `masterData`, let's just default to 'pmc' for now
+        // or we could add a selector in the UI later if needed to view GM.
+        // If imports are separate, maybe we want to see what we just imported?
+        // Since the table is hidden, this is mostly for "Data Loaded" success state.
+
+        const type: 'pmc' | 'gm' = 'pmc'; // Default to PMC for now or allow switching if UI supports it.
+
+        this.masterPHService.getAllValues(type).subscribe({
             next: (data) => {
                 this.masterData = data;
                 this.loading = false;
             },
             error: (err) => {
                 console.error('Error loading MasterPH data:', err);
-                Swal.fire('Error', 'Failed to load data.', 'error');
+                const errorMsg = err.error?.message || err.error?.error || err.message || 'Unknown error';
+                // Only show error alert if it's NOT the "Invalid column" error we just fixed, 
+                // but since we fixed it, it should be fine.
+                Swal.fire('Error', 'Failed to load data: ' + errorMsg, 'error');
                 this.loading = false;
             }
         });
@@ -170,11 +182,11 @@ export class MasterPHComponent {
 
             // Upload sequence
             if (hasPMC) {
-                this.importData(this.tempData.pmc);
+                this.importData(this.tempData.pmc, 'pmc');
             }
             if (hasGM) {
                 setTimeout(() => {
-                    this.importData(this.tempData.gm);
+                    this.importData(this.tempData.gm, 'gm');
                 }, 500);
             }
             if (hasIReport) { // New IReport Upload
@@ -201,24 +213,24 @@ export class MasterPHComponent {
         Swal.fire('Info', `Export template for ${type} (Not implemented yet)`, 'info');
     }
 
-    importData(data: any[]) {
+    importData(data: any[], type: 'pmc' | 'gm' = 'pmc') {
         this.loading = true;
         Swal.fire({
             title: 'Importing...',
-            text: `Uploading ${data.length} records. Please wait.`,
+            text: `Uploading ${data.length} records (${type.toUpperCase()}). Please wait.`,
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
 
-        this.masterPHService.importData(data).subscribe({
+        this.masterPHService.importData(data, type).subscribe({
             next: (res) => {
-                Swal.fire('Success', `Imported ${res.count} records successfully!`, 'success');
+                Swal.fire('Success', `Imported ${type.toUpperCase()} ${res.count} records successfully!`, 'success');
                 this.loadData(); // Refresh table
             },
             error: (err) => {
                 console.error('Import Error:', err);
                 const errorMsg = err.error?.message || err.error?.error || err.message || 'Unknown error';
-                Swal.fire('Error', `Failed to import data: ${errorMsg}`, 'error');
+                Swal.fire('Error', `Failed to import ${type.toUpperCase()} data: ${errorMsg}`, 'error');
                 this.loading = false;
             }
         });

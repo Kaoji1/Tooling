@@ -12,12 +12,12 @@ export class MasterPHService {
 
     constructor(private http: HttpClient) { }
 
-    getAllValues(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.baseUrl}/master-ph`);
+    getAllValues(type: 'pmc' | 'gm' = 'pmc'): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/master-ph?type=${type}`);
     }
 
-    importData(data: any[]): Observable<any> {
-        return this.http.post<any>(`${this.baseUrl}/master-ph/import`, data);
+    importData(data: any[], type: 'pmc' | 'gm' = 'pmc'): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/master-ph/import?type=${type}`, data);
     }
 
     importIReport(data: any[]): Observable<any> {

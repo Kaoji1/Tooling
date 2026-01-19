@@ -25,6 +25,7 @@ export class PlanListComponent implements OnInit {
 
   // ข้อมูลตาราง
   planList: any[] = [];
+  filteredPlanList: any[] = []; // เพิ่มตัวแปรสำหรับเก็บข้อมูลที่กรองแล้ว
 
   constructor(private pcPlanService: PCPlanService) { }
 
@@ -54,20 +55,65 @@ export class PlanListComponent implements OnInit {
           pathLayout: item.Path_Layout || '-',
           iiqc: item.Path_IIQC || '-'
         }));
+
+        this.applyFilter(); // เรียก Filter ครั้งแรกหลังจากโหลดข้อมูลเสร็จ
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading plan list:', err);
       }
     });
   }
 
-  // ฟังก์ชันเมื่อกดปุ่ม Edit
-  onEdit(item: any) {
-    console.log('Edit item:', item);
-    // ใส่ Logic เปิด Popup แก้ไขตรงนี้
+  // ฟังก์ชันสำหรับกรองข้อมูล
+  applyFilter() {
+    this.filteredPlanList = this.planList.filter(item => {
+      // 1. Filter Date (ต้องแปลง format ให้ตรงกันก่อน)
+      const matchDate = this.filterDate ? this.isDateMatch(item.date, this.filterDate) : true;
+      // 2. Filter Division
+      const matchDivision = this.filterDivision ? item.division === this.filterDivision : true;
+      // 3. Filter Machine Type
+      const matchMachine = this.filterMachineType ? item.mcType === this.filterMachineType : true;
+
+      return matchDate && matchDivision && matchMachine;
+    });
   }
 
-  // ฟังก์ชันเมื่อกดปุ่ม Delete
+  // Helper สำหรับเช็ควันที่
+  isDateMatch(itemDateStr: string, filterDateStr: string): boolean {
+    // itemDateStr format: mm/dd/yyyy (from toLocaleDateString en-US)
+    // filterDateStr format: yyyy-mm-dd (from input type="date")
+    if (!itemDateStr || !filterDateStr) return false;
+
+    const [month, day, year] = itemDateStr.split('/');
+    // padStart to ensure 2 digits
+    const formattedItemDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+
+    return formattedItemDate === filterDateStr;
+  }
+
+  // --- Edit Logic (Placeholder if needed, or just view) ---
+  isEditModalOpen: boolean = false;
+  editData: any = {};
+
+  onEdit(item: any) {
+    this.editData = { ...item }; // Clone data
+    // Map data types for form binding
+    // Format Date for <input type="date"> (yyyy-MM-dd)
+    if (this.editData.date) {
+      const parts = this.editData.date.split('/');
+      if (parts.length === 3) {
+        this.editData.date = `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+      }
+    }
+    this.isEditModalOpen = true;
+  }
+
+  closeEditModal() {
+    this.isEditModalOpen = false;
+  }
+  // saveEdit removed as revise is reverted
+
+
   // ฟังก์ชันเมื่อกดปุ่ม Delete
   onDelete(item: any) {
     Swal.fire({
@@ -90,7 +136,7 @@ export class PlanListComponent implements OnInit {
             // Reload ตารางใหม่
             this.loadPlanList();
           },
-          error: (err) => {
+          error: (err: any) => {
             console.error('Delete error:', err);
             Swal.fire(
               'Error!',

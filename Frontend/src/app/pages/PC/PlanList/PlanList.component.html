@@ -9,12 +9,12 @@
 
       <div class="filter-group">
         <label>Date</label>
-        <input type="date" [(ngModel)]="filterDate">
+        <input type="date" [(ngModel)]="filterDate" (change)="applyFilter()">
       </div>
 
       <div class="filter-group">
         <label>Division</label>
-        <select [(ngModel)]="filterDivision">
+        <select [(ngModel)]="filterDivision" (change)="applyFilter()">
           <option value="">All</option>
           <option *ngFor="let div of divisions" [value]="div">{{ div }}</option>
         </select>
@@ -22,7 +22,7 @@
 
       <div class="filter-group">
         <label>Machine Type</label>
-        <select [(ngModel)]="filterMachineType">
+        <select [(ngModel)]="filterMachineType" (change)="applyFilter()">
           <option value="">All</option>
           <option *ngFor="let m of machineTypes" [value]="m">{{ m }}</option>
         </select>
@@ -52,7 +52,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of planList; let i = index" [ngClass]="{
+          <tr *ngFor="let item of filteredPlanList; let i = index" [ngClass]="{
                 'row-complete': (item.pathDwg && item.pathDwg !== '-' && item.pathLayout && item.pathLayout !== '-' && item.iiqc && item.iiqc !== '-'),
                 'row-incomplete': (!item.pathDwg || item.pathDwg === '-' || !item.pathLayout || item.pathLayout === '-' || !item.iiqc || item.iiqc === '-')
               }">
@@ -72,15 +72,15 @@
             <td>{{ item.iiqc }}</td>
 
             <td style="text-align: center; white-space: nowrap;">
-              <button class="btn-action edit me-1" (click)="onEdit(item)" title="Edit">
+              <!-- <button class="btn-action edit me-1" (click)="onEdit(item)" title="Edit">
                 <i class="bi bi-pencil-square"></i>
-              </button>
+              </button> -->
               <button class="btn-action delete" (click)="onDelete(item)" title="Delete">
                 <i class="bi bi-trash-fill"></i>
               </button>
             </td>
           </tr>
-          <tr *ngIf="planList.length === 0">
+          <tr *ngIf="filteredPlanList.length === 0">
             <td colspan="15" style="text-align: center; padding: 2rem; color: #64748b;">No data found</td>
           </tr>
         </tbody>

@@ -2,7 +2,6 @@ const sql = require('mssql');
 const { poolPromise } = require('../config/database'); // ตรวจสอบ path config database ว่าถูกต้อง
 
 // 1. ฟังก์ชันดึง Division (สำหรับ Dropdown เลือกแผนก)
-// อันนี้ต้องมี เพราะ Frontend จะเรียกใช้ตอนเริ่มโหลดหน้าเว็บ เพื่อแสดงตัวเลือก Division
 exports.getDivisions = async (req, res) => {
     try {
         const pool = await poolPromise;
@@ -17,7 +16,6 @@ exports.getDivisions = async (req, res) => {
 };
 
 // 2. ฟังก์ชันดึง Master Data รวม (Machines, Facilities, Processes, PartNos) ตาม Division ที่เลือก
-// ฟังก์ชันนี้จะยิง Stored Procedure 4 ตัวพร้อมกันเพื่อประสิทธิภาพ แล้วส่งกลับไปให้ Frontend ทีเดียว
 exports.getMasterDataByDivision = async (req, res) => {
     try {
         const divCode = req.params.divCode;
@@ -29,9 +27,8 @@ exports.getMasterDataByDivision = async (req, res) => {
         const pool = await poolPromise;
         console.log(`Fetching Master Data for Division: ${divCode}...`);
 
-        // ยิง 4 Query พร้อมกันแบบ Parallel (เพื่อให้เสร็จเร็วขึ้น ไม่ต้องรอทีละอัน)
         const [machines, facilities, processes, partNos] = await Promise.all([
-            // 1. ดึงข้อมูล Machine Type
+            // 1. Machine Type
             pool.request()
                 .input('InputDivision', sql.NVarChar, divCode)
                 .execute('trans.Stored_Get_Dropdown_Machine_By_Division'),
@@ -46,7 +43,7 @@ exports.getMasterDataByDivision = async (req, res) => {
                 .input('InputDivision', sql.NVarChar, divCode)
                 .execute('trans.Stored_Get_Dropdown_Process_By_Division'),
 
-            // 4. PartNo (ใช้ร่วมกับ PartBef)
+            // 4. PartNo
             pool.request()
                 .input('InputDivision', sql.NVarChar, divCode)
                 .execute('trans.Stored_Get_Dropdown_PartNo_By_Division')
@@ -57,7 +54,7 @@ exports.getMasterDataByDivision = async (req, res) => {
             facilities: facilities.recordset,
             processes: processes.recordset,
             partNos: partNos.recordset,
-            partBefs: partNos.recordset // ใช้ข้อมูลชุดเดียวกับ PartNo
+            partBefs: partNos.recordset
         });
 
     } catch (err) {
@@ -66,70 +63,50 @@ exports.getMasterDataByDivision = async (req, res) => {
     }
 };
 
-// 3. ฟังก์ชันบันทึกข้อมูล (Insert PC Plan)
-// รับข้อมูลเป็น Array (หลายแถว) จาก Frontend แล้ววนลูปบันทึกลงฐานข้อมูล
+// 5. ฟังก์ชันเพิ่มรายการ PC Plan ใหม่ (Import Excel / Add New) -> Revert to Basic Insert
 exports.insertPCPlan = async (req, res) => {
     try {
-        const items = req.body; // รับค่า array ของ plan items ที่ส่งมาจากหน้าบ้าน
-
-        if (!Array.isArray(items) || items.length === 0) {
-            return res.status(400).send({ message: "No data provided." });
+        const items = req.body;
+        if (!Array.isArray(items)) {
+            return res.status(400).send({ message: "Data must be an array." });
         }
 
         const pool = await poolPromise;
-        const totalItems = items.length;
         let successCount = 0;
-        let failCount = 0;
-        const errors = [];
+        let errorCount = 0;
 
-        console.log(`[PCPlan] Starting insert of ${totalItems} items...`);
-
-        // Helper function to process single item
-        const processItem = async (item, index) => {
+        for (const item of items) {
             try {
+                // Basic Insert Logic (No Smart Match, No Revision)
                 const request = pool.request();
 
-                // Map Parameters to Stored Procedure
-                request.input('PlanDate', sql.Date, item.date || null); // ต้องส่งเป็น 'YYYY-MM-DD'
+                request.input('PlanDate', sql.Date, new Date(item.date)); // item.date from frontend
                 request.input('Employee_ID', sql.NVarChar(50), item.employeeId || '');
                 request.input('Division', sql.NVarChar(50), item.division || '');
-                request.input('MC_Type', sql.NVarChar(50), item.machineType || '');
+                request.input('MC_Type', sql.NVarChar(50), item.mcType || '');
                 request.input('Facility', sql.NVarChar(50), item.fac || '');
-                request.input('Before_Part', sql.NVarChar(50), item.partBef || '');
+                request.input('Before_Part', sql.NVarChar(50), item.partBefore || item.partBef || ''); // Support both keys
                 request.input('Process', sql.NVarChar(50), item.process || '');
                 request.input('MC_No', sql.NVarChar(50), item.mcNo || '');
                 request.input('PartNo', sql.NVarChar(50), item.partNo || '');
-
-                // แปลงค่าให้ตรง type
-                const qtyValues = parseFloat(item.qty);
-                request.input('QTY', sql.Float, isNaN(qtyValues) ? 0 : qtyValues);
-
-                const timeValue = parseInt(item.time, 10);
-                request.input('Time', sql.Int, isNaN(timeValue) ? 0 : timeValue);
-
+                request.input('QTY', sql.Float, parseFloat(item.qty) || 0);
+                request.input('Time', sql.Int, parseInt(item.time) || 0);
                 request.input('Comment', sql.NVarChar(255), item.comment || '');
 
+                // Call Original Insert SP
                 await request.execute('trans.Stored_PCPlan_Insert');
+
                 successCount++;
             } catch (err) {
-                failCount++;
-                console.error(`[PCPlan] Error at row ${index}:`, err.message);
-                errors.push({ index, error: err.message });
+                console.error('Error inserting item:', item, err);
+                errorCount++;
             }
-        };
+        }
 
-        // ใช้ Promise.all เพื่อยิงพร้อมกัน (Parallel Batching)
-        // ถ้าข้อมูลเยอะมากอาจต้องแบ่ง Chunk แต่ user บอกหลักสิบ/ร้อย น่าจะไหว
-        const promises = items.map((item, index) => processItem(item, index));
-        await Promise.all(promises);
-
-        console.log(`[PCPlan] Finished. Success: ${successCount}, Failed: ${failCount}`);
-
-        res.status(200).json({
-            message: "Import processing completed",
-            count: successCount,
-            fail: failCount,
-            errors: errors
+        res.status(200).send({
+            message: `Process complete. Success: ${successCount}, Failed: ${errorCount}`,
+            successCount,
+            errorCount
         });
 
     } catch (err) {
@@ -139,13 +116,13 @@ exports.insertPCPlan = async (req, res) => {
 };
 
 // 4. ฟังก์ชันดึงรายการ PC Plan ทั้งหมด (Get List)
-// สำหรับแสดงผลในหน้า List ว่ามี Plan อะไรบ้างที่เคยบันทึกไว้
 exports.getPlanList = async (req, res) => {
     try {
         const pool = await poolPromise;
         const result = await pool.request()
             .execute('trans.Stored_PCPlan_Query');
 
+        console.log('[getPlanList] Rows fetched:', result.recordset.length); // DEBUG LOG
         res.status(200).json(result.recordset);
     } catch (err) {
         console.error('Error getPlanList:', err);
@@ -153,8 +130,7 @@ exports.getPlanList = async (req, res) => {
     }
 };
 
-// 5. ฟังก์ชันลบข้อมูล PC Plan (Delete)
-// รับ ID ที่ต้องการลบ แล้วส่งคำสั่งลบไปยัง Stored Procedure
+// 5. ฟังก์ชันลบข้อมูล PC Plan (Delete) -> Soft Delete
 exports.deletePCPlan = async (req, res) => {
     try {
         const id = req.params.id;
@@ -164,9 +140,9 @@ exports.deletePCPlan = async (req, res) => {
         }
 
         const pool = await poolPromise;
-        const result = await pool.request()
-            .input('Plan_ID', sql.Int, id)
-            .execute('trans.Stored_PCPlan_Delete');
+        await pool.request()
+            .input('Plan_ID', sql.Int, id) // Correct Parameter Name
+            .execute('trans.Stored_PCPlan_Delete'); // Correct SP for Hard Delete
 
         res.status(200).json({ message: "Deleted successfully", id: id });
 
@@ -175,3 +151,5 @@ exports.deletePCPlan = async (req, res) => {
         res.status(500).send({ message: err.message });
     }
 };
+
+// revisePCPlan removed as per full revert request
