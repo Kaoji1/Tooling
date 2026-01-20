@@ -127,41 +127,83 @@ h2 {
                 border-bottom: 1px solid var(--color-border);
                 transition: background-color 0.15s;
 
-                // Default state (if needed)
+                // --- 1. History Grouping (Highest Priority in "Show History" Mode) ---
+                &.group-start {
+                    border-top: 15px solid white; // Create a "Block" effect with thick white gap
+                    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05); // Subtle shadow on top of new block
+                }
 
-                // Status: Incomplete (Red/Pink)
-                &.row-incomplete {
-                    background-color: #fee2e2; // Tailwind red-100
-
-                    &:hover {
-                        background-color: #fecaca; // Tailwind red-200
-                    }
+                &.row-history {
+                    background-color: #f1f5f9 !important; // Force Gray
+                    color: #64748b !important;
+                    font-style: italic;
 
                     td {
-                        color: #991b1b; // Tailwind red-800
+                        color: #64748b !important;
+                    }
+
+                    // Dim actions
+                    .btn-action:not(.history) {
+                        opacity: 0.3;
+                        pointer-events: none;
+                        filter: grayscale(1);
+                    }
+                }
+
+                // --- 2. Latest / Active Item Styles ---
+                &.row-latest {
+                    background-color: #ffffff;
+
+                    // Add left border to highlight active item
+                    border-left: 4px solid var(--color-primary);
+
+                    td {
+                        font-weight: 500;
+                        color: #0f172a;
+                    }
+                }
+
+                // --- 3. Status Colors (Only if NOT History, or Latest) ---
+                // We use :not(.row-history) to prevent pink background on old revisions
+
+                // Status: Cancelled
+                &.row-cancelled:not(.row-history) {
+                    background-color: #fef2f2;
+
+                    td {
+                        color: #991b1b;
+                        text-decoration: line-through;
+                    }
+
+                    .badge {
+                        text-decoration: none;
+                    }
+                }
+
+                // Status: Incomplete (Red/Pink)
+                &.row-incomplete:not(.row-history):not(.row-cancelled) {
+                    background-color: #fff1f2; // Very Light Pink
+
+                    &:hover {
+                        background-color: #ffe4e6;
                     }
                 }
 
                 // Status: Complete (Green)
-                &.row-complete {
-                    background-color: #dcfce7; // Tailwind green-100
+                &.row-complete:not(.row-history):not(.row-cancelled) {
+                    background-color: #f0fdf4; // Very Light Green
 
                     &:hover {
-                        background-color: #bbf7d0; // Tailwind green-200
-                    }
-
-                    td {
-                        color: #166534; // Tailwind green-800
+                        background-color: #dcfce7;
                     }
                 }
 
-                &:last-child {
-                    border-bottom: none;
+                &:hover {
+                    background-color: #f8fafc; // Default hover
                 }
 
                 td {
                     padding: 12px 16px;
-                    // color: var(--color-text-primary); // Overridden by specific classes
                     font-size: 0.875rem;
                     vertical-align: middle;
                     white-space: nowrap;
@@ -200,6 +242,15 @@ h2 {
         }
     }
 
+    &.history {
+        background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); // Yellow/Gold
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(202, 138, 4, 0.3);
+        }
+    }
+
     &.delete {
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 
@@ -226,5 +277,217 @@ h2 {
 
     &:hover {
         background: #94a3b8;
+    }
+}
+
+// --- Revision & Status Styles ---
+.badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+
+    &.bg-success {
+        background-color: #16a34a; // Green 600
+        color: #ffffff;
+    }
+
+    &.bg-danger {
+        background-color: #dc2626; // Red 600
+        color: #ffffff;
+    }
+}
+
+// Override Row Style for Cancelled
+.table-container table tbody tr.row-cancelled {
+    background-color: #f8fafc !important;
+
+    td {
+        color: #94a3b8 !important;
+        text-decoration: line-through;
+
+        // Don't strike through buttons or badge
+        &:last-child,
+        padding {
+            text-decoration: none;
+        }
+    }
+
+    // Restore badge visibility
+    .badge {
+        text-decoration: none !important;
+        opacity: 1;
+    }
+}
+
+// --- Edit Modal Styles ---
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.6); // Slate 900 / 60%
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 650px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+
+            &:hover {
+                background-color: #f1f5f9;
+                color: #ef4444;
+            }
+        }
+    }
+
+    .modal-body {
+        padding: 24px;
+        overflow-y: auto;
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+
+            .form-group {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+
+                &.full-width {
+                    grid-column: span 2;
+                }
+
+                label {
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    color: #475569;
+                }
+
+                input {
+                    padding: 10px 12px;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 8px;
+                    font-size: 0.95rem;
+                    color: #1e293b;
+                    transition: all 0.2s;
+
+                    &:focus {
+                        outline: none;
+                        border-color: #3b82f6;
+                        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                    }
+                }
+            }
+        }
+    }
+
+    .modal-footer {
+        padding: 20px 24px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        background-color: #f8fafc;
+        border-radius: 0 0 16px 16px;
+
+        button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+
+            &.btn-cancel {
+                background: white;
+                border: 1px solid #cbd5e1;
+                color: #475569;
+
+                &:hover {
+                    background: #f1f5f9;
+                    border-color: #94a3b8;
+                }
+            }
+
+            &.btn-save {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                color: white;
+                box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+
+                &:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
+                }
+
+                &:active {
+                    transform: translateY(0);
+                }
+            }
+        }
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }

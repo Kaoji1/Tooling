@@ -28,6 +28,12 @@
         </select>
       </div>
 
+      <!-- Toggle Show History -->
+      <div class="filter-group" style="flex-direction: row; align-items: center; gap: 10px; margin-bottom: 5px;">
+        <input type="checkbox" id="showHistory" [(ngModel)]="showHistory" (change)="loadPlanList()"
+          style="width: 20px; height: 20px;">
+        <label for="showHistory" style="margin: 0; cursor: pointer; color: #334155;">Show All Revisions</label>
+      </div>
     </div>
 
     <div class="table-container">
@@ -35,6 +41,8 @@
         <thead>
           <tr>
             <th>Plan Date</th>
+            <th>Rev</th> <!-- New Column -->
+            <th>Status</th> <!-- New Column -->
             <th>MC Type</th>
             <th>Division</th>
             <th>Fac</th>
@@ -52,11 +60,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of filteredPlanList; let i = index" [ngClass]="{
+          <tr *ngFor="let item of filteredPlanList" [class.row-cancelled]="item.planStatus === 'Cancelled'"
+            [class.row-latest]="item.isLatest && showHistory" [class.row-history]="!item.isLatest && showHistory"
+            [class.group-start]="item.isGroupStart && showHistory" [ngClass]="{
                 'row-complete': (item.pathDwg && item.pathDwg !== '-' && item.pathLayout && item.pathLayout !== '-' && item.iiqc && item.iiqc !== '-'),
                 'row-incomplete': (!item.pathDwg || item.pathDwg === '-' || !item.pathLayout || item.pathLayout === '-' || !item.iiqc || item.iiqc === '-')
               }">
             <td>{{ item.date }}</td>
+            <td class="text-center">{{ item.revision }}</td> <!-- New Data -->
+            <td class="text-center">
+              <span class="badge" [ngClass]="{
+                    'bg-danger': item.planStatus === 'Cancelled', 
+                    'bg-success': item.planStatus === 'Active'
+                }">{{ item.planStatus }}</span>
+            </td>
             <td>{{ item.mcType }}</td>
             <td>{{ item.division }}</td>
             <td>{{ item.fac }}</td>
@@ -72,20 +89,135 @@
             <td>{{ item.iiqc }}</td>
 
             <td style="text-align: center; white-space: nowrap;">
-              <!-- <button class="btn-action edit me-1" (click)="onEdit(item)" title="Edit">
+              <button class="btn-action history me-1" (click)="onViewHistory(item)" title="History">
+                <i class="bi bi-clock-history"></i>
+              </button>
+              <button class="btn-action edit me-1" (click)="onEdit(item)" title="Edit">
                 <i class="bi bi-pencil-square"></i>
-              </button> -->
+              </button>
               <button class="btn-action delete" (click)="onDelete(item)" title="Delete">
                 <i class="bi bi-trash-fill"></i>
               </button>
             </td>
           </tr>
           <tr *ngIf="filteredPlanList.length === 0">
-            <td colspan="15" style="text-align: center; padding: 2rem; color: #64748b;">No data found</td>
+            <td colspan="17" style="text-align: center; padding: 2rem; color: #64748b;">No data found</td>
           </tr>
         </tbody>
       </table>
     </div>
 
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-backdrop" *ngIf="isEditModalOpen">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Edit Plan (Rev {{editData.revision}})</h3>
+      <button class="btn-close" (click)="closeEditModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" [(ngModel)]="editData.dateObj">
+        </div>
+        <div class="form-group">
+          <label>Machine Type</label>
+          <input type="text" [(ngModel)]="editData.mcType">
+        </div>
+        <div class="form-group">
+          <label>Facility</label>
+          <input type="text" [(ngModel)]="editData.fac">
+        </div>
+        <div class="form-group">
+          <label>Process</label>
+          <input type="text" [(ngModel)]="editData.process">
+        </div>
+        <div class="form-group">
+          <label>Part Before</label>
+          <input type="text" [(ngModel)]="editData.partBefore">
+        </div>
+        <div class="form-group">
+          <label>MC No.</label>
+          <input type="text" [(ngModel)]="editData.mcNo">
+        </div>
+        <div class="form-group">
+          <label>Part No.</label>
+          <input type="text" [(ngModel)]="editData.partNo">
+        </div>
+        <div class="form-group">
+          <label>QTY</label>
+          <input type="number" [(ngModel)]="editData.qty">
+        </div>
+        <div class="form-group">
+          <label>Time</label>
+          <input type="number" [(ngModel)]="editData.time">
+        </div>
+        <div class="form-group full-width">
+          <label>Comment (Type 'Cancel' to Change Status)</label>
+          <input type="text" [(ngModel)]="editData.comment" placeholder="Add comment...">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeEditModal()">Cancel</button>
+      <button class="btn-save" (click)="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal-backdrop" *ngIf="isHistoryModalOpen">
+  <div class="modal-content" style="max-width: 900px;"> <!-- Wider for history -->
+    <div class="modal-header">
+      <h3>Revision History (Part: {{selectedHistoryItem.partNo}})</h3>
+      <button class="btn-close" (click)="closeHistoryModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="table-container" style="box-shadow: none; border: 1px solid #e2e8f0; max-height: 500px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Rev</th>
+              <th>Date</th>
+              <th>Plan Date</th>
+              <th>MC Type</th>
+              <th>Fac</th>
+              <th>Process</th>
+              <th>MC No</th>
+              <th>Part No</th>
+              <th>QTY</th>
+              <th>Comment</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let h of historyList" [ngClass]="{'bg-light': h.Revision === selectedHistoryItem.revision}">
+              <td class="text-center"><strong>{{ h.Revision }}</strong></td>
+              <td>{{ h.DateTime_Record | date:'short' }}</td> <!-- Edit Timestamp -->
+              <td>{{ h.date }}</td>
+              <td>{{ h.MC_Type }}</td>
+              <td>{{ h.Facility }}</td>
+              <td>{{ h.Process }}</td>
+              <td>{{ h.MC_No }}</td>
+              <td>{{ h.PartNo }}</td>
+              <td>{{ h.QTY }}</td>
+              <td>{{ h.Comment }}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                                'bg-success': h.PlanStatus !== 'Cancelled',
+                                'bg-danger': h.PlanStatus === 'Cancelled'
+                            }">{{ h.PlanStatus }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeHistoryModal()">Close</button>
+    </div>
   </div>
 </div>

@@ -50,9 +50,9 @@ export class PCPlanService {
     return this.http.post<any>(`${this.baseUrl}/insert`, data);
   }
 
-  // 5. ดึงรายการ (Get List)
-  getPlanList(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/list`);
+  // 5. ดึงรายการ  // --- New Methods ---
+  getPlanList(showHistory: boolean = false): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/list?showHistory=${showHistory}`);
   }
 
   // 6. ลบข้อมูล (Delete)
@@ -60,4 +60,7 @@ export class PCPlanService {
     return this.http.delete<any>(`${this.baseUrl}/delete/${id}`);
   }
 
+  getPlanHistory(groupId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/history/${groupId}`);
+  }
 }

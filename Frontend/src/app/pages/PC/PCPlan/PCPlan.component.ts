@@ -218,15 +218,15 @@ export class PCPlanComponent implements OnInit {
     data.forEach(row => {
       this.planItems.push({
         date: this.excelDateToJSDate(row['Date']),
-        machineType: row['Machine Type'] || null,
-        fac: row['Fac'] || null,
-        mcNo: (row['MC No.'] || '').toString(),
-        process: row['Process'] || null,
-        partBef: row['Part Before'] || null,
-        partNo: row['Part No.'] || null,
+        machineType: row['Machine Type'] ? row['Machine Type'].toString().trim() : null,
+        fac: row['Fac'] ? row['Fac'].toString().trim() : null,
+        mcNo: row['MC No.'] ? row['MC No.'].toString().trim() : '',
+        process: row['Process'] ? row['Process'].toString().trim() : null,
+        partBef: row['Part Before'] ? row['Part Before'].toString().trim() : null,
+        partNo: row['Part No.'] ? row['Part No.'].toString().trim() : null,
         qty: row['QTY'] || null,
-        time: row['Time'] || '',
-        comment: row['Comment'] || ''
+        time: row['Time'] ? row['Time'].toString().trim() : '',
+        comment: row['Comment'] ? row['Comment'].toString().trim() : ''
       });
     });
 
@@ -421,6 +421,7 @@ export class PCPlanComponent implements OnInit {
 
     const payload = this.planItems.map(item => ({
       ...item,
+      mcType: item.machineType, // Map Frontend 'machineType' to Backend 'mcType'
       division: this.selectedDivisionCode,
       employeeId: empId
     }));

@@ -64,6 +64,7 @@ exports.getMasterDataByDivision = async (req, res) => {
 };
 
 // 5. ฟังก์ชันเพิ่มรายการ PC Plan ใหม่ (Import Excel / Add New) -> Revert to Basic Insert
+// 5. ฟังก์ชันเพิ่มรายการ PC Plan ใหม่ (Import Excel / Add New) -> Revision Aware
 exports.insertPCPlan = async (req, res) => {
     try {
         const items = req.body;
@@ -71,43 +72,110 @@ exports.insertPCPlan = async (req, res) => {
             return res.status(400).send({ message: "Data must be an array." });
         }
 
-        const pool = await poolPromise;
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const item of items) {
-            try {
-                // Basic Insert Logic (No Smart Match, No Revision)
-                const request = pool.request();
-
-                request.input('PlanDate', sql.Date, new Date(item.date)); // item.date from frontend
-                request.input('Employee_ID', sql.NVarChar(50), item.employeeId || '');
-                request.input('Division', sql.NVarChar(50), item.division || '');
-                request.input('MC_Type', sql.NVarChar(50), item.mcType || '');
-                request.input('Facility', sql.NVarChar(50), item.fac || '');
-                request.input('Before_Part', sql.NVarChar(50), item.partBefore || item.partBef || ''); // Support both keys
-                request.input('Process', sql.NVarChar(50), item.process || '');
-                request.input('MC_No', sql.NVarChar(50), item.mcNo || '');
-                request.input('PartNo', sql.NVarChar(50), item.partNo || '');
-                request.input('QTY', sql.Float, parseFloat(item.qty) || 0);
-                request.input('Time', sql.Int, parseInt(item.time) || 0);
-                request.input('Comment', sql.NVarChar(255), item.comment || '');
-
-                // Call Original Insert SP
-                await request.execute('trans.Stored_PCPlan_Insert');
-
-                successCount++;
-            } catch (err) {
-                console.error('Error inserting item:', item, err);
-                errorCount++;
-            }
+        if (items.length === 0) {
+            return res.status(200).send({ message: "No items to process.", successCount: 0 });
         }
 
-        res.status(200).send({
-            message: `Process complete. Success: ${successCount}, Failed: ${errorCount}`,
-            successCount,
-            errorCount
-        });
+        const pool = await poolPromise;
+
+        // 1. ตรวจสอบ Division จากไอเท็มแรก (สมมติว่ามาเป็น Batch เดียวกัน)
+        // ถ้าคละ Division ควรแยก Loop แต่ปกติจะมาทีละไฟล์
+        const division = items[0].division || 'Unknown';
+        const isPMC = (division.toUpperCase() === 'PMC' || division === '71DZ');
+
+        // ตรวจสอบ PlanDate เพื่อใช้ในการ Snapshot (สมมติว่าเป็นเดือนเดียวกันหมด)
+        const sampleDate = items[0].date;
+
+        if (isPMC) {
+            // ============================================
+            // PMC LOGIC: SNAPSHOT REVISON
+            // ============================================
+            console.log(`Processing PMC Snapshot for Div: ${division}, Date: ${sampleDate}`);
+
+            // Prepare JSON Data
+            const jsonItems = items.map(item => {
+                let status = 'Active';
+                const comment = (item.comment || '').toLowerCase();
+
+                // ตรวจสอบคำว่า Cancel ใน Comment
+                if (comment.includes('cancel') || comment.includes('ยกเลิก')) {
+                    status = 'Cancelled';
+                }
+
+                return {
+                    PlanDate: new Date(item.date),
+                    Employee_ID: item.employeeId || '',
+                    Division: division,
+                    MC_Type: item.mcType || '',
+                    Facility: item.fac || '',
+                    Before_Part: item.partBefore || item.partBef || '',
+                    Process: item.process || '',
+                    MC_No: item.mcNo || '',
+                    PartNo: item.partNo || '',
+                    QTY: parseFloat(item.qty) || 0,
+                    Time: parseInt(item.time) || 0,
+                    Comment: item.comment || '',
+                    PlanStatus: status,
+                    GroupId: item.groupId || null // Send GroupId if available
+                };
+            });
+
+            const jsonString = JSON.stringify(jsonItems);
+
+            // Call Snapshot SP
+            await pool.request()
+                .input('JsonData', sql.NVarChar(sql.MAX), jsonString)
+                .input('Division', sql.NVarChar(50), division)
+                .input('TargetDate', sql.Date, new Date(sampleDate))
+                .execute('trans.Stored_PCPlan_Insert_PMC_Snapshot');
+
+            return res.status(200).send({
+                message: `PMC Snapshot processed. Rev updated for ${items.length} items.`,
+                successCount: items.length,
+                errorCount: 0
+            });
+
+        } else {
+            // ============================================
+            // GM/Others LOGIC: OVERWRITE (Classic)
+            // ============================================
+            console.log(`Processing Classic Overwrite for Div: ${division}`);
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (const item of items) {
+                try {
+                    const request = pool.request();
+                    request.input('PlanDate', sql.Date, new Date(item.date));
+                    request.input('Employee_ID', sql.NVarChar(50), item.employeeId || '');
+                    request.input('Division', sql.NVarChar(50), item.division || '');
+                    request.input('MC_Type', sql.NVarChar(50), item.mcType || '');
+                    request.input('Facility', sql.NVarChar(50), item.fac || '');
+                    request.input('Before_Part', sql.NVarChar(50), item.partBefore || item.partBef || '');
+                    request.input('Process', sql.NVarChar(50), item.process || '');
+                    request.input('MC_No', sql.NVarChar(50), item.mcNo || '');
+                    request.input('PartNo', sql.NVarChar(50), item.partNo || '');
+                    request.input('QTY', sql.Float, parseFloat(item.qty) || 0);
+                    request.input('Time', sql.Int, parseInt(item.time) || 0);
+                    request.input('Comment', sql.NVarChar(255), item.comment || '');
+
+                    // ใช้ SP Insert_GM ที่สร้างใหม่ (หรือใช้ตัวเดิมก็ได้ แต่แนะให้ใช้ตัวใหม่ที่มี Update logic)
+                    await request.execute('trans.Stored_PCPlan_Insert_GM');
+
+                    successCount++;
+                } catch (err) {
+                    console.error('Error inserting item:', item, err);
+                    errorCount++;
+                }
+            }
+
+            return res.status(200).send({
+                message: `Process complete (Overwrite). Success: ${successCount}, Failed: ${errorCount}`,
+                successCount,
+                errorCount
+            });
+        }
 
     } catch (err) {
         console.error('Error insertPCPlan:', err);
@@ -118,11 +186,14 @@ exports.insertPCPlan = async (req, res) => {
 // 4. ฟังก์ชันดึงรายการ PC Plan ทั้งหมด (Get List)
 exports.getPlanList = async (req, res) => {
     try {
+        const showHistory = req.query.showHistory === 'true'; // Check query param
+
         const pool = await poolPromise;
         const result = await pool.request()
+            .input('ShowHistory', sql.Bit, showHistory ? 1 : 0)
             .execute('trans.Stored_PCPlan_Query');
 
-        console.log('[getPlanList] Rows fetched:', result.recordset.length); // DEBUG LOG
+        console.log(`[getPlanList] Rows fetched (History=${showHistory}):`, result.recordset.length); // DEBUG LOG
         res.status(200).json(result.recordset);
     } catch (err) {
         console.error('Error getPlanList:', err);
@@ -152,4 +223,22 @@ exports.deletePCPlan = async (req, res) => {
     }
 };
 
-// revisePCPlan removed as per full revert request
+// 6. ฟังก์ชันดึงประวัติการแก้ไข (History) ตาม GroupId
+exports.getPlanHistory = async (req, res) => {
+    try {
+        const groupId = req.params.groupId;
+        if (!groupId) {
+            return res.status(400).send({ message: "GroupId is required." });
+        }
+
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('GroupId', sql.NVarChar(50), groupId)
+            .execute('trans.Stored_PCPlan_GetHistory');
+
+        res.status(200).json(result.recordset);
+    } catch (err) {
+        console.error('Error getPlanHistory:', err);
+        res.status(500).send({ message: err.message });
+    }
+};

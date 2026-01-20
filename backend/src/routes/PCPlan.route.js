@@ -22,4 +22,8 @@ router.get('/list', controller.getPlanList);
 // URL: /api/pc-plan/delete/:id
 router.delete('/delete/:id', controller.deletePCPlan);
 
+// 6. Route สำหรับดึงประวัติ (History)
+// URL: /api/pc-plan/history/:groupId
+router.get('/history/:groupId', controller.getPlanHistory);
+
 module.exports = router;
