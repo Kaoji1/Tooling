@@ -11,9 +11,9 @@
     <div class="header-filters">
       <div class="form-group">
         <label>Division</label>
-        <select [(ngModel)]="selectedDivision">
-          <option value="">-- Select --</option>
-          <option *ngFor="let item of divisions" [value]="item">{{ item }}</option>
+        <select [(ngModel)]="selectedDivisionId" (change)="onDivisionChange()">
+          <option [ngValue]="null">-- Select --</option>
+          <option *ngFor="let item of divisions" [value]="item.Division_Id">{{ item.Division_Name }}</option>
         </select>
       </div>
 
@@ -21,7 +21,7 @@
         <label>Facility</label>
         <select [(ngModel)]="selectedFacility">
           <option value="">-- Select --</option>
-          <option *ngFor="let item of facilities" [value]="item">{{ item }}</option>
+          <option *ngFor="let item of facilities" [value]="item.Facility">{{ item.Facility }}</option>
         </select>
       </div>
 
@@ -29,7 +29,7 @@
         <label>Process</label>
         <select [(ngModel)]="selectedProcess">
           <option value="">-- Select --</option>
-          <option *ngFor="let item of processes" [value]="item">{{ item }}</option>
+          <option *ngFor="let item of processes" [value]="item.Process">{{ item.Process }}</option>
         </select>
       </div>
 
@@ -44,6 +44,7 @@
         <thead>
           <tr>
             <th style="width: 50px;">No.</th>
+            <th>Part No.</th>
             <th>Item No.</th>
             <th>Item Name</th>
             <th>Spec</th>
@@ -60,6 +61,7 @@
               <!-- แสดง {{ i + 1 }} เพื่อให้ลำดับเริ่มจาก 1 (เพราะ index เริ่มที่ 0) -->
               {{ i + 1 }}
             </td>
+            <td><input type="text" [(ngModel)]="item.partNo"></td>
             <td><input type="text" [(ngModel)]="item.itemNo" (change)="onItemNoChange(i, item.itemNo)"
                 placeholder="Scan/Type"></td>
             <td><input type="text" [(ngModel)]="item.itemName"></td>

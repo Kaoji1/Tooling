@@ -26,4 +26,8 @@ router.delete('/delete/:id', controller.deletePCPlan);
 // URL: /api/pc-plan/history/:groupId
 router.get('/history/:groupId', controller.getPlanHistory);
 
+// 7. Route สำหรับอัปเดต Path (ไม่เปลี่ยน Rev)
+// URL: /api/pc-plan/update-paths
+router.post('/update-paths', controller.updatePaths);
+
 module.exports = router;

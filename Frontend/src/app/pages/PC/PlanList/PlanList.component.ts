@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { PCPlanService } from '../../../core/services/PCPlan.service';
+import { FileUploadSerice } from '../../../core/services/FileUpload.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -21,14 +22,17 @@ export class PlanListComponent implements OnInit {
   showHistory: boolean = false; // Toggle for Global History
 
   // รายการใน Dropdown Filter
-  divisions: string[] = ['GM', 'PMC', 'Production'];
+  divisions: string[] = ['GM', 'PMC'];
   machineTypes: string[] = ['CNC', 'Lathe', 'Milling'];
 
   // ข้อมูลตาราง
   planList: any[] = [];
   filteredPlanList: any[] = []; // เพิ่มตัวแปรสำหรับเก็บข้อมูลที่กรองแล้ว
 
-  constructor(private pcPlanService: PCPlanService) { }
+  constructor(
+    private pcPlanService: PCPlanService,
+    private fileUploadService: FileUploadSerice
+  ) { }
 
   ngOnInit(): void {
     this.loadPlanList();
@@ -42,7 +46,7 @@ export class PlanListComponent implements OnInit {
           id: item.Plan_ID,
           date: item.PlanDate ? new Date(item.PlanDate).toLocaleDateString('en-US') : '', // mm/dd/yyyy
           // empId: item.Employee_ID,
-          division: item.Division,
+          division: this.mapDivisionName(item.Division), // Map Code to Name
           mcType: item.MC_Type, // HTML ใช้ mcType
           fac: item.Facility,
           process: item.Process,
@@ -139,6 +143,7 @@ export class PlanListComponent implements OnInit {
 
   onEdit(item: any) {
     this.editData = { ...item }; // Clone data
+    this.editData.originalItem = { ...item }; // Keep original for comparison
 
     // Format Date for <input type="date"> (yyyy-MM-dd)
     if (this.editData.date) {
@@ -157,28 +162,30 @@ export class PlanListComponent implements OnInit {
   }
 
   saveEdit() {
-    // 1. Prepare Payload
-    // Note: We send an array because backend insertPCPlan expects an array
-    // Date: Must format back to what backend expects (Date Object or String)
-    const payload = [{
-      date: this.editData.dateObj, // yyyy-MM-dd
-      employeeId: this.editData.empId, // Might be undefined if not mapped, but OK
-      division: this.editData.division,
-      mcType: this.editData.mcType,
-      fac: this.editData.fac,
-      partBefore: this.editData.partBefore,
-      process: this.editData.process,
-      mcNo: this.editData.mcNo,
-      partNo: this.editData.partNo,
-      qty: this.editData.qty,
-      time: this.editData.time,
-      comment: this.editData.comment
-      // Note: PlanStatus is derived from Comment in Backend for PMC, 
-      // or we could send it explicitly if we modified backend to accept it directly.
-      // For now, let's append [Cancel] to comment if user chooses 'Cancelled' status in UI?
-      // OR: User manually types 'Cancel' in comment as agreed.
-      // Let's stick to: User types 'Cancel' in comment.
-    }];
+    // Check if ONLY Paths have changed (and nothing else)
+    const original = this.editData.originalItem || {};
+
+    // Compare Plan Fields
+    // Note: We need to match the type (string/number) for accurate comparison
+    const isPlanChanged =
+      this.editData.date !== original.date ||
+      this.editData.mcType !== original.mcType ||
+      this.editData.fac !== original.fac ||
+      this.editData.process !== original.process ||
+      this.editData.partBefore !== original.partBefore ||
+      this.editData.mcNo !== original.mcNo ||
+      this.editData.partNo !== original.partNo ||
+      this.editData.qty != original.qty || // Use != for loose comparison (string vs number)
+      this.editData.time != original.time ||
+      this.editData.comment !== original.comment; // User said Comment cancel changes status, so it's a Plan change
+
+    // Compare Path Fields
+    const isPathChanged =
+      this.editData.pathDwg !== original.pathDwg ||
+      this.editData.pathLayout !== original.pathLayout ||
+      this.editData.iiqc !== original.iiqc;
+
+    console.log('Plan Changed:', isPlanChanged, 'Path Changed:', isPathChanged);
 
     Swal.fire({
       title: 'Saving...',
@@ -186,17 +193,62 @@ export class PlanListComponent implements OnInit {
       didOpen: () => Swal.showLoading()
     });
 
-    this.pcPlanService.savePlan(payload).subscribe({
-      next: (res) => {
-        Swal.fire('Success', 'Plan updated successfully!', 'success');
-        this.isEditModalOpen = false;
-        this.loadPlanList(); // Reload to see new Revision
-      },
-      error: (err) => {
-        console.error('Save Edit Error:', err);
-        Swal.fire('Error', 'Failed to update plan.', 'error');
-      }
-    });
+    if (isPathChanged && !isPlanChanged) {
+      // --- CASE 1: ONLY Path Update (No Rev Change) ---
+      const pathPayload = {
+        groupId: this.editData.groupId,
+        pathDwg: this.editData.pathDwg,
+        pathLayout: this.editData.pathLayout,
+        iiqc: this.editData.iiqc
+      };
+
+      this.pcPlanService.updatePaths(pathPayload).subscribe({
+        next: (res) => {
+          Swal.fire('Success', 'Attachments updated!', 'success');
+          this.isEditModalOpen = false;
+          this.loadPlanList();
+        },
+        error: (err) => {
+          console.error('Update Path Error:', err);
+          Swal.fire('Error', 'Failed to update attachments.', 'error');
+        }
+      });
+
+    } else {
+      // --- CASE 2: Plan Changed (New Revision) OR Nothing Changed ---
+      // 1. Prepare Payload
+      // Note: We send an array because backend insertPCPlan expects an array
+      const payload = [{
+        date: this.editData.dateObj, // yyyy-MM-dd
+        employeeId: this.editData.empId,
+        division: this.editData.division,
+        mcType: this.editData.mcType,
+        fac: this.editData.fac,
+        partBefore: this.editData.partBefore,
+        process: this.editData.process,
+        mcNo: this.editData.mcNo,
+        partNo: this.editData.partNo,
+        qty: this.editData.qty,
+        time: this.editData.time,
+        comment: this.editData.comment,
+        pathDwg: this.editData.pathDwg,
+        pathLayout: this.editData.pathLayout,
+        iiqc: this.editData.iiqc,
+        groupId: this.editData.groupId // Use existing GroupId
+      }];
+
+      this.pcPlanService.savePlan(payload).subscribe({
+        next: (res) => {
+          Swal.fire('Success', 'Plan updated successfully!', 'success');
+          this.isEditModalOpen = false;
+          this.loadPlanList(); // Reload to see new Revision
+        },
+        error: (err) => {
+          console.error('Save Edit Error:', err);
+          Swal.fire('Error', 'Failed to update plan.', 'error');
+        }
+      });
+    }
   }
 
 
@@ -267,6 +319,67 @@ export class PlanListComponent implements OnInit {
 
   closeHistoryModal() {
     this.isHistoryModalOpen = false;
+  }
+
+  mapDivisionName(code: string): string {
+    if (code === '7122') return 'GM';
+    if (code === '71DZ') return 'PMC';
+    return code; // Return original if no match
+  }
+
+  openFile(filePath: string) {
+    if (!filePath) {
+      Swal.fire('Error', 'File path not found', 'error');
+      return;
+    }
+
+    // Clean path (remove quotes if any)
+    const cleanPath = filePath.replace(/^"|"$/g, '');
+
+    this.fileUploadService.loadPdfFromPath(cleanPath).subscribe({
+      next: (res) => {
+        const base64 = res.imageData.split(',')[1];
+        const binary = atob(base64);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+
+        // Default to PDF for now as per Cart example. 
+        // Improvement: Detect mime type from extension if needed.
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        window.open(blobUrl, '_blank');
+      },
+      error: (err) => {
+        console.error('File load error:', err);
+        Swal.fire('Error', 'Unable to load file. It might be missing or inaccessible.', 'error');
+      }
+    });
+  }
+
+  copyToClipboard(path: string) {
+    if (!path) return;
+
+    // Attempt to copy using Clipboard API
+    navigator.clipboard.writeText(path).then(() => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Copied!',
+        text: 'Path copied to clipboard. Paste it in File Explorer.',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+      });
+    }).catch(err => {
+      console.error('Clipboard failed:', err);
+      // Fallback or Error message
+      Swal.fire('Error', 'Could not copy path. Please copy manually.', 'error');
+    });
   }
 
 }

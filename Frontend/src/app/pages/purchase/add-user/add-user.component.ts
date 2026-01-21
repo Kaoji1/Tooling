@@ -27,7 +27,9 @@ export class AddUserComponent {
     { label: 'purchase', value: 'purchase' },
     { label: 'view', value: 'view' },
     { label: 'admin', value: 'admin' },
-    { label: 'engineer', value:'engineer'}
+    { label: 'engineer', value:'engineer'},
+    { label: 'PC', value:'PC'},
+    { label: 'PC', value:'PC'}
   ];
 
   // รับค่าจากแบบฟอร์ม (เพิ่มใหม่)

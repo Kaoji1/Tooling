@@ -116,7 +116,10 @@ exports.insertPCPlan = async (req, res) => {
                     Time: parseInt(item.time) || 0,
                     Comment: item.comment || '',
                     PlanStatus: status,
-                    GroupId: item.groupId || null // Send GroupId if available
+                    GroupId: item.groupId || null, // Send GroupId if available
+                    Path_Dwg: item.pathDwg || null,
+                    Path_Layout: item.pathLayout || null,
+                    Path_IIQC: item.iiqc || null
                 };
             });
 
@@ -226,19 +229,39 @@ exports.deletePCPlan = async (req, res) => {
 // 6. ฟังก์ชันดึงประวัติการแก้ไข (History) ตาม GroupId
 exports.getPlanHistory = async (req, res) => {
     try {
-        const groupId = req.params.groupId;
-        if (!groupId) {
-            return res.status(400).send({ message: "GroupId is required." });
-        }
+        const { groupId } = req.params;
+        if (!groupId) return res.status(400).send({ message: "GroupId is required" });
 
         const pool = await poolPromise;
         const result = await pool.request()
-            .input('GroupId', sql.NVarChar(50), groupId)
+            .input('GroupId', sql.NVarChar, groupId)
             .execute('trans.Stored_PCPlan_GetHistory');
 
         res.status(200).json(result.recordset);
     } catch (err) {
         console.error('Error getPlanHistory:', err);
+        res.status(500).send({ message: err.message });
+    }
+};
+
+// 7. Update Paths Only (No Revision)
+exports.updatePaths = async (req, res) => {
+    try {
+        const { groupId, pathDwg, pathLayout, iiqc } = req.body;
+
+        if (!groupId) return res.status(400).send({ message: "GroupId is required" });
+
+        const pool = await poolPromise;
+        await pool.request()
+            .input('GroupId', sql.NVarChar, groupId)
+            .input('Path_Dwg', sql.NVarChar, pathDwg || null)
+            .input('Path_Layout', sql.NVarChar, pathLayout || null)
+            .input('Path_IIQC', sql.NVarChar, iiqc || null)
+            .execute('trans.Stored_PCPlan_Update_Paths');
+
+        res.status(200).json({ message: "Paths updated successfully" });
+    } catch (err) {
+        console.error('Error updatePaths:', err);
         res.status(500).send({ message: err.message });
     }
 };

@@ -31,7 +31,7 @@ const { poolPromise } = require("../config/database");
 //       .input('CASE', sql.NVarChar(50), caseKey)
 //       .input('FileName', sql.NVarChar(255), fileName)
 //       .input('FileData', sql.VarBinary(sql.MAX), fileBuffer)
-      
+
 //       .query(`
 //         UPDATE tb_IssueCuttingTool_SendToCart
 //         SET FileName = @FileName,
@@ -90,14 +90,23 @@ exports.loadPdfFromPath = async (req, res) => {
       return res.status(404).json({ error: 'ไม่พบไฟล์ที่ระบุ' });
     }
 
+    // Check if it is a directory
+    const stats = fs.statSync(filePath);
+    if (stats.isDirectory()) {
+      return res.status(400).json({ error: 'Path เป็นโฟลเดอร์ ไม่ใช่ไฟล์ (ไม่สามารถเปิดอ่านได้)' });
+    }
+
     const fileData = fs.readFileSync(filePath);
     const base64Pdf = Buffer.from(fileData).toString('base64');
+
+    // Auto-detect mime type or default to PDF (since likely PDF based on usage)
+    // For now, defaulting to pdf as per user context
     const pdfUrl = `data:application/pdf;base64,${base64Pdf}`;
 
     res.json({ imageData: pdfUrl, fileName: path.basename(filePath) });
   } catch (err) {
     console.error('loadPdfFromPath error:', err);
-    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอ่านไฟล์' });
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอ่านไฟล์: ' + err.message });
   }
 };
 

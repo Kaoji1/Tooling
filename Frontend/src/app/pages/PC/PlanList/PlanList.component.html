@@ -84,9 +84,30 @@
             <td>{{ item.qty }}</td>
             <td>{{ item.time }}</td>
             <td>{{ item.comment }}</td>
-            <td>{{ item.pathDwg }}</td>
-            <td>{{ item.pathLayout }}</td>
-            <td>{{ item.iiqc }}</td>
+            <td class="text-center">
+              <ng-container *ngIf="item.pathDwg">
+                <a (click)="openFile(item.pathDwg)" title="Click to Open File"
+                  style="color: #3b82f6; text-decoration: underline; cursor: pointer;">
+                  {{ item.pathDwg }}
+                </a>
+              </ng-container>
+            </td>
+            <td class="text-center">
+              <ng-container *ngIf="item.pathLayout">
+                <a (click)="openFile(item.pathLayout)" title="Click to Open File"
+                  style="color: #3b82f6; text-decoration: underline; cursor: pointer;">
+                  {{ item.pathLayout }}
+                </a>
+              </ng-container>
+            </td>
+            <td class="text-center">
+              <ng-container *ngIf="item.iiqc">
+                <a (click)="openFile(item.iiqc)" title="Click to Open File"
+                  style="color: #3b82f6; text-decoration: underline; cursor: pointer;">
+                  {{ item.iiqc }}
+                </a>
+              </ng-container>
+            </td>
 
             <td style="text-align: center; white-space: nowrap;">
               <button class="btn-action history me-1" (click)="onViewHistory(item)" title="History">
@@ -156,8 +177,27 @@
           <input type="number" [(ngModel)]="editData.time">
         </div>
         <div class="form-group full-width">
-          <label>Comment (Type 'Cancel' to Change Status)</label>
-          <input type="text" [(ngModel)]="editData.comment" placeholder="Add comment...">
+          <label>Comment</label>
+          <input type="text" [(ngModel)]="editData.comment" name="comment" placeholder="Optional comments...">
+        </div>
+
+        <!-- Divider -->
+        <div style="grid-column: span 2; border-top: 1px dashed #e2e8f0; margin: 10px 0;"></div>
+        <h4 style="grid-column: span 2; font-size: 0.95rem; color: #334155; margin-bottom: 5px;">Attachments
+          (Engineer/QC Only)</h4>
+
+        <!-- Path Inputs -->
+        <div class="form-group">
+          <label>Path Dwg</label>
+          <input type="text" [(ngModel)]="editData.pathDwg" name="pathDwg" placeholder="Enter path...">
+        </div>
+        <div class="form-group">
+          <label>Path Layout</label>
+          <input type="text" [(ngModel)]="editData.pathLayout" name="pathLayout" placeholder="Enter path...">
+        </div>
+        <div class="form-group">
+          <label>IIQC</label>
+          <input type="text" [(ngModel)]="editData.iiqc" name="iiqc" placeholder="Enter path...">
         </div>
       </div>
     </div>
