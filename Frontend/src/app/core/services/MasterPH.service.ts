@@ -24,6 +24,14 @@ export class MasterPHService {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import-ireport`, data);
     }
 
+    importMasterAllPMC(data: any[]): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/master-ph/import-master-all-pmc`, data);
+    }
+
+    importMasterToolingPMC(data: any[]): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/master-ph/import-master-tooling-pmc`, data);
+    }
+
     importTypeTooling(data: any[]): Observable<any> {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import-type-tooling`, data);
     }

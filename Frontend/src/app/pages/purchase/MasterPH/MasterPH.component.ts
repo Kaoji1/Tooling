@@ -17,7 +17,7 @@ export class MasterPHComponent {
 
     masterData: any[] = [];
     loading: boolean = false;
-    currentTab: 'purchase' | 'setup' | 'cutting' | 'typeTooling' = 'purchase';
+    currentTab: 'purchase' | 'setup' | 'cutting' | 'typeTooling' | 'masterAll' | 'masterTooling' = 'purchase';
 
     // Form Binding Variables
     // Purchase
@@ -41,13 +41,26 @@ export class MasterPHComponent {
 
     // Type Tooling
     typeToolingFileName: string = '';
+
+    // Master All
+    masterAllPMCFileName: string = '';
+    masterAllGMFileName: string = '';
+
+    // Master Tooling
+    masterToolingPMCFileName: string = '';
+    masterToolingGMFileName: string = '';
+
     tempData: any = {
         pmc: [],
         gm: [],
         ireport: [],
         setup: [],
         cutting: [],
-        typeTooling: [] // New
+        typeTooling: [],
+        masterAllPMC: [],
+        masterAllGM: [],
+        masterToolingPMC: [],
+        masterToolingGM: []
     };
 
     constructor(private masterPHService: MasterPHService) {
@@ -56,7 +69,7 @@ export class MasterPHComponent {
         // });
     }
 
-    setTab(tab: 'purchase' | 'setup' | 'cutting' | 'typeTooling') {
+    setTab(tab: 'purchase' | 'setup' | 'cutting' | 'typeTooling' | 'masterAll' | 'masterTooling') {
         this.currentTab = tab;
     }
 
@@ -88,7 +101,7 @@ export class MasterPHComponent {
     }
 
     // Generic file handler helper
-    handleFile(evt: any, type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'ireport' | 'typeTooling') {
+    handleFile(evt: any, type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'ireport' | 'typeTooling' | 'masterAllPMC' | 'masterAllGM' | 'masterToolingPMC' | 'masterToolingGM') {
         const target: DataTransfer = <DataTransfer>(evt.target);
         if (target.files.length !== 1) {
             Swal.fire('Error', 'Cannot use multiple files', 'error');
@@ -105,12 +118,29 @@ export class MasterPHComponent {
         else if (type === 'setup') this.setupFileName = fileName;
         else if (type === 'cutting') this.cuttingFileName = fileName;
         else if (type === 'typeTooling') this.typeToolingFileName = fileName;
+        else if (type === 'masterAllPMC') this.masterAllPMCFileName = fileName;
+        else if (type === 'masterAllGM') this.masterAllGMFileName = fileName;
+        else if (type === 'masterToolingPMC') this.masterToolingPMCFileName = fileName;
+        else if (type === 'masterToolingGM') this.masterToolingGMFileName = fileName;
 
         const reader: FileReader = new FileReader();
         reader.onload = (e: any) => {
             const bstr: string = e.target.result;
             const wb: XLSX.WorkBook = XLSX.read(bstr, { type: 'binary' });
-            const wsname: string = wb.SheetNames[0];
+
+            // For Master Tooling, read from 'Forecast' sheet specifically
+            let wsname: string;
+            if (type === 'masterToolingPMC' || type === 'masterToolingGM') {
+                if (wb.SheetNames.includes('Forecast')) {
+                    wsname = 'Forecast';
+                } else {
+                    Swal.fire('Error', 'Sheet "Forecast" not found in the Excel file', 'error');
+                    return;
+                }
+            } else {
+                wsname = wb.SheetNames[0]; // Default to first sheet
+            }
+
             const ws: XLSX.WorkSheet = wb.Sheets[wsname];
 
             // 1. Convert to array of arrays to find the header row
@@ -144,7 +174,19 @@ export class MasterPHComponent {
 
             // 2. Parse again with the correct range
             // range: headerRowIndex tells it to skip rows before the header
-            const data = XLSX.utils.sheet_to_json(ws, { range: headerRowIndex });
+            let data = XLSX.utils.sheet_to_json(ws, { range: headerRowIndex }) as any[];
+
+            // 3. Trim column headers (remove leading/trailing spaces)
+            if (data.length > 0) {
+                data = data.map((row: any) => {
+                    const trimmedRow: any = {};
+                    for (const key of Object.keys(row)) {
+                        const trimmedKey = key.trim();
+                        trimmedRow[trimmedKey] = row[key];
+                    }
+                    return trimmedRow;
+                });
+            }
 
             if (data.length > 0) {
                 this.tempData[type] = data; // Need to define tempData
@@ -168,8 +210,12 @@ export class MasterPHComponent {
     onFileChangeSetup(evt: any) { this.handleFile(evt, 'setup'); }
     onFileChangeCutting(evt: any) { this.handleFile(evt, 'cutting'); }
     onFileChangeTypeTooling(evt: any) { this.handleFile(evt, 'typeTooling'); }
+    onFileChangeMasterAllPMC(evt: any) { this.handleFile(evt, 'masterAllPMC'); }
+    onFileChangeMasterAllGM(evt: any) { this.handleFile(evt, 'masterAllGM'); }
+    onFileChangeMasterToolingPMC(evt: any) { this.handleFile(evt, 'masterToolingPMC'); }
+    onFileChangeMasterToolingGM(evt: any) { this.handleFile(evt, 'masterToolingGM'); }
 
-    uploadData(type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'purchase' | 'typeTooling') {
+    uploadData(type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'purchase' | 'typeTooling' | 'masterAll' | 'masterTooling') {
         if (type === 'purchase') {
             const hasPMC = this.tempData.pmc && this.tempData.pmc.length > 0;
             const hasGM = this.tempData.gm && this.tempData.gm.length > 0;
@@ -194,6 +240,22 @@ export class MasterPHComponent {
                     this.importIReportData(this.tempData.ireport);
                 }, 1000); // Trigger after others
             }
+        } else if (type === 'masterAll') {
+            // Master All PMC upload logic (already implemented)
+            const data = this.tempData.masterAllPMC;
+            if (!data || data.length === 0) {
+                Swal.fire('Warning', 'No Master All PMC file selected', 'warning');
+                return;
+            }
+            this.importMasterAllPMC(data);
+        } else if (type === 'masterTooling') {
+            // Master Tooling PMC upload logic
+            const data = this.tempData.masterToolingPMC;
+            if (!data || data.length === 0) {
+                Swal.fire('Warning', 'No Master Tooling PMC file selected', 'warning');
+                return;
+            }
+            this.importMasterToolingPMC(data);
         } else {
             const data = this.tempData[type];
             if (!data || data.length === 0) {
@@ -303,6 +365,91 @@ export class MasterPHComponent {
                 console.error('Import Type Tooling Error:', err);
                 const errorMsg = err.error?.message || err.error?.error || err.message || 'Unknown error';
                 Swal.fire('Error', `Failed to import Type Tooling data: ${errorMsg}`, 'error');
+                this.loading = false;
+            }
+        });
+    }
+
+    importMasterAllPMC(data: any[]) {
+        if (data.length === 0) {
+            Swal.fire('Error', 'No data to import', 'error');
+            this.loading = false;
+            return;
+        }
+
+        const BATCH_SIZE = 200;
+        const totalItems = data.length;
+        let processed = 0;
+        let successCount = 0;
+        let errorCount = 0;
+        const errors: any[] = [];
+
+        const processBatch = async (startIndex: number) => {
+            if (startIndex >= totalItems) {
+                this.loading = false;
+                if (errorCount > 0) {
+                    Swal.fire({
+                        title: 'Completed with Errors',
+                        html: `Success: ${successCount}<br>Failed: ${errorCount}<br>First Error: ${errors[0]}`,
+                        icon: 'warning'
+                    });
+                } else {
+                    Swal.fire('Success', `Imported all ${successCount} records successfully!`, 'success');
+                }
+                return;
+            }
+
+            const batch = data.slice(startIndex, startIndex + BATCH_SIZE);
+            const currentBatchNum = Math.floor(startIndex / BATCH_SIZE) + 1;
+            const totalBatches = Math.ceil(totalItems / BATCH_SIZE);
+
+            Swal.fire({
+                title: 'Uploading...',
+                text: `Batch ${currentBatchNum}/${totalBatches} (${processed}/${totalItems} items)`,
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            this.masterPHService.importMasterAllPMC(batch).subscribe({
+                next: (res: any) => {
+                    successCount += res.count;
+                    processed += batch.length;
+                    processBatch(startIndex + BATCH_SIZE);
+                },
+                error: (err: any) => {
+                    console.error('Batch Error:', err);
+                    errorCount += batch.length;
+                    processed += batch.length;
+
+                    const errorMsg = err.error?.error || err.error?.message || err.message || 'Unknown error';
+                    errors.push(errorMsg);
+
+                    processBatch(startIndex + BATCH_SIZE);
+                }
+            });
+        };
+
+        processBatch(0);
+    }
+
+    importMasterToolingPMC(data: any[]) {
+        this.loading = true;
+        Swal.fire({
+            title: 'Importing Master Tooling PMC...',
+            text: `Uploading ${data.length} records. Please wait.`,
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        this.masterPHService.importMasterToolingPMC(data).subscribe({
+            next: (res: any) => {
+                Swal.fire('Success', `Imported Master Tooling PMC ${res.count} records successfully!`, 'success');
+                this.loading = false;
+            },
+            error: (err: any) => {
+                console.error('Import Master Tooling PMC Error:', err);
+                const errorMsg = err.error?.error || err.error?.message || err.message || 'Unknown error';
+                Swal.fire('Error', `Failed to import Master Tooling PMC data: ${errorMsg}`, 'error');
                 this.loading = false;
             }
         });
