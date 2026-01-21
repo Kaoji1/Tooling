@@ -201,7 +201,7 @@ exports.importMasterData = async (req, res) => {
 
         const type = req.query.type || 'pmc';
         let tableName = '[db_Tooling].[master].[tb_Purchase_Item_Master_PMC]';
-        let spInsert = '[db_Tooling].[trans].[Stored_Import_ItemMaster_Test]';
+        let spInsert = '[db_Tooling].[trans].[Stored_Import_ItemMaster_PMC_Test]';
         let spUpdate = '[db_Tooling].[trans].[Stored_ItemMaster_PH_PMC_Update]';
 
         if (type === 'gm') {
