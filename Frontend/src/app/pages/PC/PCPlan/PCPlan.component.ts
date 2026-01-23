@@ -273,10 +273,10 @@ export class PCPlanComponent implements OnInit {
   loadDivisions() {
     this.pcPlanService.getDivisions().subscribe({
       next: (data: any[]) => {
-        // Updated mapping: Use Text (Profit Center) as 'code' for the new SP
+        // Updated mapping for Stored_Get_PCPlan_Dropdown_Division (Profit_Center)
         this.divisionOptions = data.map(item => ({
-          code: item.Text || item.Value.toString(),   // Use Raw Profit Center (e.g. '7122') -> Backend needs this!
-          label: this.mapDivisionName(item.Text)     // Display Label (e.g. 'GM') -> User sees this
+          code: item.Profit_Center,   // e.g. '7122'
+          label: this.mapDivisionName(item.Profit_Center) // e.g. 'GM'
         }));
       },
       error: (err) => console.error('Error loading divisions:', err)
