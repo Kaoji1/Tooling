@@ -870,3 +870,118 @@ exports.importMasterToolingPMC = async (req, res) => {
         });
     }
 };
+
+// ===============================================
+// GM Master Tooling Import (Cutting Tool + Setup Tool)
+// ===============================================
+exports.importMasterToolingGM = async (req, res) => {
+    try {
+        const items = req.body;
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).send({ message: "No data provided." });
+        }
+
+        const pool = await poolPromise;
+        const totalItems = items.length;
+        const batchID = require('crypto').randomUUID();
+
+        console.log(`[Import Master Tooling GM] Starting import of ${totalItems} items with BatchID: ${batchID}`);
+
+        // DEBUG: Log the column names from Excel
+        if (items.length > 0) {
+            console.log(`[DEBUG GM] Excel column names:`, Object.keys(items[0]));
+            console.log(`[DEBUG GM] First row data:`, JSON.stringify(items[0], null, 2));
+        }
+
+        // Helper functions
+        const findValue = (item, candidates) => {
+            const itemKeys = Object.keys(item);
+            for (const key of candidates) {
+                if (item[key] !== undefined && item[key] !== null) return item[key];
+            }
+            for (const key of candidates) {
+                const lowerKey = key.toLowerCase().trim();
+                const foundKey = itemKeys.find(k => k.toLowerCase().trim() === lowerKey);
+                if (foundKey && item[foundKey] !== undefined && item[foundKey] !== null) return item[foundKey];
+            }
+            return null;
+        };
+
+        const getString = (val) => (val === "" || val == null) ? null : String(val).trim();
+
+        // STEP 1: Insert all data to Staging Table with Transaction
+        console.log(`[Import Master Tooling GM] Inserting ${totalItems} rows to Staging Table...`);
+
+        const transaction = new sql.Transaction(pool);
+        await transaction.begin();
+
+        try {
+            for (const item of items) {
+                const request = new sql.Request(transaction);
+
+                request.input('BatchID', sql.UniqueIdentifier, batchID);
+                request.input('PartNo', sql.NVarChar(sql.MAX), getString(findValue(item, ['PART NO.', 'PART NO', 'PartNo', 'Part No', 'Part No.'])));
+                request.input('Process', sql.NVarChar(sql.MAX), getString(findValue(item, ['Process'])));
+                request.input('MC', sql.NVarChar(sql.MAX), getString(findValue(item, ['M/C', 'MC'])));
+                request.input('Position', sql.NVarChar(sql.MAX), getString(findValue(item, ['Position'])));
+
+                // Setup Tool columns
+                request.input('ItemSetUpTool', sql.NVarChar(sql.MAX), getString(findValue(item, ['ITEM SET UP TOOL', 'ItemSetUpTool', 'Item SetUp Tool'])));
+                request.input('NameSetUpTool', sql.NVarChar(sql.MAX), getString(findValue(item, ['NAME SET UP TOOL', 'NameSetUpTool', 'Name SetUp Tool'])));
+                request.input('SetUpTool', sql.NVarChar(sql.MAX), getString(findValue(item, ['SET UP TOOL', 'SetUpTool', 'SetUp Tool'])));
+                request.input('SetUpMaker', sql.NVarChar(sql.MAX), getString(findValue(item, ['SET UP MAKER', 'SetUpMaker', 'SetUp Maker'])));
+
+                // Cutting Tool columns
+                request.input('ItemNoCutting', sql.NVarChar(sql.MAX), getString(findValue(item, ['ITEM NO.CUTTING', 'ITEM NO CUTTING', 'ItemNoCutting', 'Item No Cutting'])));
+                request.input('ItemNameCutting', sql.NVarChar(sql.MAX), getString(findValue(item, ['ITEM NAME CUTTING', 'ItemNameCutting', 'Item Name Cutting'])));
+                request.input('SpecCutting', sql.NVarChar(sql.MAX), getString(findValue(item, ['SPEC CUTTING', 'SpecCutting', 'Spec Cutting', 'Spec'])));
+                request.input('Maker', sql.NVarChar(sql.MAX), getString(findValue(item, ['MAKER', 'Maker'])));
+                request.input('Usage', sql.NVarChar(sql.MAX), getString(findValue(item, ['USAGE', 'Usage'])));
+                request.input('Rev', sql.NVarChar(sql.MAX), getString(findValue(item, ['REV.', 'REV', 'Rev'])));
+                request.input('PLNo', sql.NVarChar(sql.MAX), getString(findValue(item, ['PL NO.', 'PL NO', 'PLNo', 'PL No'])));
+                request.input('DateUpdate', sql.NVarChar(sql.MAX), getString(findValue(item, ['DATE UPDATE', 'DateUpdate', 'Date Update'])));
+
+                await request.query(`
+                    INSERT INTO [master].[Staging_ToolingData_GM]
+                    ([BatchID], [PartNo], [Process], [MC], [Position],
+                     [ItemSetUpTool], [NameSetUpTool], [SetUpTool], [SetUpMaker],
+                     [ItemNoCutting], [ItemNameCutting], [SpecCutting], [Maker], [Usage], [Rev], [PLNo], [DateUpdate])
+                    VALUES
+                    (@BatchID, @PartNo, @Process, @MC, @Position,
+                     @ItemSetUpTool, @NameSetUpTool, @SetUpTool, @SetUpMaker,
+                     @ItemNoCutting, @ItemNameCutting, @SpecCutting, @Maker, @Usage, @Rev, @PLNo, @DateUpdate)
+                `);
+            }
+
+            await transaction.commit();
+            console.log(`[Import Master Tooling GM] Transaction committed. ${totalItems} rows inserted.`);
+
+        } catch (insertErr) {
+            await transaction.rollback();
+            throw insertErr;
+        }
+
+        console.log(`[Import Master Tooling GM] Staging insert complete. Calling SP...`);
+
+        // STEP 2: Call Stored Procedure to process Staging data
+        const spRequest = pool.request();
+        spRequest.input('BatchID', sql.UniqueIdentifier, batchID);
+        await spRequest.execute('[trans].[Stored_Import_Master_ToolingALL_GM]');
+
+        console.log(`[Import Master Tooling GM] SP execution complete. Success: ${totalItems}`);
+
+        res.status(200).send({
+            message: "Import successful",
+            count: totalItems,
+            batchID: batchID
+        });
+
+    } catch (err) {
+        console.error("Import Master Tooling GM Error:", err);
+        res.status(500).send({
+            message: "Internal Server Error",
+            error: err.message,
+            code: err.code
+        });
+    }
+};

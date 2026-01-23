@@ -128,13 +128,22 @@ export class MasterPHComponent {
             const bstr: string = e.target.result;
             const wb: XLSX.WorkBook = XLSX.read(bstr, { type: 'binary' });
 
-            // For Master Tooling, read from 'Forecast' sheet specifically
+            // For Master Tooling, read from specific sheet
             let wsname: string;
-            if (type === 'masterToolingPMC' || type === 'masterToolingGM') {
+            if (type === 'masterToolingPMC') {
+                // PMC uses 'Forecast' sheet
                 if (wb.SheetNames.includes('Forecast')) {
                     wsname = 'Forecast';
                 } else {
                     Swal.fire('Error', 'Sheet "Forecast" not found in the Excel file', 'error');
+                    return;
+                }
+            } else if (type === 'masterToolingGM') {
+                // GM uses 'ALL' sheet
+                if (wb.SheetNames.includes('ALL')) {
+                    wsname = 'ALL';
+                } else {
+                    Swal.fire('Error', 'Sheet "ALL" not found in the Excel file', 'error');
                     return;
                 }
             } else {
@@ -156,6 +165,9 @@ export class MasterPHComponent {
                 keywords = ['a/c code', 'ac code', 'ac_code', 'ac type']; // Specific for Type Tooling
             } else if (type === 'ireport') {
                 keywords = ['item_no', 'item no', 'vendor'];
+            } else if (type === 'masterToolingGM') {
+                // GM specific keywords based on actual Excel column names
+                keywords = ['part no', 'maker', 'item no.cutting', 'item set up tool', 'm/c'];
             }
 
             // Search for the row containing keywords
@@ -215,7 +227,7 @@ export class MasterPHComponent {
     onFileChangeMasterToolingPMC(evt: any) { this.handleFile(evt, 'masterToolingPMC'); }
     onFileChangeMasterToolingGM(evt: any) { this.handleFile(evt, 'masterToolingGM'); }
 
-    uploadData(type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'purchase' | 'typeTooling' | 'masterAll' | 'masterTooling') {
+    uploadData(type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'purchase' | 'typeTooling' | 'masterAll' | 'masterTooling' | 'masterToolingGM') {
         if (type === 'purchase') {
             const hasPMC = this.tempData.pmc && this.tempData.pmc.length > 0;
             const hasGM = this.tempData.gm && this.tempData.gm.length > 0;
@@ -256,6 +268,14 @@ export class MasterPHComponent {
                 return;
             }
             this.importMasterToolingPMC(data);
+        } else if (type === 'masterToolingGM') {
+            // Master Tooling GM upload logic
+            const data = this.tempData.masterToolingGM;
+            if (!data || data.length === 0) {
+                Swal.fire('Warning', 'No Master Tooling GM file selected', 'warning');
+                return;
+            }
+            this.importMasterToolingGM(data);
         } else {
             const data = this.tempData[type];
             if (!data || data.length === 0) {
@@ -450,6 +470,29 @@ export class MasterPHComponent {
                 console.error('Import Master Tooling PMC Error:', err);
                 const errorMsg = err.error?.error || err.error?.message || err.message || 'Unknown error';
                 Swal.fire('Error', `Failed to import Master Tooling PMC data: ${errorMsg}`, 'error');
+                this.loading = false;
+            }
+        });
+    }
+
+    importMasterToolingGM(data: any[]) {
+        this.loading = true;
+        Swal.fire({
+            title: 'Importing Master Tooling GM...',
+            text: `Uploading ${data.length} records. Please wait.`,
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        this.masterPHService.importMasterToolingGM(data).subscribe({
+            next: (res: any) => {
+                Swal.fire('Success', `Imported Master Tooling GM ${res.count} records successfully!`, 'success');
+                this.loading = false;
+            },
+            error: (err: any) => {
+                console.error('Import Master Tooling GM Error:', err);
+                const errorMsg = err.error?.error || err.error?.message || err.message || 'Unknown error';
+                Swal.fire('Error', `Failed to import Master Tooling GM data: ${errorMsg}`, 'error');
                 this.loading = false;
             }
         });

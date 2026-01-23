@@ -287,21 +287,23 @@
                     </div>
                 </div>
 
-                <!-- GM Section (Placeholder) -->
+                <!-- GM Section -->
                 <div class="mb-5">
                     <h6 class="fw-bold mb-3">GM Division</h6>
                     <div class="d-flex align-items-center mb-3" style="max-width: 600px;">
                         <input type="file" #fileInputMasterToolingGM style="display: none;"
                             (change)="onFileChangeMasterToolingGM($event)" accept=".xlsx, .xls" />
-                        <button class="btn btn-secondary me-3" (click)="fileInputMasterToolingGM.click()" disabled>
+                        <button class="btn btn-success btn-custom-green me-3"
+                            (click)="fileInputMasterToolingGM.click()">
                             Select File GM
                         </button>
-                        <input type="text" class="form-control bg-light" placeholder="Coming Soon" readonly
+                        <input type="text" class="form-control bg-light" placeholder="No file selected" readonly
                             [value]="masterToolingGMFileName">
                     </div>
                     <div class="d-flex justify-content-end">
-                        <button class="btn btn-secondary" disabled>
-                            <i class="bi bi-upload me-2"></i> Upload GM (Coming Soon)
+                        <button class="btn btn-success btn-custom-green" (click)="uploadData('masterToolingGM')"
+                            [disabled]="!tempData.masterToolingGM || tempData.masterToolingGM.length === 0">
+                            <i class="bi bi-upload me-2"></i> Upload GM
                         </button>
                     </div>
                 </div>
