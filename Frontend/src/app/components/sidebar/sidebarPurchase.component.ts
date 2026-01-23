@@ -13,15 +13,15 @@ import Swal from 'sweetalert2';
   styleUrl: './sidebar.component.scss'
 })
 export class SidebarPurchaseComponent implements OnInit {
-  Employee_Name: any = 'Guest'; 
+  Employee_Name: any = 'Guest';
   imagePath = 'assets/images/1.png';
   cartCount: number = 0;
 
   // 1. เพิ่ม @Inject(PLATFORM_ID) ใน constructor
   constructor(
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object 
-  ) {}
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) { }
 
   ngOnInit(): void {
     // 2. เช็กว่าเป็น Browser หรือไม่ก่อนเข้าถึง sessionStorage

@@ -21,7 +21,7 @@
 // //     console.error("Error executing query:", error.stack);
 // //     res.status(500).json({ error: "Internal Server Error", details: error.message });
 // //   }
- 
+
 // // };
 
 // exports.Detail_Purchase = async (req, res) => {
@@ -180,7 +180,7 @@
 //           }
 //         });
 
-        
+
 //         await transporter.sendMail({
 //           from: `"Indirect expense" <${process.env.EMAIL_USER}>`,
 //           to: emailList,
@@ -377,7 +377,7 @@
 //     }
 
 //  const result = await pool.request()
-        
+
 //       .input("DocNo", sql.NVarChar, DocNo)
 //       .input("Division",sql.NVarChar,Division)
 //       .input("Requester", sql.NVarChar, Requester)
@@ -445,31 +445,31 @@ const frontendLink = process.env.FRONTEND_URL || 'http://localhost:4200';
 
 
 exports.Detail_Purchase = async (req, res) => {
-  console.log('data:',req.body)
+  console.log('data:', req.body)
   try {
-    const pool = await poolPromise; 
+    const pool = await poolPromise;
     const result = await pool
-  .request()
-    .query("SELECT * FROM [dbo].[View_CuttingTool_RequestList] WHERE Status IN ('Waiting','In Progress')ORDER BY ItemNo ASC, ID_Request ASC ");
+      .request()
+      .query("SELECT * FROM [dbo].[View_CuttingTool_RequestList] WHERE Status IN ('Waiting','In Progress')ORDER BY ItemNo ASC, ID_Request ASC ");
 
     res.json(result.recordset);
-  } 
+  }
   catch (error) {
     console.error("Error executing query:", error.stack);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
- 
+
 };
 exports.Get_ItemNo = async (req, res) => {
   console.log(req.body)
   try {
     const pool = await poolPromise;
     const result = await pool
-    .request()
-    .query("EXEC Stored_View_CuttingTool_FindItem_Purchase");
+      .request()
+      .query("EXEC Stored_View_CuttingTool_FindItem_Purchase");
 
     res.json(result.recordset);
-  } 
+  }
   catch (error) {
     console.error("Error executing query:", error.stack);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
@@ -481,11 +481,11 @@ exports.get_ItemNo = async (req, res) => {
   try {
     const pool = await poolPromise;
     const result = await pool
-    .request()
-    .query("EXEC Stored_View_CuttingTool_FindItem_Purchase");
+      .request()
+      .query("EXEC Stored_View_CuttingTool_FindItem_Purchase");
 
     res.json(result.recordset);
-  } 
+  }
   catch (error) {
     console.error("Error executing query:", error.stack);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
@@ -493,7 +493,7 @@ exports.get_ItemNo = async (req, res) => {
 };
 
 
-exports.Update_Status_Purchase= async (req, res) => {
+exports.Update_Status_Purchase = async (req, res) => {
   try {
     const { ID_Request, Status } = req.body || {};
 
@@ -513,7 +513,7 @@ exports.Update_Status_Purchase= async (req, res) => {
     const pool = await poolPromise;
 
     // อัปเดตหลายแถวในครั้งเดียว
-    const placeholders = idList.map((_, i) =>`@id${i}`).join(", ");
+    const placeholders = idList.map((_, i) => `@id${i}`).join(", ");
     const rq = pool.request();
     idList.forEach((id, i) => rq.input(`id${i}`, sql.Int, id));
     rq.input("Status", sql.NVarChar, Status);
@@ -535,7 +535,7 @@ exports.Update_Status_Purchase= async (req, res) => {
       `);
 
       const emailRes = await pool.request().query(
-       ` SELECT Email FROM tb_CuttingTool_Employee WHERE Role IN ('production','admin')`
+        ` SELECT Email FROM tb_CuttingTool_Employee WHERE Role IN ('production','admin')`
       );
       const emailList = emailRes.recordset.map(r => r.Email).filter(Boolean);
 
@@ -560,8 +560,10 @@ exports.Update_Status_Purchase= async (req, res) => {
 
         const transporter = nodemailer.createTransport({
           service: "gmail",
-          auth: { user: process.env.EMAIL_USER,
-                  pass: process.env.EMAIL_PASS }
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+          }
         });
 
         await transporter.sendMail({
@@ -596,7 +598,7 @@ exports.Update_Status_Purchase= async (req, res) => {
       }
     }
 
-    return res.json({ success: true, message: `Updated ${idList.length} item(s) `});
+    return res.json({ success: true, message: `Updated ${idList.length} item(s) ` });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, message: "Update failed", error: err.message });
@@ -634,12 +636,12 @@ exports.Update_Status_Purchase= async (req, res) => {
 //       .input("ID_Request", sql.Int, ID_Request)
 //       .input("Status", sql.NVarChar, Status)
 //       // .input("PathLayout", sql.NVarChar, PathLayout)
-      
+
 //       .query(`
 //         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
 //         SET 
 //             Status = @Status,
-           
+
 //             DateComplete = CASE 
 //                              WHEN @Status = N'Complete' THEN SYSDATETIME()
 //                              ELSE DateComplete
@@ -735,22 +737,22 @@ exports.Update_Status_Purchase= async (req, res) => {
 
 exports.Update_Request = async (req, res) => {
   try {
-    const { 
+    const {
       ID_Request,
-      DocNo, 
-      Status, 
-      Requester, 
+      DocNo,
+      Status,
+      Requester,
       Fac,
-      CASE, 
-      PartNo, 
-      ItemNo, 
-      Process, 
-      MCType,  
-      Req_QTY, 
-      Remark, 
-      ON_HAND, 
-      DueDate, 
-      PathDwg, 
+      CASE,
+      PartNo,
+      ItemNo,
+      Process,
+      MCType,
+      Req_QTY,
+      Remark,
+      ON_HAND,
+      DueDate,
+      PathDwg,
       PathLayout,
       SPEC,
       QTY,
@@ -815,24 +817,24 @@ exports.Add_New_Request = async (req, res) => {
   try {
     console.log(req.body);
 
-    let { 
+    let {
       DocNo,
-      Division, 
-      Status, 
-      Requester, 
+      Division,
+      Status,
+      Requester,
       Fac,
       SPEC,
       QTY,
-      CASE, 
-      PartNo, 
-      ItemNo, 
-      Process, 
-      MCType,  
-      Req_QTY, 
-      Remark, 
-      ON_HAND, 
-      DueDate, 
-      PathDwg, 
+      CASE,
+      PartNo,
+      ItemNo,
+      Process,
+      MCType,
+      Req_QTY,
+      Remark,
+      ON_HAND,
+      DueDate,
+      PathDwg,
       PathLayout,
       PhoneNo
     } = req.body;
@@ -859,10 +861,10 @@ exports.Add_New_Request = async (req, res) => {
       ItemNo = itemResult.recordset[0].ItemNo;
     }
 
- const result = await pool.request()
-        
+    const result = await pool.request()
+
       .input("DocNo", sql.NVarChar, DocNo)
-      .input("Division",sql.NVarChar,Division)
+      .input("Division", sql.NVarChar, Division)
       .input("Requester", sql.NVarChar, Requester)
       .input("PartNo", sql.NVarChar, PartNo)
       .input("ItemNo", sql.NVarChar, ItemNo)
@@ -1085,7 +1087,7 @@ exports.DeleteItem = async (req, res) => {
 //   .input("PathLayout", sql.NVarChar, PathLayout)
 //   .input("PhoneNo", sql.Int, PhoneNo)
 //       .query("EXEC Stored_View_CuttingTool_RequestList_Update");
-      
+
 //     if (result.recordset[0].RowsAffected > 0) {
 //       res.json({ success: true, message: "Request detail updated successfully" });
 //     } else {
@@ -1226,7 +1228,7 @@ exports.DeleteItem = async (req, res) => {
 //     }
 
 //  const result = await pool.request()
-        
+
 //       .input("DocNo", sql.NVarChar, DocNo)
 //       .input("Division",sql.NVarChar,Division)
 //       .input("Requester", sql.NVarChar, Requester)
@@ -1359,3 +1361,189 @@ exports.DeleteItem = async (req, res) => {
 //     res.status(500).json({ success: false, message: "ส่งอีเมลไม่สำเร็จ", error: error.message });
 //   }
 // };
+
+exports.Add_New_Request_Bulk = async (req, res) => {
+  try {
+    const items = req.body; // Expecting an array of objects
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "Invalid input: Expected an array of request items." });
+    }
+
+    const pool = await poolPromise;
+    let successCount = 0;
+    let failCount = 0;
+
+    // Group items by keys that determine DocNo: Division, CASE, Process, Fac
+    const groups = {};
+    for (const item of items) {
+      const key = `${item.Division}_${item.CASE}_${item.Process}_${item.Fac}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
+    }
+
+    for (const key in groups) {
+      const groupItems = groups[key];
+      const firstItem = groupItems[0];
+
+      // Generate DocNo for this group
+      let docNo = firstItem.DocNo; // Use provided DocNo if available
+
+      // Only generate if not provided or temporary format
+      if (!docNo || docNo.startsWith('REQ-')) {
+        try {
+          const division = firstItem.Division ? firstItem.Division.toUpperCase() : '';
+          const case_ = firstItem.CASE;
+          const process = firstItem.Process;
+          const factory = firstItem.Fac;
+
+          if (case_ && process && factory) {
+            // Logic ported and adjusted
+            let casePart = '';
+            switch (case_.toUpperCase()) {
+              case 'F/A': casePart = 'FA'; break; // Removed underscore based on request "Process+Fac+Case" (implied concat) or keep?
+              // User example: "TN3SET260122". "SET" is likely Case "SET"? 
+              // Previous code: FA_, NG_, PP_, RW_.
+              // User example "TN3SET". TN=Process, 3=Fac, SET=Case?
+              // Let's assume Case "SET" -> "SET".
+              // If Case is "F/A", "N/G" etc, user said "Case".
+              // Let's keep abbreviations but maybe strip underscores if user example implies tight concat?
+              // User Example: TN3SET...
+              // Process=TN, Fac=3, Case=SET.
+              // So I should probably NOT use underscores.
+              // Previous: FA_, NG_...
+              // I will adjust to remove underscores for new format.
+              case 'F/A': casePart = 'FA'; break;
+              case 'N/G': casePart = 'NG'; break;
+              case 'P/P': casePart = 'PP'; break;
+              case 'R/W': casePart = 'RW'; break;
+              default: casePart = case_.toUpperCase();
+            }
+
+            let processPart = '';
+            const proc = process.toLowerCase();
+            if (['turning', 'milling', 'milling2'].includes(proc)) processPart = (proc === 'turning') ? 'TN' : 'ML';
+            else if (['f&boring', 'rl'].some(p => proc.includes(p))) processPart = 'RL';
+            else processPart = 'XX'; // Fallback
+
+            const factoryPart = factory.toString().toUpperCase();
+
+            // Date Part: yymmdd
+            const now = new Date();
+            const yy = now.getFullYear().toString().slice(-2);
+            const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+            const dd = now.getDate().toString().padStart(2, '0');
+            const datePart = `${yy}${mm}${dd}`;
+
+            let prefix = '';
+
+            if (division === '7122') {
+              // Process + Fac + Case + M/R No.(yymmdd)
+              prefix = `${processPart}${factoryPart}${casePart}${datePart}`;
+            } else if (division === '71DZ') {
+              // Case + Process + Fac + M/R No.(yymmdd)
+              prefix = `${casePart}${processPart}${factoryPart}${datePart}`;
+            } else {
+              // Default Fallback (Use 7122 logic or previous?)
+              // Using 7122 logic as default for safety
+              prefix = `${processPart}${factoryPart}${casePart}${datePart}`;
+            }
+
+            let isUnique = false;
+            let finalDocNo = prefix;
+            let counter = 1;
+
+            // Check if strict prefix exists (End with date)
+            const check = await pool.request().input('DocNo', sql.NVarChar(50), finalDocNo)
+              .query(`SELECT COUNT(*) AS count FROM tb_IssueCuttingTool_Request_Document WHERE DocNo = @DocNo`);
+            if (check.recordset[0].count === 0) {
+              isUnique = true;
+            }
+
+            // If not unique, append running number
+            while (!isUnique) {
+              finalDocNo = `${prefix}${counter.toString().padStart(2, '0')}`; // Try 01, 02...
+              const checkRun = await pool.request().input('DocNo', sql.NVarChar(50), finalDocNo)
+                .query(`SELECT COUNT(*) AS count FROM tb_IssueCuttingTool_Request_Document WHERE DocNo = @DocNo`);
+              if (checkRun.recordset[0].count === 0) {
+                isUnique = true;
+              } else {
+                counter++;
+              }
+            }
+
+            docNo = finalDocNo;
+            console.log(`Generated DocNo for group ${key}: ${docNo}`);
+          }
+        } catch (e) {
+          console.warn("Failed to generate DocNo, using timestamp fallback", e);
+          docNo = `REQ-${Date.now()}`;
+        }
+      }
+
+      // Insert Items with the generated DocNo
+      for (const item of groupItems) {
+        try {
+          let {
+            Division, Status, Requester, Fac, SPEC, QTY, CASE,
+            PartNo, ItemNo, Process, MCType, Req_QTY, Remark,
+            ON_HAND, DueDate, PathDwg, PathLayout, PhoneNo,
+            MCNo, MCNo_ // Frontend might send MCNo_
+          } = item;
+
+          const finalMCNo = MCNo || MCNo_; // Handle both keys
+
+          // Auto-fetch ItemNo
+          if (!ItemNo && SPEC) {
+            const itemResult = await pool.request()
+              .input("SPEC", sql.NVarChar, SPEC)
+              .query(`SELECT TOP 1 ItemNo FROM tb_IssueCuttingTool_Request_Document WHERE SPEC = @SPEC`);
+            if (itemResult.recordset.length > 0) ItemNo = itemResult.recordset[0].ItemNo;
+          }
+
+          await pool.request()
+            .input("DocNo", sql.NVarChar, docNo) // Use generated DocNo
+            .input("Division", sql.NVarChar, Division)
+            .input("Requester", sql.NVarChar, Requester)
+            .input("PartNo", sql.NVarChar, PartNo)
+            .input("ItemNo", sql.NVarChar, ItemNo)
+            .input("SPEC", sql.NVarChar, SPEC)
+            .input("Process", sql.NVarChar, Process)
+            .input("MCType", sql.NVarChar, MCType)
+            .input("MCNo", sql.NVarChar, finalMCNo) // Add MCNo input
+            .input("Fac", sql.Int, parseInt(Fac, 10))
+            .input("PathDwg", sql.NVarChar, PathDwg)
+            .input("ON_HAND", sql.Int, parseInt(ON_HAND, 10))
+            .input("Req_QTY", sql.Int, parseInt(Req_QTY, 10))
+            .input("QTY", sql.Int, parseInt(QTY, 10) || 0)
+            .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
+            .input("CASE", sql.NVarChar, CASE)
+            .input("Status", sql.NVarChar, Status)
+            .input("PathLayout", sql.NVarChar, PathLayout)
+            .input("Remark", sql.NVarChar, Remark)
+            .input("PhoneNo", sql.Int, PhoneNo)
+            .query(`
+                INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] 
+                (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, MCNo, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo)
+                VALUES 
+                (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @MCNo, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo);
+            `);
+
+          successCount++;
+        } catch (err) {
+          console.error("Error inserting item:", item, err);
+          failCount++;
+        }
+      }
+    }
+
+    res.status(201).json({
+      message: 'Bulk insert completed',
+      successCount,
+      failCount
+    });
+
+  } catch (error) {
+    console.error('Error in Add_New_Request_Bulk:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

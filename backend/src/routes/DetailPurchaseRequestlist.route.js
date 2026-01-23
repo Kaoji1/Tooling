@@ -1,5 +1,5 @@
 // นำเข้าไลบรารี express
-const express = require('express'); 
+const express = require('express');
 const router = express.Router(); // สร้าง instance ของ Router
 
 // นำเข้าคอนโทรเลอร์
@@ -13,6 +13,7 @@ router.post('/Update_Status_Purchase', DetailPurchaseRequestlist.Update_Status_P
 router.put('/Update_Request', DetailPurchaseRequestlist.Update_Request);
 
 router.post('/Insert_Request', DetailPurchaseRequestlist.Add_New_Request);
+router.post('/Insert_Request_Bulk', DetailPurchaseRequestlist.Add_New_Request_Bulk);
 
 router.delete('/Delete_Request/:id', DetailPurchaseRequestlist.DeleteItem);
 

@@ -79,14 +79,14 @@ export class PCPlanComponent implements OnInit {
       Date: 'mm/dd/yyyy',
       Div: '7122',
       MachineType: 'BM165',
-      Fac: 'Turning F.3',
+      Fac: 'F.3',
       MCNo: '1',
       Process: 'TURNING',
       PartBefore: 'D30292AAP2S3',
       PartNo: 'D30175ACDP5S1',
       QTY: 1,
       Time: '8',
-      Comment: ''
+      Comment: 'EX.'
     });
 
     // 3. จัดรูปแบบ Header (แถวที่ 1)
@@ -273,9 +273,10 @@ export class PCPlanComponent implements OnInit {
   loadDivisions() {
     this.pcPlanService.getDivisions().subscribe({
       next: (data: any[]) => {
+        // Updated mapping: Use Text (Profit Center) as 'code' for the new SP
         this.divisionOptions = data.map(item => ({
-          code: item.Division,
-          label: this.mapDivisionName(item.Division)
+          code: item.Text || item.Value.toString(),   // Use Raw Profit Center (e.g. '7122') -> Backend needs this!
+          label: this.mapDivisionName(item.Text)     // Display Label (e.g. 'GM') -> User sees this
         }));
       },
       error: (err) => console.error('Error loading divisions:', err)
@@ -290,6 +291,7 @@ export class PCPlanComponent implements OnInit {
 
   // เมื่อมีการเปลี่ยน Division -> ให้โหลด Master Data ใหม่
   onDivisionChange() {
+    console.log('Selected Division Code:', this.selectedDivisionCode); // DEBUG LOG
     if (this.selectedDivisionCode) {
       this.loadMasterData(this.selectedDivisionCode);
     } else {
@@ -302,15 +304,14 @@ export class PCPlanComponent implements OnInit {
     this.isLoadingMasterData = true; // เริ่มสถานะกำลังโหลด
     this.pcPlanService.getMasterData(divCode).subscribe({
       next: (res) => {
-        // รับข้อมูลก้อนใหญ่มาจาก Backend แล้ว map ใส่ตัวแปร array แยกตามประเภท
-        // หมายเหตุ: เช็คชื่อ Property ให้ตรงกับที่ Backend ส่งมา (machines, facilities, etc.)
-        this.machineTypes = res.machines.map((x: any) => x.MachineType);
+        // Updated mapping for Stored_Get_PCPlan_Dropdown_Data
+        this.machineTypes = res.machines.map((x: any) => x.MC);
         this.facs = res.facilities.map((x: any) => x.Facility);
         this.processes = res.processes.map((x: any) => x.Process);
 
         // PartNo กับ PartBef ใช้ข้อมูลชุดเดียวกันตามที่คุยกัน
         this.partNos = res.partNos.map((x: any) => x.PartNo);
-        this.partBef = res.partBefs.map((x: any) => x.PartNo); // Backend ส่ง key 'PartNo' กลับมาในชุด partBefs
+        this.partBef = res.partNos.map((x: any) => x.PartNo); // Use same source
 
         this.isLoadingMasterData = false; // โหลดเสร็จแล้ว ปิดสถานะ
       },

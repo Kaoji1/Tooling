@@ -16,33 +16,37 @@ export class DetailPurchaseRequestlistService {
   ) { }
 
   Detail_Request(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
-      return this.httpClient.get(`${this.baseUrl}/Detail_Purchase`); // ส่ง HTTP GET Division
-    }
+    return this.httpClient.get(`${this.baseUrl}/Detail_Purchase`); // ส่ง HTTP GET Division
+  }
 
-updateStatusToComplete(idOrIds: number | number[], status: string) {
-  return this.httpClient.post(`${this.baseUrl}/Update_Status_Purchase`, {
-    ID_Request: idOrIds,  //  ส่งเป็น array ได้
-    Status: status
-  });
-}
+  updateStatusToComplete(idOrIds: number | number[], status: string) {
+    return this.httpClient.post(`${this.baseUrl}/Update_Status_Purchase`, {
+      ID_Request: idOrIds,  //  ส่งเป็น array ได้
+      Status: status
+    });
+  }
 
   updateQtyAndStatus(payload: { ID_Request: number; QTY: number; Status: string }[]): Observable<any> {
     return this.httpClient.put(`${this.baseUrl}/updateQtyAndStatus`, payload);
   }
 
-updateRequest(updatedItem: any): Observable<any> {
-  return this.httpClient.put(`${this.baseUrl}/Update_Request`, updatedItem);
-}
+  updateRequest(updatedItem: any): Observable<any> {
+    return this.httpClient.put(`${this.baseUrl}/Update_Request`, updatedItem);
+  }
 
-insertRequest(data: any): Observable<any> {
-  return this.httpClient.post(`${this.baseUrl}/Insert_Request`, data);
-}
+  insertRequest(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/Insert_Request`, data);
+  }
 
-deleteRequest(id: number): Observable<any> {
-  return this.httpClient.delete(`${this.baseUrl}/Delete_Request/${id}`);
-}
+  deleteRequest(id: number): Observable<any> {
+    return this.httpClient.delete(`${this.baseUrl}/Delete_Request/${id}`);
+  }
 
-get_ItemNo(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
+  insertRequestBulk(data: any[]): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/Insert_Request_Bulk`, data);
+  }
+
+  get_ItemNo(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
     return this.httpClient.get(`${this.baseUrl}/get_ItemNo`); // ส่ง HTTP GET Division
   }
 }

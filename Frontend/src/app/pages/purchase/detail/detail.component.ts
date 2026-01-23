@@ -36,7 +36,7 @@ export class DetailComponent implements OnInit {
 
   // Pagination
   currentPage: number = 1;
-  pageSize: number = 50;
+  pageSize: number = 20;
   totalPages: number = 1;
   displayedRequests: any[] = [];
   pages: number[] = [];
@@ -206,6 +206,7 @@ export class DetailComponent implements OnInit {
           Selection: false,
           QTY: it.QTY ?? it.Req_QTY,
           ACCOUNT: it.ACCOUNT ?? it.account,
+          MCQTY: it.MCQTY ?? it.MCNo, // Map MCNo to MCQTY
           _parsedRequestDate: it.DateTime_Record ? new Date(it.DateTime_Record) : null,
           _parsedDueDate: it.DueDate ? new Date(it.DueDate) : null
         }));
@@ -239,12 +240,16 @@ export class DetailComponent implements OnInit {
   get_ItemNo() {
     this.DetailPurchase.get_ItemNo().subscribe({
       next: (response: any[]) => {
-        this.ItemNo = response.map(item => ({
-          ...item,
-          ACCOUNT: item.ACCOUNT ?? item.account ?? ''
-        })).filter((item, index, self) =>
-          index === self.findIndex(obj => obj.ItemNo === item.ItemNo)
-        );
+        const uniqueItems = new Map();
+        response.forEach(item => {
+          if (item.ItemNo && !uniqueItems.has(item.ItemNo)) {
+            uniqueItems.set(item.ItemNo, {
+              ...item,
+              ACCOUNT: item.ACCOUNT ?? item.account ?? ''
+            });
+          }
+        });
+        this.ItemNo = Array.from(uniqueItems.values());
         this.cdr.markForCheck();
       },
       error: (e: any) => console.error("Error API get_ItemNo:", e),

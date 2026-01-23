@@ -1,0 +1,143 @@
+<div class="layout">
+    <app-sidebarpurchase></app-sidebarpurchase>
+    <router-outlet></router-outlet>
+
+    <div class="content">
+        <div class="header">
+            <h1 class="re"> Return List </h1>
+        </div>
+
+        <div class="box-input">
+            <div class="form-input">
+                <div class="group-select">
+                    <button class="btn btn-success" (click)="exportToExcel()"
+                        style="background-color: #198754; color: white; border: none; border-radius: 5px; height: 38px; padding: 0 15px; font-weight: 500;">
+                        EXPORT TO EXCEL
+                    </button>
+                </div>
+
+                <div class="group-select">
+                    <label for="date">Date</label>
+                    <input type="date" [(ngModel)]="dateFilter" placeholder="Date">
+                </div>
+
+                <div class="group-select">
+                    <label for="division">Division</label>
+                    <ng-select [items]="divisionList" bindLabel="label" bindValue="value" [(ngModel)]="Division_"
+                        placeholder="Select Division" style="width: 100%; min-width: 150px;">
+                    </ng-select>
+                </div>
+
+                <div class="group-select">
+                    <label for="status">Status</label>
+                    <ng-select [items]="statusList" bindLabel="label" bindValue="value" [(ngModel)]="Status_"
+                        placeholder="Select Status" style="width: 100%; min-width: 150px;">
+                    </ng-select>
+                </div>
+
+            </div>
+
+            <!-- Optional: Clear/Filter buttons if deemed necessary distinct from the inputs, 
+           but image shows filters top leftish. Requestlist has them.
+           I'll keep standard filter/clear buttons for consistency with RequestList functionality 
+           even if not explicitly in the cropped image area. -->
+
+            <div class="button-group" style="margin-left: auto; margin-right: 0;">
+                <!-- <div class="button-clear">
+               <button class="btn btn-clear" type="button" (click)="clearFilters()"><i
+                   class="bi bi-x-circle-fill text-white"></i> Clear</button>
+             </div> -->
+
+                <!-- <div class="button-filter">
+               <button class="btn btn-filter" type="button" (click)="onFilter()"><i class="bi bi-funnel-fill text-white"></i>
+                 Filter</button>
+             </div> -->
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr style="background-color: #f0f0d0;">
+                        <th colspan="16" style="text-align: left; background-color: #fcfcd4; padding: 10px;">For
+                            Purchase</th>
+                    </tr>
+                    <tr>
+                        <th class="col-checkbox" style="width: 50px; min-width: 50px;"><input type="checkbox"></th>
+                        <th class="col-no" style="width: 60px; min-width: 60px;">NO</th>
+                        <th (click)="onSort('document')" style="cursor: pointer;">Document</th>
+                        <th (click)="onSort('returnDate')" style="cursor: pointer;">Return Date</th>
+                        <th (click)="onSort('returnBy')" style="cursor: pointer;">Return By</th>
+                        <th (click)="onSort('division')" style="cursor: pointer;">Division</th>
+                        <th (click)="onSort('process')" style="cursor: pointer;">Process</th>
+                        <th (click)="onSort('fac')" style="cursor: pointer;">Fac</th>
+                        <th (click)="onSort('itemNo')" style="cursor: pointer;">Item NO.</th>
+                        <th (click)="onSort('itemName')" style="cursor: pointer;">Item Name</th>
+                        <th>Spec</th>
+                        <th>QTY</th>
+                        <th>Phone</th>
+                        <th>Remark</th>
+                        <th>Status</th>
+                        <th>PH Confirm</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="displayedReturns.length === 0">
+                        <td colspan="16" class="text-center text-muted">No items found.</td>
+                    </tr>
+                    <tr *ngFor="let item of displayedReturns; let i = index">
+                        <td class="col-checkbox"><input type="checkbox"></td>
+                        <td class="col-no">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                        <td>{{ item.document }}</td>
+                        <td>{{ item.returnDate | date:'MM/dd/yyyy' }}</td>
+                        <td>{{ item.returnBy }}</td>
+                        <td>{{ item.division }}</td>
+                        <td>{{ item.process }}</td>
+                        <td>{{ item.fac }}</td>
+                        <td>{{ item.itemNo }}</td>
+                        <td>{{ item.itemName }}</td>
+                        <td>{{ item.spec }}</td>
+                        <td>{{ item.qty }}</td>
+                        <td>{{ item.phone }}</td>
+                        <td>{{ item.remark }}</td>
+                        <td>{{ item.status }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" (click)="confirmReturn(item)"
+                                style="background-color: #4ade80; border: none; padding: 5px 15px;">OK</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-wrapper" *ngIf="totalPages > 1">
+            <nav aria-label="Navigation">
+                <ul class="pagination justify-content-center" style="cursor: pointer;">
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                        <a class="page-link" (click)="onPageChange(1)">First</a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                        <a class="page-link" (click)="onPageChange(currentPage - 1)">Previous</a>
+                    </li>
+                    <li class="page-item" *ngFor="let page of pages" [class.active]="currentPage === page">
+                        <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === totalPages">
+                        <a class="page-link" (click)="onPageChange(currentPage + 1)">Next</a>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage === totalPages">
+                        <a class="page-link" (click)="onPageChange(totalPages)">Last</a>
+                    </li>
+                </ul>
+                <div class="text-center mt-2">
+                    <small class="text-muted">
+                        Page {{ currentPage }} of {{ totalPages }} (Total {{ filteredReturns.length }} items)
+                    </small>
+                </div>
+            </nav>
+        </div>
+
+    </div>
+</div>

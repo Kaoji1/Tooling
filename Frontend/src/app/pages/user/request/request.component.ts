@@ -7,6 +7,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RequestService } from '../../../core/services/request.service';
 import { CartService } from '../../../core/services/cart.service';
+import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
+import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -77,7 +79,9 @@ export class requestComponent implements OnInit {
 
   constructor(
     private cartService: CartService,
-    private api: RequestService
+    private api: RequestService,
+    private detailPurchaseService: DetailPurchaseRequestlistService,
+    private router: Router
   ) {
     // Set today's date for min date validation
     this.today_ = new Date().toISOString().split('T')[0];
@@ -503,30 +507,31 @@ export class requestComponent implements OnInit {
       if (!acc[caseKey]) acc[caseKey] = [];
 
       acc[caseKey].push({
-        Doc_no: null,
+        DocNo: null,
         Division: this.Div_?.Division || this.Div_,
-        Factory: Factory,
+        Fac: Factory,
         ItemNo: item.ItemNo,
         PartNo: item.PartNo,
         Process: item.Process,
-        Case_: caseKey,
-        MC: item.MC,
+        CASE: caseKey,
+        MCType: item.MC,
         SPEC: item.SPEC,
         Usage_pcs: item.Usage_pcs,
         QTY: item.QTY,
+        Req_QTY: item.QTY, // Map Req_QTY
         InputDate_: InputDate_,
-        DueDate_: this.DueDate_,
+        DueDate: this.DueDate_,
         ReuseQty: item.ReuseQty,
         FreshQty: item.FreshQty,
-        Status: null,
+        Status: 'Waiting',
         Set_by: null,
         Local: 0,
         MCNo_: this.MCNo_,
-        PathDwg_: this.PathDwg_,
+        PathDwg: this.PathDwg_, // Map PathDwg (changed key from PathDwg_)
         ON_HAND: item.ON_HAND,
         Employee_Name: employeeName,
         PhoneNo: this.phone_,
-        Employee_ID: Employee_ID
+        Requester: Employee_ID
       });
 
       return acc;
@@ -544,27 +549,34 @@ export class requestComponent implements OnInit {
 
     const allItemsToSend = Object.values(groupedByCase).flat();
 
-    this.cartService.addCartToDB(allItemsToSend).subscribe({
-      next: () => {
+    this.detailPurchaseService.insertRequestBulk(allItemsToSend).subscribe({
+      next: (res: any) => {
+        let msg = 'Items have been successfully sent to Purchase Request';
+        if (res && res.successCount !== undefined) {
+          msg = `Successfully request ${res.successCount} items. (Failed: ${res.failCount})`;
+        }
+
         Swal.fire({
           icon: 'success',
           title: 'Success',
-          text: 'Items have been successfully added to the cart',
+          text: msg,
           showConfirmButton: false,
           timer: 1500
         });
+
+        // Clear Form and Stay on Page
+        this.Clearall();
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error submitting request:', err);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'Failed to save data to the database',
+          text: 'Failed to submit request',
           confirmButtonText: 'Retry'
         });
       }
     });
-
-    this.Clearall();
   }
 
   // function clearall

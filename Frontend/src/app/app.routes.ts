@@ -82,6 +82,11 @@ export const routes: Routes = [
         data: { roles: ['purchase', 'view', 'admin'] }
       },
       {
+        path: 'returnlist',
+        loadComponent: () => import('./pages/purchase/returnlist/returnlist.component').then(m => m.ReturnlistComponent),
+        data: { roles: ['purchase', 'view', 'admin'] }
+      },
+      {
         path: 'history-request',
         loadComponent: () => import('./pages/purchase/history-request/history-request.component').then(m => m.HistoryRequestComponent),
         data: { roles: ['purchase', 'view', 'admin'] }

@@ -6,7 +6,7 @@ exports.getDivisions = async (req, res) => {
     try {
         const pool = await poolPromise;
         const result = await pool.request()
-            .execute('trans.Stored_Get_Dropdown_Division_List');
+            .execute('trans.Stored_Dropdown_Division');
 
         res.status(200).json(result.recordset);
     } catch (err) {
@@ -27,34 +27,32 @@ exports.getMasterDataByDivision = async (req, res) => {
         const pool = await poolPromise;
         console.log(`Fetching Master Data for Division: ${divCode}...`);
 
-        const [machines, facilities, processes, partNos] = await Promise.all([
-            // 1. Machine Type
-            pool.request()
-                .input('InputDivision', sql.NVarChar, divCode)
-                .execute('trans.Stored_Get_Dropdown_Machine_By_Division'),
 
-            // 2. Facility
-            pool.request()
-                .input('InputDivision', sql.NVarChar, divCode)
-                .execute('trans.Stored_Get_Dropdown_Facility_By_Division'),
 
-            // 3. Process
-            pool.request()
-                .input('InputDivision', sql.NVarChar, divCode)
-                .execute('trans.Stored_Get_Dropdown_Process_By_Division'),
+        // Use the new Unified SP
+        const result = await pool.request()
+            .input('Profit_Center', sql.NVarChar(50), divCode)
+            .execute('trans.Stored_Get_PCPlan_Dropdown_Data');
 
-            // 4. PartNo
-            pool.request()
-                .input('InputDivision', sql.NVarChar, divCode)
-                .execute('trans.Stored_Get_Dropdown_PartNo_By_Division')
-        ]);
+        // Mapping Recordsets (0: Division(ignore), 1: Facility, 2: MC, 3: Process, 4: PartNo)
+        // Note: SP structure:
+        // Set 1 (index 0): Division List (Not used here)
+        // Set 2 (index 1): Facility
+        // Set 3 (index 2): MC
+        // Set 4 (index 3): Process
+        // Set 5 (index 4): PartNo
+
+        const facilities = result.recordsets[1] || [];
+        const machines = result.recordsets[2] || []; // MC
+        const processes = result.recordsets[3] || [];
+        const partNos = result.recordsets[4] || [];
 
         res.status(200).json({
-            machines: machines.recordset,
-            facilities: facilities.recordset,
-            processes: processes.recordset,
-            partNos: partNos.recordset,
-            partBefs: partNos.recordset
+            machines,
+            facilities,
+            processes,
+            partNos,
+            partBefs: partNos // Use same list for Part Before
         });
 
     } catch (err) {

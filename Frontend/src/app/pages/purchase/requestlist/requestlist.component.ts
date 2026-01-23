@@ -41,6 +41,13 @@ export class RequestlistComponent implements OnInit {
 
   selectedCase: string = '';
   filteredRequests: any[] = [];
+
+  // Pagination
+  currentPage: number = 1;
+  pageSize: number = 20;
+  totalPages: number = 1;
+  displayedRequests: any[] = [];
+  pages: number[] = []; // for pagination UI loop
   fromDate: string | null = null;
   toDate: string | null = null;
 
@@ -160,6 +167,9 @@ export class RequestlistComponent implements OnInit {
           );
           this.categoryList = uniqueCategories.map(cat => ({ label: cat, value: cat }));
 
+          this.updatePagination();
+
+
           resolve();
         },
         error: (e: any) => {
@@ -199,6 +209,9 @@ export class RequestlistComponent implements OnInit {
 
       return matchDivision && matchCategory && matchItemNo && matchProcess && matchDate;
     });
+
+    this.currentPage = 1;
+    this.updatePagination();
   }
 
   onSort(key: string) {
@@ -228,6 +241,45 @@ export class RequestlistComponent implements OnInit {
         ? String(valA).localeCompare(String(valB))
         : String(valB).localeCompare(String(valA));
     });
+
+    this.updatePagination();
+  }
+
+  updatePagination() {
+    this.totalPages = Math.ceil(this.filteredRequests.length / this.pageSize) || 1;
+
+    // Ensure currentPage is valid
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
+    }
+
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.displayedRequests = this.filteredRequests.slice(startIndex, endIndex);
+
+    // Generate page numbers for UI (simple version, max 5 pages shown)
+    // You might want a more complex logic for many pages, but this is a good start
+    let startPage = Math.max(1, this.currentPage - 2);
+    let endPage = Math.min(this.totalPages, startPage + 4);
+
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    this.pages = [];
+    for (let i = startPage; i <= endPage; i++) {
+      this.pages.push(i);
+    }
+  }
+
+  onPageChange(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+    }
   }
 
   clearFilters() {

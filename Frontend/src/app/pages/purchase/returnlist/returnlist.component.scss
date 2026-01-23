@@ -1,4 +1,4 @@
-.layout {
+﻿.layout {
   display: flex;
   flex-direction: row;
   height: 100vh;
@@ -147,50 +147,6 @@
       }
     }
 
-    // margin-left: 5px;
-    // .button-filter {
-    //   width: 100px;
-    //   display: flex;
-    //   align-content: center;
-    //   justify-content: center;
-
-
-    //   .btn-filter {
-    //     width: 120px;
-    //     height: 45px;
-    //     background-color: #4db6b6;
-    //     color: white;
-    //     border: none;
-    //     display: block;
-    //     border-radius: 10px;
-    //     font-size: 18px;
-    //     align-content: center;
-    //     justify-self: left;
-
-    //   }
-    // }
-
-    //   .button-sort {
-    //   width: 100px;
-    //   display: flex;
-    //   align-content: center;
-    //   justify-content: center;
-
-    //   .btn-sort {
-    //     width: 120px;
-    //     height: 45px;
-    //     background-color: #4db6b6;
-    //     color: white;
-    //     border: none;
-    //     border-radius: 10px;
-    //     font-size: 18px;
-    //     align-content: center;
-    //     justify-content: space-between;
-    //   }
-
-    // }
-
-
     .group-select {
       display: flex;
       justify-content: flex-end;
@@ -223,7 +179,7 @@
       margin-bottom: 5px;
     }
 
-    input {
+    input:not([type="checkbox"]) {
       padding: 8px;
       border: 1px solid #b9b6b6;
       border-radius: 5px;
@@ -260,47 +216,55 @@
         border-collapse: collapse;
         margin-top: 20px;
         color: #4a494a;
+        background-color: white;
 
         th,
         td {
-          padding: 6px;
+          padding: 8px;
+          /* Adjusted padding */
           text-align: center;
-          border: 1.5px solid #D2D2D2;
+          border: 1px solid #D2D2D2;
+          vertical-align: middle;
         }
 
-        thead th {
-          background-color: #E3E3E3;
-          padding: 15px;
-          font-size: 16px;
-          font-weight: 100;
+        /* Group Header (For Purchase) and Column Headers */
+        thead tr th {
+          background-color: #f0f0d0;
+          /* Yellow/Beige matching reference */
+          padding: 12px;
+          font-size: 15px;
+          /* Slightly smaller to fit */
+          font-weight: 600;
+          color: #333;
         }
+
+        /* Specific style for grouping header if needed via class, 
+           but the generic tr th handles standard headers. 
+           The grouping header in HTML has inline style, 
+           we can override or let it blend.
+        */
 
         td {
-          padding: 12px;
-          text-align: center;
-          border: 1px solid #d2d2d2;
+          font-size: 14px;
+          color: #333;
 
           i {
             color: #0066B3;
           }
+        }
 
-          .goToDetail {
-            background-color: #ffffff;
-            /* สีฟ้า Bootstrap */
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 12px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-          }
+        /* Checkbox column width */
+        .col-checkbox {
+          width: 40px !important;
+          max-width: 40px !important;
+          min-width: 40px !important;
+          padding: 8px 0;
+        }
 
-          .goToDetail:hover {
-            background-color: #dbdbdb;
-            /* สีฟ้าเข้มตอน hover */
-            transform: scale(1.05);
-            /* ขยายเล็กน้อย */
-          }
+        .col-no {
+          width: 50px !important;
+          min-width: 50px !important;
+          max-width: 60px !important;
         }
       }
     }
@@ -326,11 +290,26 @@
         color: #0066B3;
         text-decoration: none;
         background-color: #f9f9f9;
+        cursor: pointer;
       }
 
       .page-link:hover {
         background-color: #e2f0ff;
         border-color: #0066B3;
+      }
+
+      .page-item.active .page-link {
+        background-color: #0066B3;
+        color: white;
+        border-color: #0066B3;
+      }
+
+      .page-item.disabled .page-link {
+        color: #6c757d;
+        pointer-events: none;
+        cursor: auto;
+        background-color: #fff;
+        border-color: #dee2e6;
       }
     }
 

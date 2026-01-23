@@ -112,11 +112,11 @@
 
         <!-- ในตาราง -->
         <tbody>
-          <tr *ngIf="request.length === 0">
-            <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> Please select
-              the to view item.</td>
+          <tr *ngIf="displayedRequests.length === 0">
+            <td colspan="11" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> No items
+              found.</td>
           </tr>
-          <tr *ngFor="let item of filteredRequests">
+          <tr *ngFor="let item of displayedRequests">
             <td>{{ item.ItemNo }}</td>
             <td>{{ item.Division }}</td>
             <td>{{ item.Process }}</td>
@@ -128,28 +128,40 @@
           </tr>
         </tbody>
       </table>
-      <!-- <td> -->
-      <!-- <button  class="detailicon" type="button">
-                <i class="bi bi-eye-fill" style="font-size: 20px;"></i>
-              </button> -->
-      <!-- <button class="goToDetail" type="button" (click)="goToDetail(item.ItemNo,item.Category)">
-                <i class="bi bi-eye-fill" style="font-size: 20px;"></i></button>
-
-            </td> -->
-
     </div>
 
-    <!--ปุ่มเลื่อนหน้า-->
-    <!-- <div class="pagination-wrapper">
+    <!-- Pagination -->
+    <div class="pagination-wrapper" *ngIf="totalPages > 1">
       <nav aria-label="Navigation">
-        <ul class="pagination">
-          <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-          <li class="page-item"><a class="page-link" href="#">1</a></li>
-          <li class="page-item"><a class="page-link" href="#">2</a></li>
-          <li class="page-item"><a class="page-link" href="#">3</a></li>
-          <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        <ul class="pagination justify-content-center" style="cursor: pointer;">
+
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <a class="page-link" (click)="onPageChange(1)">First</a>
+          </li>
+
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <a class="page-link" (click)="onPageChange(currentPage - 1)">Previous</a>
+          </li>
+
+          <li class="page-item" *ngFor="let page of pages" [class.active]="currentPage === page">
+            <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+          </li>
+
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <a class="page-link" (click)="onPageChange(currentPage + 1)">Next</a>
+          </li>
+
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <a class="page-link" (click)="onPageChange(totalPages)">Last</a>
+          </li>
+
         </ul>
+        <div class="text-center mt-2">
+          <small class="text-muted">
+            Page {{ currentPage }} of {{ totalPages }} (Total {{ filteredRequests.length }} items)
+          </small>
+        </div>
       </nav>
-    </div> -->
+    </div>
   </div>
 </div>
