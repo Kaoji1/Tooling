@@ -12,7 +12,19 @@ export class ReturnService {
 
     constructor(private http: HttpClient) { }
 
-    getItemDetails(itemNo: string): Observable<any> {
-        return this.http.get<any>(`${this.baseUrl}/return/item/${itemNo}`);
+    getItemDetails(itemNo: string, divisionId: number): Observable<any> {
+        return this.http.get<any>(`${this.baseUrl}/return/item/${itemNo}?divisionId=${divisionId}`);
+    }
+
+    getDivisions(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/return/divisions`);
+    }
+
+    getFacilities(divisionId: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/return/facilities/${divisionId}`);
+    }
+
+    getProcesses(divisionId: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/return/processes/${divisionId}`);
     }
 }

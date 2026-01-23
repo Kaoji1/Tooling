@@ -55,6 +55,10 @@ export class PCPlanService {
     return this.http.get<any>(`${this.baseUrl}/list?showHistory=${showHistory}`);
   }
 
+  updatePaths(data: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/update-paths`, data);
+  }
+
   // 6. ลบข้อมูล (Delete)
   deletePlan(id: number): Observable<any> {
     return this.http.delete<any>(`${this.baseUrl}/delete/${id}`);

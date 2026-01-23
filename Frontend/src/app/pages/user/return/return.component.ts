@@ -8,6 +8,7 @@ import { HttpClientModule } from '@angular/common/http';
 
 // สร้าง Interface เพื่อกำหนดหน้าตาข้อมูลใน 1 แถว
 interface ReturnItem {
+  partNo: string;
   itemNo: string;
   itemName: string;
   spec: string;
@@ -30,12 +31,13 @@ interface ReturnItem {
 export class ReturnComponent implements OnInit {
 
   // --- ส่วนของ Dropdown (Header) ---
-  divisions: any[] = []; // รอรับข้อมูลจาก API
+  divisions: any[] = [];
   facilities: any[] = [];
   processes: any[] = [];
 
   // ตัวแปรเก็บค่าที่ user เลือกใน Dropdown
-  selectedDivision: string = '';
+  selectedDivision: any = null; // Changed to object to hold whole division object if needed, or just ID
+  selectedDivisionId: number | null = null;
   selectedFacility: string = '';
   selectedProcess: string = '';
   phoneNumber: string = '';
@@ -43,19 +45,53 @@ export class ReturnComponent implements OnInit {
   // --- ส่วนของตาราง (Dynamic Table) ---
   // เริ่มต้นให้มีแถวว่างๆ 1 แถวเสมอ
   returnItems: ReturnItem[] = [
-    { itemNo: '', itemName: '', spec: '', qty: 0, remark: '' }
+    { partNo: '', itemNo: '', itemName: '', spec: '', qty: 0, remark: '' }
   ];
 
   constructor(private returnService: ReturnService) { }
 
   ngOnInit(): void {
-    // ตรงนี้เดี๋ยวค่อยใส่โค้ดเรียก API ดึง Division มาโชว์
-    // this.loadDivisions();
+    this.loadDivisions();
+  }
+
+  loadDivisions() {
+    this.returnService.getDivisions().subscribe({
+      next: (data) => {
+        this.divisions = data;
+      },
+      error: (err) => {
+        console.error('Error loading divisions:', err);
+      }
+    });
+  }
+
+  onDivisionChange() {
+    this.facilities = [];
+    this.processes = [];
+    this.selectedFacility = '';
+    this.selectedProcess = '';
+
+    if (this.selectedDivisionId) {
+      this.returnService.getFacilities(this.selectedDivisionId).subscribe({
+        next: (data) => {
+          this.facilities = data;
+        },
+        error: (err) => console.error('Error loading facilities:', err)
+      });
+
+      this.returnService.getProcesses(this.selectedDivisionId).subscribe({
+        next: (data) => {
+          this.processes = data;
+        },
+        error: (err) => console.error('Error loading processes:', err)
+      });
+    }
   }
 
   // ฟังก์ชันเพิ่มแถวใหม่ (ปุ่ม + สีเขียว)
   addRow() {
     this.returnItems.push({
+      partNo: '',
       itemNo: '',
       itemName: '',
       spec: '',
@@ -79,7 +115,15 @@ export class ReturnComponent implements OnInit {
   // ฟังก์ชันดึงข้อมูล Item
   onItemNoChange(index: number, itemNo: string) {
     if (!itemNo) return;
-    this.returnService.getItemDetails(itemNo).subscribe({
+
+    // เช็คว่าเลือก Division หรือยัง
+    if (!this.selectedDivisionId) {
+      alert("Please select a Division first / กรุณาเลือก Division ก่อนครับ");
+      this.returnItems[index].itemNo = ''; // เคลียร์ค่าที่สแกนมา
+      return;
+    }
+
+    this.returnService.getItemDetails(itemNo, this.selectedDivisionId!).subscribe({
       next: (data) => {
         if (data) {
           this.returnItems[index].itemName = data.ItemName;
@@ -100,7 +144,7 @@ export class ReturnComponent implements OnInit {
   onSubmit() {
     const dataToSend = {
       header: {
-        division: this.selectedDivision,
+        divisionId: this.selectedDivisionId,
         facility: this.selectedFacility,
         process: this.selectedProcess,
         phone: this.phoneNumber

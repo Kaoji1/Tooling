@@ -34,7 +34,10 @@ CREATE OR ALTER PROCEDURE [trans].[Stored_PCPlan_Insert_GM]
     @PartNo NVARCHAR(50),
     @QTY FLOAT,
     @Time INT,
-    @Comment NVARCHAR(255)
+    @Comment NVARCHAR(255),
+    @Path_Dwg NVARCHAR(255) = NULL,    -- New Param
+    @Path_Layout NVARCHAR(255) = NULL, -- New Param
+    @Path_IIQC NVARCHAR(255) = NULL    -- New Param
 AS
 BEGIN
     -- Check if exists
@@ -59,6 +62,9 @@ BEGIN
             Facility = @Facility,
             Before_Part = @Before_Part,
             MC_No = @MC_No,
+            Path_Dwg = @Path_Dwg,         -- Update Path
+            Path_Layout = @Path_Layout,   -- Update Path
+            Path_IIQC = @Path_IIQC,       -- Update Path
             DateTime_Record = GETDATE()
         WHERE Plan_ID = @ExistingID;
     END
@@ -68,12 +74,14 @@ BEGIN
         INSERT INTO [master].[tb_PC_Plan] (
             PlanDate, Employee_ID, Division, MC_Type, Facility, 
             Before_Part, Process, MC_No, PartNo, QTY, [Time], 
-            Comment, Revision, GroupId, IsActive, PlanStatus
+            Comment, Revision, GroupId, IsActive, PlanStatus,
+            Path_Dwg, Path_Layout, Path_IIQC -- Add Columns
         )
         VALUES (
             @PlanDate, @Employee_ID, @Division, @MC_Type, @Facility, 
             @Before_Part, @Process, @MC_No, @PartNo, @QTY, @Time, 
-            @Comment, 0, NEWID(), 1, 'Active'
+            @Comment, 0, NEWID(), 1, 'Active',
+            @Path_Dwg, @Path_Layout, @Path_IIQC -- Add Values
         );
     END
 END
@@ -126,7 +134,10 @@ BEGIN
         [Time] INT,
         Comment NVARCHAR(255),
         PlanStatus NVARCHAR(20),
-        GroupId NVARCHAR(50) -- Added GroupId Logic
+        GroupId NVARCHAR(50),
+        Path_Dwg NVARCHAR(255),    -- Capture Path
+        Path_Layout NVARCHAR(255), -- Capture Path
+        Path_IIQC NVARCHAR(255)    -- Capture Path
     );
 
     -- 4. CREATE SNAPSHOT (Rev N -> Rev N+1)
@@ -136,12 +147,14 @@ BEGIN
     INSERT INTO [master].[tb_PC_Plan] (
         PlanDate, Employee_ID, Division, MC_Type, Facility, 
         Before_Part, Process, MC_No, PartNo, QTY, [Time], 
-        Comment, Revision, GroupId, IsActive, PlanStatus
+        Comment, Revision, GroupId, IsActive, PlanStatus,
+        Path_Dwg, Path_Layout, Path_IIQC -- Copy Path
     )
     SELECT 
         PlanDate, Employee_ID, Division, MC_Type, Facility, 
         Before_Part, Process, MC_No, PartNo, QTY, [Time], 
-        Comment, @NewRev, GroupId, 1, PlanStatus
+        Comment, @NewRev, GroupId, 1, PlanStatus,
+        Path_Dwg, Path_Layout, Path_IIQC -- Copy Path
     FROM [master].[tb_PC_Plan] Old
     WHERE Division = @Division
       AND MONTH(PlanDate) = @Month 
@@ -165,7 +178,8 @@ BEGIN
     INSERT INTO [master].[tb_PC_Plan] (
         PlanDate, Employee_ID, Division, MC_Type, Facility, 
         Before_Part, Process, MC_No, PartNo, QTY, [Time], 
-        Comment, Revision, GroupId, IsActive, PlanStatus
+        Comment, Revision, GroupId, IsActive, PlanStatus,
+        Path_Dwg, Path_Layout, Path_IIQC -- Insert Path
     )
     SELECT 
         New.PlanDate, New.Employee_ID, @Division, New.MC_Type, New.Facility, 
@@ -186,7 +200,8 @@ BEGIN
             ), NEWID())
         ), 
         1,
-        New.PlanStatus
+        New.PlanStatus,
+        New.Path_Dwg, New.Path_Layout, New.Path_IIQC -- Insert Path
     FROM #IncomingData New;
 
     -- Cleanup
@@ -239,5 +254,28 @@ BEGIN
     FROM [master].[tb_PC_Plan]
     WHERE GroupId = @GroupId
     ORDER BY Revision DESC;
+END
+GO
+
+-- 5. Update Paths ONLY (No Revision Increase)
+CREATE OR ALTER PROCEDURE [trans].[Stored_PCPlan_Update_Paths]
+    @GroupId NVARCHAR(50),
+    @Path_Dwg NVARCHAR(255) = NULL,
+    @Path_Layout NVARCHAR(255) = NULL,
+    @Path_IIQC NVARCHAR(255) = NULL
+AS
+BEGIN
+    -- Update the LATEST revision for this GroupId
+    UPDATE [master].[tb_PC_Plan]
+    SET Path_Dwg = @Path_Dwg,
+        Path_Layout = @Path_Layout,
+        Path_IIQC = @Path_IIQC
+    WHERE GroupId = @GroupId 
+      AND IsActive = 1
+      AND Revision = (
+          SELECT MAX(Revision) 
+          FROM [master].[tb_PC_Plan] 
+          WHERE GroupId = @GroupId AND IsActive = 1
+      );
 END
 GO
