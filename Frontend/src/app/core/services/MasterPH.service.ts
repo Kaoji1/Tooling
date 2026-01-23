@@ -35,4 +35,8 @@ export class MasterPHService {
     importTypeTooling(data: any[]): Observable<any> {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import-type-tooling`, data);
     }
+
+    importMasterToolingGM(data: any[]): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/master-ph/import-master-tooling-gm`, data);
+    }
 }
