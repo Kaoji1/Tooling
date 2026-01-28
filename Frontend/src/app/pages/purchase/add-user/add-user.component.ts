@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AuthService } from '../../../core/services/auth.service';
 import Swal from 'sweetalert2';
-declare var bootstrap:any;
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-add-user',
@@ -27,13 +27,13 @@ export class AddUserComponent {
     { label: 'purchase', value: 'purchase' },
     { label: 'view', value: 'view' },
     { label: 'admin', value: 'admin' },
-    { label: 'engineer', value:'engineer'},
-    { label: 'PC', value:'PC'},
-    { label: 'PC', value:'PC'}
+    { label: 'engineer', value: 'engineer' },
+    { label: 'PC', value: 'PC' },
+    { label: 'PC', value: 'PC' }
   ];
 
   // รับค่าจากแบบฟอร์ม (เพิ่มใหม่)
-  Role_:string | null = null;
+  Role_: string | null = null;
   EmployeeId_: string = '';
   EmployeeName_: string = '';
   Username_: string = '';
@@ -52,21 +52,21 @@ export class AddUserComponent {
   };
 
   constructor(private EmployeeService: EmployeeService,
-              private router: Router,
-              private authService : AuthService
-  ) {}
+    private router: Router,
+    private authService: AuthService
+  ) { }
 
   isViewer(): boolean {
-  return this.authService.isViewer();
-}
+    return this.authService.isViewer();
+  }
 
 
   ngOnInit() {
     this.Get_Employee();
   }
- goPermission() {
-  this.router.navigate(['/purchase/permission']);
-}
+  goPermission() {
+    this.router.navigate(['/purchase/permission']);
+  }
 
   //  ดึงข้อมูลพนักงานและจัดกลุ่มตาม Role
   Get_Employee() {
@@ -107,12 +107,16 @@ export class AddUserComponent {
         this.resetForm();
         this.Get_Employee();
       },
-      error: () => {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to save data' });
+      error: (err) => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: err?.error?.error || 'Unable to save data'
+        });
       }
     });
   }
-  
+
 
   resetForm() {
     this.Role_ = null;
@@ -215,9 +219,9 @@ export class AddUserComponent {
       grouped[groupKey].push(item);
     });
     // (ทางเลือก) เรียงภายในกลุ่มตามชื่อ
-    Object.keys(grouped).forEach(k => grouped[k].sort((a,b) => (a.Employee_Name||'').localeCompare(b.Employee_Name||'')));
+    Object.keys(grouped).forEach(k => grouped[k].sort((a, b) => (a.Employee_Name || '').localeCompare(b.Employee_Name || '')));
     return grouped;
   }
 
-  
+
 }

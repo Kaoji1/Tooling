@@ -86,25 +86,26 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
+      gap: 20px;
+      flex-wrap: wrap;
 
       .button-group {
-        width: 220px;
+        width: auto;
         display: flex;
         align-content: center;
-        justify-content: space-between;
-        margin-right: 160px;
+        margin-right: 0;
         gap: 10px;
 
 
         .btn-clear {
-          width: 120px;
-          height: 50px;
+          width: 100px;
+          height: 40px;
           background-color: #708090;
           color: white;
           border: none;
           gap: 5px;
-          border-radius: 10px;
-          font-size: 18px;
+          border-radius: 6px;
+          font-size: 16px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -113,14 +114,14 @@
         }
 
         .btn-filter {
-          width: 120px;
-          height: 50px;
+          width: 100px;
+          height: 40px;
           background-color: #4db6b6;
           color: white;
           border: none;
           gap: 5px;
-          border-radius: 10px;
-          font-size: 18px;
+          border-radius: 6px;
+          font-size: 16px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -130,14 +131,14 @@
         }
 
         .btn-sort {
-          width: 120px;
-          height: 50px;
+          width: 100px;
+          height: 40px;
           background-color: #4db6b6;
           color: white;
           border: none;
           gap: 5px;
-          border-radius: 10px;
-          font-size: 18px;
+          border-radius: 6px;
+          font-size: 16px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -191,19 +192,13 @@
     // }
 
 
-    .group-select {
-      display: flex;
-      justify-content: flex-end;
-      right: 20px;
-
-    }
-
     .form-input {
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
-      gap: 25px;
+      gap: 15px;
       justify-content: flex-start;
+      align-items: flex-end;
 
       h6 {
         margin-top: 60px;
@@ -213,23 +208,32 @@
     .group-select {
       display: flex;
       flex-direction: column;
-      margin-top: 20px;
-    }
+      align-items: flex-start;
+      /* Align label to start */
+      margin-top: 10px;
+      min-width: 150px;
+      /* Minimum width for consistency */
 
-    label {
-      font-size: 16px;
-      color: #2d2c2c;
-      text-align: center;
-      margin-bottom: 5px;
-    }
+      label {
+        font-size: 14px;
+        color: #2d2c2c;
+        text-align: left;
+        margin-bottom: 5px;
+        font-weight: 500;
+        width: 100%;
+        display: block;
+      }
 
-    input {
-      padding: 8px;
-      border: 1px solid #b9b6b6;
-      border-radius: 5px;
-      font-size: 14px;
-      color: #7a7878;
-      width: 200px;
+      input {
+        padding: 8px;
+        border: 1px solid #b9b6b6;
+        border-radius: 5px;
+        font-size: 14px;
+        color: #7a7878;
+        width: 100%;
+        /* Fill container */
+        min-width: 150px;
+      }
     }
 
     .form-select {

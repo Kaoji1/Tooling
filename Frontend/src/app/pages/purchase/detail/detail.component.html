@@ -103,49 +103,58 @@
 
     <div class="filter-bar">
       <div class="group-select">
+        <label>Document</label>
         <ng-select [items]="DocumentNoList" bindLabel="label" bindValue="value" [(ngModel)]="DocumentNo_"
           [multiple]="true" [closeOnSelect]="false" placeholder="Select a Document">
         </ng-select>
       </div>
 
       <div class="group-select">
+        <label>Division</label>
         <ng-select [items]="divisionList" bindLabel="label" bindValue="value" [(ngModel)]="Division_" [multiple]="true"
           [closeOnSelect]="false" placeholder="Select a Division">
         </ng-select>
       </div>
 
       <div class="group-select">
+        <label>Part No</label>
         <ng-select [items]="PartNoList" bindLabel="label" bindValue="value" [(ngModel)]="PartNo_" [multiple]="true"
           [closeOnSelect]="false" placeholder="Select a PartNo">
         </ng-select>
       </div>
 
       <div class="group-select">
+        <label>Item No</label>
         <ng-select [items]="ItemNoList" bindLabel="label" bindValue="value" [(ngModel)]="ItemNo_" [multiple]="true"
           [closeOnSelect]="false" placeholder="Select a ItemNo">
         </ng-select>
       </div>
 
       <div class="group-select">
-        <!-- Spec was squeezed, now has space -->
+        <label>Spec</label>
         <ng-select [items]="SpecList" bindLabel="label" bindValue="value" [(ngModel)]="Spec_" [multiple]="true"
           [closeOnSelect]="false" placeholder="Select a Spec">
         </ng-select>
       </div>
 
       <div class="group-select">
+        <label>Process</label>
         <ng-select [items]="ProcessList" bindLabel="label" bindValue="value" [(ngModel)]="Process_" [multiple]="true"
           [closeOnSelect]="false" placeholder="Select a Process">
         </ng-select>
       </div>
 
       <div class="group-select date-range">
-        <input type="date" [(ngModel)]="fromDate" placeholder="From Date" class="form-control">
-        <span>-</span>
-        <input type="date" [(ngModel)]="toDate" placeholder="To Date" class="form-control">
+        <label>Date Range</label>
+        <div class="input-group">
+          <input type="date" [(ngModel)]="fromDate" placeholder="From Date" class="form-control">
+          <span>-</span>
+          <input type="date" [(ngModel)]="toDate" placeholder="To Date" class="form-control">
+        </div>
       </div>
 
       <div class="group-select">
+        <label>Case</label>
         <ng-select [items]="CaseList" bindLabel="label" bindValue="value" [(ngModel)]="Case_" [multiple]="true"
           [closeOnSelect]="false" placeholder="Select a Case"></ng-select>
       </div>
@@ -157,7 +166,7 @@
       <table id="table-data" class="table table-bordered text-center">
         <thead>
           <tr class="header-group-row">
-            <th class="header-production" colspan="22">For Production</th>
+            <th class="header-production" colspan="21">For Production</th>
             <th class="header-purchase" colspan="9">For Purchase</th>
           </tr>
           <tr>
@@ -173,6 +182,8 @@
                 sortAsc ? '↑' : '↓' }}</span></th>
             <th (click)="onSort('DateTime_Record')" style="min-width: 85px;">Date <span
                 *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('DueDate')" style="min-width: 85px;">Due Date <span *ngIf="sortKey === 'DueDate'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
             <th (click)="onSort('Requester')" style="min-width: 60px;">Req By <span *ngIf="sortKey === 'Requester'">{{
                 sortAsc ? '↑' : '↓' }}</span></th>
             <th (click)="onSort('Division')" style="width: 50px;">Div <span *ngIf="sortKey === 'Division'">{{ sortAsc
@@ -207,8 +218,7 @@
             <th (click)="onSort('Status')" style="min-width: 70px;">Status <span *ngIf="sortKey === 'Status'">{{
                 sortAsc
                 ? '↑' : '↓' }}</span></th>
-            <th style="width: 50px;">Dwg</th>
-            <th style="width: 50px;">Layout</th>
+
             <th style="min-width: 80px;">Phone</th>
 
             <!-- For Purchase Columns -->
@@ -247,6 +257,9 @@
 
             <!-- Date -->
             <td>{{ item.DateTime_Record | date:'dd/MM/yyyy'}}</td>
+
+            <!-- Due Date -->
+            <td>{{ item.DueDate | date:'dd/MM/yyyy'}}</td>
 
             <!-- Request By -->
             <td>{{ item.Requester }}</td>
@@ -290,21 +303,7 @@
             <!-- Status -->
             <td>{{ item.Status }}</td>
 
-            <!-- Dwg -->
-            <td>
-              <button *ngIf="item.PathDwg" class="btn btn-link btn-sm text-primary p-0"
-                (click)="openPdfFromPath(item.PathDwg)">
-                <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
-              </button>
-            </td>
 
-            <!-- Layout -->
-            <td>
-              <button *ngIf="item.PathLayout" class="btn btn-link btn-sm text-primary p-0"
-                (click)="openPdfFromPath(item.PathLayout)">
-                <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
-              </button>
-            </td>
 
             <!-- Phone -->
             <td>{{ item.PhoneNo }}</td>
@@ -342,7 +341,7 @@
 
             <!-- PH Confirm (Button to Save or Status Change) -->
             <td>
-              <button class="btn btn-success btn-sm btn-ok" (click)="saveEdit(item.ID_Request, i)">OK</button>
+              <button class="btn btn-success btn-sm btn-ok" (click)="confirmItem(item)">OK</button>
             </td>
 
             <!-- Remark -->
