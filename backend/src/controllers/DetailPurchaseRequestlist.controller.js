@@ -110,118 +110,7 @@
 // //   }
 // // };
 
-// exports.Update_Status_Purchase = async (req, res) => {
-//   try {
-//     const { ID_Request, Status } = req.body || {};
 
-//     // Normalize → array
-//     let idList = [];
-//     if (Array.isArray(ID_Request)) idList = ID_Request.map(Number);
-//     else if (ID_Request !== undefined) idList = [Number(ID_Request)];
-
-//     idList = idList.filter(n => Number.isInteger(n));
-//     if (!idList.length) {
-//       return res.status(400).json({ success: false, message: "No valid ID_Request" });
-//     }
-//     if (!Status) {
-//       return res.status(400).json({ success: false, message: "Status is required" });
-//     }
-
-//     const pool = await poolPromise;
-
-//     // 🔄 เรียก Stored Procedure
-//     const rq = pool.request();
-//     rq.input("Status", sql.NVarChar, Status);
-//     rq.input("Ids", sql.NVarChar, idList.join(","));
-//     await rq.query("EXEC Stored_View_CuttingTool_RequestList_Update_Status");
-
-//     // ส่งอีเมลถ้า Status = Complete
-//       if (Status === "Complete") {
-//       const rows = await pool.request()
-//         .input("Ids", sql.NVarChar, Array.isArray(ID_Request) ? ID_Request.join(",") : ID_Request.toString())
-//         .query("EXEC Stored_View_CuttingTool_RequestList_Get_EmailData @Ids");
-//     // if (Status === "Complete") {
-//     //   const placeholders = idList.map((_, i) => `@id${i}`).join(", ");
-//     //   const rows = await rq.query(`
-//     //     SELECT Division, PartNo, ItemNo, SPEC, [CASE], MCType, MCNo, Fac, QTY, DueDate, Requester, Remark
-//     //     FROM dbo.tb_IssueCuttingTool_Request_Document
-//     //     WHERE ID_Request IN (${placeholders});
-//     //   `);
-
-//       const emailRes = await pool.request().query(
-//         `SELECT Email FROM tb_CuttingTool_Employee WHERE Role IN ('production','admin')`
-//       );
-//       const emailList = emailRes.recordset.map(r => r.Email).filter(Boolean);
-
-//       if (emailList.length && rows.recordset.length) {
-//         const fmt = d => (d ? new Date(d).toLocaleDateString() : "-");
-//         const rowsHtml = rows.recordset.map(it => `
-//           <tr>
-//             <td>${it.Division ?? '-'}</td>
-//             <td>${it.PartNo ?? '-'}</td>
-//             <td>${it.ItemNo ?? '-'}</td>
-//             <td>${it.SPEC ?? '-'}</td>
-//             <td>${it.CASE ?? '-'}</td>
-//             <td>${it.MCType ?? '-'}</td>
-//             <td>${it.MCNo ?? '-'}</td>
-//             <td>${it.Fac ?? '-'}</td>
-//             <td>${it.QTY ?? '-'}</td>
-//             <td>${fmt(it.DueDate)}</td>
-//             <td>${it.Requester ?? '-'}</td>
-//             <td>${it.Remark ?? '-'}</td>
-//           </tr>
-//         `).join("");
-
-//         const transporter = nodemailer.createTransport({
-//           service: "gmail",
-//           auth: { 
-//             user: process.env.MAIL_USER || 'testsystem1508@gmail.com',
-//             pass: process.env.MAIL_PASS || 'amdo inzi npqq asnd'
-//           }
-//         });
-
-
-//         await transporter.sendMail({
-//           from: `"Indirect expense" <${process.env.EMAIL_USER}>`,
-//           to: emailList,
-//           subject: `รายการเสร็จสิ้น ${rows.recordset.length} รายการ`,
-//           html: `
-//             <h1 style="color:black;">✅ Massage Notification!! Item has been successfully delivered.</h1>
-//             <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
-//               <thead>
-//                 <tr style="background-color: #f2f2f2;">
-//                   <th>Division</th>
-//                   <th>Part No</th>
-//                   <th>Item No</th>
-//                   <th>Spec</th>
-//                   <th>Case</th>
-//                   <th>MCType</th>
-//                   <th>MCNo</th>
-//                   <th>Factory</th>
-//                   <th>QTY</th>
-//                   <th>DueDate</th>
-//                   <th>Requester</th>
-//                   <th>Remark</th>
-//                 </tr>
-//               </thead>
-//               <tbody>${rowsHtml}</tbody>
-//             </table>
-//           `
-//         });
-//       }
-//     }
-
-//     return res.json({ success: true, message: `Updated ${idList.length} item(s)` });
-
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({ 
-//       success: false, 
-//       message: "Update failed", 
-//       error: err.message 
-//     });
-//   }
-// };
 
 // exports.Update_Request = async (req, res) => {
 //   try {
@@ -512,7 +401,8 @@ exports.Update_Status_Purchase = async (req, res) => {
 
     const pool = await poolPromise;
 
-    // อัปเดตหลายแถวในครั้งเดียว
+    // 🔄 เรียก Stored Procedure หรือ Query
+    // Use parameters for the update to be safe
     const placeholders = idList.map((_, i) => `@id${i}`).join(", ");
     const rq = pool.request();
     idList.forEach((id, i) => rq.input(`id${i}`, sql.Int, id));
@@ -526,82 +416,107 @@ exports.Update_Status_Purchase = async (req, res) => {
       WHERE d.ID_Request IN (${placeholders});
     `);
 
-    // ส่งอีเมลรวมถ้า Complete
+    // ส่งอีเมลถ้า Status = Complete
     if (Status === "Complete") {
-      const rows = await rq.query(`
-        SELECT Division, PartNo, ItemNo, SPEC, [CASE], MCType, MCNo, Fac, QTY, DueDate, Requester, Remark
-        FROM dbo.tb_IssueCuttingTool_Request_Document
-        WHERE ID_Request IN (${placeholders});
-      `);
+      try {
+        console.log("Attempting to send email for IDs:", idList);
 
-      const emailRes = await pool.request().query(
-        ` SELECT Email FROM tb_CuttingTool_Employee WHERE Role IN ('production','admin')`
-      );
-      const emailList = emailRes.recordset.map(r => r.Email).filter(Boolean);
+        // Use a NEW request for fetching data for email
+        // Since idList contains only filtered integers, joining them is safe
+        const safeIds = idList.join(",");
 
-      if (emailList.length && rows.recordset.length) {
-        const fmt = d => (d ? new Date(d).toLocaleDateString() : "-");
-        const rowsHtml = rows.recordset.map(it => `
-          <tr>
-            <td>${it.Division ?? '-'}</td>
-            <td>${it.PartNo ?? '-'}</td>
-            <td>${it.ItemNo ?? '-'}</td>
-            <td>${it.SPEC ?? '-'}</td>
-            <td>${it.CASE ?? '-'}</td>
-            <td>${it.MCType ?? '-'}</td>
-            <td>${it.MCNo ?? '-'}</td>
-            <td>${it.Fac ?? '-'}</td>
-            <td>${it.QTY ?? '-'}</td>
-            <td>${fmt(it.DueDate)}</td>
-            <td>${it.Requester ?? '-'}</td>
-            <td>${it.Remark ?? '-'}</td>
-          </tr>
-        `).join("");
+        const rows = await pool.request().query(`
+          SELECT Division, PartNo, ItemNo, SPEC, [CASE], MCType, MCNo, Fac, QTY, DueDate, Requester, Remark
+          FROM dbo.tb_IssueCuttingTool_Request_Document
+          WHERE ID_Request IN (${safeIds});
+        `);
 
-        const transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-          }
-        });
+        console.log(`Found ${rows.recordset.length} items for email body.`);
 
-        await transporter.sendMail({
-          from: `"Indirect expense" <${process.env.EMAIL_USER}>`,
-          to: emailList,
-          subject: `รายการเสร็จสิ้น ${rows.recordset.length} รายการ`,
-          html: `
-            <h1 style="color:black;">✅ Massage Notification!! Item has been successfully delivered.</h1>
-            <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
-              <thead>
-                <tr style="background-color: #f2f2f2;">
-                  <th>Division</th>
-                  <th>Part No</th>
-                  <th>Item No</th>
-                  <th>Spec</th>
-                  <th>Case</th>
-                  <th>MCType</th>
-                  <th>MCNo</th>
-                  <th>Factory</th>
-                  <th>QTY</th>
-                  <th>DueDate</th>
-                  <th>Requester</th>
-                  <th>Remark</th>
-                </tr>
-              </thead>
-              <tbody>${rowsHtml}</tbody>
-            </table>
-            <h3>Come in and check 👉 <a href="http://${frontendLink}/login">Indirect expense</a></h3>
-          `
-        });
+        const emailRes = await pool.request().query(
+          `SELECT Email FROM tb_CuttingTool_Employee WHERE Role IN ('production','admin')`
+        );
+        const emailList = emailRes.recordset.map(r => r.Email).filter(Boolean);
 
+        console.log("Recipient emails:", emailList);
+
+        if (emailList.length && rows.recordset.length) {
+          const fmt = d => (d ? new Date(d).toLocaleDateString() : "-");
+          const rowsHtml = rows.recordset.map(it => `
+            <tr>
+              <td>${it.Division ?? '-'}</td>
+              <td>${it.PartNo ?? '-'}</td>
+              <td>${it.ItemNo ?? '-'}</td>
+              <td>${it.SPEC ?? '-'}</td>
+              <td>${it.CASE ?? '-'}</td>
+              <td>${it.MCType ?? '-'}</td>
+              <td>${it.MCNo ?? '-'}</td>
+              <td>${it.Fac ?? '-'}</td>
+              <td>${it.QTY ?? '-'}</td>
+              <td>${fmt(it.DueDate)}</td>
+              <td>${it.Requester ?? '-'}</td>
+              <td>${it.Remark ?? '-'}</td>
+            </tr>
+          `).join("");
+
+          const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+              user: process.env.EMAIL_USER || 'testsystem1508@gmail.com',
+              pass: process.env.EMAIL_PASS || 'amdo inzi npqq asnd'
+            }
+          });
+
+          console.log("Using email user:", process.env.EMAIL_USER || 'testsystem1508@gmail.com');
+
+          await transporter.sendMail({
+            from: `"Indirect expense" <${process.env.EMAIL_USER}>`,
+            to: emailList,
+            subject: `รายการเสร็จสิ้น ${rows.recordset.length} รายการ`,
+            html: `
+              <h1 style="color:black;">✅ Massage Notification!! Item has been successfully delivered.</h1>
+              <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
+                <thead>
+                  <tr style="background-color: #f2f2f2;">
+                    <th>Division</th>
+                    <th>Part No</th>
+                    <th>Item No</th>
+                    <th>Spec</th>
+                    <th>Case</th>
+                    <th>MCType</th>
+                    <th>MCNo</th>
+                    <th>Factory</th>
+                    <th>QTY</th>
+                    <th>DueDate</th>
+                    <th>Requester</th>
+                    <th>Remark</th>
+                  </tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+              </table>
+              <h3>Come in and check 👉 <a href="http://${frontendLink}/login">Indirect expense</a></h3>
+            `
+          });
+          console.log("Email sent successfully.");
+        } else {
+          console.warn("Email not sent. Either no recipients or no items found.");
+        }
+      } catch (emailErr) {
+        console.error("Error sending email:", emailErr);
+        // We do NOT return error here, because the DB update was successful.
+        // We could just log it.
       }
     }
 
-    return res.json({ success: true, message: `Updated ${idList.length} item(s) ` });
+    return res.json({ success: true, message: `Updated ${idList.length} item(s)` });
+
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ success: false, message: "Update failed", error: err.message });
+    return res.status(500).json({
+      success: false,
+      message: "Update failed",
+      error: err.message
+    });
   }
 };
 // exports.Update_Status_Purchase = async (req, res) => {

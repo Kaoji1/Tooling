@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { PCPlanService } from '../../../core/services/PCPlan.service';
 import { FileUploadSerice } from '../../../core/services/FileUpload.service';
+import { HistoryPrint } from '../../../core/services/HistoryPrint.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -20,6 +22,7 @@ export class PlanListComponent implements OnInit {
   filterDivision: string = '';
   filterMachineType: string = '';
   showHistory: boolean = false; // Toggle for Global History
+  currentUser: any;
 
   // รายการใน Dropdown Filter
   divisions: string[] = ['GM', 'PMC'];
@@ -29,13 +32,44 @@ export class PlanListComponent implements OnInit {
   planList: any[] = [];
   filteredPlanList: any[] = []; // เพิ่มตัวแปรสำหรับเก็บข้อมูลที่กรองแล้ว
 
+  // Print Properties
+  canPrint = false;
+  isPrintModalOpen = false;
+  selectedItemForPrint: any = null;
+  printType: string | null = null;
+  printQty: number | null = null;
+  previewUrl: SafeResourceUrl | null = null;
+  printTypeOptions = [
+    { label: 'Layout', value: 'pathLayout' }, // matches property name in item
+    { label: 'Drawing', value: 'pathDwg' }    // matches property name in item
+  ];
+
   constructor(
     private pcPlanService: PCPlanService,
-    private fileUploadService: FileUploadSerice
+    private fileUploadService: FileUploadSerice,
+    private historyPrint: HistoryPrint,
+    private sanitizer: DomSanitizer,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+      this.checkPrintPermission();
+    }
     this.loadPlanList();
+  }
+
+  checkPrintPermission() {
+    const myId = this.currentUser?.Employee_ID;
+    if (!myId) return;
+
+    this.historyPrint.checkPrintPermission(myId).subscribe({
+      next: (res: any) => {
+        this.canPrint = res.allowed;
+      },
+      error: (err) => console.error("Error checking print permission:", err)
+    });
   }
 
   loadPlanList() {
@@ -61,10 +95,14 @@ export class PlanListComponent implements OnInit {
           iiqc: item.Path_IIQC || '-',
           revision: item.Revision,
           planStatus: item.PlanStatus || 'Active',
-          groupId: item.GroupId // Critical for History
+          groupId: item.GroupId, // Critical for History
+          // Print Counts (Initialize)
+          printLayoutCount: 0,
+          printDwgCount: 0
         }));
 
         this.applyFilter(); // เรียก Filter ครั้งแรกหลังจากโหลดข้อมูลเสร็จ
+        this.updatePrintCounts(); // Fetch latest print counts
       },
       error: (err: any) => {
         console.error('Error loading plan list:', err);
@@ -382,4 +420,188 @@ export class PlanListComponent implements OnInit {
     });
   }
 
+  // --- Print Functionality ---
+
+  openPrintModal(item: any) {
+    this.selectedItemForPrint = item;
+    // User requested "don't input myself" and "count when printing".
+    // Defaulting to 1 copy ensures it's valid (even if plan qty is 0) and increments count by 1.
+    this.printQty = 1;
+    this.printType = null;
+    this.previewUrl = null;
+    this.isPrintModalOpen = true;
+  }
+
+  closePrintModal() {
+    this.isPrintModalOpen = false;
+    this.selectedItemForPrint = null;
+    this.printQty = null;
+    this.printType = null;
+    this.previewUrl = null;
+  }
+
+  onPrintTypeChange() {
+    if (!this.selectedItemForPrint || !this.printType) {
+      this.previewUrl = null;
+      return;
+    }
+
+    const path = this.selectedItemForPrint[this.printType]?.replace(/^"|"$/g, '');
+    if (!path || path === '-') {
+      Swal.fire('Error', 'File not Found', 'error');
+      this.previewUrl = null;
+      this.printType = null; // Reset selection
+      return;
+    }
+
+    this.fileUploadService.loadPdfFromPath(path).subscribe({
+      next: res => {
+        const base64 = res.imageData.split(',')[1];
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob) + '#toolbar=0&navpanes=0&scrollbar=0';
+        this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
+      },
+      error: err => {
+        console.error('Error loading PDF:', err);
+        Swal.fire('Error', 'Unable to load PDF preview.', 'error');
+        this.previewUrl = null;
+      }
+    });
+  }
+
+  printPdf() {
+    if (!this.selectedItemForPrint || !this.printType) {
+      Swal.fire('Warning', 'Please select a Type.', 'warning');
+      return;
+    }
+
+    const qty = Number(this.printQty);
+    if (!qty || qty <= 0) {
+      Swal.fire('Warning', 'Please enter a valid quantity.', 'warning');
+      return;
+    }
+
+    const path = this.selectedItemForPrint[this.printType]?.replace(/^"|"$/g, '');
+    if (!path || path === '-') {
+      Swal.fire('Error', 'File not Found', 'error');
+      return;
+    }
+
+    // Load PDF again for printing (consistent with History logic)
+    this.fileUploadService.loadPdfFromPath(path).subscribe({
+      next: res => {
+        const base64 = res.imageData.split(',')[1];
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        const employeeId = this.currentUser?.Employee_ID || 'Unknown';
+
+        // NOTE: Using GroupId as DocNo because PlanList items don't have a formal DocNo
+        // This links the print history to the plan group.
+        const docNoToSave = this.selectedItemForPrint.groupId;
+
+        // Map printType back to backend expected 'TypePrint' values if needed
+        // HistoryComponent sends 'PathLayout' or 'PathDwg'.
+        // My options are 'pathLayout' or 'pathDwg'.
+        // Let's capitalize to match history service expectations if they exist, 
+        // but looking at HistoryComponent.ts: { label: 'Layout', value: 'PathLayout' }
+        // My values are 'pathLayout' (camelCase from item props). 
+        // I should probably send 'PathLayout' or 'PathDwg' to be consistent with database if strictly required?
+        // HistoryComponent checks: c.TypePrint === 'PathLayout'
+        // So I should convert my 'pathLayout' -> 'PathLayout'.
+
+        let typePrintToSend = '';
+        if (this.printType === 'pathLayout') typePrintToSend = 'PathLayout';
+        else if (this.printType === 'pathDwg') typePrintToSend = 'PathDwg';
+
+        this.historyPrint.SaveHistoryPrint({
+          EmployeeID: employeeId,
+          Division: this.selectedItemForPrint.division || '', // Division name
+          DocNo: docNoToSave,
+          PratNo: this.selectedItemForPrint.partNo,
+          DueDate: this.selectedItemForPrint.date, // Plan Date
+          TypePrint: typePrintToSend,
+          Total: qty
+        }).subscribe({
+          next: () => {
+            // Update counts locally
+            this.updatePrintCounts();
+
+            this.closePrintModal();
+
+            // Create hidden iframe for print
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = blobUrl;
+            document.body.appendChild(iframe);
+
+            iframe.onload = () => {
+              // Just print once. History records the 'qty' entered by user.
+              // User must manually set copies in browser dialog if > 1.
+              iframe.contentWindow?.focus();
+              iframe.contentWindow?.print();
+
+              // Remove iframe after printing dialog closes (or short delay) to keep DOM clean
+              setTimeout(() => {
+                document.body.removeChild(iframe);
+              }, 1000);
+            };
+          },
+          error: err => {
+            console.error("Save history error:", err);
+            // Still print? Or block? HistoryComponent blocks on error implicitly if it crashes, but logic is inside success.
+            Swal.fire('Error', 'Failed to save print history.', 'error');
+          }
+        });
+      },
+      error: err => {
+        console.error('Error print PDF:', err);
+        Swal.fire('Error', 'Unable to load PDF for printing.', 'error');
+      }
+    });
+  }
+
+  updatePrintCounts() {
+    this.historyPrint.get_Total().subscribe({
+      next: (counts: any[]) => {
+        this.planList.forEach(item => {
+          // Filter by DocNo (which we decided is GroupId) and PartNo
+          // But wait, PlanList item doesn't have DocNo. We used GroupId.
+          // BE CAREFUL: Old history records use actual DocNo from Request.
+          // My new records use GroupId as DocNo.
+          // So I should match c.DocNo == item.groupId
+
+          // However, if I want to show counts for THIS plan item, I need to match what I saved.
+          const docNoKey = item.groupId;
+
+          const layoutTotal = counts
+            .filter(c =>
+              String(c.DocNo).trim() === String(docNoKey).trim() &&
+              String(c.PratNo).trim() === String(item.partNo).trim() &&
+              c.TypePrint === 'PathLayout'
+            )
+            .reduce((sum, c) => sum + Number(c.Total), 0);
+
+          const dwgTotal = counts
+            .filter(c =>
+              String(c.DocNo).trim() === String(docNoKey).trim() &&
+              String(c.PratNo).trim() === String(item.partNo).trim() &&
+              c.TypePrint === 'PathDwg'
+            )
+            .reduce((sum, c) => sum + Number(c.Total), 0);
+
+          item.printLayoutCount = layoutTotal;
+          item.printDwgCount = dwgTotal;
+        });
+      },
+      error: e => console.error("Error fetching print counts:", e)
+    });
+  }
 }

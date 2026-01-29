@@ -3,13 +3,13 @@ const sql = require('mssql');
 
 
 exports.ShowUser = async (req, res) => {
-  
+
   try {
     console.log(req.body)
     const pool = await poolPromise;
     const result = await pool
-    .request()
-    .query(`
+      .request()
+      .query(`
     SELECT 
     *
     FROM db_Tooling.dbo.View_CuttingTool_Employee`);
@@ -35,19 +35,19 @@ exports.AddUser = async (req, res) => {
 
     const result = await pool
       .request()
-      .input('Employee_ID', Employee_ID)
-      .input('Employee_Name', Employee_Name)
-      .input('Role', Role)
-      .input('Username', Username)
-      .input('Password', Password)
-      .input('Email',Email)
-      
+      .input('Employee_ID', sql.VarChar(50), Employee_ID)
+      .input('Employee_Name', sql.NVarChar(100), Employee_Name)
+      .input('Role', sql.VarChar(50), Role)
+      .input('Username', sql.VarChar(50), Username)
+      .input('Password', sql.VarChar(100), Password)
+      .input('Email', sql.VarChar(200), Email)
+
       .query('EXEC dbo.Stored_Insert_tb_CuttingTool_Employee @Employee_ID, @Employee_Name, @Role, @Username, @Password, @Email');
 
     res.status(200).json({ success: true, message: 'Add success' });
   } catch (err) {
     console.error(' Error AddUser:', err);
-    res.status(500).json({ success: false, error: 'Cannot add employee' });
+    res.status(500).json({ success: false, error: err.message || 'Cannot add employee' });
   }
 };
 // controller
@@ -115,4 +115,4 @@ exports.updateEmployee = async (req, res) => {
     console.error('updateEmployee error:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
-  };
+};

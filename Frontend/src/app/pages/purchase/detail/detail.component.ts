@@ -171,10 +171,23 @@ export class DetailComponent implements OnInit {
 
   updatePagination() {
     this.totalPages = Math.ceil(this.request.length / this.pageSize) || 1;
-    this.pages = Array.from({ length: Math.min(5, this.totalPages) }, (_, i) => i + 1);
 
     if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
     if (this.currentPage < 1) this.currentPage = 1;
+
+    // Sliding window logic
+    let startPage = Math.max(1, this.currentPage - 2);
+    let endPage = Math.min(this.totalPages, startPage + 4);
+
+    // Adjust if we are near the end and the window is smaller than 5
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    this.pages = [];
+    for (let i = startPage; i <= endPage; i++) {
+      this.pages.push(i);
+    }
 
     const startIndex = (this.currentPage - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
@@ -463,7 +476,7 @@ export class DetailComponent implements OnInit {
             if (isPlatformBrowser(this.platformId)) {
               localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
             }
-            this.Detail_Purchase();
+            this.updatePagination(); // No need to reload all data, just pagination
             Swal.fire({ icon: 'success', title: 'Complete!', text: `Updated ${ids.length} items.` });
             this.cdr.markForCheck();
           },
@@ -479,6 +492,63 @@ export class DetailComponent implements OnInit {
       },
       error: err => {
         Swal.fire({ icon: 'error', title: 'Update QTY failed', text: err?.error?.message || '' });
+        this.isCompleting = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  confirmItem(item: any) {
+    if (!item) return;
+
+    // Use Req_QTY if QTY is empty
+    if (item.QTY == null || item.QTY === '') item.QTY = item.Req_QTY ?? 0;
+
+    if (item.QTY == null || item.QTY === '') {
+      Swal.fire({ icon: 'warning', title: 'Incomplete data', text: 'Please fill QTY before confirming.' });
+      return;
+    }
+
+    const id = Number(item.ID_Request);
+    if (!Number.isInteger(id)) return;
+
+    this.isCompleting = true;
+
+    // 1. Update Request details first
+    this.DetailPurchase.updateRequest(item).subscribe({
+      next: () => {
+        // 2. Update Status to Complete
+        this.DetailPurchase.updateStatusToComplete([id], 'Complete').subscribe({
+          next: () => {
+            const index = this.request.findIndex(r => r.ID_Request === item.ID_Request);
+            if (index > -1) {
+              this.request[index].Status = 'Complete';
+              this.request[index].Selection = false;
+              // Remove explicit editing index if any
+              delete this.editingIndex[item.ID_Request];
+            }
+
+            if (isPlatformBrowser(this.platformId)) {
+              localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
+            }
+
+            // Re-apply filters so the completed item disappears if filter is "Waiting"
+            this.onFilter();
+
+            Swal.fire({ icon: 'success', title: 'Confirmed!', showConfirmButton: false, timer: 1200 });
+            this.cdr.markForCheck();
+          },
+          error: err => {
+            Swal.fire({ icon: 'error', title: 'Confirm failed', text: err?.message || 'Update status failed' });
+          },
+          complete: () => {
+            this.isCompleting = false;
+            this.cdr.markForCheck();
+          }
+        });
+      },
+      error: err => {
+        Swal.fire({ icon: 'error', title: 'Save failed', text: err?.message || 'Update details failed' });
         this.isCompleting = false;
         this.cdr.markForCheck();
       }
