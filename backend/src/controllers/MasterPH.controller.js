@@ -919,37 +919,53 @@ exports.importMasterToolingGM = async (req, res) => {
             for (const item of items) {
                 const request = new sql.Request(transaction);
 
+                // Holder_Spec: ถ้าค่าเป็น "-" ให้แปลงเป็น null (เหมือน PMC)
+                const holderSpecVal = findValue(item, ['Holder Spec', 'Holder_Spec']);
+                const holderSpec = (holderSpecVal === '-' || holderSpecVal === '' || holderSpecVal == null) ? null : String(holderSpecVal).trim();
+
                 request.input('BatchID', sql.UniqueIdentifier, batchID);
-                request.input('PartNo', sql.NVarChar(sql.MAX), getString(findValue(item, ['PART NO.', 'PART NO', 'PartNo', 'Part No', 'Part No.'])));
-                request.input('Process', sql.NVarChar(sql.MAX), getString(findValue(item, ['Process'])));
-                request.input('MC', sql.NVarChar(sql.MAX), getString(findValue(item, ['M/C', 'MC'])));
-                request.input('Position', sql.NVarChar(sql.MAX), getString(findValue(item, ['Position'])));
+                request.input('PartNo', sql.NVarChar(100), getString(findValue(item, ['PartNo', 'Part No', 'Part No.'])));
+                request.input('Process', sql.NVarChar(100), getString(findValue(item, ['Process'])));
+                request.input('MC', sql.NVarChar(100), getString(findValue(item, ['MC'])));
+                request.input('Position', sql.NVarChar(50), getString(findValue(item, ['Position'])));
 
-                // Setup Tool columns
-                request.input('ItemSetUpTool', sql.NVarChar(sql.MAX), getString(findValue(item, ['ITEM SET UP TOOL', 'ItemSetUpTool', 'Item SetUp Tool'])));
-                request.input('NameSetUpTool', sql.NVarChar(sql.MAX), getString(findValue(item, ['NAME SET UP TOOL', 'NameSetUpTool', 'Name SetUp Tool'])));
-                request.input('SetUpTool', sql.NVarChar(sql.MAX), getString(findValue(item, ['SET UP TOOL', 'SetUpTool', 'SetUp Tool'])));
-                request.input('SetUpMaker', sql.NVarChar(sql.MAX), getString(findValue(item, ['SET UP MAKER', 'SetUpMaker', 'SetUp Maker'])));
+                // Cutting Tool columns (PMC-style)
+                request.input('Spec', sql.NVarChar(100), getString(findValue(item, ['Spec'])));
+                request.input('ItemNo', sql.NVarChar(100), getString(findValue(item, ['ItemNo', 'Item No', 'Item No.'])));
+                request.input('DwgRev', sql.NVarChar(50), getString(findValue(item, ['DwgRev', 'Dwg Rev'])));
+                request.input('DwgUpdate', sql.NVarChar(50), getString(findValue(item, ['DwgUpdate', 'Dwg Update'])));
+                request.input('Usage_pcs', sql.NVarChar(50), getString(findValue(item, ['Usage_pcs', 'Usage pcs'])));
+                request.input('CT_sec', sql.NVarChar(50), getString(findValue(item, ['CT_sec', 'CT sec'])));
+                request.input('Res', sql.NVarChar(50), getString(findValue(item, ['Res.', 'Res'])));
+                request.input('Date_update', sql.NVarChar(50), getString(findValue(item, ['Date update', 'Date_update'])));
+                request.input('Insert_Maker', sql.NVarChar(100), getString(findValue(item, ['Insert Maker', 'Insert_Maker'])));
+                request.input('Conner', sql.NVarChar(50), getString(findValue(item, ['Conner'])));
+                request.input('Usage_Conner', sql.NVarChar(50), getString(findValue(item, ['Usage/Conner', 'Usage_Conner'])));
+                request.input('Cutting_Layout_No', sql.NVarChar(100), getString(findValue(item, ['Cutting Layout No.', 'Cutting_Layout_No'])));
+                request.input('Cutting_Layout_Rev', sql.NVarChar(50), getString(findValue(item, ['Cutting Layout Rev.', 'Cutting_Layout_Rev'])));
+                request.input('Program_cutting_No', sql.NVarChar(100), getString(findValue(item, ['Program cutting No.', 'Program_cutting_No'])));
+                request.input('Position_Code', sql.NVarChar(100), getString(findValue(item, ['Position Code', 'Holder Position'])));
 
-                // Cutting Tool columns
-                request.input('ItemNoCutting', sql.NVarChar(sql.MAX), getString(findValue(item, ['ITEM NO.CUTTING', 'ITEM NO CUTTING', 'ItemNoCutting', 'Item No Cutting'])));
-                request.input('ItemNameCutting', sql.NVarChar(sql.MAX), getString(findValue(item, ['ITEM NAME CUTTING', 'ItemNameCutting', 'Item Name Cutting'])));
-                request.input('SpecCutting', sql.NVarChar(sql.MAX), getString(findValue(item, ['SPEC CUTTING', 'SpecCutting', 'Spec Cutting', 'Spec'])));
-                request.input('Maker', sql.NVarChar(sql.MAX), getString(findValue(item, ['MAKER', 'Maker'])));
-                request.input('Usage', sql.NVarChar(sql.MAX), getString(findValue(item, ['USAGE', 'Usage'])));
-                request.input('Rev', sql.NVarChar(sql.MAX), getString(findValue(item, ['REV.', 'REV', 'Rev'])));
-                request.input('PLNo', sql.NVarChar(sql.MAX), getString(findValue(item, ['PL NO.', 'PL NO', 'PLNo', 'PL No'])));
-                request.input('DateUpdate', sql.NVarChar(sql.MAX), getString(findValue(item, ['DATE UPDATE', 'DateUpdate', 'Date Update'])));
+                // Setup Tool columns (PMC-style)
+                request.input('Holder_Spec', sql.NVarChar(100), holderSpec);
+                request.input('Holder_No', sql.NVarChar(100), getString(findValue(item, ['Holder No', 'Holder_No', 'HolderNo', 'Holder no', 'holder no', 'HOLDER NO'])));
+                request.input('Holder_Maker', sql.NVarChar(100), getString(findValue(item, ['Holder Maker', 'Holder_Maker'])));
+
+                request.input('UploadedBy', sql.NVarChar(100), 'System');
 
                 await request.query(`
-                    INSERT INTO [master].[Staging_ToolingData_GM]
-                    ([BatchID], [PartNo], [Process], [MC], [Position],
-                     [ItemSetUpTool], [NameSetUpTool], [SetUpTool], [SetUpMaker],
-                     [ItemNoCutting], [ItemNameCutting], [SpecCutting], [Maker], [Usage], [Rev], [PLNo], [DateUpdate])
+                    INSERT INTO [master].[Staging_ToolingData_All]
+                    ([BatchID], [UploadedDate], [UploadedBy], [PartNo], [Process], [MC], [Position],
+                     [Spec], [ItemNo], [DwgRev], [DwgUpdate], [Usage_pcs], [CT_sec],
+                     [Res], [Date_update], [Insert_Maker], [Conner], [Usage_Conner],
+                     [Cutting_Layout_No], [Cutting_Layout_Rev], [Program_cutting_No], [Position_Code],
+                     [Holder_Spec], [Holder_No], [Holder_Maker])
                     VALUES
-                    (@BatchID, @PartNo, @Process, @MC, @Position,
-                     @ItemSetUpTool, @NameSetUpTool, @SetUpTool, @SetUpMaker,
-                     @ItemNoCutting, @ItemNameCutting, @SpecCutting, @Maker, @Usage, @Rev, @PLNo, @DateUpdate)
+                    (@BatchID, GETDATE(), @UploadedBy, @PartNo, @Process, @MC, @Position,
+                     @Spec, @ItemNo, @DwgRev, @DwgUpdate, @Usage_pcs, @CT_sec,
+                     @Res, @Date_update, @Insert_Maker, @Conner, @Usage_Conner,
+                     @Cutting_Layout_No, @Cutting_Layout_Rev, @Program_cutting_No, @Position_Code,
+                     @Holder_Spec, @Holder_No, @Holder_Maker)
                 `);
             }
 
