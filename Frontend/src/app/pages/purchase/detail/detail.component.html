@@ -283,13 +283,13 @@
             <td>{{ item.CASE }}</td>
 
             <!-- Item NO. -->
-            <td>{{ item.ItemNo }}</td>
+            <td>{{ item.Req_ItemNo }}</td>
 
             <!-- Item Name (PartNo) -->
-            <td>{{ item.PartNo }}</td>
+            <td>{{ item.Req_PartNo }}</td>
 
             <!-- Spec -->
-            <td class="spec-column">{{ item.SPEC }}</td>
+            <td class="spec-column">{{ item.Req_SPEC }}</td>
 
             <!-- QTY (Req_QTY) -->
             <td>{{ item.Req_QTY }}</td>
@@ -311,7 +311,22 @@
             <!-- ================= For Purchase ================= -->
 
             <!-- Item NO. -->
-            <td>{{ item.ItemNo }}</td>
+            <td>
+              <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showItemNo">
+                <!-- Use standard input that triggers onItemNoChange when changed -->
+                <div class="custom-ng-select">
+                  <ng-select [items]="ItemNoList" bindLabel="label" bindValue="value" [(ngModel)]="item.ItemNo"
+                    (change)="onItemNoChange($event?.value || $event, item)" [clearable]="false" appendTo="body">
+                  </ng-select>
+                </div>
+              </ng-container>
+              <ng-template #showItemNo>
+                <span (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
+                  style="cursor: pointer; text-decoration: underline;">
+                  {{ item.ItemNo }}
+                </span>
+              </ng-template>
+            </td>
 
             <!-- Item Name -->
             <td>{{ item.PartNo }}</td>
@@ -325,7 +340,8 @@
                 <input [(ngModel)]="item.QTY" type="number" class="form-control" style="width: 80px;" min="0" />
               </ng-container>
               <ng-template #showQty>
-                <span (click)="startEdit(item.ID_Request, i)" style="cursor: pointer; text-decoration: underline;">{{
+                <span (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
+                  style="cursor: pointer; text-decoration: underline;">{{
                   item.QTY }}</span>
               </ng-template>
             </td>

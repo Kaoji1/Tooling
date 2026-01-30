@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectionStrategy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPurchase.component';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RouterOutlet } from '@angular/router';
@@ -149,6 +149,8 @@ export class DetailComponent implements OnInit {
       this.Detail_Purchase();
       this.get_ItemNo();
 
+      /* 
+      // Commented out to prevent stale data flicker
       const savedRequests = localStorage.getItem('purchaseRequest');
       if (savedRequests) {
         try {
@@ -166,6 +168,7 @@ export class DetailComponent implements OnInit {
           console.error("Error parsing localStorage", e);
         }
       }
+      */
     }
   }
 
@@ -221,7 +224,11 @@ export class DetailComponent implements OnInit {
           ACCOUNT: it.ACCOUNT ?? it.account,
           MCQTY: it.MCQTY ?? it.MCNo, // Map MCNo to MCQTY
           _parsedRequestDate: it.DateTime_Record ? new Date(it.DateTime_Record) : null,
-          _parsedDueDate: it.DueDate ? new Date(it.DueDate) : null
+          _parsedDueDate: it.DueDate ? new Date(it.DueDate) : null,
+          // Store original request info for Production columns
+          Req_ItemNo: it.ItemNo,
+          Req_PartNo: it.PartNo,
+          Req_SPEC: it.SPEC
         }));
 
         const seen = new Set<number>();
@@ -753,5 +760,29 @@ export class DetailComponent implements OnInit {
 
   trackByRequestId(index: number, item: any): number {
     return item.ID_Request;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+
+    // Check if click is inside an editable area or related controls
+    const isInput = target.closest('input');
+    const isSelect = target.closest('ng-select');
+    const isDropdown = target.closest('.ng-dropdown-panel'); // ng-select dropdown
+    const isButton = target.closest('button'); // OK button or others
+
+    // If click is on any interaction element, do not clear
+    if (isInput || isSelect || isDropdown || isButton) {
+      return;
+    }
+
+    // Also check if we are clicking strictly on the "span" that triggers edit?
+    // If we handle stopPropagation in HTML, we don't need to check here.
+    // If we don't handle stopPropagation, we need to check if target matching the trigger.
+    // Let's assume we will add stopPropagation in HTML for robustness.
+
+    // If clicking on empty space or non-interactive parts of table, clear edits
+    this.editingIndex = {};
   }
 }
