@@ -453,49 +453,135 @@ export class MasterPHComponent {
     }
 
     importMasterToolingPMC(data: any[]) {
-        this.loading = true;
-        Swal.fire({
-            title: 'Importing Master Tooling PMC...',
-            text: `Uploading ${data.length} records. Please wait.`,
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
+        if (data.length === 0) {
+            Swal.fire('Error', 'No data to import', 'error');
+            return;
+        }
 
-        this.masterPHService.importMasterToolingPMC(data).subscribe({
-            next: (res: any) => {
-                Swal.fire('Success', `Imported Master Tooling PMC ${res.count} records successfully!`, 'success');
-                this.loading = false;
-            },
-            error: (err: any) => {
-                console.error('Import Master Tooling PMC Error:', err);
-                const errorMsg = err.error?.error || err.error?.message || err.message || 'Unknown error';
-                Swal.fire('Error', `Failed to import Master Tooling PMC data: ${errorMsg}`, 'error');
-                this.loading = false;
+        this.loading = true;
+        const BATCH_SIZE = 500;
+        const totalItems = data.length;
+        let processed = 0;
+        let successCount = 0;
+        let errorCount = 0;
+        const errors: any[] = [];
+
+        // Show modal once at start
+        Swal.fire({
+            title: 'Uploading...',
+            html: `<div class="progress" style="height: 25px;"><div id="pmc-progress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%; font-size: 14px;">0%</div></div>`,
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
             }
         });
+
+        const updateProgress = () => {
+            const percent = Math.round((processed / totalItems) * 100);
+            const progressEl = document.getElementById('pmc-progress');
+            if (progressEl) {
+                progressEl.style.width = percent + '%';
+                progressEl.textContent = percent + '%';
+            }
+        };
+
+        const processBatch = async (startIndex: number) => {
+            if (startIndex >= totalItems) {
+                this.loading = false;
+                if (errorCount > 0) {
+                    Swal.fire({ title: 'Completed with Errors', html: `Success: ${successCount}<br>Failed: ${errorCount}`, icon: 'warning' });
+                } else {
+                    Swal.fire('Success', `Imported ${successCount} records successfully!`, 'success');
+                }
+                return;
+            }
+
+            const batch = data.slice(startIndex, startIndex + BATCH_SIZE);
+            updateProgress();
+
+            this.masterPHService.importMasterToolingPMC(batch).subscribe({
+                next: (res: any) => {
+                    successCount += res.count || batch.length;
+                    processed += batch.length;
+                    processBatch(startIndex + BATCH_SIZE);
+                },
+                error: (err: any) => {
+                    errorCount += batch.length;
+                    processed += batch.length;
+                    errors.push(err.error?.message || 'Error');
+                    processBatch(startIndex + BATCH_SIZE);
+                }
+            });
+        };
+
+        processBatch(0);
     }
 
     importMasterToolingGM(data: any[]) {
-        this.loading = true;
-        Swal.fire({
-            title: 'Importing Master Tooling GM...',
-            text: `Uploading ${data.length} records. Please wait.`,
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading()
-        });
+        if (data.length === 0) {
+            Swal.fire('Error', 'No data to import', 'error');
+            return;
+        }
 
-        this.masterPHService.importMasterToolingGM(data).subscribe({
-            next: (res: any) => {
-                Swal.fire('Success', `Imported Master Tooling GM ${res.count} records successfully!`, 'success');
-                this.loading = false;
-            },
-            error: (err: any) => {
-                console.error('Import Master Tooling GM Error:', err);
-                const errorMsg = err.error?.error || err.error?.message || err.message || 'Unknown error';
-                Swal.fire('Error', `Failed to import Master Tooling GM data: ${errorMsg}`, 'error');
-                this.loading = false;
+        this.loading = true;
+        const BATCH_SIZE = 500;
+        const totalItems = data.length;
+        let processed = 0;
+        let successCount = 0;
+        let errorCount = 0;
+        const errors: any[] = [];
+
+        // Show modal once at start
+        Swal.fire({
+            title: 'Uploading...',
+            html: `<div class="progress" style="height: 25px;"><div id="gm-progress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%; font-size: 14px;">0%</div></div>`,
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
             }
         });
+
+        const updateProgress = () => {
+            const percent = Math.round((processed / totalItems) * 100);
+            const progressEl = document.getElementById('gm-progress');
+            if (progressEl) {
+                progressEl.style.width = percent + '%';
+                progressEl.textContent = percent + '%';
+            }
+        };
+
+        const processBatch = async (startIndex: number) => {
+            if (startIndex >= totalItems) {
+                this.loading = false;
+                if (errorCount > 0) {
+                    Swal.fire({ title: 'Completed with Errors', html: `Success: ${successCount}<br>Failed: ${errorCount}`, icon: 'warning' });
+                } else {
+                    Swal.fire('Success', `Imported ${successCount} records successfully!`, 'success');
+                }
+                return;
+            }
+
+            const batch = data.slice(startIndex, startIndex + BATCH_SIZE);
+            updateProgress();
+
+            this.masterPHService.importMasterToolingGM(batch).subscribe({
+                next: (res: any) => {
+                    successCount += res.count || batch.length;
+                    processed += batch.length;
+                    processBatch(startIndex + BATCH_SIZE);
+                },
+                error: (err: any) => {
+                    errorCount += batch.length;
+                    processed += batch.length;
+                    errors.push(err.error?.message || 'Error');
+                    processBatch(startIndex + BATCH_SIZE);
+                }
+            });
+        };
+
+        processBatch(0);
     }
 
 }
