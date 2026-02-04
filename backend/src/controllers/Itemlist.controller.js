@@ -175,13 +175,14 @@ exports.post_ItemNo = async (req, res) => {
 //              SETUP TOOL
 // ==========================================
 
-// 1. Get Setup Division
+// 1. Get Setup Division (Updated to use new SP)
 exports.get_Setup_Division = async (req, res) => {
   try {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .query("EXEC [trans].[Stored_Setup_Dropdown_Division]");
+      .execute('[trans].[Stored_Get_Dropdown_PC_Plan_Division]');
+    // Returns: Division_Id, Profit_Center, Division_Name
     res.json(result.recordset);
   } catch (error) {
     console.error("Error executing query:", error.stack);
@@ -189,7 +190,7 @@ exports.get_Setup_Division = async (req, res) => {
   }
 };
 
-// 2. Get Setup Facility by Division
+// 2. Get Setup Facility by Division (Updated to use new SP)
 exports.get_Setup_Facility = async (req, res) => {
   try {
     const { Division } = req.body;
@@ -198,9 +199,9 @@ exports.get_Setup_Facility = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .input("InputDivision", sql.NVarChar, Division)
-      .query("EXEC [trans].[Stored_Setup_Dropdown_Facility_By_Division] @InputDivision");
-
+      .input("Division_Id", sql.Int, parseInt(Division)) 
+      .execute('[trans].[Stored_Get_Dropdown_Facility_By_Division]');
+    // Returns: FacilityName
     res.json(result.recordset);
   } catch (error) {
     console.error("Error executing query:", error.stack);
@@ -298,6 +299,196 @@ exports.get_Setup_Items_Result = async (req, res) => {
   } catch (error) {
     console.timeEnd('SetupDetails_QueryTime');
     console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// ==========================================
+//         CASE SET (CuttingTool + SetupTool)
+// ==========================================
+
+// 7. Get CuttingTool for Case SET
+exports.get_CaseSET_CuttingTool = async (req, res) => {
+  console.time('CaseSET_CuttingTool_QueryTime');
+  try {
+    const { Division, PartNo, Process, FacilityName } = req.body;
+    console.log('CaseSET CuttingTool Params:', { Division, PartNo, Process, FacilityName });
+
+    const pool = await poolPromise;
+    const request = pool.request();
+
+    if (Division) request.input("Input_Division", sql.NVarChar, Division);
+    if (PartNo) request.input("Input_PartNo", sql.NVarChar, PartNo);
+    if (Process) request.input("Input_Process", sql.NVarChar, Process);
+    // ลบ MC ออก - ไม่ใช้กรองแล้ว
+    if (FacilityName) request.input("Input_FacilityName", sql.NVarChar, FacilityName);
+
+    const result = await request.execute("[trans].[Stored_Get_CaseSET_CuttingTool]");
+
+    console.timeEnd('CaseSET_CuttingTool_QueryTime');
+    console.log(`Found ${result.recordset.length} CuttingTool items.`);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.timeEnd('CaseSET_CuttingTool_QueryTime');
+    console.error("Error executing CaseSET CuttingTool query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// 8. Get SetupTool for Case SET
+exports.get_CaseSET_SetupTool = async (req, res) => {
+  console.time('CaseSET_SetupTool_QueryTime');
+  try {
+    const { Division, PartNo, Process } = req.body;  // ลบ MC ออก
+    console.log('CaseSET SetupTool Params:', { Division, PartNo, Process });
+
+    const pool = await poolPromise;
+    const request = pool.request();
+
+    if (Division) request.input("Input_Division", sql.NVarChar, Division);
+    if (PartNo) request.input("Input_PartNo", sql.NVarChar, PartNo);
+    if (Process) request.input("Input_Process", sql.NVarChar, Process);
+    // ลบ MC input ออก
+
+    const result = await request.execute("[trans].[Stored_Get_CaseSET_SetupTool]");
+
+    console.timeEnd('CaseSET_SetupTool_QueryTime');
+    console.log(`Found ${result.recordset.length} SetupTool items.`);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.timeEnd('CaseSET_SetupTool_QueryTime');
+    console.error("Error executing CaseSET SetupTool query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// ==========================================
+//    CASE SET DETAIL (Box/Shelf/Rack Breakdown)
+// ==========================================
+
+// 9. Get CuttingTool Detail for Case SET (Box/Shelf breakdown)
+exports.get_CaseSET_CuttingTool_Detail = async (req, res) => {
+  console.time('CaseSET_CuttingTool_Detail_QueryTime');
+  try {
+    const { Division, ItemNo, FacilityName, PartNo, Process } = req.body;  // เปลี่ยน Facility -> FacilityName, ลบ MC
+    console.log('CaseSET CuttingTool Detail Params:', { Division, ItemNo, FacilityName, PartNo, Process });
+
+    const pool = await poolPromise;
+    const request = pool.request();
+
+    if (Division) request.input("Input_Division", sql.NVarChar, Division);
+    if (ItemNo) request.input("Input_ItemNo", sql.NVarChar, ItemNo);
+    if (FacilityName) request.input("Input_FacilityName", sql.NVarChar, FacilityName);  // เปลี่ยนเป็น FacilityName
+    if (PartNo) request.input("Input_PartNo", sql.NVarChar, PartNo);
+    if (Process) request.input("Input_Process", sql.NVarChar, Process);
+    // ลบ MC input ออก
+
+    const result = await request.execute("[trans].[Stored_Get_CaseSET_CuttingTool_Detail]");
+
+    console.timeEnd('CaseSET_CuttingTool_Detail_QueryTime');
+    console.log(`Found ${result.recordset.length} Detail items.`);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.timeEnd('CaseSET_CuttingTool_Detail_QueryTime');
+    console.error("Error executing CaseSET CuttingTool Detail query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// ==========================================
+//    CASE SET DROPDOWNS (PartNo, Process, MC)
+// ==========================================
+
+// 9. Get PartNo Dropdown for Case SET
+exports.get_CaseSET_Dropdown_PartNo = async (req, res) => {
+  try {
+    const { Division } = req.body;
+    console.log('CaseSET Dropdown PartNo - Division:', Division);
+
+    const pool = await poolPromise;
+    const request = pool.request();
+
+    if (Division) request.input("Input_Division", sql.NVarChar, Division);
+
+    const result = await request.execute("[trans].[Stored_Get_CaseSET_Dropdown_PartNo]");
+    console.log(`Found ${result.recordset.length} PartNo items.`);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error CaseSET Dropdown PartNo:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// 10. Get Process Dropdown for Case SET
+exports.get_CaseSET_Dropdown_Process = async (req, res) => {
+  try {
+    const { Division, PartNo } = req.body;
+    console.log('CaseSET Dropdown Process - Division:', Division, 'PartNo:', PartNo);
+
+    const pool = await poolPromise;
+    const request = pool.request();
+
+    if (Division) request.input("Input_Division", sql.NVarChar, Division);
+    if (PartNo) request.input("Input_PartNo", sql.NVarChar, PartNo);
+
+    const result = await request.execute("[trans].[Stored_Get_CaseSET_Dropdown_Process]");
+    console.log(`Found ${result.recordset.length} Process items.`);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error CaseSET Dropdown Process:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// 11. Get MC Dropdown for Case SET
+exports.get_CaseSET_Dropdown_MC = async (req, res) => {
+  try {
+    const { Division, PartNo, Process } = req.body;
+    console.log('CaseSET Dropdown MC - Division:', Division, 'PartNo:', PartNo, 'Process:', Process);
+
+    const pool = await poolPromise;
+    const request = pool.request();
+
+    if (Division) request.input("Input_Division", sql.NVarChar, Division);
+    if (PartNo) request.input("Input_PartNo", sql.NVarChar, PartNo);
+    if (Process) request.input("Input_Process", sql.NVarChar, Process);
+
+    const result = await request.execute("[trans].[Stored_Get_CaseSET_Dropdown_MC]");
+    console.log(`Found ${result.recordset.length} MC items.`);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error CaseSET Dropdown MC:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// ==========================================
+//    MC BY DIVISION (แสดงเฉยๆ ไม่ใช้กรอง)
+// ==========================================
+
+// 12. Get MC by Division only (for display, not filtering)
+exports.get_MC_ByDivision = async (req, res) => {
+  try {
+    const { Division } = req.body;
+    console.log('get_MC_ByDivision - Division:', Division);
+
+    const pool = await poolPromise;
+    const request = pool.request();
+
+    if (Division) request.input("Input_Division", sql.NVarChar, Division);
+
+    const result = await request.execute("[trans].[Stored_Get_MC_ByDivision]");
+    console.log(`Found ${result.recordset.length} MC items for Division.`);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error get_MC_ByDivision:", error.stack);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };

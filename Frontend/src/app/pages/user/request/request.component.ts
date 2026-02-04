@@ -77,6 +77,12 @@ export class requestComponent implements OnInit {
   loading: boolean = false; // เก็บสถานะกำลังโหลด
   selectedFileName: string = '';
 
+  // Modal สำหรับ View Detail
+  showDetailModal: boolean = false;
+  selectedItem: any = null;
+  detailItems: any[] = [];
+  loadingDetail: boolean = false;
+
   constructor(
     private cartService: CartService,
     private api: RequestService,
@@ -118,14 +124,15 @@ export class requestComponent implements OnInit {
 
   // เรียกใช้ตัวดึงapi (ดึงข้อมูล Division)
   Get_Division() {
-    // โหลด Division แบบ Cutting Tool (เป็น Master List อยู่แล้ว)
-    this.api.get_Division().subscribe({
+    // โหลด Division จาก SP: Stored_Get_Dropdown_PC_Plan_Division
+    this.api.get_Setup_Division().subscribe({
       next: (response: any[]) => {
-        // แปลงและกรองให้เหลือแค่ GM กับ PMC
-        this.Division = [
-          { Division: '7122', DivisionName: 'GM' },
-          { Division: '71DZ', DivisionName: 'PMC' }
-        ];
+        // Map: Division_Id, Profit_Center, Division_Name
+        this.Division = response.map(item => ({
+          Division: item.Division_Id?.toString(),  // ใช้ Division_Id
+          DivisionName: item.Division_Name || item.Profit_Center,
+          Profit_Center: item.Profit_Center  // เก็บไว้สำหรับใช้งานอื่น
+        }));
       },
       error: (e: any) => console.error(e),
     });
@@ -145,6 +152,7 @@ export class requestComponent implements OnInit {
       // ถ้าเป็น SET ให้ Default เป็น Cutting tool (และจะโชว์ Setup items ใน table แยก)
       this.Tooling_ = 'Cutting tool';
       // โหลด PartNo ใหม่ทันทีตาม Division ที่เลือกไว้
+      console.log('🔵 Case SET Selected - Div_:', this.Div_, 'Tooling_:', this.Tooling_);
       if (this.Div_) {
         this.get_PartNo(this.Div_);
       }
@@ -180,8 +188,20 @@ export class requestComponent implements OnInit {
     if (!this.Tooling_) return;
 
     const division = event.Division ?? event;
+    console.log('🔵 get_PartNo - event:', event, 'division:', division, 'Tooling_:', this.Tooling_, 'Case_:', this.Case_);
     if (division) {
-      if (this.Tooling_ === 'Setup tool') {
+      // ✅ Case SET: ใช้ API ใหม่สำหรับ Dropdown
+      if (this.Case_ === 'SET') {
+        this.api.get_CaseSET_Dropdown_PartNo({ Division: division }).subscribe({
+          next: (response: any[]) => {
+            this.PartNo = response.map(p => ({
+              PartNo: p.PartNo
+            }));
+            console.log('🟢 CaseSET PartNo loaded:', this.PartNo.length, 'items');
+          },
+          error: (e) => console.error('CaseSET PartNo Error:', e),
+        });
+      } else if (this.Tooling_ === 'Setup tool') {
         // === Setup Tool: เรียก API ใหม่ ===
         this.api.get_Setup_PartNo({ Division: division }).subscribe({
           next: (response: any[]) => {
@@ -208,6 +228,7 @@ export class requestComponent implements OnInit {
   onDivisionChange(value: any) {
     // เมื่อเปลี่ยน Division
     this.get_Facility(value);
+    this.get_MC_ByDivision(value);  // โหลด Machine Type ตาม Division (แสดงเฉยๆ ไม่ใช้กรอง)
     // ถ้าเลือก Case และ Tooling แล้ว ให้โหลด PartNo ใหม่ด้วย
     if (this.Tooling_) {
       this.get_PartNo(value);
@@ -215,139 +236,158 @@ export class requestComponent implements OnInit {
   }
 
   async get_Facility(event: any) {
-    if (!event) return; // ✅ เพิ่มดัก Null กันโปรแกรมพัง
+    if (!event) return;
 
-    const division = event.Division ?? event;
-    if (!division) return;
+    // Division object มี: { Division: "2", DivisionName: "PMC", Profit_Center: "71DZ" }
+    // ต้องส่ง Division_Id (ค่า "2") ไม่ใช่ DivisionName ("PMC")
+    const divisionId = event.Division || event;
+    if (!divisionId) return;
 
-    if (this.Tooling_ === 'Setup tool') {
-      this.api.get_Setup_Facility({ Division: division }).subscribe({
-        next: (response: any[]) => {
-          this.Fac = response.map(f => ({
-            FacilityName: f.Facility
-          }));
-        },
-        error: (e) => console.error('Error get_Facility:', e),
-      });
-    } else {
-      this.api.get_Facility({ Division: division }).subscribe({
-        next: (response: any[]) => {
-          // กรองค่า FacilityName ที่ไม่ว่างและไม่ซ้ำ
-          const map = new Map<string, any>();
-          response.forEach(item => {
-            if (item.FacilityName) {
-              const facName = String(item.FacilityName).trim(); // ทำให้เป็น string ชัวร์
-              if (!map.has(facName)) {
-                map.set(facName, { FacilityName: facName }); // เก็บเป็น object แบบเดียวกัน
-              }
-            }
-          });
+    console.log('get_Facility - sending Division_Id:', divisionId);
 
-          this.Fac = Array.from(map.values());
-          console.log('Fac normalized:', this.Fac);
-        },
-        error: (e) => console.error('Error get_Facility:', e),
-      });
-    }
+    // ใช้ SP: Stored_Get_Dropdown_Facility_By_Division (รับ @Division_Id)
+    this.api.get_Setup_Facility({ Division: divisionId }).subscribe({
+      next: (response: any[]) => {
+        // SP Returns: FacilityName + FacilityShort (e.g., "F.1")
+        this.Fac = response.map(f => ({
+          FacilityName: f.FacilityName,    // ใช้ส่งไป API
+          FacilityShort: f.FacilityShort   // ใช้แสดงใน dropdown
+        }));
+        console.log('Facility Dropdown:', this.Fac);
+      },
+      error: (e) => console.error('Error get_Facility:', e),
+    });
   }
 
   // Process
   async get_Process(event: any) {
-    if (this.Tooling_ === 'Setup tool') {
+    const partNo = event?.PartNo ?? event;
+    const division = this.Div_?.Division || this.Div_;
+
+    if (!partNo || !division) return;
+
+    // ✅ Case SET: ใช้ API ใหม่สำหรับ Dropdown
+    if (this.Case_ === 'SET') {
+      this.api.get_CaseSET_Dropdown_Process({ Division: division, PartNo: partNo }).subscribe({
+        next: (response: any[]) => {
+          this.Process = response.map(p => ({
+            Process: p.Process
+          }));
+          console.log('🟢 CaseSET Process loaded:', this.Process.length, 'items');
+        },
+        error: (e) => console.error('CaseSET Process Error:', e)
+      });
+    } else if (this.Tooling_ === 'Setup tool') {
       // Setup Tool Logic
-      const partNo = event?.PartNo ?? event;
-      const division = this.Div_?.Division || this.Div_;
-
-      if (partNo && division) {
-        this.api.get_Setup_Process({ Division: division, PartNo: partNo }).subscribe({
-          next: (response: any[]) => {
-            this.Process = response.map(p => ({
-              Process: p.Setup_Process
-            }));
-          },
-          error: (e) => console.error(e)
-        });
-      }
+      this.api.get_Setup_Process({ Division: division, PartNo: partNo }).subscribe({
+        next: (response: any[]) => {
+          this.Process = response.map(p => ({
+            Process: p.Setup_Process
+          }));
+        },
+        error: (e) => console.error(e)
+      });
     } else {
-      // Cutting Tool Logic (Existing) - Fix: Use stored state for Division
-      const partNo = event?.PartNo ?? event;
-      const division = this.Div_?.Division || this.Div_;
-
-      if (partNo && division) {
-        const data = {
-          Division: division,
-          PartNo: partNo,
-        }
-        this.api.get_Process(data).subscribe({
-          next: (response: any[]) => {
-            this.Process = response.filter((item, index, self) =>
-              index === self.findIndex(obj => obj.Process === item.Process)
-            );
-            console.log(this.Process);
-          },
-          error: (e) => console.error(e),
-        });
+      // Cutting Tool Logic (Existing)
+      const data = {
+        Division: division,
+        PartNo: partNo,
       }
+      this.api.get_Process(data).subscribe({
+        next: (response: any[]) => {
+          this.Process = response.filter((item, index, self) =>
+            index === self.findIndex(obj => obj.Process === item.Process)
+          );
+          console.log(this.Process);
+        },
+        error: (e) => console.error(e),
+      });
     }
   }
 
   // MAchineType
   async get_MC(event: any) {
-    if (this.Tooling_ === 'Setup tool') {
+    const process = event?.Process ?? event;
+    const division = this.Div_?.Division || this.Div_;
+    const partNo = this.PartNo_?.PartNo || this.PartNo_;
+
+    if (!process || !division || !partNo) return;
+
+    // ✅ Case SET: ใช้ API ใหม่สำหรับ Dropdown
+    if (this.Case_ === 'SET') {
+      this.api.get_CaseSET_Dropdown_MC({ Division: division, PartNo: partNo, Process: process }).subscribe({
+        next: (response: any[]) => {
+          this.MachineType = response.map(m => ({
+            MC: m.MC,
+            Process: process
+          }));
+          console.log('🟢 CaseSET MC loaded:', this.MachineType.length, 'items');
+        },
+        error: (e) => console.error('CaseSET MC Error:', e)
+      });
+    } else if (this.Tooling_ === 'Setup tool') {
       // Setup Tool Logic
-      const process = event?.Process ?? event;
-      const division = this.Div_?.Division || this.Div_;
-      const partNo = this.PartNo_?.PartNo || this.PartNo_;
-
-      if (process && division && partNo) {
-        this.api.get_Setup_MC({ Division: division, PartNo: partNo, Process: process }).subscribe({
-          next: (response: any[]) => {
-            this.MachineType = response.map(m => ({
-              MC: m.Setup_MC,
-              Process: process
-            }));
-          },
-          error: (e) => console.error(e)
-        });
-      }
+      this.api.get_Setup_MC({ Division: division, PartNo: partNo, Process: process }).subscribe({
+        next: (response: any[]) => {
+          this.MachineType = response.map(m => ({
+            MC: m.Setup_MC,
+            Process: process
+          }));
+        },
+        error: (e) => console.error(e)
+      });
     } else {
-      // Cutting Tool Logic (Existing) - Fix: Use stored state for params
-      const process = event?.Process ?? event;
-      const division = this.Div_?.Division || this.Div_;
-      const partNo = this.PartNo_?.PartNo || this.PartNo_;
-      const spec = this.PartNo_?.SPEC || ''; // Attempt to get SPEC if available found in PartNo object
-
-      if (process && division && partNo) {
-        const data = {
-          Division: division,
-          PartNo: partNo,
-          Spec: spec,  // Note: Spec might be optional or handled by API if empty string
-          Process: process
-        }
-        this.api.get_MC(data).subscribe({
-          next: (response: any[]) => {
-            console.log('MC', response)
-            this.MachineType = response.filter((item, index, self) =>
-              index === self.findIndex(obj =>
-                obj.MC === item.MC && obj.Process === item.Process
-              )
-            );
-            console.log('list', this.MachineType);
-          },
-          error: (e) => console.error(e),
-        });
+      // Cutting Tool Logic (Existing)
+      const spec = this.PartNo_?.SPEC || '';
+      const data = {
+        Division: division,
+        PartNo: partNo,
+        Spec: spec,
+        Process: process
       }
+      this.api.get_MC(data).subscribe({
+        next: (response: any[]) => {
+          console.log('MC', response)
+          this.MachineType = response.filter((item, index, self) =>
+            index === self.findIndex(obj =>
+              obj.MC === item.MC && obj.Process === item.Process
+            )
+          );
+          console.log('list', this.MachineType);
+        },
+        error: (e) => console.error(e),
+      });
     }
+  }
+
+  // โหลด Machine Type ตาม Division เท่านั้น (ใช้แสดงเฉยๆ ไม่ใช้กรอง)
+  async get_MC_ByDivision(event: any) {
+    if (!event) return;
+    const divisionId = event.Division || event;
+    if (!divisionId) return;
+
+    console.log('get_MC_ByDivision - Division:', divisionId);
+
+    // เรียก API ดึง MC ทั้งหมดใน Division นี้
+    this.api.get_MC_ByDivision({ Division: divisionId }).subscribe({
+      next: (response: any[]) => {
+        this.MachineType = response.map(m => ({
+          MC: m.MC
+        }));
+        console.log('🔵 MC by Division loaded:', this.MachineType.length, 'items');
+      },
+      error: (e) => console.error('get_MC_ByDivision Error:', e)
+    });
   }
 
   Setview() {
     const Division = this.Div_?.Division || this.Div_;
+    // ส่ง FacilityShort (F.6) ไปให้ SQL ใช้ LIKE '%F.6' กรอง
     const FacilityName = this.Fac_
-      ? (typeof this.Fac_ === 'string' ? this.Fac_ : this.Fac_.FacilityName)
+      ? (typeof this.Fac_ === 'string' ? this.Fac_ : this.Fac_.FacilityShort)
       : '';
     const PartNo = this.PartNo_?.PartNo || this.PartNo_;
     const Process = this.Process_?.Process || this.Process_;
-    const MC = this.MachineType_?.MC || this.MachineType_;
     const DueDate_ = this.DueDate_;
     const Case_ = this.Case_;
 
@@ -357,7 +397,7 @@ export class requestComponent implements OnInit {
     if (!FacilityName) missingFields.push("FacilityName");
     if (!PartNo) missingFields.push("PartNo");
     if (!Process) missingFields.push("Process");
-    if (!MC) missingFields.push("Machine Type");
+    // ลบ MC ออก - ไม่ต้องตรวจสอบแล้ว
     if (!DueDate_) missingFields.push("DueDate");
     if (!Case_) missingFields.push("Case");
 
@@ -373,8 +413,7 @@ export class requestComponent implements OnInit {
     }
 
     this.loading = true;
-    this.loading = true;
-    const data = { Division, FacilityName, PartNo, Process, MC };
+    const data = { Division, FacilityName, PartNo, Process };
 
     // ⭐⭐ แยกทางเดินระบบ (Logic Search) ⭐⭐
     if (this.Tooling_ === 'Setup tool') {
@@ -413,61 +452,95 @@ export class requestComponent implements OnInit {
       // ============================================
       console.log('Fetching Cutting Tool Data...', data);
 
-      // ✅✅ Logic ส่วนที่เพิ่มมาสำหรับ Related Setup Tools (Mock Data) ✅✅
+      // ✅✅ Case SET: เรียก API ดึงทั้ง CuttingTool และ SetupTool พร้อมกัน ✅✅
       if (this.Case_ === 'SET') {
-        // ใส่ Mock Data หรือเรียก API จริงตรงนี้
-        this.relatedSetupItems = [
-          { ItemName: 'A', SPEC: 'a1', QTY: 1 },
-          { ItemName: 'B', SPEC: 'b1', QTY: 2 },
-          { ItemName: 'C', SPEC: 'c1', QTY: 1 }
-        ];
+        // เรียก API CuttingTool และ SetupTool พร้อมกัน
+        this.api.get_CaseSET_CuttingTool(data).subscribe({
+          next: (cuttingResponse: any[]) => {
+            // Map CuttingTool data
+            this.items = cuttingResponse.map(item => ({
+              ...item,
+              FreshQty: item.FreshQty ?? 0,
+              ReuseQty: item.ReuseQty ?? 0,
+              checked: true,
+              QTY: item.QTY ?? 1
+            }));
+          },
+          error: (e) => {
+            console.error('CaseSET CuttingTool API Error:', e);
+          }
+        });
+
+        // เรียก SetupTool API แยก
+        this.api.get_CaseSET_SetupTool(data).subscribe({
+          next: (setupResponse: any[]) => {
+            // Map SetupTool data สำหรับตาราง Related Setup Tools
+            this.relatedSetupItems = setupResponse.map(item => ({
+              ...item,
+              PartNo: item.PartNo,
+              ItemNo: item.ItemNo,       // จาก Holder_No
+              ItemName: item.ItemName,   // จาก Holder_Name
+              SPEC: item.SPEC,
+              Process: item.Process,
+              MC: item.MC,
+              Position: item.Position,
+              checked: true,
+              QTY: item.QTY ?? 1
+            }));
+            this.loading = false;
+          },
+          error: (e) => {
+            console.error('CaseSET SetupTool API Error:', e);
+            this.loading = false;
+          }
+        });
       } else {
         this.relatedSetupItems = []; // ถ้าไม่ใช่เคส SET ไม่ต้องโชว์
-      }
 
-      this.api.post_ItemNo(data).subscribe({
-        next: (response: any[]) => {
-          const itemMap = new Map<string, any>();
+        this.api.post_ItemNo(data).subscribe({
+          next: (response: any[]) => {
+            const itemMap = new Map<string, any>();
 
-          response.forEach(item => {
-            const key = `${item.PartNo}|${item.Process}|${item.MC}|${item.SPEC}|${item.ItemNo}`;
+            response.forEach(item => {
+              const key = `${item.PartNo}|${item.Process}|${item.MC}|${item.SPEC}|${item.ItemNo}`;
 
-            if (!itemMap.has(key)) {
-              itemMap.set(key, {
-                ...item,
-                FreshQty: 0,
-                ReuseQty: 0,
-                checked: true,
-                qty: null
-              });
-            }
-
-            if (item.FacilityName === FacilityName) {
-              const existing = itemMap.get(key);
-              const existingSum = (existing.FreshQty ?? 0) + (existing.ReuseQty ?? 0);
-              const currentSum = (item.FreshQty ?? 0) + (item.ReuseQty ?? 0);
-
-              if (currentSum > existingSum) {
+              if (!itemMap.has(key)) {
                 itemMap.set(key, {
-                  ...existing,
-                  FreshQty: item.FreshQty ?? 0,
-                  ReuseQty: item.ReuseQty ?? 0
+                  ...item,
+                  FreshQty: 0,
+                  ReuseQty: 0,
+                  checked: true,
+                  qty: null
                 });
               }
-            }
-          });
 
-          this.items = Array.from(itemMap.values()).map(item => ({
-            ...item,
-            QTY: item.QTY ?? 1
-          }));
-          this.loading = false;
-        },
-        error: (e) => {
-          console.error('API Cutting Tool Error:', e);
-          this.loading = false;
-        }
-      });
+              if (item.FacilityName === FacilityName) {
+                const existing = itemMap.get(key);
+                const existingSum = (existing.FreshQty ?? 0) + (existing.ReuseQty ?? 0);
+                const currentSum = (item.FreshQty ?? 0) + (item.ReuseQty ?? 0);
+
+                if (currentSum > existingSum) {
+                  itemMap.set(key, {
+                    ...existing,
+                    FreshQty: item.FreshQty ?? 0,
+                    ReuseQty: item.ReuseQty ?? 0
+                  });
+                }
+              }
+            });
+
+            this.items = Array.from(itemMap.values()).map(item => ({
+              ...item,
+              QTY: item.QTY ?? 1
+            }));
+            this.loading = false;
+          },
+          error: (e) => {
+            console.error('API Cutting Tool Error:', e);
+            this.loading = false;
+          }
+        });
+      }
     }
   }
 
@@ -619,5 +692,48 @@ export class requestComponent implements OnInit {
       return 'row-selected';
     }
     return '';
+  }
+
+  // ==========================================
+  //    View Detail Modal (Box/Shelf/Rack)
+  // ==========================================
+
+  openDetailModal(item: any) {
+    this.selectedItem = item;
+    this.showDetailModal = true;
+    this.loadingDetail = true;
+    this.detailItems = [];
+
+    const Division = this.Div_?.Division || this.Div_;
+    // ส่ง FacilityShort (F.6) ไปให้ SQL ใช้ LIKE '%F.6' กรอง
+    const FacilityName = this.Fac_
+      ? (typeof this.Fac_ === 'string' ? this.Fac_ : this.Fac_.FacilityShort)
+      : '';
+
+    const data = {
+      Division: Division,
+      ItemNo: item.ItemNo,
+      FacilityName: FacilityName,  // เปลี่ยนจาก Facility เป็น FacilityName
+      PartNo: item.PartNo,
+      Process: item.Process
+      // ลบ MC ออก
+    };
+
+    this.api.get_CaseSET_CuttingTool_Detail(data).subscribe({
+      next: (response: any[]) => {
+        this.detailItems = response;
+        this.loadingDetail = false;
+      },
+      error: (e) => {
+        console.error('Detail API Error:', e);
+        this.loadingDetail = false;
+      }
+    });
+  }
+
+  closeDetailModal() {
+    this.showDetailModal = false;
+    this.selectedItem = null;
+    this.detailItems = [];
   }
 }

@@ -65,8 +65,8 @@
             </td>
 
             <td>
-              <ng-select [(ngModel)]="item.fac" [items]="facs" appendTo="body" placeholder="Select" [clearable]="true"
-                style="width: 100%; min-width: 100px;">
+              <ng-select [(ngModel)]="item.fac" [items]="facs" bindLabel="label" bindValue="value" appendTo="body"
+                placeholder="Select" [clearable]="true" style="width: 100%; min-width: 100px;">
               </ng-select>
             </td>
 

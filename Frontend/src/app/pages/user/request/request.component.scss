@@ -174,19 +174,46 @@
           background: linear-gradient(135deg, var(--color-primary), #2563eb);
           color: white;
           box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+          animation: antigravity-float 2s ease-in-out infinite;
+          position: relative;
+
+          i {
+            transition: transform 0.3s ease;
+          }
 
           &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px -1px rgba(59, 130, 246, 0.6);
+            animation-play-state: paused;
+            transform: scale(1.05);
+            box-shadow:
+              0 8px 15px -3px rgba(59, 130, 246, 0.6),
+              0 0 20px rgba(59, 130, 246, 0.4);
+
+            i {
+              transform: scale(1.2);
+            }
           }
 
           &:disabled {
             background: #9ca3af;
             cursor: not-allowed;
+            animation: none;
             transform: none;
             box-shadow: none;
           }
         }
+      }
+    }
+
+    // Antigravity Float Animation
+    @keyframes antigravity-float {
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-4px);
       }
     }
 
@@ -307,6 +334,148 @@
       &:active {
         transform: translateY(0);
       }
+    }
+  }
+}
+
+// ==========================================
+//    View Detail Button
+// ==========================================
+.btn-detail {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+
+  i {
+    font-size: 0.9rem;
+  }
+
+  &:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.5);
+  }
+}
+
+// ==========================================
+//    Modal Styles
+// ==========================================
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: modal-slide-in 0.25s ease-out;
+}
+
+@keyframes modal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+
+  h5 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    i {
+      color: #10b981;
+    }
+  }
+}
+
+.btn-close-modal {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #fee2e2;
+    color: #ef4444;
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  max-height: 60vh;
+
+  .item-info {
+    background: #f8fafc;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #374151;
+  }
+
+  table {
+    width: 100%;
+    font-size: 0.875rem;
+
+    th {
+      background: #f1f5f9;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    td,
+    th {
+      padding: 0.6rem;
+      text-align: center;
     }
   }
 }
