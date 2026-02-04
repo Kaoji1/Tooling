@@ -477,6 +477,16 @@ export class MasterPHComponent {
             }
         });
 
+        // Track stats for all batches
+        let totalStats = {
+            cuttingUpdated: 0,
+            cuttingInserted: 0,
+            setupUpdated: 0,
+            setupInserted: 0,
+            totalChanges: 0,
+            allUpToDate: true
+        };
+
         const updateProgress = () => {
             const percent = Math.round((processed / totalItems) * 100);
             const progressEl = document.getElementById('pmc-progress');
@@ -490,9 +500,30 @@ export class MasterPHComponent {
             if (startIndex >= totalItems) {
                 this.loading = false;
                 if (errorCount > 0) {
-                    Swal.fire({ title: 'Completed with Errors', html: `Success: ${successCount}<br>Failed: ${errorCount}`, icon: 'warning' });
+                    const errorDetails = errors.slice(0, 5).join('<br>');
+                    Swal.fire({
+                        title: 'Completed with Errors',
+                        html: `Success: ${successCount}<br>Failed: ${errorCount}<br><div class="text-danger text-start small mt-2"><strong>Errors:</strong><br>${errorDetails}${errors.length > 5 ? '<br>...' : ''}</div>`,
+                        icon: 'warning'
+                    });
+                } else if (totalStats.allUpToDate && totalStats.totalChanges === 0) {
+                    // ไม่มีการเปลี่ยนแปลงเลย - อัพไฟล์ซ้ำ
+                    Swal.fire({
+                        title: 'Already Up to Date',
+                        text: 'Your data is already up to date. No changes were made.',
+                        icon: 'info'
+                    });
                 } else {
-                    Swal.fire('Success', `Imported ${successCount} records successfully!`, 'success');
+                    // มีการเปลี่ยนแปลง
+                    Swal.fire({
+                        title: 'Import Successful!',
+                        html: `<div class="text-start">
+                            <strong>Cutting Tool:</strong> ${totalStats.cuttingInserted} new, ${totalStats.cuttingUpdated} updated<br>
+                            <strong>Setup Tool:</strong> ${totalStats.setupInserted} new, ${totalStats.setupUpdated} updated<br>
+                            <hr><strong>Total Changes:</strong> ${totalStats.totalChanges}
+                        </div>`,
+                        icon: 'success'
+                    });
                 }
                 return;
             }
@@ -504,12 +535,31 @@ export class MasterPHComponent {
                 next: (res: any) => {
                     successCount += res.count || batch.length;
                     processed += batch.length;
+
+                    // Accumulate stats
+                    if (res.stats) {
+                        totalStats.cuttingUpdated += res.stats.cuttingUpdated || 0;
+                        totalStats.cuttingInserted += res.stats.cuttingInserted || 0;
+                        totalStats.setupUpdated += res.stats.setupUpdated || 0;
+                        totalStats.setupInserted += res.stats.setupInserted || 0;
+                        totalStats.totalChanges += res.stats.totalChanges || 0;
+                    }
+
+                    // If any batch has changes, set allUpToDate to false
+                    if (res.isAlreadyUpToDate === false) {
+                        totalStats.allUpToDate = false;
+                    }
+
                     processBatch(startIndex + BATCH_SIZE);
                 },
                 error: (err: any) => {
                     errorCount += batch.length;
                     processed += batch.length;
-                    errors.push(err.error?.message || 'Error');
+                    // เก็บ error message พร้อม details
+                    const errMsg = err.error?.message || err.error?.error || err.message || 'Unknown Error';
+                    const errDetails = err.error?.details || '';
+                    errors.push(`${errMsg}${errDetails ? ': ' + errDetails : ''}`);
+                    console.error('Import Error:', err);  // Log ลง Console ด้วย
                     processBatch(startIndex + BATCH_SIZE);
                 }
             });

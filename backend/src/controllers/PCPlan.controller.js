@@ -6,8 +6,9 @@ exports.getDivisions = async (req, res) => {
     try {
         const pool = await poolPromise;
         const result = await pool.request()
-            .execute('trans.Stored_Get_PCPlan_Dropdown_Division');
+            .execute('trans.Stored_Get_Dropdown_PC_Plan_Division');
 
+        // Return: Division_Id, Profit_Center, Division_Name
         res.status(200).json(result.recordset);
     } catch (err) {
         console.error('Error getDivisions:', err);
@@ -18,34 +19,31 @@ exports.getDivisions = async (req, res) => {
 // 2. ฟังก์ชันดึง Master Data รวม (Machines, Facilities, Processes, PartNos) ตาม Division ที่เลือก
 exports.getMasterDataByDivision = async (req, res) => {
     try {
-        const divCode = req.params.divCode;
+        const divCode = req.params.divCode; // Now this is Division_Id
 
         if (!divCode) {
             return res.status(400).send({ message: "Division is required." });
         }
 
         const pool = await poolPromise;
-        console.log(`Fetching Master Data for Division: ${divCode}...`);
+        console.log(`Fetching Master Data for Division_Id: ${divCode}...`);
 
-
-
-        // Use the new Unified SP
+        // Use new SP: Stored_Get_Dropdown_PC_Plan_Data
+        // Input: @Division_Id
+        // Output: 4 Tables (0=MC, 1=Facility, 2=Process, 3=PartNo)
         const result = await pool.request()
-            .input('Profit_Center', sql.NVarChar(50), divCode)
-            .execute('trans.Stored_Get_PCPlan_Dropdown_Data');
+            .input('Division_Id', sql.NVarChar(50), divCode)
+            .execute('trans.Stored_Get_Dropdown_PC_Plan_Data');
 
-        // Mapping Recordsets (0: Division(ignore), 1: Facility, 2: MC, 3: Process, 4: PartNo)
-        // Note: SP structure:
-        // Set 1 (index 0): Division List (Not used here)
-        // Set 2 (index 1): Facility
-        // Set 3 (index 2): MC
-        // Set 4 (index 3): Process
-        // Set 5 (index 4): PartNo
-
+        // New Mapping:
+        // recordsets[0] = MC
+        // recordsets[1] = Facility
+        // recordsets[2] = Process
+        // recordsets[3] = PartNo
+        const machines = result.recordsets[0] || [];
         const facilities = result.recordsets[1] || [];
-        const machines = result.recordsets[2] || []; // MC
-        const processes = result.recordsets[3] || [];
-        const partNos = result.recordsets[4] || [];
+        const processes = result.recordsets[2] || [];
+        const partNos = result.recordsets[3] || [];
 
         res.status(200).json({
             machines,
@@ -77,9 +75,15 @@ exports.insertPCPlan = async (req, res) => {
         const pool = await poolPromise;
 
         // 1. ตรวจสอบ Division จากไอเท็มแรก (สมมติว่ามาเป็น Batch เดียวกัน)
-        // ถ้าคละ Division ควรแยก Loop แต่ปกติจะมาทีละไฟล์
+        // ตอนนี้ Frontend ส่ง Division_Id มา (2=PMC, 3=GM)
         const division = items[0].division || 'Unknown';
-        const isPMC = (division.toUpperCase() === 'PMC' || division === '71DZ');
+
+        // รองรับทั้ง Division_Id และค่าเก่า (Profit_Center/Name)
+        const isPMC = (
+            division === '2' ||                    // Division_Id for PMC
+            division.toUpperCase() === 'PMC' ||
+            division === '71DZ'
+        );
 
         // ตรวจสอบ PlanDate เพื่อใช้ในการ Snapshot (สมมติว่าเป็นเดือนเดียวกันหมด)
         const sampleDate = items[0].date;

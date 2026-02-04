@@ -32,12 +32,12 @@ export interface PlanItem {
 export class PCPlanComponent implements OnInit {
 
   // --- ตัวแปรสำหรับ Dropdown ---
-  divisionOptions: { code: string, label: string }[] = [];
+  divisionOptions: { code: string, label: string, profitCenter: string }[] = [];
   selectedDivisionCode: string = '';
 
   // ลิสต์ตัวเลือก (สำหรับ Dropdown ในตาราง)
   machineTypes: string[] = [];
-  facs: string[] = [];
+  facs: any[] = [];
   processes: string[] = [];
   partNos: string[] = [];
   partBef: string[] = [];
@@ -193,14 +193,21 @@ export class PCPlanComponent implements OnInit {
 
     // 1. ดึงค่า Division จากแถวแรกสุดของ Excel
     const firstRow = data[0];
-    const excelDiv = firstRow['Div']; // อ่านค่าจากคอลัมน์ Div
+    const excelDiv = firstRow['Div']; // อ่านค่าจากคอลัมน์ Div (Profit_Center เช่น "7122")
 
     if (excelDiv) {
-      // 2. เอาค่าที่ได้ ไปใส่ในตัวแปร Dropdown ด้านบน
-      this.selectedDivisionCode = excelDiv.toString(); // แปลงเป็น string ให้ชัวร์
+      // 2. หา Division_Id จาก Profit_Center ที่อ่านจาก Excel
+      const matchedDiv = this.divisionOptions.find(d => d.profitCenter === excelDiv?.toString());
 
-      // 3. สั่งโหลด Master Data (Machine, PartNo) ของ Division นั้นทันที
-      // เพื่อให้ Dropdown ในตารางมีข้อมูลให้เลือก
+      if (matchedDiv) {
+        // เจอ! ใช้ Division_Id เป็น selectedDivisionCode
+        this.selectedDivisionCode = matchedDiv.code;
+      } else {
+        // ไม่เจอ ลองใช้ค่าตรงๆ (Fallback)
+        this.selectedDivisionCode = excelDiv.toString();
+      }
+
+      // 3. โหลด Master Data ด้วย Division_Id ที่ถูกต้อง
       this.loadMasterData(this.selectedDivisionCode);
     } else {
       Swal.fire('Error', 'ไม่พบข้อมูล Division (Div) ในไฟล์ Excel กรุณาตรวจสอบ', 'error');
@@ -273,21 +280,19 @@ export class PCPlanComponent implements OnInit {
   loadDivisions() {
     this.pcPlanService.getDivisions().subscribe({
       next: (data: any[]) => {
-        // Updated mapping for Stored_Get_PCPlan_Dropdown_Division (Profit_Center)
+        // Updated mapping for Stored_Get_Dropdown_PC_Plan_Division
+        // Returns: Division_Id, Profit_Center, Division_Name
         this.divisionOptions = data.map(item => ({
-          code: item.Profit_Center,   // e.g. '7122'
-          label: this.mapDivisionName(item.Profit_Center) // e.g. 'GM'
+          code: item.Division_Id?.toString(),   // Use Division_Id as value
+          label: item.Division_Name || item.Profit_Center, // Show Division_Name
+          profitCenter: item.Profit_Center      // Store Profit_Center for saving
         }));
       },
       error: (err) => console.error('Error loading divisions:', err)
     });
   }
 
-  mapDivisionName(code: string): string {
-    if (code === '7122') return 'GM';
-    if (code === '71DZ') return 'PMC';
-    return code;
-  }
+  // Removed mapDivisionName - no longer needed, SP returns Division_Name directly
 
   // เมื่อมีการเปลี่ยน Division -> ให้โหลด Master Data ใหม่
   onDivisionChange() {
@@ -306,7 +311,28 @@ export class PCPlanComponent implements OnInit {
       next: (res) => {
         // Updated mapping for Stored_Get_PCPlan_Dropdown_Data
         this.machineTypes = res.machines.map((x: any) => x.MC);
-        this.facs = res.facilities.map((x: any) => x.Facility);
+
+        // Map Facility to Object { label: 'F.1', value: 'F.1' } and Distinct
+        const uniqueFacs = new Set<string>();
+        const tempFacs: any[] = [];
+
+        res.facilities.forEach((x: any) => {
+          const fullName = x.FacilityName || '';
+          // Try to extract "F." followed by numbers (e.g. F.1, F.12)
+          const match = fullName.match(/F\.\d+/);
+          const shortName = match ? match[0] : fullName; // Fallback to full name if pattern not found
+
+          if (!uniqueFacs.has(shortName)) {
+            uniqueFacs.add(shortName);
+            tempFacs.push({
+              label: shortName,
+              value: shortName // Use Short Name for Value as well
+            });
+          }
+        });
+
+        this.facs = tempFacs.sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+
         this.processes = res.processes.map((x: any) => x.Process);
 
         // PartNo กับ PartBef ใช้ข้อมูลชุดเดียวกันตามที่คุยกัน
@@ -420,10 +446,13 @@ export class PCPlanComponent implements OnInit {
       }
     }
 
+    // หา Profit_Center จาก Division ที่เลือก
+    const selectedDiv = this.divisionOptions.find(d => d.code === this.selectedDivisionCode);
+
     const payload = this.planItems.map(item => ({
       ...item,
       mcType: item.machineType, // Map Frontend 'machineType' to Backend 'mcType'
-      division: this.selectedDivisionCode,
+      division: selectedDiv?.profitCenter || this.selectedDivisionCode, // ส่ง Profit_Center ไปเก็บ
       employeeId: empId
     }));
 
@@ -471,7 +500,7 @@ export class PCPlanComponent implements OnInit {
 
     if (!item.fac) {
       missing.push('Fac');
-    } else if (this.facs.length > 0 && !this.facs.includes(item.fac)) {
+    } else if (this.facs.length > 0 && !this.facs.some(f => f.value === item.fac)) {
       return `Facility '${item.fac}' is invalid.`;
     }
 

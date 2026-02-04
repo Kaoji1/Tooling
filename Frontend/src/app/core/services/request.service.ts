@@ -98,6 +98,38 @@ export class RequestService {
     return this.getCachedRequest('get_SPEC', data);
   }
 
+  // Case SET APIs (CuttingTool + SetupTool)
+  get_CaseSET_CuttingTool(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_CaseSET_CuttingTool`, data);
+  }
+
+  get_CaseSET_SetupTool(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_CaseSET_SetupTool`, data);
+  }
+
+  // API สำหรับดึงรายละเอียด Box/Shelf/Rack
+  get_CaseSET_CuttingTool_Detail(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_CaseSET_CuttingTool_Detail`, data);
+  }
+
+  // Case SET Dropdown APIs
+  get_CaseSET_Dropdown_PartNo(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_CaseSET_Dropdown_PartNo`, data);
+  }
+
+  get_CaseSET_Dropdown_Process(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_CaseSET_Dropdown_Process`, data);
+  }
+
+  get_CaseSET_Dropdown_MC(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_CaseSET_Dropdown_MC`, data);
+  }
+
+  // โหลด Machine Type ตาม Division (แสดงเฉยๆ ไม่ใช้กรอง)
+  get_MC_ByDivision(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_MC_ByDivision`, data);
+  }
+
   clearCache() {
     this.divisionCache$ = null;
     this.cache.clear();
