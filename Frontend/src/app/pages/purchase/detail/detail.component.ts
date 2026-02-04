@@ -43,8 +43,13 @@ export class DetailComponent implements OnInit {
 
   // Date Filter
   dateFilterType: 'both' | 'req' | 'due' = 'both';
-  fromDate: string = '';
-  toDate: string = '';
+  // Req Date Filter
+  reqDateFrom: string | null = null;
+  reqDateTo: string | null = null;
+
+  // Due Date Filter
+  dueDateFrom: string | null = null;
+  dueDateTo: string | null = null;
 
   // Dropdown Lists
   divisionList = [
@@ -228,7 +233,10 @@ export class DetailComponent implements OnInit {
           // Store original request info for Production columns
           Req_ItemNo: it.ItemNo,
           Req_PartNo: it.PartNo,
-          Req_SPEC: it.SPEC
+          Req_SPEC: it.SPEC,
+          MFGOrderNo: (it.Division === '71DZ')
+            ? `M${(it.PartNo || '').substring(0, 6)}${(it.MCT_MachineTypeCode || '')}`
+            : ''
         }));
 
         const seen = new Set<number>();
@@ -679,19 +687,49 @@ export class DetailComponent implements OnInit {
       const requestDate = item._parsedRequestDate;
       const dueDate = item._parsedDueDate;
 
-      const fromDateObj = this.fromDate ? new Date(this.fromDate) : null;
-      const toDateObj = this.toDate ? new Date(this.toDate) : null;
+      // --- Req Date Filter ---
+      const reqFrom = this.reqDateFrom ? new Date(this.reqDateFrom) : null;
+      const reqTo = this.reqDateTo ? new Date(this.reqDateTo) : null;
+      if (reqFrom) reqFrom.setHours(0, 0, 0, 0);
+      if (reqTo) reqTo.setHours(0, 0, 0, 0);
 
-      let matchDate: boolean = true;
-      if (fromDateObj && toDateObj) {
-        matchDate = !!(requestDate && dueDate && requestDate.toDateString() === fromDateObj.toDateString() && dueDate.toDateString() === toDateObj.toDateString());
-      } else if (fromDateObj) {
-        matchDate = !!(requestDate && requestDate.toDateString() === fromDateObj.toDateString());
-      } else if (toDateObj) {
-        matchDate = !!(dueDate && dueDate.toDateString() === toDateObj.toDateString());
+      let matchReqDate = true;
+      if (requestDate) {
+        const rDate = new Date(requestDate);
+        rDate.setHours(0, 0, 0, 0);
+        if (reqFrom && reqTo) {
+          matchReqDate = rDate >= reqFrom && rDate <= reqTo;
+        } else if (reqFrom) {
+          matchReqDate = rDate >= reqFrom;
+        } else if (reqTo) {
+          matchReqDate = rDate <= reqTo;
+        }
+      } else if (reqFrom || reqTo) {
+        matchReqDate = false;
       }
 
-      return matchStatus && matchDivision && matchPartNo && matchItemNo && matchDate && matchSpec && matchProcess && matchCase && matchDocNo;
+      // --- Due Date Filter ---
+      const dueFrom = this.dueDateFrom ? new Date(this.dueDateFrom) : null;
+      const dueTo = this.dueDateTo ? new Date(this.dueDateTo) : null;
+      if (dueFrom) dueFrom.setHours(0, 0, 0, 0);
+      if (dueTo) dueTo.setHours(0, 0, 0, 0);
+
+      let matchDueDate = true;
+      if (dueDate) {
+        const dDate = new Date(dueDate);
+        dDate.setHours(0, 0, 0, 0);
+        if (dueFrom && dueTo) {
+          matchDueDate = dDate >= dueFrom && dDate <= dueTo;
+        } else if (dueFrom) {
+          matchDueDate = dDate >= dueFrom;
+        } else if (dueTo) {
+          matchDueDate = dDate <= dueTo;
+        }
+      } else if (dueFrom || dueTo) {
+        matchDueDate = false;
+      }
+
+      return matchStatus && matchDivision && matchPartNo && matchItemNo && matchSpec && matchProcess && matchCase && matchDocNo && matchReqDate && matchDueDate;
     });
 
     this.currentPage = 1;
@@ -753,8 +791,10 @@ export class DetailComponent implements OnInit {
     this.Process_ = '';
     this.Case_ = '';
     this.DocumentNo_ = '';
-    this.fromDate = '';
-    this.toDate = '';
+    this.reqDateFrom = null;
+    this.reqDateTo = null;
+    this.dueDateFrom = null;
+    this.dueDateTo = null;
     this.onFilter();
   }
 

@@ -339,7 +339,14 @@ exports.Detail_Purchase = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .query("SELECT * FROM [dbo].[View_CuttingTool_RequestList] WHERE Status IN ('Waiting','In Progress')ORDER BY ItemNo ASC, ID_Request ASC ");
+      .query(`
+        SELECT T1.*, T2.MCT_MachineTypeCode 
+        FROM [dbo].[View_CuttingTool_RequestList] T1
+        LEFT JOIN [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType] T2 
+        ON T1.MCType = T2.MCT_MachineTypeName COLLATE Thai_CI_AS 
+        WHERE T1.Status IN ('Waiting','In Progress')
+        ORDER BY T1.ItemNo ASC, T1.ID_Request ASC
+      `);
 
     res.json(result.recordset);
   }
