@@ -18,26 +18,38 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.25rem;
 
       h4 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--color-text-main);
+        font-size: 1.5rem;
+        font-weight: 800;
         margin: 0;
-
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        letter-spacing: -0.02em;
       }
     }
 
     p {
-      color: var(--color-text-sub);
-      font-size: 0.85rem;
-      margin-top: -0.25rem;
+      color: #475569;
+      font-size: 0.9rem;
+      margin-top: 0.15rem;
       font-weight: 500;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &::before {
+        content: '';
+        display: inline-block;
+        width: 4px;
+        height: 16px;
+        background: linear-gradient(180deg, #3b82f6, #60a5fa);
+        border-radius: 2px;
+      }
     }
 
     // Filter/Input Card

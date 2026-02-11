@@ -1,0 +1,466 @@
+[1mdiff --git a/Frontend/src/app/app.routes.ts b/Frontend/src/app/app.routes.ts[m
+[1mindex 2a212357..03ef0b03 100644[m
+[1m--- a/Frontend/src/app/app.routes.ts[m
+[1m+++ b/Frontend/src/app/app.routes.ts[m
+[36m@@ -60,6 +60,11 @@[m [mexport const routes: Routes = [[m
+         path: 'historyprint',[m
+         loadComponent: () => import('./pages/user/history-print/history-print.component').then(m => m.HistoryPrintComponent),[m
+         data: { roles: ['production', 'view', 'admin', 'engineer'] }[m
+[32m+[m[32m      },[m
+[32m+[m[32m      {[m
+[32m+[m[32m        path: 'return-history',[m
+[32m+[m[32m        loadComponent: () => import('./pages/user/return-history/return-history.component').then(m => m.ReturnHistoryComponent),[m
+[32m+[m[32m        data: { roles: ['production', 'view', 'admin', 'engineer'] }[m
+       }[m
+     ][m
+   },[m
+[1mdiff --git a/Frontend/src/app/components/sidebar/sidebar.component.html b/Frontend/src/app/components/sidebar/sidebar.component.html[m
+[1mindex 87cc3921..385c2895 100644[m
+[1m--- a/Frontend/src/app/components/sidebar/sidebar.component.html[m
+[1m+++ b/Frontend/src/app/components/sidebar/sidebar.component.html[m
+[36m@@ -33,6 +33,10 @@[m
+       <li routerLinkActive="active">[m
+         <a routerLink="/production/history"> <i class="bi bi-clock-history"></i> History </a>[m
+       </li>[m
+[32m+[m
+[32m+[m[32m      <li routerLinkActive="active">[m
+[32m+[m[32m        <a routerLink="/production/return-history"> <i class="bi bi-clock-history"></i> Return History </a>[m
+[32m+[m[32m      </li>[m
+       <li routerLinkActive="active">[m
+         <a routerLink="/production/historyprint"> <i class="bi bi-printer-fill"></i> History Print </a>[m
+       </li>[m
+[36m@@ -43,8 +47,32 @@[m
+     </ul>[m
+   </div>[m
+   <!-- ฝั่งแสดงแถบUsernameและปุ่มlogout -->[m
+[31m-  <div class="bottom">[m
+[31m-    <div class="user-info" style="font-size: 18px;"> {{ Employee_Name }} </div>[m
+[31m-    <button (click)="logout()" class="logout-btn"><i class="bi bi-box-arrow-right" style="color: red;"></i></button>[m
+[32m+[m[32m  <!-- Professional Profile & Logout Section -->[m
+[32m+[m[32m  <!-- Professional Profile & Logout Section -->[m
+[32m+[m[32m  <div class="sidebar-footer">[m
+[32m+[m[32m    <!-- User Profile Card -->[m
+[32m+[m[32m    <div class="user-profile-card">[m
+[32m+[m[32m      <div class="avatar-container">[m
+[32m+[m[32m        <div class="avatar-circle">[m
+[32m+[m[32m          {{ Employee_Name ? Employee_Name.charAt(0).toUpperCase() : 'U' }}[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m        <div class="status-indicator"></div>[m
+[32m+[m[32m      </div>[m
+[32m+[m[32m      <div class="user-info">[m
+[32m+[m[32m        <span class="user-name" title="{{ Employee_Name }}">{{ Employee_Name }}</span>[m
+[32m+[m[32m        <span class="user-role">{{ role || 'User' }}</span>[m
+[32m+[m[32m      </div>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <!-- Separator -->[m
+[32m+[m[32m    <div class="footer-separator"></div>[m
+[32m+[m
+[32m+[m[32m    <!-- Logout Action -->[m
+[32m+[m[32m    <button (click)="logout()" class="btn-logout-premium">[m
+[32m+[m[32m      <div class="icon-wrapper">[m
+[32m+[m[32m        <i class="bi bi-box-arrow-right"></i>[m
+[32m+[m[32m      </div>[m
+[32m+[m[32m      <span class="logout-text">Sign Out</span>[m
+[32m+[m[32m    </button>[m
+   </div>[m
+ </nav>[m
+\ No newline at end of file[m
+[1mdiff --git a/Frontend/src/app/components/sidebar/sidebar.component.scss b/Frontend/src/app/components/sidebar/sidebar.component.scss[m
+[1mindex 2b29aead..a8f9f85a 100644[m
+[1m--- a/Frontend/src/app/components/sidebar/sidebar.component.scss[m
+[1m+++ b/Frontend/src/app/components/sidebar/sidebar.component.scss[m
+[36m@@ -1,15 +1,16 @@[m
+[31m-// Sidebar Modern Styles[m
+[32m+[m[32m// Sidebar Modern Styles (Light & Clean)[m
+ .sidebar {[m
+   min-height: 100vh;[m
+   width: 250px;[m
+[31m-  background-color: var(--color-surface);[m
+[32m+[m[32m  background-color: var(--color-surface); // Reverted to Light[m
+   display: flex;[m
+   flex-direction: column;[m
+   justify-content: space-between;[m
+   box-sizing: border-box;[m
+[31m-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);[m
+[32m+[m[32m  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); // Reverted shadow[m
+   border-right: 1px solid var(--color-border);[m
+   z-index: 50;[m
+[32m+[m[32m  color: var(--color-text-main); // Reverted text color[m
+ [m
+   .top {[m
+ [m
+[36m@@ -21,8 +22,7 @@[m
+       margin: 1.5rem 0;[m
+       color: var(--color-primary);[m
+       letter-spacing: -0.5px;[m
+[31m-[m
+[31m-      // Optional: Add a tagline or subtext if needed[m
+[32m+[m[32m      padding: 0;[m
+     }[m
+ [m
+     // Navigation Links[m
+[36m@@ -37,97 +37,184 @@[m
+         margin-bottom: 0.5rem;[m
+ [m
+         a {[m
+[31m-          color: var(--color-text-sub);[m
+[32m+[m[32m          color: #94a3b8; // Muted blue-grey[m
+           display: flex;[m
+           align-items: center;[m
+[31m-          padding: 0.8rem 1rem;[m
+[31m-          border-radius: var(--radius-md);[m
+[32m+[m[32m          padding: 0.85rem 1rem;[m
+[32m+[m[32m          border-radius: 12px;[m
+           text-decoration: none;[m
+           position: relative;[m
+[31m-          transition: all 0.2s ease;[m
+[31m-          font-weight: 500;[m
+[31m-          gap: 0.75rem;[m
+[32m+[m[32m          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);[m
+[32m+[m[32m          font-weight: 600;[m
+[32m+[m[32m          gap: 1rem;[m
+ [m
+[31m-          // Icons (assuming icons are used, or add gap for text)[m
+[32m+[m[32m          // Icons[m
+           i {[m
+[31m-            font-size: 1.1rem;[m
+[31m-            color: var(--color-secondary);[m
+[31m-            transition: color 0.2s;[m
+[32m+[m[32m            font-size: 1.25rem;[m
+[32m+[m[32m            color: #64748b;[m
+[32m+[m[32m            transition: all 0.3s ease;[m
+           }[m
+ [m
+           &:hover {[m
+[31m-            background-color: #f1f5f9; // Light slate hover[m
+[31m-            color: var(--color-primary);[m
+[32m+[m[32m            background-color: rgba(255, 255, 255, 0.05);[m
+[32m+[m[32m            color: white;[m
+[32m+[m[32m            transform: translateX(5px);[m
+ [m
+             i {[m
+[31m-              color: var(--color-primary);[m
+[32m+[m[32m              color: #38bdf8; // Bright Blue on hover[m
+[32m+[m[32m              transform: scale(1.1);[m
+             }[m
+           }[m
+ [m
+           // Badge (Cart Notification)[m
+[31m-          span {[m
+[32m+[m[32m          span.cart-count {[m
+             position: absolute;[m
+             top: 50%;[m
+[31m-            right: 1rem;[m
+[32m+[m[32m            right: 0.75rem;[m
+             transform: translateY(-50%);[m
+[31m-            background-color: #ef4444; // Red-500[m
+[32m+[m[32m            background: linear-gradient(135deg, #ef4444, #b91c1c);[m
+[32m+[m[32m            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);[m
+             color: white;[m
+[31m-            padding: 0.15rem 0.4rem;[m
+[31m-            border-radius: 99px;[m
+[32m+[m[32m            padding: 0.2rem 0.5rem;[m
+[32m+[m[32m            border-radius: 6px;[m
+             font-size: 0.7rem;[m
+[31m-            font-weight: 700;[m
+[31m-            line-height: normal;[m
+[32m+[m[32m            font-weight: 800;[m
+           }[m
+         }[m
+ [m
+         // Active State[m
+         &.active a {[m
+[31m-          background: linear-gradient(90deg, var(--color-primary), #2563eb);[m
+[32m+[m[32m          background: linear-gradient(90deg, #3b82f6, #2563eb);[m
+           color: white;[m
+[31m-          box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);[m
+[32m+[m[32m          box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); // Glow effect[m
+ [m
+           i {[m
+             color: white;[m
+           }[m
+ [m
+           &:hover {[m
+[31m-            background: linear-gradient(90deg, #2563eb, #1d4ed8);[m
+[32m+[m[32m            transform: none;[m
+           }[m
+         }[m
+       }[m
+     }[m
+   }[m
+ [m
+[31m-  // Bottom Section (Logout)[m
+[31m-  .bottom {[m
+[31m-    display: flex;[m
+[31m-    align-items: center;[m
+[31m-    justify-content: center;[m
+[31m-    padding: 1rem;[m
+[31m-    background-color: #f8fafc; // Light footer[m
+[31m-    border-top: 1px solid var(--color-border);[m
+[31m-[m
+[31m-    .logout-btn {[m
+[31m-      border: none;[m
+[31m-      background: none;[m
+[32m+[m[32m  // ==========================================[m
+[32m+[m[32m  //    Professional Footer (Profile & Logout)[m
+[32m+[m[32m  // ==========================================[m
+[32m+[m[32m  .sidebar-footer {[m
+[32m+[m[32m    padding: 1.25rem;[m
+[32m+[m[32m    background: linear-gradient(to top, #f8fafc, white);[m
+[32m+[m[32m    border-top: 1px solid rgba(0, 0, 0, 0.06);[m
+[32m+[m
+[32m+[m[32m    .user-profile-card {[m
+[32m+[m[32m      display: flex;[m
+[32m+[m[32m      align-items: center;[m
+[32m+[m[32m      gap: 0.85rem;[m
+[32m+[m[32m      margin-bottom: 1rem;[m
+[32m+[m
+[32m+[m[32m      .avatar-container {[m
+[32m+[m[32m        position: relative;[m
+[32m+[m
+[32m+[m[32m        .avatar-circle {[m
+[32m+[m[32m          width: 42px;[m
+[32m+[m[32m          height: 42px;[m
+[32m+[m[32m          border-radius: 12px;[m
+[32m+[m[32m          background: linear-gradient(135deg, var(--color-primary), #60a5fa);[m
+[32m+[m[32m          color: white;[m
+[32m+[m[32m          display: flex;[m
+[32m+[m[32m          align-items: center;[m
+[32m+[m[32m          justify-content: center;[m
+[32m+[m[32m          font-weight: 700;[m
+[32m+[m[32m          font-size: 1.1rem;[m
+[32m+[m[32m          box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        .status-indicator {[m
+[32m+[m[32m          position: absolute;[m
+[32m+[m[32m          bottom: -2px;[m
+[32m+[m[32m          right: -2px;[m
+[32m+[m[32m          width: 11px;[m
+[32m+[m[32m          height: 11px;[m
+[32m+[m[32m          background-color: #22c55e;[m
+[32m+[m[32m          border: 2px solid white;[m
+[32m+[m[32m          border-radius: 50%;[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }[m
+[32m+[m
+[32m+[m[32m      .user-info {[m
+[32m+[m[32m        flex: 1;[m
+[32m+[m[32m        overflow: hidden;[m
+[32m+[m
+[32m+[m[32m        .user-name {[m
+[32m+[m[32m          display: block;[m
+[32m+[m[32m          font-size: 0.9rem;[m
+[32m+[m[32m          font-weight: 700;[m
+[32m+[m[32m          color: #1e293b;[m
+[32m+[m[32m          white-space: nowrap;[m
+[32m+[m[32m          overflow: hidden;[m
+[32m+[m[32m          text-overflow: ellipsis;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        .user-role {[m
+[32m+[m[32m          display: block;[m
+[32m+[m[32m          font-size: 0.75rem;[m
+[32m+[m[32m          color: #64748b;[m
+[32m+[m[32m          font-weight: 500;[m
+[32m+[m[32m          text-transform: uppercase;[m
+[32m+[m[32m          letter-spacing: 0.025em;[m
+[32m+[m[32m          margin-top: 2px;[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    .footer-separator {[m
+[32m+[m[32m      height: 1px;[m
+[32m+[m[32m      background: linear-gradient(90deg, transparent, #e2e8f0, transparent);[m
+[32m+[m[32m      margin-bottom: 1rem;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // Logout Button — White theme[m
+[32m+[m[32m    .btn-logout-premium {[m
+[32m+[m[32m      width: 100%;[m
+[32m+[m[32m      background: white;[m
+[32m+[m[32m      border: 1px solid #e2e8f0;[m
+[32m+[m[32m      padding: 0.7rem;[m
+[32m+[m[32m      border-radius: 10px;[m
+       cursor: pointer;[m
+[31m-      color: var(--color-text-sub);[m
+       display: flex;[m
+       align-items: center;[m
+[31m-      gap: 0.5rem;[m
+[31m-      font-size: 0.9rem;[m
+[31m-      font-weight: 600;[m
+[31m-      padding: 0.5rem 1rem;[m
+[31m-      border-radius: var(--radius-md);[m
+[31m-      transition: all 0.2s;[m
+[31m-[m
+[31m-      i {[m
+[31m-        font-size: 1.2rem;[m
+[32m+[m[32m      justify-content: center;[m
+[32m+[m[32m      gap: 0.6rem;[m
+[32m+[m[32m      color: #64748b;[m
+[32m+[m[32m      transition: all 0.25s ease;[m
+[32m+[m
+[32m+[m[32m      .icon-wrapper {[m
+[32m+[m[32m        display: flex;[m
+[32m+[m[32m        align-items: center;[m
+[32m+[m[32m        justify-content: center;[m
+[32m+[m[32m        transition: transform 0.25s ease;[m
+[32m+[m[32m        font-size: 1rem;[m
+[32m+[m[32m      }[m
+[32m+[m
+[32m+[m[32m      .logout-text {[m
+[32m+[m[32m        font-weight: 600;[m
+[32m+[m[32m        font-size: 0.85rem;[m
+       }[m
+ [m
+       &:hover {[m
+[31m-        background-color: #fee2e2;[m
+[32m+[m[32m        background: #fef2f2;[m
+[32m+[m[32m        border-color: #fecaca;[m
+         color: #ef4444;[m
+[32m+[m
+[32m+[m[32m        .icon-wrapper {[m
+[32m+[m[32m          transform: translateX(3px);[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }[m
+[32m+[m
+[32m+[m[32m      &:active {[m
+[32m+[m[32m        transform: scale(0.98);[m
+       }[m
+     }[m
+   }[m
+[1mdiff --git a/Frontend/src/app/core/services/MasterPH.service.ts b/Frontend/src/app/core/services/MasterPH.service.ts[m
+[1mindex 331ea549..8a8c7ec3 100644[m
+[1m--- a/Frontend/src/app/core/services/MasterPH.service.ts[m
+[1m+++ b/Frontend/src/app/core/services/MasterPH.service.ts[m
+[36m@@ -16,27 +16,27 @@[m [mexport class MasterPHService {[m
+         return this.http.get<any[]>(`${this.baseUrl}/master-ph?type=${type}`);[m
+     }[m
+ [m
+[31m-    importData(data: any[], type: 'pmc' | 'gm' = 'pmc'): Observable<any> {[m
+[32m+[m[32m    importData(data: FormData, type: 'pmc' | 'gm' = 'pmc'): Observable<any> {[m
+         return this.http.post<any>(`${this.baseUrl}/master-ph/import?type=${type}`, data);[m
+     }[m
+ [m
+[31m-    importIReport(data: any[]): Observable<any> {[m
+[32m+[m[32m    importIReport(data: FormData): Observable<any> {[m
+         return this.http.post<any>(`${this.baseUrl}/master-ph/import-ireport`, data);[m
+     }[m
+ [m
+[31m-    importMasterAllPMC(data: any[]): Observable<any> {[m
+[32m+[m[32m    importMasterAllPMC(data: FormData): Observable<any> {[m
+         return this.http.post<any>(`${this.baseUrl}/master-ph/import-master-all-pmc`, data);[m
+     }[m
+ [m
+[31m-    importMasterToolingPMC(data: any[]): Observable<any> {[m
+[32m+[m[32m    importMasterToolingPMC(data: FormData): Observable<any> {[m
+         return this.http.post<any>(`${this.baseUrl}/master-ph/import-master-tooling-pmc`, data);[m
+     }[m
+ [m
+[31m-    importTypeTooling(data: any[]): Observable<any> {[m
+[32m+[m[32m    importTypeTooling(data: FormData): Observable<any> {[m
+         return this.http.post<any>(`${this.baseUrl}/master-ph/import-type-tooling`, data);[m
+     }[m
+ [m
+[31m-    importMasterToolingGM(data: any[]): Observable<any> {[m
+[32m+[m[32m    importMasterToolingGM(data: FormData): Observable<any> {[m
+         return this.http.post<any>(`${this.baseUrl}/master-ph/import-master-tooling-gm`, data);[m
+     }[m
+ }[m
+[1mdiff --git a/Frontend/src/app/core/services/request.service.ts b/Frontend/src/app/core/services/request.service.ts[m
+[1mindex ce395970..d6e55f40 100644[m
+[1m--- a/Frontend/src/app/core/services/request.service.ts[m
+[1m+++ b/Frontend/src/app/core/services/request.service.ts[m
+[36m@@ -12,9 +12,22 @@[m [mexport class RequestService {[m
+   private baseUrl = environment.apiUrl[m
+   public user: any;[m
+ [m
+[31m-  // Cache Storage[m
+[32m+[m[32m  // Cache & State Storage[m
+   private divisionCache$: Observable<any> | null = null;[m
+[31m-  private cache = new Map<string, any>(); // Simple cache for parameterized calls[m
+[32m+[m[32m  private cache = new Map<string, any>();[m
+[32m+[m[32m  private requestPageState: any = null; // Store Request Page state[m
+[32m+[m
+[32m+[m[32m  saveRequestState(state: any) {[m
+[32m+[m[32m    this.requestPageState = JSON.parse(JSON.stringify(state)); // Deep copy to avoid reference issues[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  getRequestState(): any {[m
+[32m+[m[32m    return this.requestPageState;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  clearRequestState() {[m
+[32m+[m[32m    this.requestPageState = null;[m
+[32m+[m[32m  }[m
+ [m
+   constructor([m
+     private httpClient: HttpClient[m
+[36m@@ -103,10 +116,16 @@[m [mexport class RequestService {[m
+     return this.httpClient.post(`${this.baseUrl}/get_CaseSET_CuttingTool`, data);[m
+   }[m
+ [m
+[32m+[m
+   get_CaseSET_SetupTool(data: any): Observable<any> {[m
+     return this.httpClient.post(`${this.baseUrl}/get_CaseSET_SetupTool`, data);[m
+   }[m
+ [m
+[32m+[m[32m  // New Combined API for Case SET (Cutting + Setup)[m
+[32m+[m[32m  get_CaseSET_All(data: any): Observable<any> {[m
+[32m+[m[32m    return this.httpClient.post(`${this.baseUrl}/get_CaseSET_All`, data);[m
+[32m+[m[32m  }[m
+[32m+[m
+   // API สำหรับดึงรายละเอียด Box/Shelf/Rack[m
+   get_CaseSET_CuttingTool_Detail(data: any): Observable<any> {[m
+     return this.httpClient.post(`${this.baseUrl}/get_CaseSET_CuttingTool_Detail`, data);[m
+[36m@@ -125,6 +144,10 @@[m [mexport class RequestService {[m
+     return this.httpClient.post(`${this.baseUrl}/get_CaseSET_Dropdown_MC`, data);[m
+   }[m
+ [m
+[32m+[m[32m  get_CaseSET_Dropdown_ItemNo(data: any): Observable<any> {[m
+[32m+[m[32m    return this.httpClient.post(`${this.baseUrl}/get_CaseSET_Dropdown_ItemNo`, data);[m
+[32m+[m[32m  }[m
+[32m+[m
+   // โหลด Machine Type ตาม Division (แสดงเฉยๆ ไม่ใช้กรอง)[m
+   get_MC_ByDivision(data: any): Observable<any> {[m
+     return this.httpClient.post(`${this.baseUrl}/get_MC_ByDivision`, data);[m
+[1mdiff --git a/Frontend/src/app/core/services/return.service.ts b/Frontend/src/app/core/services/return.service.ts[m
+[1mindex 8e83581c..638a3b74 100644[m
+[1m--- a/Frontend/src/app/core/services/return.service.ts[m
+[1m+++ b/Frontend/src/app/core/services/return.service.ts[m
+[36m@@ -16,6 +16,10 @@[m [mexport class ReturnService {[m
+         return this.http.get<any>(`${this.baseUrl}/return/item/${itemNo}?divisionId=${divisionId}`);[m
+     }[m
+ [m
+[32m+[m[32m    getPartNo(partNo: string, divisionId: number): Observable<any[]> {[m
+[32m+[m[32m        return this.http.get<any[]>(`${this.baseUrl}/return/partno/${partNo}?divisionId=${divisionId}`);[m
+[32m+[m[32m    }[m
+[32m+[m
+     getDivisions(): Observable<any[]> {[m
+         return this.http.get<any[]>(`${this.baseUrl}/return/divisions`);[m
+     }[m
+[36m@@ -27,4 +31,12 @@[m [mexport class ReturnService {[m
+     getProcesses(divisionId: number): Observable<any[]> {[m
+         return this.http.get<any[]>(`${this.baseUrl}/return/processes/${divisionId}`);[m
+     }[m
+[32m+[m
+[32m+[m[32m    saveReturnRequest(data: any): Observable<any> {[m
+[32m+[m[32m        return this.http.post<any>(`${this.baseUrl}/return/save`, data);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    getReturnHistory(): Observable<any[]> {[m
+[32m+[m[32m        return this.http.get<any[]>(`${this.baseUrl}/return/list`);[m
+[32m+[m[32m    }[m
+ }[m
+[1mdiff --git a/Frontend/src/app/pages/purchase/MasterPH/MasterPH.component.ts b/Frontend/src/app/pages/purchase/MasterPH/MasterPH.component.ts[m
+[1mindex 95c03c03..fb75acd3 100644[m
+[1m--- a/Frontend/src/app/pages/purchase/MasterPH/MasterPH.component.ts[m
+[1m+++ b/Frontend/src/app/pages/purchase/MasterPH/MasterPH.component.ts[m
+[36m@@ -123,94 +123,12 @@[m [mexport class MasterPHComponent {[m
+         else if (type === 'masterToolingPMC') this.masterToolingPMCFileName = fileName;[m
+         else if (type === 'masterToolingGM') this.masterToolingGMFileName = fileName;[m
+ [m
+[31m-        const reader: FileReader = new FileReader();[m
+[31m

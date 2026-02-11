@@ -1,0 +1,303 @@
+// Variables
+$primary-color: #0066B3; // Original Blue
+$background-color: #F8F9FA; // Light Gray Background
+$card-bg: #FFFFFF;
+$text-main: #343a40;
+$text-secondary: #6c757d;
+$border-color: #e9ecef;
+$hover-color: #f1f8ff; // Light Blue Hover
+$shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+$radius: 12px;
+
+.layout {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    background-color: $background-color;
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+.content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+// ✨ Premium Card Container
+.premium-card {
+    background: $card-bg;
+    border-radius: $radius;
+    padding: 24px;
+    box-shadow: $shadow-sm;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.4s ease-out;
+
+    .header-content {
+        margin-bottom: 20px;
+        border-bottom: 2px solid $border-color;
+        padding-bottom: 15px;
+
+        .reh {
+            font-size: 24px;
+            font-weight: 700;
+            color: $text-main;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            &::before {
+                content: '';
+                display: block;
+                width: 6px;
+                height: 24px;
+                background: linear-gradient(to bottom, $primary-color, lighten($primary-color, 20%));
+                border-radius: 4px;
+            }
+        }
+
+        .the {
+            font-size: 14px;
+            color: $text-secondary;
+            margin-left: 16px;
+        }
+    }
+}
+
+// 🎛️ Filter Section
+.box-input {
+    margin-bottom: 20px;
+
+    .form-input {
+        display: flex;
+        justify-content: flex-end; // Right aligned
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+}
+
+// 🎨 Buttons
+.btn {
+    height: 44px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 0 20px;
+    border: none;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    &:active {
+        transform: translateY(1px);
+        box-shadow: none;
+    }
+
+    &-clear {
+        background-color: #6c757d;
+        color: white;
+
+        &:hover {
+            background-color: darken(#6c757d, 10%);
+        }
+    }
+
+    &-filter {
+        background-color: #17a2b8;
+        color: white;
+
+        &:hover {
+            background-color: darken(#17a2b8, 10%);
+        }
+    }
+
+    &-success {
+        background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        color: white;
+
+        &:hover {
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+    }
+}
+
+// 📊 Table Styling
+.table-responsive {
+    flex: 1;
+    overflow: auto;
+    border-radius: 8px;
+    border: 1px solid $border-color;
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+
+        thead {
+
+            // Filter Row (Input dropdowns)
+            tr.filter-row td {
+                background-color: white;
+                padding: 10px;
+                border-bottom: 1px solid $border-color;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+
+            // Header Row
+            tr:not(.filter-row) th {
+                background-color: #eff3f8; // Soft Blue-Gray
+                color: $text-main;
+                font-weight: 600;
+                font-size: 13px;
+                padding: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border-bottom: 2px solid darken($border-color, 5%);
+                position: sticky;
+                top: 60px; // Offset for filter row
+                z-index: 9;
+                white-space: nowrap;
+
+                &.sortable {
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: darken(#eff3f8, 5%);
+                    }
+                }
+            }
+        }
+
+        tbody {
+            tr {
+                transition: background-color 0.15s;
+
+                td {
+                    padding: 12px;
+                    border-bottom: 1px solid $border-color;
+                    font-size: 14px;
+                    color: $text-main;
+                    vertical-align: middle;
+                }
+
+                &:hover td {
+                    background-color: $hover-color;
+                }
+
+                &.row-selected td {
+                    background-color: lighten($primary-color, 45%);
+                }
+            }
+        }
+    }
+}
+
+// 🏷️ Status Badges
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+
+    &.pending {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+
+    &.complete {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+}
+
+// 📦 Inputs
+.premium-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid $border-color;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #fcfcfc;
+    transition: border-color 0.2s;
+
+    &:focus {
+        border-color: $primary-color;
+        outline: none;
+        background-color: white;
+    }
+}
+
+// 🖱️ Checkbox
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: $primary-color;
+}
+
+// 🏃 Animation
+.fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// 🛠️ Ng-Select Customization
+::ng-deep .premium-select {
+    .ng-select-container {
+        border: 1px solid $border-color !important;
+        border-radius: 6px !important;
+        min-height: 38px !important;
+        background-color: #fcfcfc !important;
+
+        &:hover {
+            border-color: darken($border-color, 10%) !important;
+        }
+    }
+
+    &.ng-select-opened .ng-select-container {
+        border-color: $primary-color !important;
+        box-shadow: 0 0 0 3px rgba($primary-color, 0.1) !important;
+    }
+
+    .ng-value {
+        background-color: #e9ecef !important;
+        color: $text-main !important;
+        border-radius: 4px !important;
+        margin-right: 4px !important;
+    }
+}
+
+// Utility
+.fw-medium {
+    font-weight: 500;
+}
+
+.text-muted {
+    color: $text-secondary !important;
+}

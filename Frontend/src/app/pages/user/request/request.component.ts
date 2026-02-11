@@ -201,6 +201,7 @@ export class requestComponent implements OnInit {
         // Map: Division_Id, Profit_Center, Division_Name
         const mapped = response.map(item => ({
           Division: item.Profit_Center,  // ใช้ Profit_Center เป็นค่าหลักแทน Division_Id
+          Division_Id: item.Division_Id, // เก็บ Division_Id ตัวเลขไว้สำหรับ Facility SP
           DivisionName: item.Profit_Center === '7122' ? 'GM'
             : item.Profit_Center === '71DZ' ? 'PMC'
               : item.Division_Name || item.Profit_Center,
@@ -345,14 +346,14 @@ export class requestComponent implements OnInit {
   async get_Facility(event: any) {
     if (!event) return;
 
-    // Division object มี: { Division: "2", DivisionName: "PMC", Profit_Center: "71DZ" }
-    // ต้องส่ง Division_Id (ค่า "2") ไม่ใช่ DivisionName ("PMC")
-    const divisionId = event.Division || event;
+    // Division object มี: { Division: "71DZ", Division_Id: 2, DivisionName: "PMC", Profit_Center: "71DZ" }
+    // ต้องส่ง Division_Id (ค่าตัวเลข เช่น 2) ไม่ใช่ Profit_Center ("71DZ")
+    const divisionId = event.Division_Id || event;
     if (!divisionId) return;
 
     console.log('get_Facility - sending Division_Id:', divisionId);
 
-    // ใช้ SP: Stored_Get_Dropdown_Facility_By_Division (รับ @Division_Id)
+    // ใช้ SP: Stored_Get_Dropdown_Facility_By_Division (รับ @Division_Id INT)
     this.api.get_Setup_Facility({ Division: divisionId }).subscribe({
       next: (response: any[]) => {
         // Extract "F.X" suffix from FacilityName and deduplicate
@@ -537,6 +538,7 @@ export class requestComponent implements OnInit {
             ...item,
             PartNo: item.PartNo || item.Part_No,
             ItemNo: item.ItemNo || item.Cutting_Item_No,
+            ItemName: item.Cutting_Name, // Map for Cutting Tool (non-SET)
             SPEC: item.SPEC || item.Cutting_Spec,
             MC: item.MC || item.MC_Group,
             checked: true,
