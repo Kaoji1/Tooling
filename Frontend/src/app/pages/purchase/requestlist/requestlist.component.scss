@@ -8,39 +8,317 @@
   .content {
     width: 100%;
     height: 100%;
-    display: flex;
+    display: block;
     flex-direction: column;
-    align-items: stretch; // Ensure children fill width
+    align-items: start;
+    align-items: start;
     padding: 20px;
     background-color: white;
-    overflow: hidden; // Prevent outer scroll, use inner scroll
+    overflow-y: auto;
 
-    // ... (header, box-input styles remain)
+    .re {
+      margin-bottom: 5px;
+      font-size: 22px;
+    }
+
+    .the {
+      margin-bottom: 5px;
+      color: rgb(16, 3, 114);
+      font-size: 15px;
+    }
+
+
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      flex-direction: row;
+
+      .noti {
+        justify-self: end;
+
+      }
+
+      h4 {
+        margin-bottom: 5px;
+      }
+
+      .lol {
+        border: none;
+        background-color: white;
+
+        i {
+          color: #000000;
+          font-size: 25px;
+          margin-right: 10px;
+        }
+      }
+    }
+
+    .dropdown-menu-notifications {
+      width: 300px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+
+    .notification-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .notification-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #28a745;
+      /* green */
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .notification h6 {
+      margin-top: 60px;
+    }
+
+    .box-input {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+      flex-wrap: wrap;
+
+      .button-group {
+        width: auto;
+        display: flex;
+        align-content: center;
+        margin-right: 0;
+        gap: 10px;
+
+
+        .btn-clear {
+          width: 100px;
+          height: 40px;
+          background-color: #708090;
+          color: white;
+          border: none;
+          gap: 5px;
+          border-radius: 6px;
+          font-size: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          margin-top: 5px;
+        }
+
+        .btn-filter {
+          width: 100px;
+          height: 40px;
+          background-color: #4db6b6;
+          color: white;
+          border: none;
+          gap: 5px;
+          border-radius: 6px;
+          font-size: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          margin-top: 5px;
+
+        }
+
+        .btn-sort {
+          width: 100px;
+          height: 40px;
+          background-color: #4db6b6;
+          color: white;
+          border: none;
+          gap: 5px;
+          border-radius: 6px;
+          font-size: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          margin-top: 5px;
+        }
+      }
+    }
+
+    // margin-left: 5px;
+    // .button-filter {
+    //   width: 100px;
+    //   display: flex;
+    //   align-content: center;
+    //   justify-content: center;
+
+
+    //   .btn-filter {
+    //     width: 120px;
+    //     height: 45px;
+    //     background-color: #4db6b6;
+    //     color: white;
+    //     border: none;
+    //     display: block;
+    //     border-radius: 10px;
+    //     font-size: 18px;
+    //     align-content: center;
+    //     justify-self: left;
+
+    //   }
+    // }
+
+    //   .button-sort {
+    //   width: 100px;
+    //   display: flex;
+    //   align-content: center;
+    //   justify-content: center;
+
+    //   .btn-sort {
+    //     width: 120px;
+    //     height: 45px;
+    //     background-color: #4db6b6;
+    //     color: white;
+    //     border: none;
+    //     border-radius: 10px;
+    //     font-size: 18px;
+    //     align-content: center;
+    //     justify-content: space-between;
+    //   }
+
+    // }
+
+
+    .form-input {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: flex-start;
+      align-items: flex-end;
+
+      h6 {
+        margin-top: 60px;
+      }
+    }
+
+    .group-select {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      /* Align label to start */
+      margin-top: 10px;
+      min-width: 150px;
+      /* Minimum width for consistency */
+
+      label {
+        font-size: 14px;
+        color: #2d2c2c;
+        text-align: left;
+        margin-bottom: 5px;
+        font-weight: 500;
+        width: 100%;
+        display: block;
+      }
+
+      input {
+        padding: 8px;
+        border: 1px solid #b9b6b6;
+        border-radius: 5px;
+        font-size: 14px;
+        color: #7a7878;
+        width: 100%;
+        /* Fill container */
+        min-width: 150px;
+      }
+    }
+
+    .form-select {
+      color: #7a7878;
+      border: 1px solid rgb(157, 157, 157);
+      border-radius: 5px;
+      padding: 8px;
+      font-size: 14px;
+      width: 200px;
+
+      option {
+        color: black;
+      }
+
+      &:valid {
+        color: black;
+      }
+    }
 
     .table-responsive {
-      flex: 1; // Take remaining height
-      overflow: auto; // Scroll within table area
-      margin-top: 20px;
-      width: 100%;
-      // Removed fixed max-height: 70vh
+      max-height: 70vh; // ตารางสูงไม่เกิน 70% ของจอ
+      width: 100%; // กว้างเต็ม 100% ของจอ
+      overflow: auto;
+      margin-top: 30px;
 
       table {
-        // ... table styles
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        color: #4a494a;
+
+        th,
+        td {
+          padding: 6px;
+          text-align: center;
+          border: 1.5px solid #D2D2D2;
+        }
+
+        thead th {
+          background-color: #E3E3E3;
+          padding: 15px;
+          font-size: 16px;
+          font-weight: 100;
+        }
+
+        td {
+          padding: 12px;
+          text-align: center;
+          border: 1px solid #d2d2d2;
+
+          i {
+            color: #0066B3;
+          }
+
+          .goToDetail {
+            background-color: #ffffff;
+            /* สีฟ้า Bootstrap */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+          }
+
+          .goToDetail:hover {
+            background-color: #dbdbdb;
+            /* สีฟ้าเข้มตอน hover */
+            transform: scale(1.05);
+            /* ขยายเล็กน้อย */
+          }
+        }
       }
     }
 
     .pagination-wrapper {
-      flex-shrink: 0; // Don't shrink pagination
-      margin-top: 10px;
-      padding-bottom: 0; // Padding handled by parent if needed, or keep small
+      margin-top: 20px;
+      padding-bottom: 20px;
       width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 10px;
-      background-color: white; // Ensure background covers any scrollbar visual
-      z-index: 10;
-
 
       .pagination {
         display: flex;
