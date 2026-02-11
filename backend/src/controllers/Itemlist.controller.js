@@ -181,7 +181,7 @@ exports.get_Setup_Division = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .execute('[trans].[Stored_Get_Dropdown_PC_Plan_Division]');
+      .execute('[trans].[Stored_Get_Dropdown_Division]');
     // Returns: Division_Id, Profit_Center, Division_Name
     res.json(result.recordset);
   } catch (error) {
@@ -368,11 +368,13 @@ exports.get_CaseSET_SetupTool = async (req, res) => {
 //    CASE SET DETAIL (Box/Shelf/Rack Breakdown)
 // ==========================================
 
+
+// 9. Get CuttingTool Detail for Case SET (Box/Shelf breakdown)
 // 9. Get CuttingTool Detail for Case SET (Box/Shelf breakdown)
 exports.get_CaseSET_CuttingTool_Detail = async (req, res) => {
   console.time('CaseSET_CuttingTool_Detail_QueryTime');
   try {
-    const { Division, ItemNo, FacilityName, PartNo, Process } = req.body;  // เปลี่ยน Facility -> FacilityName, ลบ MC
+    const { Division, ItemNo, FacilityName, PartNo, Process } = req.body;
     console.log('CaseSET CuttingTool Detail Params:', { Division, ItemNo, FacilityName, PartNo, Process });
 
     const pool = await poolPromise;
@@ -380,10 +382,9 @@ exports.get_CaseSET_CuttingTool_Detail = async (req, res) => {
 
     if (Division) request.input("Input_Division", sql.NVarChar, Division);
     if (ItemNo) request.input("Input_ItemNo", sql.NVarChar, ItemNo);
-    if (FacilityName) request.input("Input_FacilityName", sql.NVarChar, FacilityName);  // เปลี่ยนเป็น FacilityName
+    if (FacilityName) request.input("Input_FacilityName", sql.NVarChar, FacilityName);
     if (PartNo) request.input("Input_PartNo", sql.NVarChar, PartNo);
     if (Process) request.input("Input_Process", sql.NVarChar, Process);
-    // ลบ MC input ออก
 
     const result = await request.execute("[trans].[Stored_Get_CaseSET_CuttingTool_Detail]");
 
@@ -398,6 +399,56 @@ exports.get_CaseSET_CuttingTool_Detail = async (req, res) => {
   }
 };
 
+
+// 9.1 Get Case SET All (Unified Cutting + Setup)
+exports.get_CaseSET_All = async (req, res) => {
+  console.time('CaseSET_All_QueryTime');
+  try {
+    const { Division, PartNo, Process, FacilityName, MC, ItemNo } = req.body;
+    console.log('CaseSET All Params:', { Division, PartNo, Process, FacilityName, MC, ItemNo });
+
+    const pool = await poolPromise;
+    const request = pool.request();
+
+    if (Division) request.input("Input_Division", sql.NVarChar, Division);
+    if (PartNo) request.input("Input_PartNo", sql.NVarChar, PartNo);
+    if (Process) request.input("Input_Process", sql.NVarChar, Process);
+    if (FacilityName) request.input("Input_FacilityName", sql.NVarChar, FacilityName);
+    if (MC) request.input("Input_MC", sql.NVarChar, MC);
+    if (ItemNo) request.input("Input_ItemNo", sql.NVarChar, ItemNo);
+
+    const result = await request.execute("[trans].[Stored_Get_CaseSET_All]");
+
+    console.timeEnd('CaseSET_All_QueryTime');
+    console.log(`Found ${result.recordset.length} items (Cutting+Setup Mapped).`);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.timeEnd('CaseSET_All_QueryTime');
+    console.error("Error executing CaseSET All query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+// 9.2 Get ItemNo Dropdown (for non-SET Cases)
+exports.get_CaseSET_Dropdown_ItemNo = async (req, res) => {
+  try {
+    const { Division, ToolingType, PartNo } = req.body;
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input("Division", sql.NVarChar, Division)
+      .input("ToolingType", sql.NVarChar, ToolingType || 'Cutting tool')
+      .input("Input_PartNo", sql.NVarChar, PartNo) // Added PartNo filtering
+      .execute("[trans].[Stored_Get_CaseSET_Dropdown_ItemNo]");
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error get_CaseSET_Dropdown_ItemNo:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+
+
 // ==========================================
 //    CASE SET DROPDOWNS (PartNo, Process, MC)
 // ==========================================
@@ -405,15 +456,14 @@ exports.get_CaseSET_CuttingTool_Detail = async (req, res) => {
 // 9. Get PartNo Dropdown for Case SET
 exports.get_CaseSET_Dropdown_PartNo = async (req, res) => {
   try {
-    const { Division } = req.body;
-    console.log('CaseSET Dropdown PartNo - Division:', Division);
+    const { Division, ItemNo } = req.body;
+    console.log('CaseSET Dropdown PartNo - Division:', Division, 'ItemNo:', ItemNo);
 
     const pool = await poolPromise;
-    const request = pool.request();
-
-    if (Division) request.input("Input_Division", sql.NVarChar, Division);
-
-    const result = await request.execute("[trans].[Stored_Get_CaseSET_Dropdown_PartNo]");
+    const result = await pool.request()
+      .input("Input_Division", sql.NVarChar, Division)
+      .input("Input_ItemNo", sql.NVarChar, ItemNo)
+      .execute("[trans].[Stored_Get_CaseSET_Dropdown_PartNo]");
     console.log(`Found ${result.recordset.length} PartNo items.`);
 
     res.json(result.recordset);
@@ -426,16 +476,15 @@ exports.get_CaseSET_Dropdown_PartNo = async (req, res) => {
 // 10. Get Process Dropdown for Case SET
 exports.get_CaseSET_Dropdown_Process = async (req, res) => {
   try {
-    const { Division, PartNo } = req.body;
-    console.log('CaseSET Dropdown Process - Division:', Division, 'PartNo:', PartNo);
+    const { Division, PartNo, ItemNo } = req.body;
+    console.log('CaseSET Dropdown Process - Division:', Division, 'PartNo:', PartNo, 'ItemNo:', ItemNo);
 
     const pool = await poolPromise;
-    const request = pool.request();
-
-    if (Division) request.input("Input_Division", sql.NVarChar, Division);
-    if (PartNo) request.input("Input_PartNo", sql.NVarChar, PartNo);
-
-    const result = await request.execute("[trans].[Stored_Get_CaseSET_Dropdown_Process]");
+    const result = await pool.request()
+      .input("Input_Division", sql.NVarChar, Division)
+      .input("Input_PartNo", sql.NVarChar, PartNo)
+      .input("Input_ItemNo", sql.NVarChar, ItemNo)
+      .execute("[trans].[Stored_Get_CaseSET_Dropdown_Process]");
     console.log(`Found ${result.recordset.length} Process items.`);
 
     res.json(result.recordset);
@@ -448,8 +497,8 @@ exports.get_CaseSET_Dropdown_Process = async (req, res) => {
 // 11. Get MC Dropdown for Case SET
 exports.get_CaseSET_Dropdown_MC = async (req, res) => {
   try {
-    const { Division, PartNo, Process } = req.body;
-    console.log('CaseSET Dropdown MC - Division:', Division, 'PartNo:', PartNo, 'Process:', Process);
+    const { Division, PartNo, Process, ItemNo } = req.body;
+    console.log('CaseSET Dropdown MC - All Params:', { Division, PartNo, Process, ItemNo });
 
     const pool = await poolPromise;
     const request = pool.request();
@@ -457,6 +506,7 @@ exports.get_CaseSET_Dropdown_MC = async (req, res) => {
     if (Division) request.input("Input_Division", sql.NVarChar, Division);
     if (PartNo) request.input("Input_PartNo", sql.NVarChar, PartNo);
     if (Process) request.input("Input_Process", sql.NVarChar, Process);
+    if (ItemNo) request.input("Input_ItemNo", sql.NVarChar, ItemNo);
 
     const result = await request.execute("[trans].[Stored_Get_CaseSET_Dropdown_MC]");
     console.log(`Found ${result.recordset.length} MC items.`);

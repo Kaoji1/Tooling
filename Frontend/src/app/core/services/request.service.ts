@@ -12,9 +12,22 @@ export class RequestService {
   private baseUrl = environment.apiUrl
   public user: any;
 
-  // Cache Storage
+  // Cache & State Storage
   private divisionCache$: Observable<any> | null = null;
-  private cache = new Map<string, any>(); // Simple cache for parameterized calls
+  private cache = new Map<string, any>();
+  private requestPageState: any = null; // Store Request Page state
+
+  saveRequestState(state: any) {
+    this.requestPageState = JSON.parse(JSON.stringify(state)); // Deep copy to avoid reference issues
+  }
+
+  getRequestState(): any {
+    return this.requestPageState;
+  }
+
+  clearRequestState() {
+    this.requestPageState = null;
+  }
 
   constructor(
     private httpClient: HttpClient
@@ -103,8 +116,14 @@ export class RequestService {
     return this.httpClient.post(`${this.baseUrl}/get_CaseSET_CuttingTool`, data);
   }
 
+
   get_CaseSET_SetupTool(data: any): Observable<any> {
     return this.httpClient.post(`${this.baseUrl}/get_CaseSET_SetupTool`, data);
+  }
+
+  // New Combined API for Case SET (Cutting + Setup)
+  get_CaseSET_All(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_CaseSET_All`, data);
   }
 
   // API สำหรับดึงรายละเอียด Box/Shelf/Rack
@@ -123,6 +142,10 @@ export class RequestService {
 
   get_CaseSET_Dropdown_MC(data: any): Observable<any> {
     return this.httpClient.post(`${this.baseUrl}/get_CaseSET_Dropdown_MC`, data);
+  }
+
+  get_CaseSET_Dropdown_ItemNo(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/get_CaseSET_Dropdown_ItemNo`, data);
   }
 
   // โหลด Machine Type ตาม Division (แสดงเฉยๆ ไม่ใช้กรอง)

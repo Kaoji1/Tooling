@@ -16,6 +16,10 @@ export class ReturnService {
         return this.http.get<any>(`${this.baseUrl}/return/item/${itemNo}?divisionId=${divisionId}`);
     }
 
+    getPartNo(partNo: string, divisionId: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/return/partno/${partNo}?divisionId=${divisionId}`);
+    }
+
     getDivisions(): Observable<any[]> {
         return this.http.get<any[]>(`${this.baseUrl}/return/divisions`);
     }
@@ -26,5 +30,13 @@ export class ReturnService {
 
     getProcesses(divisionId: number): Observable<any[]> {
         return this.http.get<any[]>(`${this.baseUrl}/return/processes/${divisionId}`);
+    }
+
+    saveReturnRequest(data: any): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/return/save`, data);
+    }
+
+    getReturnHistory(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/return/list`);
     }
 }

@@ -6,7 +6,7 @@ exports.getDivisions = async (req, res) => {
     try {
         const pool = await poolPromise;
         const result = await pool.request()
-            .execute('trans.Stored_Get_Dropdown_PC_Plan_Division');
+            .execute('trans.Stored_Get_Dropdown_Division');
 
         // Return: Division_Id, Profit_Center, Division_Name
         res.status(200).json(result.recordset);

@@ -16,27 +16,27 @@ export class MasterPHService {
         return this.http.get<any[]>(`${this.baseUrl}/master-ph?type=${type}`);
     }
 
-    importData(data: any[], type: 'pmc' | 'gm' = 'pmc'): Observable<any> {
+    importData(data: FormData, type: 'pmc' | 'gm' = 'pmc'): Observable<any> {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import?type=${type}`, data);
     }
 
-    importIReport(data: any[]): Observable<any> {
+    importIReport(data: FormData): Observable<any> {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import-ireport`, data);
     }
 
-    importMasterAllPMC(data: any[]): Observable<any> {
+    importMasterAllPMC(data: FormData): Observable<any> {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import-master-all-pmc`, data);
     }
 
-    importMasterToolingPMC(data: any[]): Observable<any> {
+    importMasterToolingPMC(data: FormData): Observable<any> {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import-master-tooling-pmc`, data);
     }
 
-    importTypeTooling(data: any[]): Observable<any> {
+    importTypeTooling(data: FormData): Observable<any> {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import-type-tooling`, data);
     }
 
-    importMasterToolingGM(data: any[]): Observable<any> {
+    importMasterToolingGM(data: FormData): Observable<any> {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import-master-tooling-gm`, data);
     }
 }

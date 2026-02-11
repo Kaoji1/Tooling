@@ -1365,14 +1365,12 @@ exports.DeleteItem = async (req, res) => {
 
 exports.Add_New_Request_Bulk = async (req, res) => {
   try {
-    const items = req.body; // Expecting an array of objects
+    const items = req.body;
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "Invalid input: Expected an array of request items." });
     }
 
     const pool = await poolPromise;
-    let successCount = 0;
-    let failCount = 0;
 
     // Group items by keys that determine DocNo: Division, CASE, Process, Fac
     const groups = {};
@@ -1382,142 +1380,98 @@ exports.Add_New_Request_Bulk = async (req, res) => {
       groups[key].push(item);
     }
 
+    let totalInserted = 0;
+    let totalCaseSetup = 0;
+    let totalCutting = 0;
+    let totalSetup = 0;
+
     for (const key in groups) {
       const groupItems = groups[key];
       const firstItem = groupItems[0];
 
-      // Generate DocNo for this group
-      let docNo = firstItem.DocNo; // Use provided DocNo if available
+      // Logic for generating DocNo
+      let docNo = '';
+      const division = firstItem.Division ? firstItem.Division.toUpperCase() : '';
+      const case_ = firstItem.CASE;
+      const process = firstItem.Process;
+      const factory = firstItem.Fac;
 
-      // Only generate if not provided or temporary format
-      if (!docNo || docNo.startsWith('REQ-')) {
-        try {
-          const division = firstItem.Division ? firstItem.Division.toUpperCase() : '';
-          const case_ = firstItem.CASE;
-          const process = firstItem.Process;
-          const factory = firstItem.Fac;
-
-          if (case_ && process && factory) {
-            // Logic ported and adjusted
-            let casePart = '';
-            switch (case_.toUpperCase()) {
-              case 'F/A': casePart = 'FA'; break; // Removed underscore based on request "Process+Fac+Case" (implied concat) or keep?
-              // User example: "TN3SET260122". "SET" is likely Case "SET"? 
-              // Previous code: FA_, NG_, PP_, RW_.
-              // User example "TN3SET". TN=Process, 3=Fac, SET=Case?
-              // Let's assume Case "SET" -> "SET".
-              // If Case is "F/A", "N/G" etc, user said "Case".
-              // Let's keep abbreviations but maybe strip underscores if user example implies tight concat?
-              // User Example: TN3SET...
-              // Process=TN, Fac=3, Case=SET.
-              // So I should probably NOT use underscores.
-              // Previous: FA_, NG_...
-              // I will adjust to remove underscores for new format.
-              case 'F/A': casePart = 'FA'; break;
-              case 'N/G': casePart = 'NG'; break;
-              case 'P/P': casePart = 'PP'; break;
-              case 'R/W': casePart = 'RW'; break;
-              default: casePart = case_.toUpperCase();
-            }
-
-            let processPart = '';
-            const proc = process.toLowerCase();
-            if (['turning', 'milling', 'milling2'].includes(proc)) processPart = (proc === 'turning') ? 'TN' : 'ML';
-            else if (['f&boring', 'rl'].some(p => proc.includes(p))) processPart = 'RL';
-            else processPart = 'XX'; // Fallback
-
-            const factoryPart = factory.toString().toUpperCase();
-
-            // Date Part: yymmdd
-            const now = new Date();
-            const yy = now.getFullYear().toString().slice(-2);
-            const mm = (now.getMonth() + 1).toString().padStart(2, '0');
-            const dd = now.getDate().toString().padStart(2, '0');
-            const datePart = `${yy}${mm}${dd}`;
-
-            let prefix = '';
-
-            if (division === '7122') {
-              // Process + Fac + Case + M/R No.(yymmdd)
-              prefix = `${processPart}${factoryPart}${casePart}${datePart}`;
-            } else if (division === '71DZ') {
-              // Case + Process + Fac + M/R No.(yymmdd)
-              prefix = `${casePart}${processPart}${factoryPart}${datePart}`;
-            } else {
-              // Default Fallback
-              prefix = `${processPart}${factoryPart}${casePart}${datePart}`;
-            }
-
-            // DIRECTLY USE PREFIX AS DOCNO (No Running Number)
-            docNo = prefix;
-            console.log(`Generated DocNo for group ${key}: ${docNo}`);
-          }
-        } catch (e) {
-          console.warn("Failed to generate DocNo, using timestamp fallback", e);
-          docNo = `REQ-${Date.now()}`;
+      if (case_ && process && factory) {
+        let casePart = '';
+        switch (case_.toUpperCase()) {
+          case 'F/A': casePart = 'FA'; break;
+          case 'N/G': casePart = 'NG'; break;
+          case 'P/P': casePart = 'PP'; break;
+          case 'R/W': casePart = 'RW'; break;
+          default: casePart = case_.toUpperCase();
         }
-      }
 
-      // Insert Items with the generated DocNo
-      for (const item of groupItems) {
-        try {
-          let {
-            Division, Status, Requester, Fac, SPEC, QTY, CASE,
-            PartNo, ItemNo, Process, MCType, Req_QTY, Remark,
-            ON_HAND, DueDate, PathDwg, PathLayout, PhoneNo,
-            MCNo, MCNo_ // Frontend might send MCNo_
-          } = item;
+        let processPart = '';
+        const proc = process.toLowerCase();
+        if (['turning', 'milling', 'milling2'].includes(proc)) processPart = (proc === 'turning') ? 'TN' : 'ML';
+        else if (['f&boring', 'rl'].some(p => proc.includes(p))) processPart = 'RL';
+        else processPart = 'XX';
 
-          const finalMCNo = MCNo || MCNo_; // Handle both keys
+        const factoryPart = factory.toString().toUpperCase();
+        const now = new Date();
+        const yy = now.getFullYear().toString().slice(-2);
+        const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+        const dd = now.getDate().toString().padStart(2, '0');
+        const datePart = `${yy}${mm}${dd}`;
 
-          // Auto-fetch ItemNo
-          if (!ItemNo && SPEC) {
-            const itemResult = await pool.request()
-              .input("SPEC", sql.NVarChar, SPEC)
-              .query(`SELECT TOP 1 ItemNo FROM tb_IssueCuttingTool_Request_Document WHERE SPEC = @SPEC`);
-            if (itemResult.recordset.length > 0) ItemNo = itemResult.recordset[0].ItemNo;
-          }
+        let prefix = division === '71DZ' ? `${casePart}${processPart}${factoryPart}${datePart}` : `${processPart}${factoryPart}${casePart}${datePart}`;
 
-          await pool.request()
-            .input("DocNo", sql.NVarChar, docNo) // Use generated DocNo
-            .input("Division", sql.NVarChar, Division)
-            .input("Requester", sql.NVarChar, Requester)
-            .input("PartNo", sql.NVarChar, PartNo)
-            .input("ItemNo", sql.NVarChar, ItemNo)
-            .input("SPEC", sql.NVarChar, SPEC)
-            .input("Process", sql.NVarChar, Process)
-            .input("MCType", sql.NVarChar, MCType)
-            .input("MCNo", sql.NVarChar, finalMCNo) // Add MCNo input
-            .input("Fac", sql.Int, parseInt(Fac, 10))
-            .input("PathDwg", sql.NVarChar, PathDwg)
-            .input("ON_HAND", sql.Int, parseInt(ON_HAND, 10))
-            .input("Req_QTY", sql.Int, parseInt(Req_QTY, 10))
-            .input("QTY", sql.Int, parseInt(QTY, 10) || 0)
-            .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
-            .input("CASE", sql.NVarChar, CASE)
-            .input("Status", sql.NVarChar, Status)
-            .input("PathLayout", sql.NVarChar, PathLayout)
-            .input("Remark", sql.NVarChar, Remark)
-            .input("PhoneNo", sql.Int, PhoneNo)
+        // Check DocNo uniqueness across ALL 3 tables
+        let isUnique = false;
+        let finalDocNo = prefix;
+        let counter = 1;
+
+        const checkDocNoUnique = async (docNoToCheck) => {
+          const result = await pool.request().input('DocNo', sql.NVarChar(50), docNoToCheck)
             .query(`
-                INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] 
-                (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, MCNo, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo)
-                VALUES 
-                (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @MCNo, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo);
+              SELECT 
+                (SELECT COUNT(*) FROM tb_IssueCaseSetup_Request_Document WHERE DocNo = @DocNo) +
+                (SELECT COUNT(*) FROM tb_IssueCuttingTool_Request_Document WHERE DocNo = @DocNo) +
+                (SELECT COUNT(*) FROM tb_IssueSetupTool_Request_Document WHERE DocNo = @DocNo) AS TotalCount
             `);
+          return result.recordset[0].TotalCount === 0;
+        };
 
-          successCount++;
-        } catch (err) {
-          console.error("Error inserting item:", item, err);
-          failCount++;
+        isUnique = await checkDocNoUnique(finalDocNo);
+
+        while (!isUnique) {
+          finalDocNo = `${prefix}${counter.toString().padStart(2, '0')}`;
+          isUnique = await checkDocNoUnique(finalDocNo);
+          counter++;
         }
+        docNo = finalDocNo;
       }
+
+      // Add DocNo and Normalize MCNo for each item in the group
+      const normalizedItems = groupItems.map(it => ({
+        ...it,
+        DocNo: docNo,
+        MCNo: it.MCNo || it.MCNo_
+      }));
+
+      // 🔄 Call Professional Stored Procedure
+      const result = await pool.request()
+        .input("ItemsJson", sql.NVarChar(sql.MAX), JSON.stringify(normalizedItems))
+        .execute("trans.Stored_Insert_Request_Bulk");
+
+      totalInserted += result.recordset[0].InsertedCount;
+      totalCaseSetup += result.recordset[0].CaseSetupCount || 0;
+      totalCutting += result.recordset[0].CuttingCount || 0;
+      totalSetup += result.recordset[0].SetupCount || 0;
     }
 
     res.status(201).json({
-      message: 'Bulk insert completed',
-      successCount,
-      failCount
+      message: 'Bulk insert completed successfully',
+      successCount: totalInserted,
+      failCount: items.length - totalInserted,
+      CaseSetupCount: totalCaseSetup,
+      CuttingCount: totalCutting,
+      SetupCount: totalSetup
     });
 
   } catch (error) {

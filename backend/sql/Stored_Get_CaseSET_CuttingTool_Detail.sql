@@ -17,42 +17,33 @@ GO
 CREATE OR ALTER PROCEDURE [trans].[Stored_Get_CaseSET_CuttingTool_Detail]
     @Input_Division NVARCHAR(50) = NULL,
     @Input_ItemNo NVARCHAR(100) = NULL,
-    @Input_FacilityName NVARCHAR(100) = NULL,  -- ใช้ FacilityName แทน Facility
-    @Input_PartNo NVARCHAR(100) = NULL,
-    @Input_Process NVARCHAR(100) = NULL
-    -- ลบ @Input_MC ออก
+    @Input_FacilityName NVARCHAR(100) = NULL,
+    @Input_PartNo NVARCHAR(100) = NULL, -- Kept for compatibility but not used for filter
+    @Input_Process NVARCHAR(100) = NULL  -- Kept for compatibility but not used for filter
 AS
 BEGIN
     SET NOCOUNT ON;
 
+    -- Use exactly the same data source as the main search for consistency
     SELECT 
-        [ItemNo],
-        [ItemName],
-        [SPEC],
-        [PartNo],
-        [Process],
-        [MC],
-        [Position],
-        [FacilityName],
-        [BoxName],
-        [ShelfName],
-        [RackName],
-        ISNULL([FreshQty], 0) AS [FreshQty],
-        ISNULL([ReuseQty], 0) AS [ReuseQty],
-        ISNULL([TotalQty], 0) AS [TotalQty]
-    FROM [viewer].[View_tb_Master_Pur_CuttingTool_PMC_QTY]
-    WHERE 
-        (@Input_Division IS NULL OR [Division_Id] = @Input_Division)
-        AND (@Input_ItemNo IS NULL OR [ItemNo] = @Input_ItemNo)
-        AND (@Input_PartNo IS NULL OR [PartNo] = @Input_PartNo)
-        AND (@Input_Process IS NULL OR [Process] = @Input_Process)
-        -- FacilityName: optional, ถ้าส่งมาจะ filter แต่รวม NULL ด้วย
-        AND (
-            @Input_FacilityName IS NULL 
-            OR @Input_FacilityName = '' 
-            OR [FacilityName] LIKE '%' + @Input_FacilityName
-            OR [FacilityName] IS NULL
-        )
-    ORDER BY [BoxName], [ShelfName], [RackName];
+        S.ToolingName AS [ItemNo],
+        S.FacilityName,
+        S.BoxName,
+        S.ShelfName,
+        S.RackName,
+        ISNULL(S.FreshQty, 0) AS [FreshQty],
+        ISNULL(S.ReuseQty, 0) AS [ReuseQty],
+        ISNULL(S.FreshQty + S.ReuseQty, 0) AS [TotalQty]
+    FROM (
+        SELECT ToolingName, FacilityName, BoxName, ShelfName, RackName, FreshQty, ReuseQty, '71DZ' as PC 
+        FROM [db_SmartCuttingTool_PMA].[viewer].[ToolingStockOnRack]
+        UNION ALL
+        SELECT ToolingName, FacilityName, BoxName, ShelfName, RackName, FreshQty, ReuseQty, '7122' as PC 
+        FROM [db_ToolingSmartRack].[viewer].[ToolingStockOnRack]
+    ) S
+    WHERE S.ToolingName = @Input_ItemNo
+      AND (S.PC = @Input_Division OR @Input_Division IS NULL OR @Input_Division = '')
+      AND (@Input_FacilityName IS NULL OR @Input_FacilityName = '' OR S.FacilityName LIKE '%' + @Input_FacilityName + '%')
+    ORDER BY S.BoxName, S.ShelfName, S.RackName;
 END
 GO

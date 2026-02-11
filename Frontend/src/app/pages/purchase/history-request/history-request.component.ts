@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPurchase.component';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RouterOutlet } from '@angular/router';
 import { PurchaseHistoryservice } from '../../../core/services/PurchaseHistory.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AuthService } from '../../../core/services/auth.service';
@@ -67,7 +67,8 @@ export class HistoryRequestComponent implements OnInit {
 
 
   constructor(private purchasehistory: PurchaseHistoryservice,
-    private authService: AuthService
+    private authService: AuthService,
+    @Inject(PLATFORM_ID) private platformId: Object
 
   ) { }
 
@@ -95,28 +96,34 @@ export class HistoryRequestComponent implements OnInit {
     this.loadPurchaseHistory();
 
     // โหลดสถานะ Selection จาก localStorage ถ้ามี
-    const storedRequests = localStorage.getItem('purchaseRequest');
-    if (storedRequests) {
-      const savedRequests = JSON.parse(storedRequests);
-      this.requests.forEach(req => {
-        const saved = savedRequests.find((r: any) => r.ID_Request === req.ID_Request);
-        if (saved) {
-          req.Selection = saved.Selection;
-        }
-      });
+    if (isPlatformBrowser(this.platformId)) {
+      const storedRequests = localStorage.getItem('purchaseRequest');
+      if (storedRequests) {
+        const savedRequests = JSON.parse(storedRequests);
+        this.requests.forEach(req => {
+          const saved = savedRequests.find((r: any) => r.ID_Request === req.ID_Request);
+          if (saved) {
+            req.Selection = saved.Selection;
+          }
+        });
+      }
     }
     this.applyHighlightForSelection();
   }
 
   toggleAllCheckboxes() {
     this.requests.forEach(item => item.Selection = this.selectAllCheck);
-    localStorage.setItem('purchaseRequest', JSON.stringify(this.requests));
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('purchaseRequest', JSON.stringify(this.requests));
+    }
     this.applyHighlightForSelection();
   }
 
   onCheckboxChange(item: any, index: number) {
     item.Selection = !item.Selection;
-    localStorage.setItem('purchaseRequest', JSON.stringify(this.requests));
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('purchaseRequest', JSON.stringify(this.requests));
+    }
     this.applyHighlightForSelection();
   }
 
@@ -389,7 +396,9 @@ export class HistoryRequestComponent implements OnInit {
       }
 
       // บันทึกกลับ localStorage (หรือเรียก API)
-      localStorage.setItem('purchaseRequest', JSON.stringify(this.requests));
+      if (isPlatformBrowser(this.platformId)) {
+        localStorage.setItem('purchaseRequest', JSON.stringify(this.requests));
+      }
 
       // ลบค่า editingIndex
       delete this.editingIndex[item.ID_Request];
@@ -531,7 +540,7 @@ export class HistoryRequestComponent implements OnInit {
     const dataRows = selectedRequests.map(req => ({
       DIVISION: req.Division || '',
       ITEM_NO: req.ItemNo || '',
-      MFG_ORDER_NO: req.MFG_Order_No || '',
+      MFG_ORDER_NO: req.PartNo || '', // MFG_Order_No in friend's logic seems map to PartNo or MFG_Order_No
       DOCUMENT_NO: req.DocNo || '',
       Stock_Location: req.Stock_Location || '',
       MATL_LOT: '',
@@ -591,8 +600,9 @@ export class HistoryRequestComponent implements OnInit {
       }
     });
 
-    // บันทึกกลับไปใน localStorage หรือเรียก API อัปเดตจริง
-    localStorage.setItem('purchaseRequest', JSON.stringify(this.requests));
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('purchaseRequest', JSON.stringify(this.requests));
+    }
 
     Swal.fire({ icon: 'success', title: 'Export AS400 Success!', text: 'Selected requests marked as CompleteAS400.' });
   }

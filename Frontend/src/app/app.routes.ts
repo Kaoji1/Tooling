@@ -60,6 +60,11 @@ export const routes: Routes = [
         path: 'historyprint',
         loadComponent: () => import('./pages/user/history-print/history-print.component').then(m => m.HistoryPrintComponent),
         data: { roles: ['production', 'view', 'admin', 'engineer'] }
+      },
+      {
+        path: 'return-history',
+        loadComponent: () => import('./pages/user/return-history/return-history.component').then(m => m.ReturnHistoryComponent),
+        data: { roles: ['production', 'view', 'admin', 'engineer'] }
       }
     ]
   },

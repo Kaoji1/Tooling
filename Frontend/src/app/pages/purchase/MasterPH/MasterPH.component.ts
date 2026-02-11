@@ -123,94 +123,12 @@ export class MasterPHComponent {
         else if (type === 'masterToolingPMC') this.masterToolingPMCFileName = fileName;
         else if (type === 'masterToolingGM') this.masterToolingGMFileName = fileName;
 
-        const reader: FileReader = new FileReader();
-        reader.onload = (e: any) => {
-            const bstr: string = e.target.result;
-            const wb: XLSX.WorkBook = XLSX.read(bstr, { type: 'binary' });
+        // Store file directly to tempData
+        console.log(`[MasterPH] Selected file for ${type}: ${fileName}`);
+        this.tempData[type] = file;
 
-            // For Master Tooling, read from specific sheet
-            let wsname: string;
-            if (type === 'masterToolingPMC') {
-                // PMC uses 'Forecast' sheet
-                if (wb.SheetNames.includes('Forecast')) {
-                    wsname = 'Forecast';
-                } else {
-                    Swal.fire('Error', 'Sheet "Forecast" not found in the Excel file', 'error');
-                    return;
-                }
-            } else if (type === 'masterToolingGM') {
-                // GM uses 'ALL' sheet
-                if (wb.SheetNames.includes('ALL')) {
-                    wsname = 'ALL';
-                } else {
-                    Swal.fire('Error', 'Sheet "ALL" not found in the Excel file', 'error');
-                    return;
-                }
-            } else {
-                wsname = wb.SheetNames[0]; // Default to first sheet
-            }
-
-            const ws: XLSX.WorkSheet = wb.Sheets[wsname];
-
-            // 1. Convert to array of arrays to find the header row
-            const aoa: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1 });
-
-            let headerRowIndex = 0;
-            // Search based on type? Or generic?
-            // For PMC/GM uses 'Item No'. For IReport it might be 'ITEM_NO' or similar.
-            // Define keywords based on type to prevent false positives (like "Division" in title string)
-            let keywords = ['item no', 'itemno', 'division', 'department']; // Default for PMC/GM
-
-            if (type === 'typeTooling') {
-                keywords = ['a/c code', 'ac code', 'ac_code', 'ac type']; // Specific for Type Tooling
-            } else if (type === 'ireport') {
-                keywords = ['item_no', 'item no', 'vendor'];
-            } else if (type === 'masterToolingGM') {
-                // GM specific keywords based on actual Excel column names
-                keywords = ['part no', 'maker', 'item no.cutting', 'item set up tool', 'm/c'];
-            }
-
-            // Search for the row containing keywords
-            for (let i = 0; i < Math.min(aoa.length, 20); i++) { // Search first 20 rows
-                const row = aoa[i];
-                if (row && row.some((cell: any) => {
-                    if (typeof cell !== 'string') return false;
-                    const val = cell.toLowerCase();
-                    return keywords.some(k => val.includes(k));
-                })) {
-                    headerRowIndex = i;
-                    console.log(`Found header at row ${i} for ${type}`);
-                    break;
-                }
-            }
-
-            // 2. Parse again with the correct range
-            // range: headerRowIndex tells it to skip rows before the header
-            let data = XLSX.utils.sheet_to_json(ws, { range: headerRowIndex }) as any[];
-
-            // 3. Trim column headers (remove leading/trailing spaces)
-            if (data.length > 0) {
-                data = data.map((row: any) => {
-                    const trimmedRow: any = {};
-                    for (const key of Object.keys(row)) {
-                        const trimmedKey = key.trim();
-                        trimmedRow[trimmedKey] = row[key];
-                    }
-                    return trimmedRow;
-                });
-            }
-
-            if (data.length > 0) {
-                this.tempData[type] = data; // Need to define tempData
-                console.log(`Parsed ${data.length} rows from ${type} file. First row keys:`, Object.keys(data[0] as any));
-            } else {
-                Swal.fire('Info', 'File is empty', 'info');
-            }
-
-            // Reset input value to allow re-selecting same file
-            evt.target.value = '';
-        };
-        reader.readAsBinaryString(file);
+        // Reset input value to allow re-selecting same file
+        evt.target.value = '';
     }
 
     // tempData definition removed from here as it was moved up to be cleaner
@@ -229,9 +147,9 @@ export class MasterPHComponent {
 
     uploadData(type: 'pmc' | 'gm' | 'setup' | 'cutting' | 'purchase' | 'typeTooling' | 'masterAll' | 'masterTooling' | 'masterToolingGM') {
         if (type === 'purchase') {
-            const hasPMC = this.tempData.pmc && this.tempData.pmc.length > 0;
-            const hasGM = this.tempData.gm && this.tempData.gm.length > 0;
-            const hasIReport = this.tempData.ireport && this.tempData.ireport.length > 0; // New
+            const hasPMC = !!this.tempData.pmc;
+            const hasGM = !!this.tempData.gm;
+            const hasIReport = !!this.tempData.ireport; // New
 
             if (!hasPMC && !hasGM && !hasIReport) {
                 Swal.fire('Warning', 'No file selected for Purchase', 'warning');
@@ -240,52 +158,57 @@ export class MasterPHComponent {
 
             // Upload sequence
             if (hasPMC) {
-                this.importData(this.tempData.pmc, 'pmc');
+                // pmc logic
+                // Since tempData.pmc is now a File, we need to handle it.
+                // Wait, importData expects File now? Yes, I updated it below.
+                // let's confirm the signature of importData.
+                // importData(file: File, type: 'pmc' | 'gm')
+                this.importData(this.tempData.pmc as any, 'pmc');
             }
             if (hasGM) {
                 setTimeout(() => {
-                    this.importData(this.tempData.gm, 'gm');
+                    this.importData(this.tempData.gm as any, 'gm');
                 }, 500);
             }
-            if (hasIReport) { // New IReport Upload
-                setTimeout(() => {
-                    this.importIReportData(this.tempData.ireport);
-                }, 1000); // Trigger after others
-            }
+            setTimeout(() => {
+                this.importIReportData(this.tempData.ireport as any);
+            }, 1000); // Trigger after others
         } else if (type === 'masterAll') {
             // Master All PMC upload logic (already implemented)
             const data = this.tempData.masterAllPMC;
-            if (!data || data.length === 0) {
+            if (!data) {
                 Swal.fire('Warning', 'No Master All PMC file selected', 'warning');
                 return;
             }
-            this.importMasterAllPMC(data);
+            this.importMasterAllPMC(data as any);
         } else if (type === 'masterTooling') {
             // Master Tooling PMC upload logic
             const data = this.tempData.masterToolingPMC;
-            if (!data || data.length === 0) {
+            // Check if file exists (since now tempData stores File object, check truthiness)
+            if (!data) {
                 Swal.fire('Warning', 'No Master Tooling PMC file selected', 'warning');
                 return;
             }
-            this.importMasterToolingPMC(data);
+            this.importMasterToolingPMC(data as any);
         } else if (type === 'masterToolingGM') {
             // Master Tooling GM upload logic
             const data = this.tempData.masterToolingGM;
-            if (!data || data.length === 0) {
+            if (!data) {
                 Swal.fire('Warning', 'No Master Tooling GM file selected', 'warning');
                 return;
             }
-            this.importMasterToolingGM(data);
+            this.importMasterToolingGM(data as any);
         } else {
             const data = this.tempData[type];
-            if (!data || data.length === 0) {
-                Swal.fire('Warning', 'No file selected or file is empty', 'warning');
+            if (!data) {
+                Swal.fire('Warning', 'No file selected', 'warning');
                 return;
             }
             if (type === 'typeTooling') {
-                this.importTypeToolingData(data);
+                this.importTypeToolingData(data as any);
             } else {
-                this.importData(data);
+                // For now, only 'pmc', 'gm' (generic generic importData) are left here.
+                this.importData(data as any, type as 'pmc' | 'gm');
             }
         }
     }
@@ -295,16 +218,19 @@ export class MasterPHComponent {
         Swal.fire('Info', `Export template for ${type} (Not implemented yet)`, 'info');
     }
 
-    importData(data: any[], type: 'pmc' | 'gm' = 'pmc') {
+    importData(file: File, type: 'pmc' | 'gm' = 'pmc') {
         this.loading = true;
+        const formData = new FormData();
+        formData.append('file', file);
+
         Swal.fire({
             title: 'Importing...',
-            text: `Uploading ${data.length} records (${type.toUpperCase()}). Please wait.`,
+            text: `Uploading ${type.toUpperCase()} file. Please wait.`,
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
 
-        this.masterPHService.importData(data, type).subscribe({
+        this.masterPHService.importData(formData).subscribe({
             next: (res) => {
                 Swal.fire('Success', `Imported ${type.toUpperCase()} ${res.count} records successfully!`, 'success');
                 this.loadData(); // Refresh table
@@ -318,17 +244,26 @@ export class MasterPHComponent {
         });
     }
 
-    // Special import for IReport
-    importIReportData(data: any[]) {
+    // Special import for IReport (Refactored to FormData)
+    importIReportData(file: File) {
+        if (!file) {
+            Swal.fire('Error', 'No file to import', 'error');
+            return;
+        }
+
         this.loading = true;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
         Swal.fire({
             title: 'Importing IReport...',
-            text: `Uploading ${data.length} records. Please wait.`,
+            text: `Uploading IReport file. Please wait.`,
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
 
-        this.masterPHService.importIReport(data).subscribe({
+        this.masterPHService.importIReport(formData).subscribe({
             next: (res) => {
                 if (res.errors && res.errors.length > 0) {
                     let msg = `Imported ${res.count} records. Failed ${res.errors.length} records.`;
@@ -354,16 +289,25 @@ export class MasterPHComponent {
         });
     }
 
-    importTypeToolingData(data: any[]) {
+    importTypeToolingData(file: File) {
+        if (!file) {
+            Swal.fire('Error', 'No file to import', 'error');
+            return;
+        }
+
         this.loading = true;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
         Swal.fire({
             title: 'Importing Type Tooling...',
-            text: `Uploading ${data.length} records. Please wait.`,
+            text: `Uploading Type Tooling file. Please wait.`,
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
 
-        this.masterPHService.importTypeTooling(data).subscribe({
+        this.masterPHService.importTypeTooling(formData).subscribe({
             next: (res) => {
                 if (res.errors && res.errors.length > 0) {
                     let msg = `Imported ${res.count} records. Failed ${res.errors.length} records.`;
@@ -390,248 +334,127 @@ export class MasterPHComponent {
         });
     }
 
-    importMasterAllPMC(data: any[]) {
-        if (data.length === 0) {
-            Swal.fire('Error', 'No data to import', 'error');
+    importMasterAllPMC(file: File) {
+        if (!file) {
+            Swal.fire('Error', 'No file to import', 'error');
             this.loading = false;
             return;
         }
 
-        const BATCH_SIZE = 200;
-        const totalItems = data.length;
-        let processed = 0;
-        let successCount = 0;
-        let errorCount = 0;
-        const errors: any[] = [];
+        const formData = new FormData();
+        formData.append('file', file);
 
-        const processBatch = async (startIndex: number) => {
-            if (startIndex >= totalItems) {
-                this.loading = false;
-                if (errorCount > 0) {
-                    Swal.fire({
-                        title: 'Completed with Errors',
-                        html: `Success: ${successCount}<br>Failed: ${errorCount}<br>First Error: ${errors[0]}`,
-                        icon: 'warning'
-                    });
-                } else {
-                    Swal.fire('Success', `Imported all ${successCount} records successfully!`, 'success');
-                }
-                return;
+        Swal.fire({
+            title: 'Uploading...',
+            text: `Uploading Master All PMC file. Please wait.`,
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        this.masterPHService.importMasterAllPMC(formData).subscribe({
+            next: (res: any) => {
+                Swal.fire('Success', `Imported Master All PMC ${res.count} records successfully!`, 'success');
+            },
+            error: (err: any) => {
+                console.error('Import Error:', err);
+                const errorMsg = err.error?.error || err.error?.message || err.message || 'Unknown error';
+                Swal.fire('Error', `Failed to import: ${errorMsg}`, 'error');
             }
-
-            const batch = data.slice(startIndex, startIndex + BATCH_SIZE);
-            const currentBatchNum = Math.floor(startIndex / BATCH_SIZE) + 1;
-            const totalBatches = Math.ceil(totalItems / BATCH_SIZE);
-
-            Swal.fire({
-                title: 'Uploading...',
-                text: `Batch ${currentBatchNum}/${totalBatches} (${processed}/${totalItems} items)`,
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
-            });
-
-            this.masterPHService.importMasterAllPMC(batch).subscribe({
-                next: (res: any) => {
-                    successCount += res.count;
-                    processed += batch.length;
-                    processBatch(startIndex + BATCH_SIZE);
-                },
-                error: (err: any) => {
-                    console.error('Batch Error:', err);
-                    errorCount += batch.length;
-                    processed += batch.length;
-
-                    const errorMsg = err.error?.error || err.error?.message || err.message || 'Unknown error';
-                    errors.push(errorMsg);
-
-                    processBatch(startIndex + BATCH_SIZE);
-                }
-            });
-        };
-
-        processBatch(0);
+        });
     }
 
-    importMasterToolingPMC(data: any[]) {
-        if (data.length === 0) {
-            Swal.fire('Error', 'No data to import', 'error');
+    importMasterToolingPMC(file: File) {
+        if (!file) {
+            Swal.fire('Error', 'No file to import', 'error');
             return;
         }
 
         this.loading = true;
-        const BATCH_SIZE = 500;
-        const totalItems = data.length;
-        let processed = 0;
-        let successCount = 0;
-        let errorCount = 0;
-        const errors: any[] = [];
 
-        // Show modal once at start
+        // Prepare FormData
+        const formData = new FormData();
+        formData.append('file', file);
+
         Swal.fire({
             title: 'Uploading...',
-            html: `<div class="progress" style="height: 25px;"><div id="pmc-progress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%; font-size: 14px;">0%</div></div>`,
+            text: 'Processing file on server. Please wait.',
             allowOutsideClick: false,
-            showConfirmButton: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
+            didOpen: () => Swal.showLoading()
         });
 
-        // Track stats for all batches
-        let totalStats = {
-            cuttingUpdated: 0,
-            cuttingInserted: 0,
-            setupUpdated: 0,
-            setupInserted: 0,
-            totalChanges: 0,
-            allUpToDate: true
-        };
-
-        const updateProgress = () => {
-            const percent = Math.round((processed / totalItems) * 100);
-            const progressEl = document.getElementById('pmc-progress');
-            if (progressEl) {
-                progressEl.style.width = percent + '%';
-                progressEl.textContent = percent + '%';
-            }
-        };
-
-        const processBatch = async (startIndex: number) => {
-            if (startIndex >= totalItems) {
+        this.masterPHService.importMasterToolingPMC(formData).subscribe({
+            next: (res: any) => {
                 this.loading = false;
-                if (errorCount > 0) {
-                    const errorDetails = errors.slice(0, 5).join('<br>');
-                    Swal.fire({
-                        title: 'Completed with Errors',
-                        html: `Success: ${successCount}<br>Failed: ${errorCount}<br><div class="text-danger text-start small mt-2"><strong>Errors:</strong><br>${errorDetails}${errors.length > 5 ? '<br>...' : ''}</div>`,
-                        icon: 'warning'
-                    });
-                } else if (totalStats.allUpToDate && totalStats.totalChanges === 0) {
-                    // ไม่มีการเปลี่ยนแปลงเลย - อัพไฟล์ซ้ำ
+
+                const stats = res.stats || {};
+                const msg = res.message || 'Import Successful!';
+
+                if (res.isAlreadyUpToDate) {
                     Swal.fire({
                         title: 'Already Up to Date',
                         text: 'Your data is already up to date. No changes were made.',
                         icon: 'info'
                     });
                 } else {
-                    // มีการเปลี่ยนแปลง
                     Swal.fire({
                         title: 'Import Successful!',
-                        html: `<div class="text-start">
-                            <strong>Cutting Tool:</strong> ${totalStats.cuttingInserted} new, ${totalStats.cuttingUpdated} updated<br>
-                            <strong>Setup Tool:</strong> ${totalStats.setupInserted} new, ${totalStats.setupUpdated} updated<br>
-                            <hr><strong>Total Changes:</strong> ${totalStats.totalChanges}
-                        </div>`,
+                        html: `
+                            <div class="text-start">
+                                <p class="mb-1"><strong>Cutting Tool:</strong></p>
+                                <ul class="mb-2">
+                                    <li>Updated: ${stats.CuttingUpdated || 0} records</li>
+                                    <li>Inserted: ${stats.CuttingInserted || 0} records</li>
+                                </ul>
+                                <p class="mb-1"><strong>Setup Tool:</strong></p>
+                                <ul class="mb-0">
+                                    <li>Updated: ${stats.SetupUpdated || 0} records</li>
+                                    <li>Inserted: ${stats.SetupInserted || 0} records</li>
+                                </ul>
+                            </div>
+                        `,
                         icon: 'success'
                     });
                 }
-                return;
+            },
+            error: (err: any) => {
+                console.error('Import Master Tooling PMC Error:', err);
+                this.loading = false;
+                const errorMsg = err.error?.message || err.error?.error || err.message || 'Unknown error';
+                Swal.fire('Error', `Failed to import: ${errorMsg}`, 'error');
             }
-
-            const batch = data.slice(startIndex, startIndex + BATCH_SIZE);
-            updateProgress();
-
-            this.masterPHService.importMasterToolingPMC(batch).subscribe({
-                next: (res: any) => {
-                    successCount += res.count || batch.length;
-                    processed += batch.length;
-
-                    // Accumulate stats
-                    if (res.stats) {
-                        totalStats.cuttingUpdated += res.stats.cuttingUpdated || 0;
-                        totalStats.cuttingInserted += res.stats.cuttingInserted || 0;
-                        totalStats.setupUpdated += res.stats.setupUpdated || 0;
-                        totalStats.setupInserted += res.stats.setupInserted || 0;
-                        totalStats.totalChanges += res.stats.totalChanges || 0;
-                    }
-
-                    // If any batch has changes, set allUpToDate to false
-                    if (res.isAlreadyUpToDate === false) {
-                        totalStats.allUpToDate = false;
-                    }
-
-                    processBatch(startIndex + BATCH_SIZE);
-                },
-                error: (err: any) => {
-                    errorCount += batch.length;
-                    processed += batch.length;
-                    // เก็บ error message พร้อม details
-                    const errMsg = err.error?.message || err.error?.error || err.message || 'Unknown Error';
-                    const errDetails = err.error?.details || '';
-                    errors.push(`${errMsg}${errDetails ? ': ' + errDetails : ''}`);
-                    console.error('Import Error:', err);  // Log ลง Console ด้วย
-                    processBatch(startIndex + BATCH_SIZE);
-                }
-            });
-        };
-
-        processBatch(0);
+        });
     }
 
-    importMasterToolingGM(data: any[]) {
-        if (data.length === 0) {
-            Swal.fire('Error', 'No data to import', 'error');
+    importMasterToolingGM(file: File) {
+        if (!file) {
+            Swal.fire('Error', 'No file to import', 'error');
             return;
         }
 
         this.loading = true;
-        const BATCH_SIZE = 500;
-        const totalItems = data.length;
-        let processed = 0;
-        let successCount = 0;
-        let errorCount = 0;
-        const errors: any[] = [];
 
-        // Show modal once at start
+        const formData = new FormData();
+        formData.append('file', file);
+
         Swal.fire({
             title: 'Uploading...',
-            html: `<div class="progress" style="height: 25px;"><div id="gm-progress" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%; font-size: 14px;">0%</div></div>`,
+            text: 'Processing file on server. Please wait.',
             allowOutsideClick: false,
-            showConfirmButton: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
+            didOpen: () => Swal.showLoading()
         });
 
-        const updateProgress = () => {
-            const percent = Math.round((processed / totalItems) * 100);
-            const progressEl = document.getElementById('gm-progress');
-            if (progressEl) {
-                progressEl.style.width = percent + '%';
-                progressEl.textContent = percent + '%';
-            }
-        };
-
-        const processBatch = async (startIndex: number) => {
-            if (startIndex >= totalItems) {
+        this.masterPHService.importMasterToolingGM(formData).subscribe({
+            next: (res: any) => {
                 this.loading = false;
-                if (errorCount > 0) {
-                    Swal.fire({ title: 'Completed with Errors', html: `Success: ${successCount}<br>Failed: ${errorCount}`, icon: 'warning' });
-                } else {
-                    Swal.fire('Success', `Imported ${successCount} records successfully!`, 'success');
-                }
-                return;
+                Swal.fire('Success', `Imported ${res.count} records successfully!`, 'success');
+            },
+            error: (err: any) => {
+                console.error('Import Master Tooling GM Error:', err);
+                this.loading = false;
+                const errorMsg = err.error?.message || err.error?.error || err.message || 'Unknown error';
+                Swal.fire('Error', `Failed to import: ${errorMsg}`, 'error');
             }
-
-            const batch = data.slice(startIndex, startIndex + BATCH_SIZE);
-            updateProgress();
-
-            this.masterPHService.importMasterToolingGM(batch).subscribe({
-                next: (res: any) => {
-                    successCount += res.count || batch.length;
-                    processed += batch.length;
-                    processBatch(startIndex + BATCH_SIZE);
-                },
-                error: (err: any) => {
-                    errorCount += batch.length;
-                    processed += batch.length;
-                    errors.push(err.error?.message || 'Error');
-                    processBatch(startIndex + BATCH_SIZE);
-                }
-            });
-        };
-
-        processBatch(0);
+        });
     }
 
 }

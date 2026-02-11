@@ -11,26 +11,23 @@
     <div class="header-filters">
       <div class="form-group">
         <label>Division</label>
-        <select [(ngModel)]="selectedDivisionId" (change)="onDivisionChange()">
-          <option [ngValue]="null">-- Select --</option>
-          <option *ngFor="let item of divisions" [value]="item.Division_Id">{{ item.Division_Name }}</option>
-        </select>
+        <ng-select [items]="divisions" bindLabel="Division_Name" bindValue="Division_Id" placeholder="-- Select --"
+          [(ngModel)]="selectedDivisionId" (change)="onDivisionChange()">
+        </ng-select>
       </div>
 
       <div class="form-group">
         <label>Facility</label>
-        <select [(ngModel)]="selectedFacility">
-          <option value="">-- Select --</option>
-          <option *ngFor="let item of facilities" [value]="item.Facility">{{ item.Facility }}</option>
-        </select>
+        <ng-select [items]="facilities" bindLabel="label" bindValue="value" placeholder="-- Select --"
+          [(ngModel)]="selectedFacility">
+        </ng-select>
       </div>
 
       <div class="form-group">
         <label>Process</label>
-        <select [(ngModel)]="selectedProcess">
-          <option value="">-- Select --</option>
-          <option *ngFor="let item of processes" [value]="item.Process">{{ item.Process }}</option>
-        </select>
+        <ng-select [items]="processes" bindLabel="Process" bindValue="Process" placeholder="-- Select --"
+          [(ngModel)]="selectedProcess">
+        </ng-select>
       </div>
 
       <div class="form-group">
@@ -61,7 +58,14 @@
               <!-- แสดง {{ i + 1 }} เพื่อให้ลำดับเริ่มจาก 1 (เพราะ index เริ่มที่ 0) -->
               {{ i + 1 }}
             </td>
-            <td><input type="text" [(ngModel)]="item.partNo"></td>
+            <td style="position: relative;">
+              <!-- Changed to ng-select for smooth typeahead & overflow handling -->
+              <ng-select [items]="searchResults[i]" bindLabel="PartNo" bindValue="PartNo" placeholder="Type ..."
+                [(ngModel)]="item.partNo" [typeahead]="partNoInput$" [minTermLength]="2" [addTag]="addTagFn"
+                [editableSearchTerm]="true" (focus)="setCurrentRow(i)" (change)="onPartNoSelect(i, $event)"
+                (open)="onPartNoOpen()" appendTo="body">
+              </ng-select>
+            </td>
             <td><input type="text" [(ngModel)]="item.itemNo" (change)="onItemNoChange(i, item.itemNo)"
                 placeholder="Scan/Type"></td>
             <td><input type="text" [(ngModel)]="item.itemName"></td>

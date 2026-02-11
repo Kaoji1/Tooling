@@ -33,6 +33,10 @@
       <li routerLinkActive="active">
         <a routerLink="/production/history"> <i class="bi bi-clock-history"></i> History </a>
       </li>
+
+      <li routerLinkActive="active">
+        <a routerLink="/production/return-history"> <i class="bi bi-clock-history"></i> Return History </a>
+      </li>
       <li routerLinkActive="active">
         <a routerLink="/production/historyprint"> <i class="bi bi-printer-fill"></i> History Print </a>
       </li>
@@ -43,8 +47,32 @@
     </ul>
   </div>
   <!-- ฝั่งแสดงแถบUsernameและปุ่มlogout -->
-  <div class="bottom">
-    <div class="user-info" style="font-size: 18px;"> {{ Employee_Name }} </div>
-    <button (click)="logout()" class="logout-btn"><i class="bi bi-box-arrow-right" style="color: red;"></i></button>
+  <!-- Professional Profile & Logout Section -->
+  <!-- Professional Profile & Logout Section -->
+  <div class="sidebar-footer">
+    <!-- User Profile Card -->
+    <div class="user-profile-card">
+      <div class="avatar-container">
+        <div class="avatar-circle">
+          {{ Employee_Name ? Employee_Name.charAt(0).toUpperCase() : 'U' }}
+        </div>
+        <div class="status-indicator"></div>
+      </div>
+      <div class="user-info">
+        <span class="user-name" title="{{ Employee_Name }}">{{ Employee_Name }}</span>
+        <span class="user-role">{{ role || 'User' }}</span>
+      </div>
+    </div>
+
+    <!-- Separator -->
+    <div class="footer-separator"></div>
+
+    <!-- Logout Action -->
+    <button (click)="logout()" class="btn-logout-premium">
+      <div class="icon-wrapper">
+        <i class="bi bi-box-arrow-right"></i>
+      </div>
+      <span class="logout-text">Sign Out</span>
+    </button>
   </div>
 </nav>

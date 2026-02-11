@@ -435,18 +435,35 @@ exports.importMasterData = async (req, res) => {
 
 exports.importIReport = async (req, res) => {
     try {
-        const items = req.body;
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            return res.status(400).send({ message: "No data provided." });
+        const file = req.file;
+        if (!file) {
+            return res.status(400).send({ message: "No file uploaded." });
         }
 
         const pool = await poolPromise;
+
+        // --- XLSX Parsing ---
+        console.log(`[Import IReport] Reading file from buffer...`);
+        const workbook = require('xlsx').read(file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+
+        if (!worksheet) {
+            return res.status(400).send({ message: "Sheet not found" });
+        }
+
+        const items = require('xlsx').utils.sheet_to_json(worksheet);
         const totalItems = items.length;
+
+        if (totalItems === 0) {
+            return res.status(400).send({ message: "File is empty or no data found." });
+        }
+
         let successCount = 0;
         let errorCount = 0;
         const errors = [];
 
-        console.log(`[Import IReport] Starting import of ${totalItems} items...`);
+        console.log(`[Import IReport] Parsed ${totalItems} items. Starting import...`);
 
         // Helper to find value with fuzzy key matching
         const findValue = (item, candidates) => {
@@ -459,12 +476,6 @@ exports.importIReport = async (req, res) => {
             for (const key of candidates) {
                 const lowerKey = key.toLowerCase();
                 const foundKey = itemKeys.find(k => k.toLowerCase() === lowerKey);
-                if (foundKey && item[foundKey] !== undefined && item[foundKey] !== null) return item[foundKey];
-            }
-            // 3. Fuzzy match
-            for (const key of candidates) {
-                const normalizedCandidate = key.toLowerCase().replace(/[^a-z0-9]/g, '');
-                const foundKey = itemKeys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === normalizedCandidate);
                 if (foundKey && item[foundKey] !== undefined && item[foundKey] !== null) return item[foundKey];
             }
             return null;
@@ -559,22 +570,35 @@ exports.importIReport = async (req, res) => {
 
 exports.importTypeTooling = async (req, res) => {
     try {
-        const items = req.body;
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            return res.status(400).send({ message: "No data provided." });
+        const file = req.file;
+        if (!file) {
+            return res.status(400).send({ message: "No file uploaded." });
         }
 
         const pool = await poolPromise;
+
+        // --- XLSX Parsing ---
+        console.log(`[Import Type Tooling] Reading file from buffer...`);
+        const workbook = require('xlsx').read(file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+
+        if (!worksheet) {
+            return res.status(400).send({ message: "Sheet not found" });
+        }
+
+        const items = require('xlsx').utils.sheet_to_json(worksheet);
         const totalItems = items.length;
+
         let successCount = 0;
         let errorCount = 0;
         const errors = [];
 
-        console.log(`[Import Type Tooling] Starting import of ${totalItems} items...`);
+        console.log(`[Import Type Tooling] Parsed ${totalItems} items. Starting import...`); // Corrected log message
 
+        // Remove debug log of items[0] for cleaner code or keep if needed
         if (totalItems > 0) {
             console.log('[DEBUG Type Tooling] Sample Item Keys:', Object.keys(items[0]));
-            console.log('[DEBUG Type Tooling] Sample Item Data:', items[0]);
         }
 
         // Helper to find value with fuzzy key matching
@@ -744,31 +768,69 @@ exports.importMasterAllPMC = async (req, res) => {
 
 exports.importMasterToolingPMC = async (req, res) => {
     try {
-        const items = req.body;
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            return res.status(400).send({ message: "No data provided." });
+        let file = req.file;
+        if (!file && req.files && req.files.file) {
+            // Support for express-fileupload
+            file = {
+                buffer: req.files.file.data,
+                originalname: req.files.file.name,
+                mimetype: req.files.file.mimetype
+            };
+        }
+
+        if (!file) {
+            return res.status(400).send({ message: "No file uploaded." });
         }
 
         const pool = await poolPromise;
+        const uploadedBy = 'System'; // Or req.user.username if available
+
+        // --- XLSX Parsing (Server Side) ---
+        console.log(`[Import Master Tooling PMC] Reading file from buffer...`);
+        const workbook = require('xlsx').read(file.buffer, { type: 'buffer' });
+
+        // Assume data is in the first sheet or specific sheet
+        let sheetName = workbook.SheetNames[0];
+        if (workbook.SheetNames.includes('Forecast')) sheetName = 'Forecast';
+
+        const worksheet = workbook.Sheets[sheetName];
+        if (!worksheet) {
+            return res.status(400).send({ message: "Sheet not found" });
+        }
+
+        // Find Header Row Logic
+        const aoa = require('xlsx').utils.sheet_to_json(worksheet, { header: 1 });
+        let headerRowIndex = 0;
+        const keywords = ['item no', 'itemno', 'division'];
+
+        for (let i = 0; i < Math.min(aoa.length, 20); i++) {
+            const row = aoa[i];
+            if (row && row.some(cell => {
+                if (typeof cell !== 'string') return false;
+                const val = cell.toLowerCase();
+                return keywords.some(k => val.includes(k));
+            })) {
+                headerRowIndex = i;
+                break;
+            }
+        }
+
+        // Parse to JSON Array
+        const items = require('xlsx').utils.sheet_to_json(worksheet, { range: headerRowIndex });
         const totalItems = items.length;
-        const batchID = require('crypto').randomUUID(); // Generate unique BatchID
 
-        console.log(`[Import Master Tooling PMC] Starting import of ${totalItems} items with BatchID: ${batchID}`);
+        console.log(`[Import Master Tooling PMC] Parsed ${totalItems} items from Excel.`);
 
-        // DEBUG: Log the column names from Excel
-        if (items.length > 0) {
-            console.log(`[DEBUG] Excel column names:`, Object.keys(items[0]));
-            console.log(`[DEBUG] First row data:`, JSON.stringify(items[0], null, 2));
+        if (totalItems === 0) {
+            return res.status(400).send({ message: "File is empty or no data found." });
         }
 
         // Helper functions
         const findValue = (item, candidates) => {
             const itemKeys = Object.keys(item);
-            // First: exact match
             for (const key of candidates) {
                 if (item[key] !== undefined && item[key] !== null) return item[key];
             }
-            // Second: case-insensitive match with trimming (handle spaces in headers)
             for (const key of candidates) {
                 const lowerKey = key.toLowerCase().trim();
                 const foundKey = itemKeys.find(k => k.toLowerCase().trim() === lowerKey);
@@ -778,102 +840,69 @@ exports.importMasterToolingPMC = async (req, res) => {
         };
 
         const getString = (val) => (val === "" || val == null) ? null : String(val).trim();
-        const getDate = (val) => {
-            if (!val) return null;
-            const date = new Date(val);
-            return isNaN(date.getTime()) ? null : date;
-        };
 
-        // STEP 1: Insert all data to Staging Table with Transaction
-        console.log(`[Import Master Tooling PMC] Inserting ${totalItems} rows to Staging Table...`);
+        // Map items to plain JSON object with keys expected by SP
+        // Using exact headers from user screenshots as primary candidates
+        const mappedItems = items.map(item => {
+            // Holder_Spec logic
+            const holderSpecVal = findValue(item, ['Holder Spec', 'Holder_Spec']); // Screenshot: "Holder Spec"
+            const holderSpec = (holderSpecVal === '-' || holderSpecVal === '' || holderSpecVal == null) ? null : String(holderSpecVal).trim();
 
-        const transaction = new sql.Transaction(pool);
-        await transaction.begin();
+            return {
+                Spec: getString(findValue(item, ['Spec'])), // Screenshot: "Spec"
+                PartNo: getString(findValue(item, ['PartNo', 'Part No', 'Part No.'])), // Screenshot: "PartNo"
+                ItemNo: getString(findValue(item, ['ItemNo', 'Item No', 'Item No.'])), // Screenshot: "ItemNo"
+                Process: getString(findValue(item, ['Process'])), // Screenshot: "Process"
+                MC: getString(findValue(item, ['MC'])), // Screenshot: "MC"
+                DwgRev: getString(findValue(item, ['DwgRev', 'Dwg Rev'])), // Screenshot: "DwgRev"
+                DwgUpdate: getString(findValue(item, ['DwgUpdate', 'Dwg Update'])), // Screenshot: "DwgUpdate"
+                Usage_pcs: getString(findValue(item, ['Usage_pcs', 'Usage pcs'])), // Screenshot: "Usage_pcs"
+                CT_sec: getString(findValue(item, ['CT_sec', 'CT sec'])), // Screenshot: "CT_sec"
+                Position: getString(findValue(item, ['Position'])), // Screenshot: "Position"
+                Res: getString(findValue(item, ['Res.', 'Res'])), // Screenshot: "Res."
+                Date_update: getString(findValue(item, ['Date update', 'Date_update'])), // Screenshot: "Date update"
+                Insert_Maker: getString(findValue(item, ['Insert Maker', 'Insert_Maker'])), // Screenshot: "Insert Maker"
+                Holder_Spec: holderSpec,
+                Holder_No: getString(findValue(item, ['Holder No', 'Holder_No'])), // Screenshot: "Holder No"
+                Holder_Maker: getString(findValue(item, ['Holder Maker', 'Holder_Maker'])), // Screenshot: "Holder Maker"
+                Conner: getString(findValue(item, ['Conner'])), // Screenshot: "Conner"
+                Usage_Conner: getString(findValue(item, ['Usage/Conner', 'Usage_Conner'])), // Screenshot: "Usage/Conner"
+                Cutting_Layout_No: getString(findValue(item, ['Cutting Layout No.', 'Cutting_Layout_No'])), // Screenshot: "Cutting Layout No."
+                Cutting_Layout_Rev: getString(findValue(item, ['Cutting Layout Rev.', 'Cutting_Layout_Rev'])), // Screenshot: "Cutting Layout Rev."
+                Program_cutting_No: getString(findValue(item, ['Program cutting No.', 'Program_cutting_No'])), // Screenshot: "Program cutting No."
+                Position_Code: getString(findValue(item, ['Position Code', 'Holder Position'])) // Screenshot: "Position Code"
+            };
+        });
 
-        try {
-            for (const item of items) {
-                const request = new sql.Request(transaction);
+        const jsonString = JSON.stringify(mappedItems);
 
-                // Holder_Spec: ถ้าค่าเป็น "-" ให้แปลงเป็น null
-                const holderSpecVal = findValue(item, ['Holder Spec', 'Holder_Spec']);
-                const holderSpec = (holderSpecVal === '-' || holderSpecVal === '' || holderSpecVal == null) ? null : String(holderSpecVal).trim();
+        console.log(`[Import Master Tooling PMC] Sending JSON to SP [trans].[Stored_Import_Master_Tooling_PMC_JSON]...`);
 
-                request.input('BatchID', sql.UniqueIdentifier, batchID);
-                request.input('Spec', sql.NVarChar(sql.MAX), getString(findValue(item, ['Spec'])));
-                request.input('PartNo', sql.NVarChar(sql.MAX), getString(findValue(item, ['PartNo', 'Part No', 'Part No.'])));
-                request.input('ItemNo', sql.NVarChar(sql.MAX), getString(findValue(item, ['ItemNo', 'Item No', 'Item No.'])));
-                request.input('Process', sql.NVarChar(sql.MAX), getString(findValue(item, ['Process'])));
-                request.input('MC', sql.NVarChar(sql.MAX), getString(findValue(item, ['MC'])));
-                request.input('DwgRev', sql.NVarChar(sql.MAX), getString(findValue(item, ['DwgRev', 'Dwg Rev'])));
-                request.input('DwgUpdate', sql.NVarChar(sql.MAX), getString(findValue(item, ['DwgUpdate', 'Dwg Update'])));
-                request.input('Usage_pcs', sql.NVarChar(sql.MAX), getString(findValue(item, ['Usage_pcs', 'Usage pcs'])));
-                request.input('CT_sec', sql.NVarChar(sql.MAX), getString(findValue(item, ['CT_sec', 'CT sec'])));
-                request.input('Position', sql.NVarChar(sql.MAX), getString(findValue(item, ['Position'])));
-                request.input('Res', sql.NVarChar(sql.MAX), getString(findValue(item, ['Res.', 'Res'])));
-                request.input('Date_update', sql.NVarChar(sql.MAX), getString(findValue(item, ['Date update', 'Date_update'])));
-                request.input('Insert_Maker', sql.NVarChar(sql.MAX), getString(findValue(item, ['Insert Maker', 'Insert_Maker'])));
-                request.input('Holder_Spec', sql.NVarChar(sql.MAX), holderSpec);
-                request.input('Holder_No', sql.NVarChar(sql.MAX), getString(findValue(item, ['Holder No', 'Holder_No'])));
-                request.input('Holder_Maker', sql.NVarChar(sql.MAX), getString(findValue(item, ['Holder Maker', 'Holder_Maker'])));
-                request.input('Conner', sql.NVarChar(sql.MAX), getString(findValue(item, ['Conner'])));
-                request.input('Usage_Conner', sql.NVarChar(sql.MAX), getString(findValue(item, ['Usage/Conner', 'Usage_Conner'])));
-                request.input('Cutting_Layout_No', sql.NVarChar(sql.MAX), getString(findValue(item, ['Cutting Layout No.', 'Cutting_Layout_No'])));
-                request.input('Cutting_Layout_Rev', sql.NVarChar(sql.MAX), getString(findValue(item, ['Cutting Layout Rev.', 'Cutting_Layout_Rev'])));
-                request.input('Program_cutting_No', sql.NVarChar(sql.MAX), getString(findValue(item, ['Program cutting No.', 'Program_cutting_No'])));
-                request.input('Position_Code', sql.NVarChar(sql.MAX), getString(findValue(item, ['Position Code', 'Holder Position'])));
-                request.input('UploadedBy', sql.NVarChar(100), 'System');
+        const request = pool.request();
+        request.input('JsonData', sql.NVarChar(sql.MAX), jsonString);
+        request.input('UploadedBy', sql.NVarChar(100), uploadedBy);
 
-                await request.query(`
-                    INSERT INTO [master].[Staging_ToolingData_All]
-                    ([BatchID], [UploadedBy], [Spec], [PartNo], [ItemNo], [Process], [MC],
-                     [DwgRev], [DwgUpdate], [Usage_pcs], [CT_sec], [Position], [Res],
-                     [Date_update], [Insert_Maker], [Holder_Spec], [Holder_No], [Holder_Maker],
-                     [Conner], [Usage_Conner], [Cutting_Layout_No], [Cutting_Layout_Rev],
-                     [Program_cutting_No], [Position_Code])
-                    VALUES
-                    (@BatchID, @UploadedBy, @Spec, @PartNo, @ItemNo, @Process, @MC,
-                     @DwgRev, @DwgUpdate, @Usage_pcs, @CT_sec, @Position, @Res,
-                     @Date_update, @Insert_Maker, @Holder_Spec, @Holder_No, @Holder_Maker,
-                     @Conner, @Usage_Conner, @Cutting_Layout_No, @Cutting_Layout_Rev,
-                     @Program_cutting_No, @Position_Code)
-                `);
-            }
+        // Optional Stats Outputs if SP supports them (Adjust as needed based on new SP)
+        request.output('CuttingUpdated', sql.Int);
+        request.output('CuttingInserted', sql.Int);
+        request.output('SetupUpdated', sql.Int);
+        request.output('SetupInserted', sql.Int);
 
-            await transaction.commit();
-            console.log(`[Import Master Tooling PMC] Transaction committed. ${totalItems} rows inserted.`);
-
-        } catch (insertErr) {
-            await transaction.rollback();
-            throw insertErr;
-        }
-
-        console.log(`[Import Master Tooling PMC] Staging insert complete. Calling SP...`);
-
-        // STEP 2: Call Stored Procedure with OUTPUT parameters
-        const spRequest = pool.request();
-        spRequest.input('BatchID', sql.UniqueIdentifier, batchID);
-        spRequest.output('CuttingUpdated', sql.Int);
-        spRequest.output('CuttingInserted', sql.Int);
-        spRequest.output('SetupUpdated', sql.Int);
-        spRequest.output('SetupInserted', sql.Int);
-
-        const spResult = await spRequest.execute('[trans].[Stored_Import_Master_ToolingALL_PMC]');
+        // Execute New SP
+        // Using name provided by user: [trans].[Stored_Import_Master_Tooling_PMC_JSON]
+        const spResult = await request.execute('[trans].[Stored_Import_Master_Tooling_PMC_JSON]');
 
         const cuttingUpdated = spResult.output.CuttingUpdated || 0;
         const cuttingInserted = spResult.output.CuttingInserted || 0;
         const setupUpdated = spResult.output.SetupUpdated || 0;
         const setupInserted = spResult.output.SetupInserted || 0;
-
         const totalChanges = cuttingUpdated + cuttingInserted + setupUpdated + setupInserted;
-        const isAlreadyUpToDate = totalChanges === 0;
 
-        console.log(`[Import Master Tooling PMC] SP execution complete. Cutting: ${cuttingUpdated} updated, ${cuttingInserted} inserted. Setup: ${setupUpdated} updated, ${setupInserted} inserted.`);
+        console.log(`[Import Master Tooling PMC] SP execution complete.`);
 
         res.status(200).send({
-            message: isAlreadyUpToDate ? "Your data is already up to date" : "Import successful",
+            message: "Import successful",
             count: totalItems,
-            batchID: batchID,
-            isAlreadyUpToDate: isAlreadyUpToDate,
             stats: {
                 cuttingUpdated,
                 cuttingInserted,
@@ -894,132 +923,8 @@ exports.importMasterToolingPMC = async (req, res) => {
 };
 
 // ===============================================
-// GM Master Tooling Import (Cutting Tool + Setup Tool)
+// GM Master Tooling Import (REMOVED/DISABLED)
 // ===============================================
 exports.importMasterToolingGM = async (req, res) => {
-    try {
-        const items = req.body;
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            return res.status(400).send({ message: "No data provided." });
-        }
-
-        const pool = await poolPromise;
-        const totalItems = items.length;
-        const batchID = require('crypto').randomUUID();
-
-        console.log(`[Import Master Tooling GM] Starting import of ${totalItems} items with BatchID: ${batchID}`);
-
-        // DEBUG: Log the column names from Excel
-        if (items.length > 0) {
-            console.log(`[DEBUG GM] Excel column names:`, Object.keys(items[0]));
-            console.log(`[DEBUG GM] First row data:`, JSON.stringify(items[0], null, 2));
-        }
-
-        // Helper functions
-        const findValue = (item, candidates) => {
-            const itemKeys = Object.keys(item);
-            for (const key of candidates) {
-                if (item[key] !== undefined && item[key] !== null) return item[key];
-            }
-            for (const key of candidates) {
-                const lowerKey = key.toLowerCase().trim();
-                const foundKey = itemKeys.find(k => k.toLowerCase().trim() === lowerKey);
-                if (foundKey && item[foundKey] !== undefined && item[foundKey] !== null) return item[foundKey];
-            }
-            return null;
-        };
-
-        const getString = (val) => (val === "" || val == null) ? null : String(val).trim();
-
-        // STEP 1: Insert all data to Staging Table with Transaction
-        console.log(`[Import Master Tooling GM] Inserting ${totalItems} rows to Staging Table...`);
-
-        const transaction = new sql.Transaction(pool);
-        await transaction.begin();
-
-        try {
-            for (const item of items) {
-                const request = new sql.Request(transaction);
-
-                // Holder_Spec: ถ้าค่าเป็น "-" ให้แปลงเป็น null (เหมือน PMC)
-                const holderSpecVal = findValue(item, ['Holder Spec', 'Holder_Spec']);
-                const holderSpec = (holderSpecVal === '-' || holderSpecVal === '' || holderSpecVal == null) ? null : String(holderSpecVal).trim();
-
-                request.input('BatchID', sql.UniqueIdentifier, batchID);
-                request.input('PartNo', sql.NVarChar(100), getString(findValue(item, ['PartNo', 'Part No', 'Part No.'])));
-                request.input('Process', sql.NVarChar(100), getString(findValue(item, ['Process'])));
-                request.input('MC', sql.NVarChar(100), getString(findValue(item, ['MC'])));
-                request.input('Position', sql.NVarChar(50), getString(findValue(item, ['Position'])));
-
-                // Cutting Tool columns (PMC-style)
-                request.input('Spec', sql.NVarChar(100), getString(findValue(item, ['Spec'])));
-                request.input('ItemNo', sql.NVarChar(100), getString(findValue(item, ['ItemNo', 'Item No', 'Item No.'])));
-                request.input('DwgRev', sql.NVarChar(50), getString(findValue(item, ['DwgRev', 'Dwg Rev'])));
-                request.input('DwgUpdate', sql.NVarChar(50), getString(findValue(item, ['DwgUpdate', 'Dwg Update'])));
-                request.input('Usage_pcs', sql.NVarChar(50), getString(findValue(item, ['Usage_pcs', 'Usage pcs'])));
-                request.input('CT_sec', sql.NVarChar(50), getString(findValue(item, ['CT_sec', 'CT sec'])));
-                request.input('Res', sql.NVarChar(50), getString(findValue(item, ['Res.', 'Res'])));
-                request.input('Date_update', sql.NVarChar(50), getString(findValue(item, ['Date update', 'Date_update'])));
-                request.input('Insert_Maker', sql.NVarChar(100), getString(findValue(item, ['Insert Maker', 'Insert_Maker'])));
-                request.input('Conner', sql.NVarChar(50), getString(findValue(item, ['Conner'])));
-                request.input('Usage_Conner', sql.NVarChar(50), getString(findValue(item, ['Usage/Conner', 'Usage_Conner'])));
-                request.input('Cutting_Layout_No', sql.NVarChar(100), getString(findValue(item, ['Cutting Layout No.', 'Cutting_Layout_No'])));
-                request.input('Cutting_Layout_Rev', sql.NVarChar(50), getString(findValue(item, ['Cutting Layout Rev.', 'Cutting_Layout_Rev'])));
-                request.input('Program_cutting_No', sql.NVarChar(100), getString(findValue(item, ['Program cutting No.', 'Program_cutting_No'])));
-                request.input('Position_Code', sql.NVarChar(100), getString(findValue(item, ['Position Code', 'Holder Position'])));
-
-                // Setup Tool columns (PMC-style)
-                request.input('Holder_Spec', sql.NVarChar(100), holderSpec);
-                request.input('Holder_No', sql.NVarChar(100), getString(findValue(item, ['Holder No', 'Holder_No', 'HolderNo', 'Holder no', 'holder no', 'HOLDER NO'])));
-                request.input('Holder_Maker', sql.NVarChar(100), getString(findValue(item, ['Holder Maker', 'Holder_Maker'])));
-
-                request.input('UploadedBy', sql.NVarChar(100), 'System');
-
-                await request.query(`
-                    INSERT INTO [master].[Staging_ToolingData_All]
-                    ([BatchID], [UploadedDate], [UploadedBy], [PartNo], [Process], [MC], [Position],
-                     [Spec], [ItemNo], [DwgRev], [DwgUpdate], [Usage_pcs], [CT_sec],
-                     [Res], [Date_update], [Insert_Maker], [Conner], [Usage_Conner],
-                     [Cutting_Layout_No], [Cutting_Layout_Rev], [Program_cutting_No], [Position_Code],
-                     [Holder_Spec], [Holder_No], [Holder_Maker])
-                    VALUES
-                    (@BatchID, GETDATE(), @UploadedBy, @PartNo, @Process, @MC, @Position,
-                     @Spec, @ItemNo, @DwgRev, @DwgUpdate, @Usage_pcs, @CT_sec,
-                     @Res, @Date_update, @Insert_Maker, @Conner, @Usage_Conner,
-                     @Cutting_Layout_No, @Cutting_Layout_Rev, @Program_cutting_No, @Position_Code,
-                     @Holder_Spec, @Holder_No, @Holder_Maker)
-                `);
-            }
-
-            await transaction.commit();
-            console.log(`[Import Master Tooling GM] Transaction committed. ${totalItems} rows inserted.`);
-
-        } catch (insertErr) {
-            await transaction.rollback();
-            throw insertErr;
-        }
-
-        console.log(`[Import Master Tooling GM] Staging insert complete. Calling SP...`);
-
-        // STEP 2: Call Stored Procedure to process Staging data
-        const spRequest = pool.request();
-        spRequest.input('BatchID', sql.UniqueIdentifier, batchID);
-        await spRequest.execute('[trans].[Stored_Import_Master_ToolingALL_GM]');
-
-        console.log(`[Import Master Tooling GM] SP execution complete. Success: ${totalItems}`);
-
-        res.status(200).send({
-            message: "Import successful",
-            count: totalItems,
-            batchID: batchID
-        });
-
-    } catch (err) {
-        console.error("Import Master Tooling GM Error:", err);
-        res.status(500).send({
-            message: "Internal Server Error",
-            error: err.message,
-            code: err.code
-        });
-    }
+    return res.status(404).send({ message: "GM Import is currently disabled." });
 };
