@@ -134,30 +134,34 @@
             <td [ngStyle]="{'border': 'none'}"></td>
             <td [ngStyle]="{'border': 'none'}"></td>
             <td [ngStyle]="{'border': 'none'}">
-              <ng-select style="width: 180px;" class="no-expand" [items]="divisionList" bindLabel="label" bindValue="value"
-                [(ngModel)]="Division_" [multiple]="true"
-           [closeOnSelect]="false" placeholder="Select a Division">
+              <ng-select style="width: 180px;" class="no-expand" [items]="divisionList" bindLabel="label"
+                bindValue="value" [(ngModel)]="Division_" [multiple]="true" [closeOnSelect]="false"
+                placeholder="Select a Division">
               </ng-select>
             </td>
             <td [ngStyle]="{'border': 'none'}">
-              <ng-select style="width: 180px;" class="no-expand" [items]="ItemNoList" bindLabel="label" bindValue="value" [(ngModel)]="ItemNo_"
-                [multiple]="true" [closeOnSelect]="false" placeholder="Select a PartNo">
+              <ng-select style="width: 180px;" class="no-expand" [items]="ItemNoList" bindLabel="label"
+                bindValue="value" [(ngModel)]="ItemNo_" [multiple]="true" [closeOnSelect]="false"
+                placeholder="Select a ItemNo" [clearable]="true">
               </ng-select>
             </td>
             <td [ngStyle]="{'border': 'none'}">
-              <ng-select style="width: 220px;" class="no-expand" [items]="PartNoList" bindLabel="label" bindValue="value" [(ngModel)]="PartNo_"
-                [multiple]="true" [closeOnSelect]="false" placeholder="Select a MFG ORDER NO" [clearable]="true">
+              <ng-select style="width: 220px;" class="no-expand" [items]="PartNoList" bindLabel="label"
+                bindValue="value" [(ngModel)]="PartNo_" [multiple]="true" [closeOnSelect]="false"
+                placeholder="Select a PartNo" [clearable]="true">
               </ng-select>
             </td>
+            <td [ngStyle]="{'border': 'none'}"></td> <!-- Empty for MFG Order No -->
             <td [ngStyle]="{'border': 'none'}">
-              <ng-select style="width: 220px;" class="no-expand" [items]="DocumentNoList" bindLabel="label" bindValue="value" [(ngModel)]="DocumentNo_"
-                [multiple]="true" [closeOnSelect]="false" placeholder="Select a DOCUMENT NO." [clearable]="true">
+              <ng-select style="width: 220px;" class="no-expand" [items]="DocumentNoList" bindLabel="label"
+                bindValue="value" [(ngModel)]="DocumentNo_" [multiple]="true" [closeOnSelect]="false"
+                placeholder="Select a DOCUMENT NO." [clearable]="true">
               </ng-select>
             </td>
             <td [ngStyle]="{'border': 'none'}"></td>
             <td [ngStyle]="{'border': 'none'}"></td>
             <td [ngStyle]="{'border': 'none'}"></td>
-              <!-- <ng-select [items]="DateCompleteList" bindLabel="label" bindValue="value" [(ngModel)]="DateComplete_"
+            <!-- <ng-select [items]="DateCompleteList" bindLabel="label" bindValue="value" [(ngModel)]="DateComplete_"
                 placeholder="Select a TRANSACTION" [clearable]="true">
               </ng-select> -->
             <td [ngStyle]="{'border': 'none'}"></td>
@@ -177,10 +181,16 @@
             </th>
             <th style="width: 60px;">No.</th>
             <th style="min-width: 120px;">Account</th>
-            <th style="min-width: 120px;" (click)="onSort('Division')" style="cursor: pointer;">DIVISION  <span *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th style="min-width: 120px; white-space: nowrap;" (click)="onSort('ItemNo')" style="cursor: pointer;">PART NO.<span *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th style="min-width: 120px;" (click)="onSort('PartNo')" style="cursor: pointer;">MFG ORDER NO.<span *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th style="min-width: 120px;" (click)="onSort('DocNo')" style="cursor: pointer;">DOCUMENT NO.<span *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th style="min-width: 120px;" (click)="onSort('Division')" style="cursor: pointer;">DIVISION <span
+                *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th style="min-width: 120px; white-space: nowrap;" (click)="onSort('ItemNo')" style="cursor: pointer;">ITEM
+              NO.<span *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th style="min-width: 120px; white-space: nowrap;" (click)="onSort('PartNo')" style="cursor: pointer;">PART
+              NO.<span *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th style="min-width: 120px;" (click)="onSort('MFG_Order_No')" style="cursor: pointer;">MFG ORDER NO.<span
+                *ngIf="sortKey === 'MFG_Order_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th style="min-width: 120px;" (click)="onSort('DocNo')" style="cursor: pointer;">DOCUMENT NO.<span
+                *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
             <th style="min-width: 120px;">STK LOC.</th>
             <th style="min-width: 120px;">LOT MAT' L</th>
             <th style="min-width: 200px; white-space: nowrap;">TRANSACTION (YMD)</th>
@@ -189,8 +199,10 @@
             <th style="min-width: 120px; white-space: nowrap;">M/C NO.</th>
 
             <th style="min-width: 120px;">DECLATION NO.</th>
-            <th (click)="onSort('DueDate')" style="cursor: pointer; white-space: nowrap;">Due date <span *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th (click)="onSort('DateTime_Record')" style="cursor: pointer;">Request date <span *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('DueDate')" style="cursor: pointer; white-space: nowrap;">Due date <span
+                *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('DateTime_Record')" style="cursor: pointer;">Request date <span
+                *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
             <th>Edit</th>
           </tr>
         </thead>
@@ -213,6 +225,7 @@
             <td [ngClass]="getRowClass(req)">{{ req.Division }}</td>
             <td [ngClass]="getRowClass(req)">{{ req.ItemNo }}</td>
             <td [ngClass]="getRowClass(req)">{{ req.PartNo }}</td>
+            <td [ngClass]="getRowClass(req)">{{ req.MFG_Order_No }}</td>
             <td [ngClass]="getRowClass(req)">{{ req.DocNo }}</td>
             <td [ngClass]="getRowClass(req)">{{ req.Stock_Location }}</td>
             <td [ngClass]="getRowClass(req)">{{ req.Stock_Location }}</td>

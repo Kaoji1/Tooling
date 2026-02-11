@@ -8,10 +8,7 @@
   font-family: var(--font-primary);
   overflow: hidden;
 
-  /* Sidebar Area */
-  app-sidebarpurchase {
-    /* Sidebar component handles its own width/style */
-  }
+
 
   /* Main Content Area */
   .main {
@@ -24,6 +21,8 @@
     padding: 1.5rem 2rem;
     box-sizing: border-box;
     gap: 1.5rem;
+    background-color: white;
+    /* Match Return List .content */
 
     /* Filter Bar Section */
     .filter-bar {
@@ -82,8 +81,8 @@
     }
 
     /* Header Section */
-    .toptext {
-      margin-bottom: 1rem;
+    .header {
+      margin-bottom: 2rem;
 
       h1 {
         font-size: 1.5rem;
@@ -92,6 +91,7 @@
         margin: 0;
         background: linear-gradient(90deg, var(--color-primary), #1e40af);
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
       }
 
@@ -102,14 +102,42 @@
       }
     }
 
-    /* Action Bar (Buttons) */
-    .button-container {
+    /* Action Bar (Buttons Row) */
+    .action-bar {
       display: flex;
-      flex-wrap: wrap;
+      justify-content: space-between;
+      /* Align Division left, Buttons right */
       align-items: center;
-      gap: 1rem;
       margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+
+      .header-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+
+        .btn-export {
+          background-color: #198754;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          height: 38px;
+          padding: 0 15px;
+          font-weight: 500;
+          font-size: 14px;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          cursor: pointer;
+
+          &:hover {
+            background-color: #157347;
+          }
+        }
+      }
     }
+
+
 
     /* Common Button Styles */
     button {
@@ -120,15 +148,15 @@
       padding: 0.5rem 1rem;
       border-radius: var(--radius-md);
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       border: none;
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+      white-space: nowrap;
 
       &:hover {
         transform: translateY(-1px);
-        box-shadow: var(--shadow-md);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       }
 
       i {
@@ -138,7 +166,6 @@
 
     .excel-button {
       background-color: #10b981;
-      /* Green */
       color: white;
 
       &:hover {
@@ -147,28 +174,27 @@
     }
 
     .custom-btn {
-      background-color: #6366f1 !important;
-      /* Indigo */
+      background-color: #6366f1;
       color: white;
 
       &:hover {
-        background-color: #4f46e5 !important;
+        background-color: #4f46e5;
       }
     }
 
     .btn-clear {
-      background-color: var(--color-secondary);
+      background-color: #94a3b8;
       color: white;
 
       &:hover {
-        background-color: #475569;
+        background-color: #64748b;
       }
     }
 
-    .btn-filter,
-    .btn-sort {
+    .btn-filter {
       background-color: var(--color-primary);
       color: white;
+      min-width: 100px;
 
       &:hover {
         background-color: var(--color-primary-hover);
@@ -178,18 +204,19 @@
     .btn-Complete {
       background: linear-gradient(135deg, var(--color-primary), #2563eb);
       color: white;
-      padding: 0.6rem 1.5rem;
-      font-size: 1rem;
+      padding: 0.6rem 2rem;
       border-radius: 50px;
+      font-size: 0.95rem;
 
-      /* Pill shape */
       &:hover {
-        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+        box-shadow: 0 8px 15px -3px rgba(37, 99, 235, 0.4);
       }
 
       &:disabled {
-        opacity: 0.7;
+        background: #cbd5e1;
         cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
       }
     }
 
@@ -215,26 +242,44 @@
           /* Remove sticky from thead container */
           /* position: sticky; top: 0; z-index: 10; */
 
-          tr.header-group-row th {
-            /* Group headers ARE sticky now */
+          /* Filter Row (Row 1) */
+          tr.filter-row td {
             position: sticky;
             top: 0;
+            z-index: 23;
+            /* Highest priority */
+            background-color: white !important;
+            border: none !important;
+            padding: 4px 4px !important;
+            /* increased padding for spacing */
+            vertical-align: middle;
+
+            input.form-control {
+              height: 30px;
+              font-size: 0.85rem;
+              padding: 2px 6px;
+            }
+          }
+
+          /* Group Header (Row 2) */
+          tr.header-group-row th {
+            position: sticky;
+            top: 42px;
+            /* Height of filter row approx */
             z-index: 22;
-            /* Higher than column headers */
             border-bottom: none;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-size: 0.85rem;
             padding: 0.4rem 0.5rem;
             background-color: inherit;
-            /* Use the specific class background */
           }
 
-          /* Target the second row explicitly for sticky behavior */
-          tr:nth-child(2) th {
+          /* Column Headers (Row 3) */
+          tr:nth-child(3) th {
             position: sticky;
-            top: 32px;
-            /* Offset by height of first row */
+            top: 77px;
+            /* 42 (Filter) + 35 (Group) */
             z-index: 20;
             background-color: #f8fafc;
             padding: 0.5rem 0.4rem;
@@ -243,7 +288,6 @@
             color: var(--color-text-sub);
             border: 1px solid var(--color-border);
             white-space: nowrap;
-            /* Add box-shadow for separation */
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
           }
 

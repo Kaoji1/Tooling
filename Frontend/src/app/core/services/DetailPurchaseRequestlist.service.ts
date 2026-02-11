@@ -19,6 +19,10 @@ export class DetailPurchaseRequestlistService {
     return this.httpClient.get(`${this.baseUrl}/Detail_Purchase`); // ส่ง HTTP GET Division
   }
 
+  Detail_Request_Setup(): Observable<any> {
+    return this.httpClient.get(`${this.baseUrl}/Detail_Purchase_Setup`);
+  }
+
   updateStatusToComplete(idOrIds: number | number[], status: string) {
     return this.httpClient.post(`${this.baseUrl}/Update_Status_Purchase`, {
       ID_Request: idOrIds,  //  ส่งเป็น array ได้

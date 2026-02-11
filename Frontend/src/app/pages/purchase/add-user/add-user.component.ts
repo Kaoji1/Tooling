@@ -28,8 +28,8 @@ export class AddUserComponent {
     { label: 'view', value: 'view' },
     { label: 'admin', value: 'admin' },
     { label: 'engineer', value: 'engineer' },
-    { label: 'PC', value: 'PC' },
-    { label: 'PC', value: 'PC' }
+    { label: 'production control', value: 'production control' },
+    { label: 'quality control', value: 'quality control' }
   ];
 
   // รับค่าจากแบบฟอร์ม (เพิ่มใหม่)

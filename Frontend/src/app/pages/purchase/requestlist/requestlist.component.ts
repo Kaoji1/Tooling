@@ -48,8 +48,6 @@ export class RequestlistComponent implements OnInit {
   totalPages: number = 1;
   displayedRequests: any[] = [];
   pages: number[] = []; // for pagination UI loop
-  fromDate: string | null = null;
-  toDate: string | null = null;
 
   constructor(
     private purchaserequest: PurchaseRequestService,
@@ -66,8 +64,6 @@ export class RequestlistComponent implements OnInit {
     // เช็คก่อนใช้ sessionStorage
     if (isPlatformBrowser(this.platformId)) {
       sessionStorage.setItem('request_filters', JSON.stringify({
-        fromDate: this.fromDate,
-        toDate: this.toDate,
         Catagory_: this.Catagory_,
         Division_: this.Division_,
         Process_: this.Process_,
@@ -88,8 +84,6 @@ export class RequestlistComponent implements OnInit {
       if (savedFiltersStr) {
         try {
           const filters = JSON.parse(savedFiltersStr);
-          this.fromDate = filters.fromDate || null;
-          this.toDate = filters.toDate || null;
           this.Catagory_ = filters.Catagory_ || null;
           this.Division_ = filters.Division_ || null;
           this.Process_ = filters.Process_ || null;
@@ -131,12 +125,14 @@ export class RequestlistComponent implements OnInit {
             if (groupedMap.has(key)) {
               const group = groupedMap.get(key)!;
               if (!group.ID_Requests.has(idRequest)) {
-                group.Req_QTY += Number(item.Req_QTY);
+                // Dashboard Logic: Sum QTY (Actual) instead of Req_QTY
+                group.Req_QTY += Number(item.QTY || item.Req_QTY || 0);
                 group.ID_Requests.add(idRequest);
               }
             } else {
               groupedMap.set(key, {
-                Req_QTY: Number(item.Req_QTY),
+                // Dashboard Logic: Sum QTY (Actual) instead of Req_QTY
+                Req_QTY: Number(item.QTY || item.Req_QTY || 0),
                 ID_Requests: new Set<number>([idRequest]),
                 item: { ...item }
               });
@@ -187,27 +183,7 @@ export class RequestlistComponent implements OnInit {
       const matchItemNo = !this.Item_?.length || this.Item_.includes(item.ItemNo);
       const matchProcess = !this.Process_?.length || this.Process_.includes(item.Process);
 
-      const fromDateObj = this.fromDate ? new Date(this.fromDate) : null;
-      if (fromDateObj) fromDateObj.setHours(0, 0, 0, 0);
-
-      const toDateObj = this.toDate ? new Date(this.toDate) : null;
-      if (toDateObj) toDateObj.setHours(23, 59, 59, 999);
-
-      // Use pre-calculated date
-      const reqDate = item._parsedDateRecord;
-
-      let matchDate: boolean = true;
-      if (reqDate) {
-        if (fromDateObj && toDateObj) {
-          matchDate = reqDate >= fromDateObj && reqDate <= toDateObj;
-        } else if (fromDateObj) {
-          matchDate = reqDate >= fromDateObj;
-        } else if (toDateObj) {
-          matchDate = reqDate <= toDateObj;
-        }
-      }
-
-      return matchDivision && matchCategory && matchItemNo && matchProcess && matchDate;
+      return matchDivision && matchCategory && matchItemNo && matchProcess;
     });
 
     this.currentPage = 1;
@@ -226,12 +202,15 @@ export class RequestlistComponent implements OnInit {
       const valA = a[key] ?? '';
       const valB = b[key] ?? '';
 
+      // Date sorting removed as columns are gone
+      /*
       const isDate = key.includes('Date') || key.includes('Time');
       if (isDate) {
         const dateA = valA ? new Date(valA).getTime() : 0;
         const dateB = valB ? new Date(valB).getTime() : 0;
         return this.sortAsc ? dateA - dateB : dateB - dateA;
       }
+      */
 
       if (typeof valA === 'number' && typeof valB === 'number') {
         return this.sortAsc ? valA - valB : valB - valA;
@@ -260,8 +239,7 @@ export class RequestlistComponent implements OnInit {
     const endIndex = startIndex + this.pageSize;
     this.displayedRequests = this.filteredRequests.slice(startIndex, endIndex);
 
-    // Generate page numbers for UI (simple version, max 5 pages shown)
-    // You might want a more complex logic for many pages, but this is a good start
+    // Generate page numbers for UI
     let startPage = Math.max(1, this.currentPage - 2);
     let endPage = Math.min(this.totalPages, startPage + 4);
 
@@ -269,9 +247,14 @@ export class RequestlistComponent implements OnInit {
       startPage = Math.max(1, endPage - 4);
     }
 
+    // Recalculate endPage in case startPage was adjusted
+    endPage = Math.min(this.totalPages, startPage + 4);
+
     this.pages = [];
     for (let i = startPage; i <= endPage; i++) {
-      this.pages.push(i);
+      if (i > 0) {
+        this.pages.push(i);
+      }
     }
   }
 
@@ -287,8 +270,6 @@ export class RequestlistComponent implements OnInit {
     this.Division_ = null;
     this.Process_ = null;
     this.Item_ = null;
-    this.fromDate = null;
-    this.toDate = null;
 
     if (isPlatformBrowser(this.platformId)) {
       sessionStorage.removeItem('request_filters');

@@ -33,6 +33,8 @@ export class DetailComponent implements OnInit {
   allRequests: any[] = [];
   filteredRequests: any[] = [];
   request: any[] = [];
+  allSetupRequests: any[] = [];
+  setupRequests: any[] = [];
 
   // Pagination
   currentPage: number = 1;
@@ -56,6 +58,15 @@ export class DetailComponent implements OnInit {
     { label: 'GM', value: '7122' },
     { label: 'PMC', value: '71DZ' }
   ];
+  StatusList = [
+    { label: 'Wait', value: 'Waiting' },
+    { label: 'Complete', value: 'Complete' }
+  ];
+  ToolingList = [
+    { label: 'Cutting Tool', value: 'Cutting Tool' },
+    { label: 'Setup Tool', value: 'Setup Tool' }
+  ];
+
   PartNoList: any[] = [];
   ItemNoList: any[] = [];
   SpecList: any[] = [];
@@ -64,6 +75,9 @@ export class DetailComponent implements OnInit {
   DueDateList: any[] = [];
   CaseList: any[] = [];
   DocumentNoList: any[] = [];
+  MCTypeList: any[] = [];
+  MRNoList: any[] = [];
+  FacList: any[] = []; // Fac List
 
   // Selected Filters
   Division_: string | null = null;
@@ -71,10 +85,19 @@ export class DetailComponent implements OnInit {
   ItemNo_: string | null = null;
   Spec_: string | null = null;
   Process_: string | null = null;
+  Fac_: string | null = null; // Fac Filter
   ReqDate_: string | null = null;
   DueDate_: string | null = null;
   Case_: string | null = null;
   DocumentNo_: string | null = null;
+  Status_: string | null = null;
+  Tooling_: string | null = null;
+
+  // New Filters
+  MRNo_: string | null = null;
+  DueDateFilter_: string | null = null;
+  MCType_: string | null = null;
+  ItemNoFilter_: string | null = null;
 
   // Selected Item Details
   PartNo: any[] = [];
@@ -150,8 +173,21 @@ export class DetailComponent implements OnInit {
       this.itemNo = p.get('itemNo') || '';
     });
 
+    this.route.queryParams.subscribe(params => {
+      if (params['case']) {
+        this.Case_ = params['case'];
+        // Reverted: Case Setup view is now separate component
+        this.Tooling_ = 'Cutting Tool';
+      }
+      if (params['tool']) {
+        this.Tooling_ = params['tool'];
+      }
+      // If no params, Tooling_ remains null (Blank Page)
+    });
+
     if (isPlatformBrowser(this.platformId)) {
       this.Detail_Purchase();
+      this.loadSetupData();
       this.get_ItemNo();
 
       /* 
@@ -233,10 +269,8 @@ export class DetailComponent implements OnInit {
           // Store original request info for Production columns
           Req_ItemNo: it.ItemNo,
           Req_PartNo: it.PartNo,
-          Req_SPEC: it.SPEC,
-          MFGOrderNo: (it.Division === '71DZ')
-            ? `M${(it.PartNo || '').substring(0, 6)}${(it.MCT_MachineTypeCode || '')}`
-            : ''
+          Req_SPEC: it.SPEC
+          // MFGOrderNo logic removed to use Backend value
         }));
 
         const seen = new Set<number>();
@@ -252,16 +286,50 @@ export class DetailComponent implements OnInit {
         this.request = [...unique];
         this.updatePagination();
 
-        this.SpecList = Array.from(new Set(this.allRequests.map(x => x.SPEC))).map(x => ({ label: x, value: x }));
-        this.ProcessList = Array.from(new Set(this.allRequests.map(x => x.Process))).map(x => ({ label: x, value: x }));
-        this.CaseList = Array.from(new Set(this.allRequests.map(x => x.CASE))).map(x => ({ label: x, value: x }));
-        this.PartNoList = Array.from(new Set(this.allRequests.map(x => x.PartNo))).map(x => ({ label: x, value: x }));
-        this.ItemNoList = Array.from(new Set(this.allRequests.map(x => x.ItemNo))).map(x => ({ label: x, value: x }));
-        this.DocumentNoList = Array.from(new Set(this.allRequests.map(x => x.DocNo))).map(x => ({ label: x, value: x }));
+        this.SpecList = Array.from(new Set(this.allRequests.map(x => x.SPEC))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+        this.ProcessList = Array.from(new Set(this.allRequests.map(x => x.Process))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+        this.CaseList = Array.from(new Set(this.allRequests.map(x => x.CASE))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+        this.PartNoList = Array.from(new Set(this.allRequests.map(x => x.PartNo))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+        this.ItemNoList = Array.from(new Set(this.allRequests.map(x => x.ItemNo))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+        this.DocumentNoList = Array.from(new Set(this.allRequests.map(x => x.DocNo))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+        this.MCTypeList = Array.from(new Set(this.allRequests.map(x => x.MCType))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+        this.MRNoList = Array.from(new Set(this.allRequests.map(x => x.MR_No))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+        this.FacList = Array.from(new Set(this.allRequests.map(x => x.Fac))).filter(x => x).sort().map(x => ({ label: x, value: x }));
 
         this.cdr.markForCheck();
       },
       error: e => console.error('❌ Error Detail_Purchase:', e)
+    });
+  }
+
+  loadSetupData() {
+    this.DetailPurchase.Detail_Request_Setup().subscribe({
+      next: (response: any[]) => {
+        if (!Array.isArray(response)) {
+          this.allSetupRequests = [];
+          this.setupRequests = [];
+          // this.updatePagination(); // Might need separate pagination or unified
+          return;
+        }
+
+        const mapped = response.map(it => ({
+          ...it,
+          ID_Request: Number(it.ID_RequestSetupTool), // Map ID for compatibility
+          Selection: false,
+          QTY: it.QTY ?? it.Req_QTY,
+          MCQTY: it.MCQTY ?? it.MCNo, // Map MCNo to MCQTY Setup Tool
+          _parsedRequestDate: it.DateTime_Record ? new Date(it.DateTime_Record) : null,
+          _parsedDueDate: it.DueDate ? new Date(it.DueDate) : null
+        }));
+
+        this.allSetupRequests = mapped;
+        this.setupRequests = [...mapped];
+
+        // Merge lists for dropdowns if needed, or keeping separate?
+        // For now, let's just load it.
+        this.cdr.markForCheck();
+      },
+      error: e => console.error('❌ Error loadSetupData:', e)
     });
   }
 
@@ -284,14 +352,8 @@ export class DetailComponent implements OnInit {
     });
   }
 
-  onItemNoChange(selectedItemNo: string, row: any) {
-    const selected = this.ItemNo.find(x => x.ItemNo === selectedItemNo);
-    if (selected) {
-      row.SPEC = selected.SPEC;
-      row.ON_HAND = selected.ON_HAND;
-      row.QTY = row.QTY ?? row.Req_QTY ?? 0;
-    }
-  }
+  // Old onItemNoChange removed to fix duplicate
+
 
   onQtyChange(row: any) {
     const index = this.request.findIndex(r => r.ID_Request === row.ID_Request);
@@ -412,6 +474,10 @@ export class DetailComponent implements OnInit {
     }
   }
 
+  onItemNoChange(event: any, item: any) {
+    this.syncSpecWithItemNo(item);
+  }
+
   deleteRow(rowIndex: number) {
     // Determine real index based on current page
     const realIndex = (this.currentPage - 1) * this.pageSize + rowIndex;
@@ -478,20 +544,31 @@ export class DetailComponent implements OnInit {
       this.DetailPurchase.updateRequest(it)
     );
 
+
     forkJoin(updateQtyObservables).subscribe({
       next: () => {
         this.DetailPurchase.updateStatusToComplete(ids, 'Complete').subscribe({
           next: () => {
             const idSet = new Set(ids);
-            this.request = this.request.map(r =>
-              idSet.has(Number(r.ID_Request))
-                ? { ...r, Status: 'Complete', Selection: false }
-                : r
-            );
+
+            // Remove from request (displayed list)
+            this.request = this.request.filter(r => !idSet.has(Number(r.ID_Request)));
+
+            // Remove from allRequests (source list)
+            this.allRequests = this.allRequests.filter(r => !idSet.has(Number(r.ID_Request)));
+
+            // Remove from setup requests if applicable
+            this.allSetupRequests = this.allSetupRequests.filter(r => !idSet.has(Number(r.ID_Request)));
+            this.setupRequests = this.setupRequests.filter(r => !idSet.has(Number(r.ID_Request)));
+
             if (isPlatformBrowser(this.platformId)) {
               localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
             }
-            this.updatePagination(); // No need to reload all data, just pagination
+
+            // Re-apply filter and pagination
+            this.onFilter();
+            // this.updatePagination(); // onFilter calls updatePagination
+
             Swal.fire({ icon: 'success', title: 'Complete!', text: `Updated ${ids.length} items.` });
             this.cdr.markForCheck();
           },
@@ -535,19 +612,20 @@ export class DetailComponent implements OnInit {
         // 2. Update Status to Complete
         this.DetailPurchase.updateStatusToComplete([id], 'Complete').subscribe({
           next: () => {
-            const index = this.request.findIndex(r => r.ID_Request === item.ID_Request);
-            if (index > -1) {
-              this.request[index].Status = 'Complete';
-              this.request[index].Selection = false;
-              // Remove explicit editing index if any
-              delete this.editingIndex[item.ID_Request];
-            }
+            // Remove from view
+            this.request = this.request.filter(r => r.ID_Request !== item.ID_Request);
+            this.allRequests = this.allRequests.filter(r => r.ID_Request !== item.ID_Request);
+            this.allSetupRequests = this.allSetupRequests.filter(r => r.ID_Request !== item.ID_Request);
+            this.setupRequests = this.setupRequests.filter(r => r.ID_Request !== item.ID_Request);
+
+            // Remove explicit editing index if any
+            delete this.editingIndex[item.ID_Request];
 
             if (isPlatformBrowser(this.platformId)) {
               localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
             }
 
-            // Re-apply filters so the completed item disappears if filter is "Waiting"
+            // Re-apply filters
             this.onFilter();
 
             Swal.fire({ icon: 'success', title: 'Confirmed!', showConfirmButton: false, timer: 1200 });
@@ -672,64 +750,55 @@ export class DetailComponent implements OnInit {
   }
 
   onFilter() {
-    this.request = this.allRequests.filter(item => {
+    const source = (this.Tooling_ === 'Setup Tool') ? this.allSetupRequests : this.allRequests;
+
+    this.request = source.filter(item => {
       const status = (item.Status ?? '').toLowerCase().trim();
-      const matchStatus = status === 'waiting';
+
+      const matchStatus = !this.Status_?.length || this.Status_.toLowerCase().includes(status);
 
       const matchDivision = !this.Division_?.length || this.Division_.includes(item.Division);
-      const matchItemNo = !this.ItemNo_?.length || this.ItemNo_.includes(item.ItemNo);
-      const matchPartNo = !this.PartNo_?.length || this.PartNo_.includes(item.PartNo);
-      const matchSpec = !this.Spec_?.length || this.Spec_.includes(item.SPEC);
       const matchProcess = !this.Process_?.length || this.Process_.includes(item.Process);
       const matchCase = !this.Case_?.length || this.Case_.includes(item.CASE);
-      const matchDocNo = !this.DocumentNo_?.length || this.DocumentNo_.includes(item.DocNo);
+
+      // Tooling_ is now a Switcher, not a Row Filter.
+      // If it's 'Cutting Tool', we assume ALL current data is Cutting Tool (or handled elsewhere).
+      // So we generally always return true for this filter in this context.
+      const matchTooling = true;
 
       const requestDate = item._parsedRequestDate;
-      const dueDate = item._parsedDueDate;
 
       // --- Req Date Filter ---
       const reqFrom = this.reqDateFrom ? new Date(this.reqDateFrom) : null;
-      const reqTo = this.reqDateTo ? new Date(this.reqDateTo) : null;
       if (reqFrom) reqFrom.setHours(0, 0, 0, 0);
-      if (reqTo) reqTo.setHours(0, 0, 0, 0);
 
       let matchReqDate = true;
-      if (requestDate) {
+      if (this.reqDateFrom && requestDate && reqFrom) {
         const rDate = new Date(requestDate);
         rDate.setHours(0, 0, 0, 0);
-        if (reqFrom && reqTo) {
-          matchReqDate = rDate >= reqFrom && rDate <= reqTo;
-        } else if (reqFrom) {
-          matchReqDate = rDate >= reqFrom;
-        } else if (reqTo) {
-          matchReqDate = rDate <= reqTo;
-        }
-      } else if (reqFrom || reqTo) {
-        matchReqDate = false;
+        // Single date match as per Return List style
+        matchReqDate = rDate.getTime() === reqFrom.getTime();
       }
+
+      // --- New Filters ---
+      const matchMRNo = !this.MRNo_?.length || (item.RefNo && item.RefNo.toLowerCase().includes(this.MRNo_.toLowerCase()));
+      const matchMCType = !this.MCType_?.length || (item.MCType && item.MCType.toLowerCase().includes(this.MCType_.toLowerCase()));
+      const matchItemNo = !this.ItemNoFilter_?.length || (item.ItemNo && item.ItemNo.toLowerCase().includes(this.ItemNoFilter_.toLowerCase()));
+      const matchPartNo = !this.PartNo_?.length || (item.PartNo && item.PartNo.toLowerCase().includes(this.PartNo_.toLowerCase()));
 
       // --- Due Date Filter ---
-      const dueFrom = this.dueDateFrom ? new Date(this.dueDateFrom) : null;
-      const dueTo = this.dueDateTo ? new Date(this.dueDateTo) : null;
-      if (dueFrom) dueFrom.setHours(0, 0, 0, 0);
-      if (dueTo) dueTo.setHours(0, 0, 0, 0);
-
       let matchDueDate = true;
-      if (dueDate) {
-        const dDate = new Date(dueDate);
-        dDate.setHours(0, 0, 0, 0);
-        if (dueFrom && dueTo) {
-          matchDueDate = dDate >= dueFrom && dDate <= dueTo;
-        } else if (dueFrom) {
-          matchDueDate = dDate >= dueFrom;
-        } else if (dueTo) {
-          matchDueDate = dDate <= dueTo;
-        }
-      } else if (dueFrom || dueTo) {
-        matchDueDate = false;
+      if (this.DueDateFilter_ && item.DueDate) {
+        const dueFilter = new Date(this.DueDateFilter_);
+        dueFilter.setHours(0, 0, 0, 0);
+
+        const itemDueDate = new Date(item.DueDate);
+        itemDueDate.setHours(0, 0, 0, 0);
+
+        matchDueDate = itemDueDate.getTime() === dueFilter.getTime();
       }
 
-      return matchStatus && matchDivision && matchPartNo && matchItemNo && matchSpec && matchProcess && matchCase && matchDocNo && matchReqDate && matchDueDate;
+      return matchStatus && matchDivision && matchProcess && matchCase && matchReqDate && matchTooling && matchMRNo && matchMCType && matchItemNo && matchDueDate && matchPartNo;
     });
 
     this.currentPage = 1;
@@ -784,17 +853,18 @@ export class DetailComponent implements OnInit {
   }
 
   clearFilters() {
-    this.Division_ = '';
-    this.PartNo_ = '';
-    this.ItemNo_ = '';
-    this.Spec_ = '';
-    this.Process_ = '';
-    this.Case_ = '';
-    this.DocumentNo_ = '';
+    this.Process_ = null;
+    this.Case_ = null;
+    this.Status_ = null;
     this.reqDateFrom = null;
-    this.reqDateTo = null;
-    this.dueDateFrom = null;
-    this.dueDateTo = null;
+
+    // Clear new filters
+    this.MRNo_ = null;
+    this.DueDateFilter_ = null;
+    this.MCType_ = null;
+    this.ItemNoFilter_ = null;
+    this.PartNo_ = null;
+
     this.onFilter();
   }
 

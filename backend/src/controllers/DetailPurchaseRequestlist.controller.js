@@ -340,7 +340,7 @@ exports.Detail_Purchase = async (req, res) => {
     const result = await pool
       .request()
       .query(`
-        SELECT T1.*, T2.MCT_MachineTypeCode 
+        SELECT T1.*, T2.MCT_MachineTypeCode
         FROM [dbo].[View_CuttingTool_RequestList] T1
         LEFT JOIN [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType] T2 
         ON T1.MCType = T2.MCT_MachineTypeName COLLATE Thai_CI_AS 
@@ -355,6 +355,27 @@ exports.Detail_Purchase = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 
+};
+
+exports.Detail_Purchase_Setup = async (req, res) => {
+  console.log('Fetching Setup Tool Data');
+  try {
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .query(`
+        SELECT *
+        FROM [dbo].[View_SetupTool_RequestList]
+        WHERE Status IN ('Waiting','In Progress')
+        ORDER BY ItemNo ASC, ID_RequestSetupTool ASC
+      `);
+
+    res.json(result.recordset);
+  }
+  catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
 };
 exports.Get_ItemNo = async (req, res) => {
   console.log(req.body)
@@ -678,7 +699,10 @@ exports.Update_Request = async (req, res) => {
       PathLayout,
       SPEC,
       QTY,
-      PhoneNo
+      PhoneNo,
+      MatLot,
+      MR_No,
+      MFGOrderNo
     } = req.body;
 
     const pool = await poolPromise;
@@ -702,6 +726,9 @@ exports.Update_Request = async (req, res) => {
       .input("PathLayout", sql.NVarChar, PathLayout)
       .input("Remark", sql.NVarChar, Remark)
       .input("PhoneNo", sql.Int, PhoneNo)
+      .input("MatLot", sql.NVarChar, MatLot)
+      .input("MR_No", sql.NVarChar, MR_No)
+      .input("MFGOrderNo", sql.NVarChar, MFGOrderNo)
       .query(`
         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
         SET DocNo = @DocNo,
@@ -721,7 +748,10 @@ exports.Update_Request = async (req, res) => {
             Status = @Status,
             PathLayout = @PathLayout,
             Remark = @Remark,
-            PhoneNo = @PhoneNo
+            PhoneNo = @PhoneNo,
+            MatLot = @MatLot,
+            MR_No = @MR_No,
+            MFGOrderNo = @MFGOrderNo
         WHERE ID_Request = @ID_Request
       `);
     if (result.rowsAffected[0] > 0) {
@@ -783,9 +813,58 @@ exports.Add_New_Request = async (req, res) => {
       ItemNo = itemResult.recordset[0].ItemNo;
     }
 
+    // Auto-Generate MFGOrderNo
+    let GeneratedMFGOrderNo = '';
+
+    try {
+      if (['PMC', '71DZ'].includes(Division)) {
+        // Source: [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType]
+        // M + PartNo(6) + MachineTypeCode
+        const machineResult = await pool.request()
+          .input("MCType", sql.NVarChar, MCType)
+          .query(`
+            SELECT TOP 1 MCT_MachineTypeCode 
+            FROM [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType] 
+            WHERE MCT_MachineTypeName = @MCType
+          `);
+
+        const machineCode = machineResult.recordset[0]?.MCT_MachineTypeCode || '';
+        const partNoPrefix = (PartNo || '').substring(0, 6);
+        GeneratedMFGOrderNo = `M${partNoPrefix}${machineCode}`;
+
+      } else if (['GM', '7122'].includes(Division)) {
+        // Source: [db_ToolingSmartRack].[viewer].[MachineTypeOfFacility_N]
+        // P + PartNo(6) + MachineTypeCode
+        const machineResult = await pool.request()
+          .input("MCType", sql.NVarChar, MCType)
+          .query(`
+            SELECT TOP 1 MCT_MachineTypeCode 
+            FROM [db_ToolingSmartRack].[viewer].[MachineTypeOfFacility_N] 
+            WHERE MCT_MachineTypeName = @MCType
+          `);
+
+        const machineCode = machineResult.recordset[0]?.MCT_MachineTypeCode || '';
+        const partNoPrefix = (PartNo || '').substring(0, 6);
+        GeneratedMFGOrderNo = `P${partNoPrefix}${machineCode}`;
+
+      } else {
+        // Fallback: [Case][Process][Fac][Date:YYYYMMDD]
+        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        GeneratedMFGOrderNo = `${CASE}${Process}F${Fac}${dateStr}`;
+      }
+    } catch (err) {
+      console.error('Error generating MFGOrderNo:', err);
+      // Fallback on error
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      GeneratedMFGOrderNo = `${CASE}${Process}F${Fac}${dateStr}`;
+    }
+
+    const MFGOrderNo = GeneratedMFGOrderNo;
+
     const result = await pool.request()
 
       .input("DocNo", sql.NVarChar, DocNo)
+      .input("MFGOrderNo", sql.NVarChar, MFGOrderNo)
       .input("Division", sql.NVarChar, Division)
       .input("Requester", sql.NVarChar, Requester)
       .input("PartNo", sql.NVarChar, PartNo)
@@ -806,10 +885,10 @@ exports.Add_New_Request = async (req, res) => {
       .input("PhoneNo", sql.Int, PhoneNo)
       .query(`
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] 
-        (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo)
+        (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo, MFGOrderNo)
         OUTPUT INSERTED.ID_Request
         VALUES 
-        (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo);
+        (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, @MFGOrderNo);
       `);
 
     const ID_Request = result.recordset[0]?.ID_Request || null;
@@ -1365,35 +1444,12 @@ exports.Add_New_Request_Bulk = async (req, res) => {
               // Case + Process + Fac + M/R No.(yymmdd)
               prefix = `${casePart}${processPart}${factoryPart}${datePart}`;
             } else {
-              // Default Fallback (Use 7122 logic or previous?)
-              // Using 7122 logic as default for safety
+              // Default Fallback
               prefix = `${processPart}${factoryPart}${casePart}${datePart}`;
             }
 
-            let isUnique = false;
-            let finalDocNo = prefix;
-            let counter = 1;
-
-            // Check if strict prefix exists (End with date)
-            const check = await pool.request().input('DocNo', sql.NVarChar(50), finalDocNo)
-              .query(`SELECT COUNT(*) AS count FROM tb_IssueCuttingTool_Request_Document WHERE DocNo = @DocNo`);
-            if (check.recordset[0].count === 0) {
-              isUnique = true;
-            }
-
-            // If not unique, append running number
-            while (!isUnique) {
-              finalDocNo = `${prefix}${counter.toString().padStart(2, '0')}`; // Try 01, 02...
-              const checkRun = await pool.request().input('DocNo', sql.NVarChar(50), finalDocNo)
-                .query(`SELECT COUNT(*) AS count FROM tb_IssueCuttingTool_Request_Document WHERE DocNo = @DocNo`);
-              if (checkRun.recordset[0].count === 0) {
-                isUnique = true;
-              } else {
-                counter++;
-              }
-            }
-
-            docNo = finalDocNo;
+            // DIRECTLY USE PREFIX AS DOCNO (No Running Number)
+            docNo = prefix;
             console.log(`Generated DocNo for group ${key}: ${docNo}`);
           }
         } catch (e) {

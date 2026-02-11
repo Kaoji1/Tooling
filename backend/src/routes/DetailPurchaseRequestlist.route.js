@@ -7,6 +7,7 @@ const DetailPurchaseRequestlist = require('../controllers/DetailPurchaseRequestl
 
 // กำหนดเส้นทาง request
 router.get('/Detail_Purchase', DetailPurchaseRequestlist.Detail_Purchase);
+router.get('/Detail_Purchase_Setup', DetailPurchaseRequestlist.Detail_Purchase_Setup);
 router.post('/Update_Status_Purchase', DetailPurchaseRequestlist.Update_Status_Purchase);
 
 // เพิ่ม route สำหรับอัพเดตข้อมูลรายละเอียด

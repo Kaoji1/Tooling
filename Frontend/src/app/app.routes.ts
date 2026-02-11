@@ -77,6 +77,11 @@ export const routes: Routes = [
         data: { roles: ['purchase', 'view', 'admin'] }
       },
       {
+        path: 'detailcasesetup',
+        loadComponent: () => import('./pages/purchase/detailcasesetup/detailcasesetup.component').then(m => m.DetailCaseSetupComponent),
+        data: { roles: ['purchase', 'view', 'admin'] }
+      },
+      {
         path: 'requestlist',
         loadComponent: () => import('./pages/purchase/requestlist/requestlist.component').then(m => m.RequestlistComponent),
         data: { roles: ['purchase', 'view', 'admin'] }

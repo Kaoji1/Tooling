@@ -6,8 +6,15 @@
     <ul class="nav-links">
 
       <!--แถบเมนู Request List-->
-      <li routerLinkActive="active">
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
         <a routerLink="/purchase/detail"> <i class="bi bi-newspaper"></i> Request List </a>
+      </li>
+
+      <!--แถบเมนู Request List (Case SETUP)-->
+      <li routerLinkActive="active">
+        <a routerLink="/purchase/detailcasesetup">
+          <i class="bi bi-tools"></i> Case SETUP
+        </a>
       </li>
 
       <!--แถบเมนู Total Item-->
