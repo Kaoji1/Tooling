@@ -6,9 +6,9 @@ exports.getDivisions = async (req, res) => {
     try {
         const pool = await poolPromise;
         const result = await pool.request()
-            .execute('trans.Stored_Get_Dropdown_Division');
+            .execute('trans.Stored_Get_Dropdown_PC_Plan_Division');
 
-        // Return: Division_Id, Profit_Center, Division_Name
+        console.log(`[getDivisions] Sending ${result.recordset.length} divisions to frontend`);
         res.status(200).json(result.recordset);
     } catch (err) {
         console.error('Error getDivisions:', err);
@@ -20,38 +20,59 @@ exports.getDivisions = async (req, res) => {
 exports.getMasterDataByDivision = async (req, res) => {
     try {
         const divCode = req.params.divCode; // Now this is Division_Id
+        const mode = req.query.mode || 'ALL'; // FAST, SLOW, ALL (Default)
 
         if (!divCode) {
             return res.status(400).send({ message: "Division is required." });
         }
 
         const pool = await poolPromise;
-        console.log(`Fetching Master Data for Division_Id: ${divCode}...`);
+        console.log(`Fetching Master Data for Division_Id: ${divCode}, Mode: ${mode}...`);
 
         // Use new SP: Stored_Get_Dropdown_PC_Plan_Data
-        // Input: @Division_Id
-        // Output: 4 Tables (0=MC, 1=Facility, 2=Process, 3=PartNo)
+        // Input: @Division_Id, @Mode
         const result = await pool.request()
-            .input('Division_Id', sql.NVarChar(50), divCode)
+            .input('Profit_Center', sql.NVarChar(50), divCode)
+            .input('Mode', sql.NVarChar(10), mode)
             .execute('trans.Stored_Get_Dropdown_PC_Plan_Data');
 
-        // New Mapping:
-        // recordsets[0] = MC
-        // recordsets[1] = Facility
-        // recordsets[2] = Process
-        // recordsets[3] = PartNo
-        const machines = result.recordsets[0] || [];
-        const facilities = result.recordsets[1] || [];
-        const processes = result.recordsets[2] || [];
-        const partNos = result.recordsets[3] || [];
+        let response = {};
 
-        res.status(200).json({
-            machines,
-            facilities,
-            processes,
-            partNos,
-            partBefs: partNos // Use same list for Part Before
-        });
+        if (mode === 'FAST') {
+            // Returns only Machine [0] and Facility [1]
+            response = {
+                machines: result.recordsets[0] || [],
+                facilities: result.recordsets[1] || [],
+                processes: [],
+                partNos: [],
+                partBefs: []
+            };
+        } else if (mode === 'SLOW') {
+            // Returns Process [0] and PartNo [1] (because FAST parts are skipped)
+            // Wait, if SP logic uses IF blocks, recordsets indices might shift.
+            // Let's check SP again.
+            // IF FAST: Select 1, Select 2
+            // IF SLOW: Select 3, Select 4
+            // So if SLOW, recordsets[0] is Process, recordsets[1] is PartNo
+            response = {
+                machines: [],
+                facilities: [],
+                processes: result.recordsets[0] || [],
+                partNos: result.recordsets[1] || [],
+                partBefs: result.recordsets[1] || [] // Same as PartNo
+            };
+        } else {
+            // ALL (Default) - Returns 4 sets order: MC, Fac, Process, PartNo
+            response = {
+                machines: result.recordsets[0] || [],
+                facilities: result.recordsets[1] || [],
+                processes: result.recordsets[2] || [],
+                partNos: result.recordsets[3] || [],
+                partBefs: result.recordsets[3] || []
+            };
+        }
+
+        res.status(200).json(response);
 
     } catch (err) {
         console.error('Error getMasterDataByDivision:', err);
@@ -224,6 +245,34 @@ exports.deletePCPlan = async (req, res) => {
 
     } catch (err) {
         console.error('Error deletePCPlan:', err);
+        res.status(500).send({ message: err.message });
+    }
+};
+
+// 6. ฟังก์ชันลบข้อมูล PC Plan (Delete Group - All Revisions) -> Soft Delete
+exports.deletePCPlanGroup = async (req, res) => {
+    try {
+        const groupId = req.params.groupId;
+
+        if (!groupId) {
+            return res.status(400).send({ message: "GroupId is required." });
+        }
+
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('GroupId', sql.NVarChar(50), groupId)
+            .execute('trans.Stored_PCPlan_Delete_Group');
+
+        console.log(`[deletePCPlanGroup] GroupId: ${groupId}, Deleted Rows: ${result.rowsAffected[0]}`);
+
+        res.status(200).json({
+            message: "Group deleted successfully",
+            groupId: groupId,
+            deletedCount: result.rowsAffected[0]
+        });
+
+    } catch (err) {
+        console.error('Error deletePCPlanGroup:', err);
         res.status(500).send({ message: err.message });
     }
 };

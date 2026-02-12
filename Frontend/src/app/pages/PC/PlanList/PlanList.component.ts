@@ -7,18 +7,19 @@ import { FileUploadSerice } from '../../../core/services/FileUpload.service';
 import { HistoryPrint } from '../../../core/services/HistoryPrint.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import Swal from 'sweetalert2';
+import { CalendarModule } from 'primeng/calendar';
 
 @Component({
   selector: 'app-plan-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, CalendarModule],
   templateUrl: './PlanList.component.html',
   styleUrls: ['./PlanList.component.scss']
 })
 export class PlanListComponent implements OnInit {
 
   // ตัวแปรสำหรับ Filter
-  filterDate: string = '';
+  filterDate: Date | null = null;
   filterDivision: string = '';
   filterMachineType: string = '';
   showHistory: boolean = false; // Toggle for Global History
@@ -52,12 +53,29 @@ export class PlanListComponent implements OnInit {
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
+  // Machine Data Cache - REMOVED (User requested Excel-style filtering based on actual list data)
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
       this.checkPrintPermission();
     }
     this.loadPlanList();
+    // this.loadMachineMasterData(); // Removed
+  }
+
+  // Load Machine Types dynamically from the loaded Plan List (Excel-style)
+  updateMachineTypeOptions() {
+    let currentData = this.planList;
+
+    // If Division is selected, show only MCs in that Division
+    if (this.filterDivision && this.filterDivision !== 'All') {
+      currentData = currentData.filter(item => item.division === this.filterDivision);
+    }
+
+    // Extract Unique MC Types
+    const uniqueMCs = new Set(currentData.map(item => item.mcType).filter(mc => mc));
+    this.machineTypes = Array.from(uniqueMCs).sort();
   }
 
   checkPrintPermission() {
@@ -78,7 +96,8 @@ export class PlanListComponent implements OnInit {
         // Map ข้อมูลจาก Backend (PascalCase) -> Frontend (camelCase)
         this.planList = res.map((item: any) => ({
           id: item.Plan_ID,
-          date: item.PlanDate ? new Date(item.PlanDate).toLocaleDateString('en-US') : '', // mm/dd/yyyy
+          // Change to dd/mm/yyyy (en-GB)
+          date: item.PlanDate ? new Date(item.PlanDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '',
           // empId: item.Employee_ID,
           division: this.mapDivisionName(item.Division), // Map Code to Name
           mcType: item.MC_Type, // HTML ใช้ mcType
@@ -112,6 +131,8 @@ export class PlanListComponent implements OnInit {
 
   // ฟังก์ชันสำหรับกรองข้อมูล
   applyFilter() {
+    this.updateMachineTypeOptions(); // Update Dropdown Options based on Division
+
     this.filteredPlanList = this.planList.filter(item => {
       // 1. Filter Date (ต้องแปลง format ให้ตรงกันก่อน)
       const matchDate = this.filterDate ? this.isDateMatch(item.date, this.filterDate) : true;
@@ -125,8 +146,12 @@ export class PlanListComponent implements OnInit {
 
     // เรียงลำดับ: วันที่ล่าสุด -> Revision ล่าสุด
     this.filteredPlanList.sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
+      // Parse dd/mm/yyyy to Date object for sorting
+      const [dayA, monthA, yearA] = a.date.split('/').map(Number);
+      const [dayB, monthB, yearB] = b.date.split('/').map(Number);
+      const dateA = new Date(yearA, monthA - 1, dayA).getTime();
+      const dateB = new Date(yearB, monthB - 1, dayB).getTime();
+
       if (dateB !== dateA) return dateB - dateA;
 
       // GroupId Check (Group items together just in case date is same) - Optional but good practice
@@ -163,16 +188,26 @@ export class PlanListComponent implements OnInit {
   }
 
   // Helper สำหรับเช็ควันที่
-  isDateMatch(itemDateStr: string, filterDateStr: string): boolean {
-    // itemDateStr format: mm/dd/yyyy (from toLocaleDateString en-US)
-    // filterDateStr format: yyyy-mm-dd (from input type="date")
-    if (!itemDateStr || !filterDateStr) return false;
+  isDateMatch(itemDateStr: string, filterDateObj: Date | null): boolean {
+    if (!itemDateStr || !filterDateObj) return false;
 
-    const [month, day, year] = itemDateStr.split('/');
-    // padStart to ensure 2 digits
-    const formattedItemDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    // itemDateStr: dd/mm/yyyy
+    // filterDateObj: Date Object from p-calendar
 
-    return formattedItemDate === filterDateStr;
+    const parts = itemDateStr.split('/');
+    if (parts.length !== 3) return false;
+
+    const [day, month, year] = parts.map(Number);
+    // Create Date from item string (Local time assumed for date parts)
+    // Note: Creating date with (year, monthIndex, day)
+
+    // Compare logic:
+    // filterDateObj is a Date object.
+
+    // Simplest way: Compare d/m/y parts
+    return day === filterDateObj.getDate() &&
+      (month - 1) === filterDateObj.getMonth() &&
+      year === filterDateObj.getFullYear();
   }
 
   // --- Edit Logic ---
@@ -187,8 +222,8 @@ export class PlanListComponent implements OnInit {
     if (this.editData.date) {
       const parts = this.editData.date.split('/');
       if (parts.length === 3) {
-        // parts: [mm, dd, yyyy]
-        this.editData.dateObj = `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+        // parts: [dd, mm, yyyy] -> yyyy-MM-dd
+        this.editData.dateObj = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
       }
     }
 
@@ -277,7 +312,16 @@ export class PlanListComponent implements OnInit {
 
       this.pcPlanService.savePlan(payload).subscribe({
         next: (res) => {
-          Swal.fire('Success', 'Plan updated successfully!', 'success');
+          Swal.fire({
+            title: '<span style="color:#059669; font-weight:800;">Success</span>',
+            text: 'Plan updated successfully!',
+            icon: 'success',
+            customClass: {
+              popup: 'swal-premium-popup',
+              title: 'swal-premium-title',
+              confirmButton: 'swal-premium-confirm swal-premium-confirm-success'
+            }
+          });
           this.isEditModalOpen = false;
           this.loadPlanList(); // Reload to see new Revision
         },
@@ -292,33 +336,54 @@ export class PlanListComponent implements OnInit {
 
   // ฟังก์ชันเมื่อกดปุ่ม Delete
   onDelete(item: any) {
+    if (!item.groupId) {
+      Swal.fire('Error', 'No GroupId found for this item.', 'error');
+      return;
+    }
+
     Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: '<span style="color:#1e293b; font-weight:800;">Are you sure?</span>',
+      html: `<div style="color:#64748b; font-size:1rem;">This will delete <b>ALL revisions</b> of this plan!<br><span style="color:#ef4444; font-weight:600;">You won't be able to revert this!</span></div>`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: 'Yes, delete all',
+      cancelButtonText: 'Cancel',
+      customClass: {
+        popup: 'swal-premium-popup',
+        title: 'swal-premium-title',
+        confirmButton: 'swal-premium-confirm',
+        cancelButton: 'swal-premium-cancel'
+      },
+      backdrop: `rgba(15, 23, 42, 0.6)`
     }).then((result) => {
       if (result.isConfirmed) {
-        this.pcPlanService.deletePlan(item.id).subscribe({
+        this.pcPlanService.deletePlanGroup(item.groupId).subscribe({
           next: () => {
-            Swal.fire(
-              'Deleted!',
-              'Your file has been deleted.',
-              'success'
-            );
+            Swal.fire({
+              title: '<span style="color:#059669; font-weight:800;">Deleted!</span>',
+              text: 'All revisions have been deleted.',
+              icon: 'success',
+              customClass: {
+                popup: 'swal-premium-popup',
+                title: 'swal-premium-title',
+                confirmButton: 'swal-premium-confirm swal-premium-confirm-success'
+              }
+            });
             // Reload ตารางใหม่
             this.loadPlanList();
           },
           error: (err: any) => {
             console.error('Delete error:', err);
-            Swal.fire(
-              'Error!',
-              'Failed to delete. Please try again.',
-              'error'
-            );
+            Swal.fire({
+              title: '<span style="color:#ef4444; font-weight:800;">Error!</span>',
+              text: 'Failed to delete. Please try again.',
+              icon: 'error',
+              customClass: {
+                popup: 'swal-premium-popup',
+                title: 'swal-premium-title',
+                confirmButton: 'swal-premium-confirm'
+              }
+            });
           }
         });
       }
@@ -360,8 +425,8 @@ export class PlanListComponent implements OnInit {
   }
 
   mapDivisionName(code: string): string {
-    if (code === '7122') return 'GM';
-    if (code === '71DZ') return 'PMC';
+    if (code === '7122' || code === '3') return 'GM'; // Handle both code and legacy ID
+    if (code === '71DZ' || code === '2') return 'PMC'; // Handle both code and legacy ID
     return code; // Return original if no match
   }
 
@@ -406,12 +471,13 @@ export class PlanListComponent implements OnInit {
     navigator.clipboard.writeText(path).then(() => {
       Swal.fire({
         icon: 'success',
-        title: 'Copied!',
-        text: 'Path copied to clipboard. Paste it in File Explorer.',
+        title: '<span style="font-weight:700;">Copied!</span>',
+        text: 'Path copied to clipboard.',
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: 3000
+        timer: 3000,
+        timerProgressBar: true
       });
     }).catch(err => {
       console.error('Clipboard failed:', err);

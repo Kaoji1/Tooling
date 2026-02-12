@@ -8,6 +8,7 @@ import * as ExcelJS from 'exceljs';
 import Swal from 'sweetalert2';
 
 import { NgSelectModule } from '@ng-select/ng-select';
+import { CalendarModule } from 'primeng/calendar';
 
 export interface PlanItem {
   date: string;
@@ -25,7 +26,7 @@ export interface PlanItem {
 @Component({
   selector: 'app-pc-plan',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, NgSelectModule],
+  imports: [CommonModule, FormsModule, SidebarComponent, NgSelectModule, CalendarModule],
   templateUrl: './PCPlan.component.html',
   styleUrls: ['./PCPlan.component.scss']
 })
@@ -44,13 +45,65 @@ export class PCPlanComponent implements OnInit {
 
   // ข้อมูลในตาราง (Main Data)
   planItems: PlanItem[] = [];
-  isLoadingMasterData: boolean = false; // (Optional) ตัวแปรเช็คสถานะการโหลดข้อมูล Master Data
+  isLoadingMasterData: boolean = false; // โหลด Machine/Fac (เร็ว)
+  isLoadingParts: boolean = false;      // โหลด Process/PartNo (ช้า)
 
   constructor(private pcPlanService: PCPlanService) { }
 
   ngOnInit(): void {
     this.loadDivisions();
-    this.addRow();
+    // this.restoreState(); // Moved to loadDivisions to avoid race condition
+  }
+
+  loadDivisions() {
+    this.pcPlanService.clearCache(); // Force fresh data from server
+    this.pcPlanService.getDivisions().subscribe({
+      next: (data: any[]) => {
+        console.log('DEBUG: Raw divisions received:', data?.length, data);
+        // Show divisions deduplicated by Profit_Center
+        this.divisionOptions = data
+          .map(item => {
+            const pc = (item.Profit_Center || '').toString().trim();
+            return {
+              code: pc,
+              label: pc,
+              profitCenter: pc
+            };
+          })
+          .filter(item => item.code !== '')
+          .filter((item, index, self) =>
+            self.findIndex(t => t.code === item.code) === index
+          );
+
+        // Restore state AFTER divisions are loaded (Delayed to prevent UI blocking)
+        setTimeout(() => {
+          this.restoreState();
+        }, 100);
+      },
+      error: (err) => {
+        console.error('Error loading divisions:', err);
+      }
+    });
+  }
+
+  restoreState() {
+    const state = this.pcPlanService.getPlanState();
+    if (state && state.planItems.length > 0) {
+      this.selectedDivisionCode = state.selectedDivisionCode;
+      this.planItems = state.planItems;
+      if (this.selectedDivisionCode) {
+        this.loadMasterData(this.selectedDivisionCode);
+      }
+    } else {
+      this.addRow();
+    }
+  }
+
+  saveCurrentState() {
+    this.pcPlanService.setPlanState({
+      selectedDivisionCode: this.selectedDivisionCode,
+      planItems: this.planItems
+    });
   }
 
   // --- ส่วนที่ 1: Download Format (ดาวน์โหลดฟอร์ม Excel) ---
@@ -277,20 +330,7 @@ export class PCPlanComponent implements OnInit {
     return date_info.toISOString().split('T')[0];
   }
 
-  loadDivisions() {
-    this.pcPlanService.getDivisions().subscribe({
-      next: (data: any[]) => {
-        // Updated mapping for Stored_Get_Dropdown_PC_Plan_Division
-        // Returns: Division_Id, Profit_Center, Division_Name
-        this.divisionOptions = data.map(item => ({
-          code: item.Division_Id?.toString(),   // Use Division_Id as value
-          label: item.Division_Name || item.Profit_Center, // Show Division_Name
-          profitCenter: item.Profit_Center      // Store Profit_Center for saving
-        }));
-      },
-      error: (err) => console.error('Error loading divisions:', err)
-    });
-  }
+
 
   // Removed mapDivisionName - no longer needed, SP returns Division_Name directly
 
@@ -302,48 +342,64 @@ export class PCPlanComponent implements OnInit {
     } else {
       this.clearMasterData(); // ถ้าไม่เลือกอะไร ให้เคลียร์ค่าทิ้ง
     }
+    this.saveCurrentState();
   }
 
-  // โหลดข้อมูล Master Data (Machine, Fac, Process, PartNo) จาก Division ที่เลือก
+  // Updated: Load Master Data with Split Loading Strategy
+  // 1. FAST: Load Machine/Fac immediately
+  // 2. SLOW: Load Process/PartNo in background
   loadMasterData(divCode: string) {
-    this.isLoadingMasterData = true; // เริ่มสถานะกำลังโหลด
-    this.pcPlanService.getMasterData(divCode).subscribe({
+    // Reset Arrays & Set Loading States
+    this.machineTypes = [];
+    this.facs = [];
+    this.processes = [];
+    this.partNos = [];
+    this.partBef = [];
+
+    this.isLoadingMasterData = true; // Show Main Spinner
+    this.isLoadingParts = true;      // Show Parts Spinner (Background)
+
+    // Call FAST API (Machine & Facility)
+    this.pcPlanService.getMasterData(divCode, 'FAST').subscribe({
       next: (res) => {
-        // Updated mapping for Stored_Get_PCPlan_Dropdown_Data
+        // --- Populate Machines ---
         this.machineTypes = res.machines.map((x: any) => x.MC);
 
-        // Map Facility to Object { label: 'F.1', value: 'F.1' } and Distinct
+        // --- Populate Facilities ---
         const uniqueFacs = new Set<string>();
         const tempFacs: any[] = [];
-
         res.facilities.forEach((x: any) => {
           const fullName = x.FacilityName || '';
-          // Try to extract "F." followed by numbers (e.g. F.1, F.12)
           const match = fullName.match(/F\.\d+/);
-          const shortName = match ? match[0] : fullName; // Fallback to full name if pattern not found
-
+          const shortName = match ? match[0] : fullName;
           if (!uniqueFacs.has(shortName)) {
             uniqueFacs.add(shortName);
-            tempFacs.push({
-              label: shortName,
-              value: shortName // Use Short Name for Value as well
-            });
+            tempFacs.push({ label: shortName, value: shortName });
           }
         });
-
         this.facs = tempFacs.sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
 
-        this.processes = res.processes.map((x: any) => x.Process);
+        this.isLoadingMasterData = false; // Hide Main Spinner (User can select Machine/Fac now)
 
-        // PartNo กับ PartBef ใช้ข้อมูลชุดเดียวกันตามที่คุยกัน
-        this.partNos = res.partNos.map((x: any) => x.PartNo);
-        this.partBef = res.partNos.map((x: any) => x.PartNo); // Use same source
+        // Call SLOW API (Process & PartNo) -> Background Loading
+        this.pcPlanService.getMasterData(divCode, 'SLOW').subscribe({
+          next: (resSlow) => {
+            this.processes = resSlow.processes.map((x: any) => x.Process);
+            this.partNos = resSlow.partNos.map((x: any) => x.PartNo);
+            this.partBef = resSlow.partNos.map((x: any) => x.PartNo);
 
-        this.isLoadingMasterData = false; // โหลดเสร็จแล้ว ปิดสถานะ
+            this.isLoadingParts = false; // Hide Parts Spinner
+          },
+          error: (err) => {
+            console.error('Error loading SLOW data:', err);
+            this.isLoadingParts = false;
+          }
+        });
       },
       error: (err) => {
-        console.error('Error loading master data:', err);
+        console.error('Error loading FAST data:', err);
         this.isLoadingMasterData = false;
+        this.isLoadingParts = false;
       }
     });
   }
@@ -372,6 +428,28 @@ export class PCPlanComponent implements OnInit {
       time: '',
       comment: ''
     });
+    this.saveCurrentState();
+  }
+
+  clearAll() {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "This will clear all items in the table!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, clear all!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.planItems = [];
+        this.selectedDivisionCode = '';
+        this.clearMasterData();
+        this.pcPlanService.clearPlanState();
+        this.addRow();
+        this.saveCurrentState();
+      }
+    });
   }
 
   isRowEmpty(item: PlanItem): boolean {
@@ -381,6 +459,7 @@ export class PCPlanComponent implements OnInit {
 
   removeRow(index: number) {
     this.planItems.splice(index, 1);
+    this.saveCurrentState();
   }
 
   selectAllText(event: any) {
@@ -419,18 +498,28 @@ export class PCPlanComponent implements OnInit {
         </div>
       `;
       Swal.fire({
-        title: 'Validation Failed',
-        html: `Found ${errors.length} errors.<br>Please fix before sending again.<br><hr>${errorHtml}`,
-        icon: 'error'
+        title: '<span style="color:#ef4444; font-weight:800;">Validation Failed</span>',
+        html: `<div style="text-align:left; background:#fff1f2; border-radius:12px; padding:1.25rem; border:1px solid #fecaca; color:#991b1b;">
+          Found <b>${errors.length} errors</b>. Please fix before sending again.<br><hr style="border:0.5px solid #fecaca; margin:10px 0;">${errorHtml}</div>`,
+        icon: 'error',
+        customClass: {
+          popup: 'swal-premium-popup',
+          title: 'swal-premium-title',
+          confirmButton: 'swal-premium-confirm'
+        }
       });
       return; // หยุดการทำงาน ไม่ส่งไป Backend
     }
 
     // 4. ถ้าผ่าน Validation ทั้งหมดค่อยส่ง
     Swal.fire({
-      title: 'Saving...',
+      title: '<span style="color:#1e293b; font-weight:800;">Saving...</span>',
       text: `Saving ${this.planItems.length} records.`,
       allowOutsideClick: false,
+      customClass: {
+        popup: 'swal-premium-popup',
+        title: 'swal-premium-title',
+      },
       didOpen: () => Swal.showLoading()
     });
 
@@ -449,12 +538,28 @@ export class PCPlanComponent implements OnInit {
     // หา Profit_Center จาก Division ที่เลือก
     const selectedDiv = this.divisionOptions.find(d => d.code === this.selectedDivisionCode);
 
-    const payload = this.planItems.map(item => ({
-      ...item,
-      mcType: item.machineType, // Map Frontend 'machineType' to Backend 'mcType'
-      division: selectedDiv?.profitCenter || this.selectedDivisionCode, // ส่ง Profit_Center ไปเก็บ
-      employeeId: empId
-    }));
+    const payload = this.planItems.map(item => {
+      // FIX DATE FORMAT: Convert Date to 'YYYY-MM-DD' (Local Time)
+      // PrimeNG p-calendar returns a Date object.
+      // JSON.stringify() converts it to UTC (often resulting in previous day).
+      // We must manually format it to local YYYY-MM-DD string.
+      let formattedDate = '';
+      if (item.date) {
+        const d = new Date(item.date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        formattedDate = `${year}-${month}-${day}`;
+      }
+
+      return {
+        ...item,
+        date: formattedDate, // Send String YYYY-MM-DD
+        mcType: item.machineType, // Map Frontend 'machineType' to Backend 'mcType'
+        division: selectedDiv?.profitCenter || this.selectedDivisionCode, // ส่ง Profit_Center ไปเก็บ
+        employeeId: empId
+      };
+    });
 
     // 6. ส่งไป Backend
     this.pcPlanService.savePlan(payload).subscribe({
@@ -468,18 +573,42 @@ export class PCPlanComponent implements OnInit {
           errorHtml += '</div>';
 
           Swal.fire({
-            title: 'Completed with Errors',
-            html: `Success: ${res.count}<br>Failed: ${res.fail}<br><hr>${errorHtml}`,
-            icon: 'warning'
+            title: '<span style="color:#f59e0b; font-weight:800;">Completed with Errors</span>',
+            html: `<div style="background:#fffbeb; border-radius:12px; padding:1.25rem; border:1px solid #fef3c7; color:#92400e;">
+              Success: <b>${res.count}</b><br>Failed: <b>${res.fail}</b><br><hr style="border:0.5px solid #fde68a; margin:10px 0;">${errorHtml}</div>`,
+            icon: 'warning',
+            customClass: {
+              popup: 'swal-premium-popup',
+              title: 'swal-premium-title',
+              confirmButton: 'swal-premium-confirm'
+            }
           });
         } else {
-          Swal.fire('Success', `Saved ${res.count} records successfully!`, 'success');
+          Swal.fire({
+            title: '<span style="color:#059669; font-weight:800;">Success</span>',
+            text: `Saved ${res.count} records successfully!`,
+            icon: 'success',
+            customClass: {
+              popup: 'swal-premium-popup',
+              title: 'swal-premium-title',
+              confirmButton: 'swal-premium-confirm swal-premium-confirm-success'
+            }
+          });
           this.planItems = []; // เคลียร์ตารางหลังบันทึก
         }
       },
       error: (err) => {
         console.error('Save Error:', err);
-        Swal.fire('Error', 'Failed to save data. Please try again.', 'error');
+        Swal.fire({
+          title: '<span style="color:#ef4444; font-weight:800;">Error</span>',
+          text: 'Failed to save data. Please try again.',
+          icon: 'error',
+          customClass: {
+            popup: 'swal-premium-popup',
+            title: 'swal-premium-title',
+            confirmButton: 'swal-premium-confirm'
+          }
+        });
       }
     });
   }
