@@ -365,7 +365,7 @@ exports.Detail_Purchase_Setup = async (req, res) => {
       .request()
       .query(`
         SELECT *
-        FROM [dbo].[View_SetupTool_RequestList]
+        FROM [db_Tooling].[viewer].[View_SetupTool_RequestList]
         WHERE Status IN ('Waiting','In Progress')
         ORDER BY ItemNo ASC, ID_RequestSetupTool ASC
       `);
@@ -817,33 +817,24 @@ exports.Add_New_Request = async (req, res) => {
     let GeneratedMFGOrderNo = '';
 
     try {
-      if (['PMC', '71DZ'].includes(Division)) {
-        // Source: [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType]
-        // M + PartNo(6) + MachineTypeCode
+      let machineCode = '';
+      if (['PMC', '71DZ', 'GM', '7122'].includes(Division)) {
+        // Centralized Lookup
         const machineResult = await pool.request()
           .input("MCType", sql.NVarChar, MCType)
           .query(`
-            SELECT TOP 1 MCT_MachineTypeCode 
-            FROM [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType] 
-            WHERE MCT_MachineTypeName = @MCType
-          `);
+              SELECT TOP 1 MC_Code 
+              FROM [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group] 
+              WHERE MC_Group = @MCType
+            `);
+        machineCode = machineResult.recordset[0]?.MC_Code || '';
+      }
 
-        const machineCode = machineResult.recordset[0]?.MCT_MachineTypeCode || '';
+      if (['PMC', '71DZ'].includes(Division)) {
         const partNoPrefix = (PartNo || '').substring(0, 6);
         GeneratedMFGOrderNo = `M${partNoPrefix}${machineCode}`;
 
       } else if (['GM', '7122'].includes(Division)) {
-        // Source: [db_ToolingSmartRack].[viewer].[MachineTypeOfFacility_N]
-        // P + PartNo(6) + MachineTypeCode
-        const machineResult = await pool.request()
-          .input("MCType", sql.NVarChar, MCType)
-          .query(`
-            SELECT TOP 1 MCT_MachineTypeCode 
-            FROM [db_ToolingSmartRack].[viewer].[MachineTypeOfFacility_N] 
-            WHERE MCT_MachineTypeName = @MCType
-          `);
-
-        const machineCode = machineResult.recordset[0]?.MCT_MachineTypeCode || '';
         const partNoPrefix = (PartNo || '').substring(0, 6);
         GeneratedMFGOrderNo = `P${partNoPrefix}${machineCode}`;
 
@@ -860,6 +851,9 @@ exports.Add_New_Request = async (req, res) => {
     }
 
     const MFGOrderNo = GeneratedMFGOrderNo;
+
+    // Generate MR_No (yyMMdd)
+    const MR_No = new Date().toISOString().slice(2, 10).replace(/-/g, '');
 
     const result = await pool.request()
 
@@ -883,12 +877,13 @@ exports.Add_New_Request = async (req, res) => {
       .input("PathLayout", sql.NVarChar, PathLayout)
       .input("Remark", sql.NVarChar, Remark)
       .input("PhoneNo", sql.Int, PhoneNo)
+      .input("MR_No", sql.NVarChar, MR_No)
       .query(`
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] 
-        (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo, MFGOrderNo)
+        (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo, MFGOrderNo, MR_No)
         OUTPUT INSERTED.ID_Request
         VALUES 
-        (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, @MFGOrderNo);
+        (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, @MFGOrderNo, @MR_No);
       `);
 
     const ID_Request = result.recordset[0]?.ID_Request || null;
@@ -1421,37 +1416,61 @@ exports.Add_New_Request_Bulk = async (req, res) => {
 
         let prefix = division === '71DZ' ? `${casePart}${processPart}${factoryPart}${datePart}` : `${processPart}${factoryPart}${casePart}${datePart}`;
 
-        // Check DocNo uniqueness across ALL 3 tables
-        let isUnique = false;
-        let finalDocNo = prefix;
-        let counter = 1;
-
-        const checkDocNoUnique = async (docNoToCheck) => {
-          const result = await pool.request().input('DocNo', sql.NVarChar(50), docNoToCheck)
-            .query(`
-              SELECT 
-                (SELECT COUNT(*) FROM tb_IssueCaseSetup_Request_Document WHERE DocNo = @DocNo) +
-                (SELECT COUNT(*) FROM tb_IssueCuttingTool_Request_Document WHERE DocNo = @DocNo) +
-                (SELECT COUNT(*) FROM tb_IssueSetupTool_Request_Document WHERE DocNo = @DocNo) AS TotalCount
-            `);
-          return result.recordset[0].TotalCount === 0;
-        };
-
-        isUnique = await checkDocNoUnique(finalDocNo);
-
-        while (!isUnique) {
-          finalDocNo = `${prefix}${counter.toString().padStart(2, '0')}`;
-          isUnique = await checkDocNoUnique(finalDocNo);
-          counter++;
-        }
-        docNo = finalDocNo;
+        // Ensure no duplicate suffix is added; allow duplicate DocNo
+        docNo = prefix;
       }
 
-      // Add DocNo and Normalize MCNo for each item in the group
-      const normalizedItems = groupItems.map(it => ({
-        ...it,
-        DocNo: docNo,
-        MCNo: it.MCNo || it.MCNo_
+      // Generate MFGOrderNo for each item
+      const normalizedItems = await Promise.all(groupItems.map(async (it) => {
+        let GeneratedMFGOrderNo = '';
+        try {
+          const Division = it.Division ? it.Division.toUpperCase() : '';
+          const MCType = it.MCType;
+          const PartNo = it.PartNo;
+          const CASE = it.CASE;
+          const Process = it.Process;
+          const Fac = it.Fac;
+
+          let machineCode = '';
+          if (['PMC', '71DZ', 'GM', '7122'].includes(Division)) {
+            // Centralized Lookup
+            const machineResult = await pool.request()
+              .input("MCType", sql.NVarChar, MCType)
+              .query(`
+                  SELECT TOP 1 MC_Code 
+                  FROM [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group] 
+                  WHERE MC_Group = @MCType
+                `);
+            machineCode = machineResult.recordset[0]?.MC_Code || '';
+            console.log(`[Bulk Insert Debug] Centralized Lookup Result:`, machineResult.recordset);
+          }
+
+          if (['PMC', '71DZ'].includes(Division)) {
+            const partNoPrefix = (PartNo || '').substring(0, 6);
+            GeneratedMFGOrderNo = `M${partNoPrefix}${machineCode}`;
+          } else if (['GM', '7122'].includes(Division)) {
+            const partNoPrefix = (PartNo || '').substring(0, 6);
+            GeneratedMFGOrderNo = `P${partNoPrefix}${machineCode}`;
+          } else {
+            const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            GeneratedMFGOrderNo = `${CASE}${Process}F${Fac}${dateStr}`;
+          }
+        } catch (err) {
+          console.error('Error generating MFGOrderNo in Bulk:', err);
+          const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          GeneratedMFGOrderNo = `${it.CASE}${it.Process}F${it.Fac}${dateStr}`;
+        }
+
+        // Generate MR_No (yyMMdd)
+        const GeneratedMR_No = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+
+        return {
+          ...it,
+          DocNo: docNo,
+          MCNo: it.MCNo || it.MCNo_,
+          MFGOrderNo: GeneratedMFGOrderNo,
+          MR_No: GeneratedMR_No
+        };
       }));
 
       // 🔄 Call Professional Stored Procedure

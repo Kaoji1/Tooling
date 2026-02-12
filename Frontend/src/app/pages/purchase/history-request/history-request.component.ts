@@ -141,8 +141,9 @@ export class HistoryRequestComponent implements OnInit {
           Status: item.Status ?? '',
           DateRequest: item.DateRequest ?? item.DueDate ?? '',
           ItemNo: item.ItemNo ?? '',
-          MFG_Order_No: (item.MFG_Order_No ?? '').substring(0, 11),
+          MFG_Order_No: (item.MFGOrderNo ?? '').substring(0, 11),
           Document_No: item.Document_No ?? '',
+          MatLot: item.MatLot ?? '',
           Stock_Location: item.Stock_Location ?? '',
           QTY: item.QTY ?? 0,
           MCType: item.MCType ?? '',
@@ -503,7 +504,7 @@ export class HistoryRequestComponent implements OnInit {
       { header: 'DOCUMENT NO.', key: 'DOCUMENT_NO', width: 20 },
       { header: 'Stock Location', key: 'Stock_Location', width: 18 },
       { header: 'MATL LOT', key: 'MATL_LOT', width: 15 },
-      { header: 'TRANSACTION(YMD)', key: 'TRANSACTION', width: 18 },
+      { header: 'TRANSACTION(DMY)', key: 'TRANSACTION', width: 18 },
       { header: 'QTY', key: 'QTY', width: 10 },
       { header: 'MC No.', key: 'MC_No', width: 15 },
       { header: 'DECLATION NO', key: 'DECLATION_NO', width: 20 },
@@ -534,7 +535,7 @@ export class HistoryRequestComponent implements OnInit {
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const dd = String(d.getDate()).padStart(2, '0');
-      return `${yyyy}${mm}${dd}`;
+      return `${dd}${mm}${yyyy}`;
     };
 
     const dataRows = selectedRequests.map(req => ({
@@ -543,7 +544,7 @@ export class HistoryRequestComponent implements OnInit {
       MFG_ORDER_NO: req.PartNo || '', // MFG_Order_No in friend's logic seems map to PartNo or MFG_Order_No
       DOCUMENT_NO: req.DocNo || '',
       Stock_Location: req.Stock_Location || '',
-      MATL_LOT: '',
+      MATL_LOT: req.MatLot || '',
       TRANSACTION: cDateFormat(req.DateComplete),
       QTY: req.QTY || 0,
       MC_No: this.formatMC(req),

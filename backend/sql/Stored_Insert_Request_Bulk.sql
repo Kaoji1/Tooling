@@ -47,7 +47,9 @@ BEGIN
             PhoneNo     NVARCHAR(50),
             PathDwg     NVARCHAR(255),
             ItemName    NVARCHAR(200),
-            ToolType    NVARCHAR(50)   -- 'CuttingTool' or 'SetupTool'
+            ToolType    NVARCHAR(50),   -- 'CuttingTool' or 'SetupTool'
+            MFGOrderNo  NVARCHAR(50),   -- NEW Field
+            MR_No       NVARCHAR(50)    -- NEW Field: yyMMdd
         );
 
         DECLARE @InsertedCaseSetup INT = 0;
@@ -58,9 +60,9 @@ BEGIN
         -- 2. CASE SET → tb_IssueCaseSetup_Request_Document
         -- =============================================
         INSERT INTO [dbo].[tb_IssueCaseSetup_Request_Document]
-            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName)
+            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No)
         SELECT 
-            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName
+            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No
         FROM #AllItems
         WHERE [CASE] = 'SET';
 
@@ -70,9 +72,9 @@ BEGIN
         -- 3. CASE != SET + CuttingTool → tb_IssueCuttingTool_Request_Document
         -- =============================================
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document]
-            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName)
+            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No)
         SELECT 
-            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName
+            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No
         FROM #AllItems
         WHERE [CASE] <> 'SET' AND ToolType = 'CuttingTool';
 
@@ -82,9 +84,9 @@ BEGIN
         -- 4. CASE != SET + SetupTool → tb_IssueSetupTool_Request_Document
         -- =============================================
         INSERT INTO [dbo].[tb_IssueSetupTool_Request_Document]
-            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName)
+            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No)
         SELECT 
-            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName
+            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No
         FROM #AllItems
         WHERE [CASE] <> 'SET' AND ToolType = 'SetupTool';
 

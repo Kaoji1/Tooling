@@ -193,7 +193,7 @@
                 *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
             <th style="min-width: 120px;">STK LOC.</th>
             <th style="min-width: 120px;">LOT MAT' L</th>
-            <th style="min-width: 200px; white-space: nowrap;">TRANSACTION (YMD)</th>
+            <th style="min-width: 200px; white-space: nowrap;">TRANSACTION (DMY)</th>
             <th style="min-width: 80px;">QTY</th>
             <th>M/C TYPE</th>
             <th style="min-width: 120px; white-space: nowrap;">M/C NO.</th>
@@ -228,8 +228,8 @@
             <td [ngClass]="getRowClass(req)">{{ req.MFG_Order_No }}</td>
             <td [ngClass]="getRowClass(req)">{{ req.DocNo }}</td>
             <td [ngClass]="getRowClass(req)">{{ req.Stock_Location }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.Stock_Location }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.DateComplete ? (req.DateComplete | date: 'yyyyMMdd') : '' }}</td>
+            <td [ngClass]="getRowClass(req)">{{ req.MatLot }}</td>
+            <td [ngClass]="getRowClass(req)">{{ req.DateComplete ? (req.DateComplete | date: 'ddMMyyyy') : '' }}</td>
             <td [ngClass]="getRowClass(req)">
               <span *ngIf="editingIndex[req.ID_Request] !== i">{{ req.QTY }}</span>
               <input *ngIf="editingIndex[req.ID_Request] === i" type="number" [(ngModel)]="filteredRequests[i].QTY"
