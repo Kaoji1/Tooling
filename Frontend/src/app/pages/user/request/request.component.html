@@ -126,8 +126,10 @@
 
           <div class="group-select" *ngIf="Case_ === 'SET'" style="flex: 1; min-width: 150px;">
             <label for="date"> DueDate </label>
-            <input type="date" class="form-control" placeholder="Enter date" id="date" [min]="today_"
-              [(ngModel)]="DueDate_" (change)="saveState()" />
+            <p-calendar [(ngModel)]="DueDate_" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="dd/mm/yyyy"
+              (onSelect)="saveState()" (onInput)="saveState()" [minDate]="today_" appendTo="body"
+              [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}">
+            </p-calendar>
           </div>
         </div>
       </div>

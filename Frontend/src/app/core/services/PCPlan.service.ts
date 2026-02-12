@@ -14,7 +14,28 @@ export class PCPlanService {
   private divisionsCache$: Observable<any[]> | null = null;
   private masterDataCache = new Map<string, any>();
 
+  // --- State Persistence ---
+  private planState = {
+    selectedDivisionCode: '',
+    planItems: [] as any[]
+  };
+
   constructor(private http: HttpClient) { }
+
+  setPlanState(state: { selectedDivisionCode: string, planItems: any[] }) {
+    this.planState = state;
+  }
+
+  getPlanState() {
+    return this.planState;
+  }
+
+  clearPlanState() {
+    this.planState = {
+      selectedDivisionCode: '',
+      planItems: []
+    };
+  }
 
   // 1. ดึง Division List (Cached)
   getDivisions(): Observable<any[]> {
@@ -27,15 +48,17 @@ export class PCPlanService {
     return this.divisionsCache$;      // 3. ส่งของเดิมที่ดึงไว้แล้วกลับไป
   }
 
-  // 2. *** ฟังก์ชันใหม่: ดึง Master Data ทั้งหมดในครั้งเดียว (Cached) ***
-  // URL: /api/pc-plan/master-data/71DZ
-  getMasterData(divCode: string): Observable<any> {
-    if (this.masterDataCache.has(divCode)) {
-      return of(this.masterDataCache.get(divCode));
+  // 2. *** ฟังก์ชันใหม่: ดึง Master Data (Split Loading: FAST/SLOW) ***
+  // URL: /api/pc-plan/master-data/71DZ?mode=FAST
+  getMasterData(divCode: string, mode: string = 'ALL'): Observable<any> {
+    const cacheKey = `${divCode}_${mode}`; // Composite Cache Key
+
+    if (this.masterDataCache.has(cacheKey)) {
+      return of(this.masterDataCache.get(cacheKey));
     }
 
-    return this.http.get<any>(`${this.baseUrl}/master-data/${divCode}`).pipe(
-      tap(data => this.masterDataCache.set(divCode, data))
+    return this.http.get<any>(`${this.baseUrl}/master-data/${divCode}?mode=${mode}`).pipe(
+      tap(data => this.masterDataCache.set(cacheKey, data))
     );
   }
 
@@ -62,6 +85,10 @@ export class PCPlanService {
   // 6. ลบข้อมูล (Delete)
   deletePlan(id: number): Observable<any> {
     return this.http.delete<any>(`${this.baseUrl}/delete/${id}`);
+  }
+
+  deletePlanGroup(groupId: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/delete-group/${groupId}`);
   }
 
   getPlanHistory(groupId: string): Observable<any> {

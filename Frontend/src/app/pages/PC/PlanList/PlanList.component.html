@@ -9,7 +9,10 @@
 
       <div class="filter-group">
         <label>Date</label>
-        <input type="date" [(ngModel)]="filterDate" (change)="applyFilter()">
+        <p-calendar [(ngModel)]="filterDate" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="dd/mm/yyyy"
+          (onSelect)="applyFilter()" (onInput)="applyFilter()" [showButtonBar]="true" appendTo="body"
+          [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}">
+        </p-calendar>
       </div>
 
       <div class="filter-group">
@@ -40,7 +43,7 @@
       <table>
         <thead>
           <tr>
-            <th>Plan Date</th>
+            <th>Plan Date (dd/mm/yyyy)</th>
             <th>Rev</th> <!-- New Column -->
             <th>Status</th> <!-- New Column -->
             <th>MC Type</th>

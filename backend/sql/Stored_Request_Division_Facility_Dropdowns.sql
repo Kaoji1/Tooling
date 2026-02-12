@@ -38,17 +38,16 @@ GO
 
 -- =============================================
 -- 2. Facility Dropdown - ดึง FacilityShort ไม่ซ้ำ (F.1, F.4, F.6)
---    ใช้ subquery เพื่อ DISTINCT บน FacilityShort
+--    เปลี่ยนมาใช้ Profit_Center แทน Division_Id เพื่อความแน่นอน
 -- =============================================
 CREATE OR ALTER PROCEDURE [trans].[Stored_Get_Dropdown_Facility_By_Division]
-    @Division_Id INT
+    @Profit_Center NVARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT DISTINCT 
         FacilityShort,
-        -- เก็บ FacilityName ตัวแรกที่เจอไว้สำหรับส่ง API
         MIN(FacilityName) AS FacilityName
     FROM (
         SELECT 
@@ -60,7 +59,7 @@ BEGIN
             END AS FacilityShort
         FROM [db_Tooling].[viewer].[View_tb_Division_Facility_ALL]
         WHERE 
-            [Division_Id] = @Division_Id 
+            [Profit_Center] = @Profit_Center
             AND [FacilityName] IS NOT NULL
     ) AS sub
     GROUP BY FacilityShort

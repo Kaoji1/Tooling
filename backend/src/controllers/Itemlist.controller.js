@@ -199,7 +199,7 @@ exports.get_Setup_Facility = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .input("Division_Id", sql.Int, parseInt(Division))
+      .input("Profit_Center", sql.NVarChar, Division)
       .execute('[trans].[Stored_Get_Dropdown_Facility_By_Division]');
     // Returns: FacilityName
     res.json(result.recordset);

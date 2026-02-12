@@ -1,6 +1,5 @@
 USE [db_Tooling]
 GO
-
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8,12 +7,12 @@ GO
 
 -- =============================================
 -- Author:      Antigravity
--- Create date: 2026-02-11
--- Description: Bulk Insert for Tool Requests
---   Routes to 3 tables based on CASE + ToolType:
---     1) CASE = 'SET'         → tb_IssueCaseSetup_Request_Document (ทั้ง Cutting & Setup)
---     2) CASE != 'SET' + Cutting → tb_IssueCuttingTool_Request_Document  
---     3) CASE != 'SET' + Setup   → tb_IssueSetupTool_Request_Document
+-- Create date: 2026-02-12
+-- Description: Bulk Insert for Tool Requests (Refactored)
+--   Routes to 2 tables based on ToolType (regardless of CASE):
+--     1) ToolType = 'CuttingTool' → tb_IssueCuttingTool_Request_Document (ToolingType = 'CuttingTool')
+--     2) ToolType = 'SetupTool'   → tb_IssueSetupTool_Request_Document   (ToolingType = 'SetupTool')
+--     * CASE 'SET' logic is merged into these two tables.
 -- =============================================
 CREATE OR ALTER PROCEDURE [trans].[Stored_Insert_Request_Bulk]
     @ItemsJson NVARCHAR(MAX)
@@ -23,7 +22,7 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- 1. Parse JSON → Temp Table (รวมทุก field ที่อาจมี)
+        -- 1. Parse JSON → Temp Table
         SELECT *
         INTO #AllItems
         FROM OPENJSON(@ItemsJson)
@@ -48,54 +47,43 @@ BEGIN
             PathDwg     NVARCHAR(255),
             ItemName    NVARCHAR(200),
             ToolType    NVARCHAR(50),   -- 'CuttingTool' or 'SetupTool'
-            MFGOrderNo  NVARCHAR(50),   -- NEW Field
-            MR_No       NVARCHAR(50)    -- NEW Field: yyMMdd
+            MFGOrderNo  NVARCHAR(50),   
+            MR_No       NVARCHAR(50)
         );
 
-        DECLARE @InsertedCaseSetup INT = 0;
         DECLARE @InsertedCutting INT = 0;
         DECLARE @InsertedSetup INT = 0;
 
         -- =============================================
-        -- 2. CASE SET → tb_IssueCaseSetup_Request_Document
-        -- =============================================
-        INSERT INTO [dbo].[tb_IssueCaseSetup_Request_Document]
-            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No)
-        SELECT 
-            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No
-        FROM #AllItems
-        WHERE [CASE] = 'SET';
-
-        SET @InsertedCaseSetup = @@ROWCOUNT;
-
-        -- =============================================
-        -- 3. CASE != SET + CuttingTool → tb_IssueCuttingTool_Request_Document
+        -- 2. ToolType = 'CuttingTool' → tb_IssueCuttingTool_Request_Document
+        --    (Include CASE = 'SET' if ToolType is Cutting)
         -- =============================================
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document]
-            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No)
+            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No, ToolingType)
         SELECT 
-            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No
+            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No, 'CuttingTool'
         FROM #AllItems
-        WHERE [CASE] <> 'SET' AND ToolType = 'CuttingTool';
+        WHERE ToolType = 'CuttingTool';
 
         SET @InsertedCutting = @@ROWCOUNT;
 
         -- =============================================
-        -- 4. CASE != SET + SetupTool → tb_IssueSetupTool_Request_Document
+        -- 3. ToolType = 'SetupTool' → tb_IssueSetupTool_Request_Document
+        --    (Include CASE = 'SET' if ToolType is Setup)
         -- =============================================
         INSERT INTO [dbo].[tb_IssueSetupTool_Request_Document]
-            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No)
+            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No, ToolingType)
         SELECT 
-            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No
+            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No, 'SetupTool'
         FROM #AllItems
-        WHERE [CASE] <> 'SET' AND ToolType = 'SetupTool';
+        WHERE ToolType = 'SetupTool';
 
         SET @InsertedSetup = @@ROWCOUNT;
 
-        -- 5. Return Summary
+        -- 4. Return Summary
         SELECT 
-            (@InsertedCaseSetup + @InsertedCutting + @InsertedSetup) AS InsertedCount,
-            @InsertedCaseSetup AS CaseSetupCount,
+            (@InsertedCutting + @InsertedSetup) AS InsertedCount,
+            0 AS CaseSetupCount, -- Deprecated
             @InsertedCutting AS CuttingCount,
             @InsertedSetup AS SetupCount;
 

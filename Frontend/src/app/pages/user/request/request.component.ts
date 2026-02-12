@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core'; // Restored
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common'; // Added DatePipe
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
@@ -10,6 +10,7 @@ import { CartService } from '../../../core/services/cart.service';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { CalendarModule } from 'primeng/calendar';
 
 @Component({
   selector: 'app-request',
@@ -21,7 +22,9 @@ import Swal from 'sweetalert2';
     FormsModule,
     NgSelectModule,
     NotificationComponent,
+    CalendarModule
   ],
+  providers: [DatePipe],
   templateUrl: './request.component.html',
   styleUrl: './request.component.scss'
 })
@@ -65,8 +68,8 @@ export class requestComponent implements OnInit {
 
   // Form fields
   phone_: string = '';
-  DueDate_: string = '';
-  today_: string = '';
+  DueDate_: Date | null = null;
+  today_: Date = new Date();
   InputDate_: string = '';
   MCNo_: string = '';
 
@@ -90,10 +93,11 @@ export class requestComponent implements OnInit {
     private cartService: CartService,
     private api: RequestService,
     private detailPurchaseService: DetailPurchaseRequestlistService,
-    private router: Router
+    private router: Router,
+    private datePipe: DatePipe
   ) {
     // Set today's date for min date validation
-    this.today_ = new Date().toISOString().split('T')[0];
+    this.today_ = new Date();
 
     // กำหนดตัวเลือกในdropdown
     this.Case = [
@@ -163,7 +167,7 @@ export class requestComponent implements OnInit {
       this.MachineType_ = state.MachineType_;
       this.ItemNo_ = state.ItemNo_;
       this.phone_ = state.phone_;
-      this.DueDate_ = state.DueDate_;
+      this.DueDate_ = state.DueDate_ ? new Date(state.DueDate_) : null;
       this.items = state.items;
       this.relatedSetupItems = state.relatedSetupItems;
       this.isSearched = state.isSearched;
@@ -347,14 +351,14 @@ export class requestComponent implements OnInit {
     if (!event) return;
 
     // Division object มี: { Division: "71DZ", Division_Id: 2, DivisionName: "PMC", Profit_Center: "71DZ" }
-    // ต้องส่ง Division_Id (ค่าตัวเลข เช่น 2) ไม่ใช่ Profit_Center ("71DZ")
-    const divisionId = event.Division_Id || event;
-    if (!divisionId) return;
+    // เปลี่ยนมาใช้ Division (Profit_Center) เพื่อให้ตรงกับ Backend ชุดใหม่
+    const divisionCode = event.Division || event;
+    if (!divisionCode) return;
 
-    console.log('get_Facility - sending Division_Id:', divisionId);
+    console.log('get_Facility - sending Division Code:', divisionCode);
 
-    // ใช้ SP: Stored_Get_Dropdown_Facility_By_Division (รับ @Division_Id INT)
-    this.api.get_Setup_Facility({ Division: divisionId }).subscribe({
+    // ใช้ SP: Stored_Get_Dropdown_Facility_By_Division (รับ @Profit_Center NVARCHAR)
+    this.api.get_Setup_Facility({ Division: divisionCode }).subscribe({
       next: (response: any[]) => {
         // Extract "F.X" suffix from FacilityName and deduplicate
         const seen = new Set<string>();
@@ -461,11 +465,17 @@ export class requestComponent implements OnInit {
 
     if (missingFields.length > 0) {
       Swal.fire({
+        title: '<span style="color:#f59e0b; font-weight:800;">Incomplete Data</span>',
+        html: `<div style="text-align:left; background:#fffbeb; border-radius:12px; padding:1.25rem; border:1px solid #fef3c7; color:#92400e;">
+          กรุณากรอกข้อมูลให้ครบถ้วน:<br><ul style="margin:10px 0 0 20px; padding:0;">` +
+          missingFields.map(f => `<li>${f}</li>`).join('') + '</ul></div>',
         icon: 'warning',
-        title: 'Incomplete Data',
-        html: 'Missing fields:<br><ul style="text-align:left;">' +
-          missingFields.map(f => `<li>${f}</li>`).join('') + '</ul>',
-        confirmButtonText: 'ตกลง'
+        confirmButtonText: 'ตกลง',
+        customClass: {
+          popup: 'swal-premium-popup',
+          title: 'swal-premium-title',
+          confirmButton: 'swal-premium-confirm'
+        }
       });
       return;
     }
@@ -555,7 +565,16 @@ export class requestComponent implements OnInit {
       error: (e) => {
         console.error('Unified API Error:', e);
         this.loading = false;
-        Swal.fire('Error', 'ไม่สามารถดึงข้อมูลได้', 'error');
+        Swal.fire({
+          title: '<span style="color:#ef4444; font-weight:800;">Error</span>',
+          text: 'ไม่สามารถดึงข้อมูลได้',
+          icon: 'error',
+          customClass: {
+            popup: 'swal-premium-popup',
+            title: 'swal-premium-title',
+            confirmButton: 'swal-premium-confirm'
+          }
+        });
       }
     });
   }
@@ -582,10 +601,14 @@ export class requestComponent implements OnInit {
     if (totalChecked > 0 && totalValid < totalChecked) {
       Swal.fire({
         icon: 'warning',
-        title: 'Incomplete Data',
+        title: '<span style="color:#f59e0b; font-weight:800;">Incomplete Data</span>',
         text: 'กรุณากรอก QTY ให้ครบทุกรายการที่เลือก',
         confirmButtonText: 'OK',
-        confirmButtonColor: '#3b82f6'
+        customClass: {
+          popup: 'swal-premium-popup',
+          title: 'swal-premium-title',
+          confirmButton: 'swal-premium-confirm'
+        }
       });
       return;
     }
@@ -593,10 +616,14 @@ export class requestComponent implements OnInit {
     if (totalValid === 0) {
       Swal.fire({
         icon: 'warning',
-        title: 'No Item Selected',
+        title: '<span style="color:#f59e0b; font-weight:800;">No Item Selected</span>',
         text: 'กรุณาเลือกอย่างน้อย 1 รายการเพื่อส่งคำขอ',
         confirmButtonText: 'ตกลง',
-        confirmButtonColor: '#3b82f6'
+        customClass: {
+          popup: 'swal-premium-popup',
+          title: 'swal-premium-title',
+          confirmButton: 'swal-premium-confirm'
+        }
       });
       return;
     }
@@ -617,28 +644,37 @@ export class requestComponent implements OnInit {
     const caseValue = this.Case_;
 
     // Map items with ToolType tag
-    const mapItem = (item: any, toolType: string) => ({
-      DocNo: null,
-      Division: Division,
-      Fac: Factory,
-      ItemNo: item.ItemNo,
-      PartNo: item.PartNo,
-      Process: item.Process,
-      CASE: item.Case_ || caseValue,
-      MCType: item.MC,
-      SPEC: item.SPEC,
-      QTY: item.QTY,
-      Req_QTY: item.QTY,
-      DueDate: caseValue === 'SET' ? this.DueDate_ : null,
-      Status: 'Waiting',
-      MCNo: this.MCNo_,
-      PathDwg: toolType === 'CuttingTool' ? this.PathDwg_ : null,
-      ON_HAND: item.ON_HAND,
-      PhoneNo: this.phone_,
-      Requester: Employee_ID,
-      ItemName: item.ItemName || null,
-      ToolType: toolType
-    });
+    const mapItem = (item: any, toolType: string) => {
+      let formattedDate = null;
+      if (caseValue === 'SET' && this.DueDate_) {
+        formattedDate = this.datePipe.transform(this.DueDate_, 'yyyy-MM-dd');
+      }
+
+      return {
+        DocNo: null,
+        Division: Division,
+        Fac: Factory,
+        ItemNo: item.ItemNo,
+        PartNo: item.PartNo,
+        Process: item.Process,
+        CASE: item.Case_ || caseValue,
+        MCType: item.MC,
+        SPEC: item.SPEC,
+        QTY: item.QTY,
+        Req_QTY: item.QTY,
+        DueDate: formattedDate,
+        Status: 'Waiting',
+        MCNo: this.MCNo_,
+        PathDwg: toolType === 'CuttingTool' ? this.PathDwg_ : null,
+        ON_HAND: item.ON_HAND,
+        PhoneNo: this.phone_,
+        Requester: Employee_ID,
+        ItemName: item.ItemName || null,
+        ToolType: toolType,
+        MFGOrderNo: item.MFGOrderNo || null,
+        MR_No: item.MR_No || null
+      };
+    };
 
     const allItems: any[] = [];
 
@@ -736,24 +772,31 @@ export class requestComponent implements OnInit {
         const cutting = res?.CuttingCount ?? 0;
         const setup = res?.SetupCount ?? 0;
 
-        let detailHtml = `<div style="font-size:1.1rem; color:#059669; font-weight:700; margin-bottom:0.75rem;">
-          ${total} items submitted successfully!</div>`;
+        let detailHtml = `<div style="font-size:1.15rem; color:#059669; font-weight:800; margin-bottom:1rem; letter-spacing:-0.01em;">
+          ${total} items submitted successfully!</div>
+          <div style="background:#f8fafc; border-radius:12px; padding:1.25rem; border:1px solid #e2e8f0; display:flex; flex-direction:column; gap:0.5rem;">`;
 
-        if (caseSetup > 0) detailHtml += `<div style="color:#64748b;">📋 Case Setup: <b>${caseSetup}</b></div>`;
-        if (cutting > 0) detailHtml += `<div style="color:#64748b;">🔧 Cutting Tool: <b>${cutting}</b></div>`;
-        if (setup > 0) detailHtml += `<div style="color:#64748b;">⚙️ Setup Tool: <b>${setup}</b></div>`;
+        if (caseSetup > 0) detailHtml += `<div style="color:#475569; display:flex; gap:8px;">📋 <span style="flex:1">Case Setup:</span> <b style="color:#1e293b">${caseSetup}</b></div>`;
+        if (cutting > 0) detailHtml += `<div style="color:#475569; display:flex; gap:8px;">🔧 <span style="flex:1">Cutting Tool:</span> <b style="color:#1e293b">${cutting}</b></div>`;
+        if (setup > 0) detailHtml += `<div style="color:#475569; display:flex; gap:8px;">⚙️ <span style="flex:1">Setup Tool:</span> <b style="color:#1e293b">${setup}</b></div>`;
+        detailHtml += `</div>`;
 
         Swal.fire({
           icon: 'success',
-          title: '<span style="color:#059669; font-weight:800;">Request Submitted!</span>',
+          title: '<span style="color:#059669; font-weight:800; font-size:1.5rem;">Request Submitted!</span>',
           html: detailHtml,
           showConfirmButton: true,
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#059669',
-          timer: 4000,
+          confirmButtonText: 'Great!',
+          customClass: {
+            popup: 'swal-premium-popup',
+            title: 'swal-premium-title',
+            confirmButton: 'swal-premium-confirm swal-premium-confirm-success',
+          },
+          timer: 5000,
           timerProgressBar: true,
-          backdrop: `rgba(15, 23, 42, 0.5)`,
-          showClass: { popup: 'animate__animated animate__fadeInUp animate__faster' }
+          backdrop: `rgba(15, 23, 42, 0.6)`,
+          showClass: { popup: 'animate__animated animate__fadeInUp animate__faster' },
+          hideClass: { popup: 'animate__animated animate__fadeOutDown animate__faster' }
         });
 
         this.Clearall();
@@ -763,10 +806,15 @@ export class requestComponent implements OnInit {
         console.error('Error submitting request:', err);
         Swal.fire({
           icon: 'error',
-          title: 'Submission Failed',
+          title: '<span style="color:#ef4444; font-weight:800;">Submission Failed</span>',
           text: 'ไม่สามารถส่งคำขอได้ กรุณาลองใหม่อีกครั้ง',
           confirmButtonText: 'ลองใหม่',
-          confirmButtonColor: '#ef4444'
+          customClass: {
+            popup: 'swal-premium-popup',
+            title: 'swal-premium-title',
+            confirmButton: 'swal-premium-confirm',
+          },
+          backdrop: `rgba(15, 23, 42, 0.6)`
         });
       }
     });
@@ -778,7 +826,7 @@ export class requestComponent implements OnInit {
     this.Tooling_ = null; // ✅ Reset Tooling Selection
     this.Div_ = null;
     this.Fac_ = null;
-    this.DueDate_ = '';
+    this.DueDate_ = null;
     this.Case_ = null;
     this.PartNo_ = null;
     this.Spec_ = null;

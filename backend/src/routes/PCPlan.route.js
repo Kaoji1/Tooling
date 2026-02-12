@@ -22,6 +22,10 @@ router.get('/list', controller.getPlanList);
 // URL: /api/pc-plan/delete/:id
 router.delete('/delete/:id', controller.deletePCPlan);
 
+// 5.1 Route สำหรับลบข้อมูลทั้งกลุ่ม (Delete Group)
+// URL: /api/pc-plan/delete-group/:groupId
+router.delete('/delete-group/:groupId', controller.deletePCPlanGroup);
+
 // 6. Route สำหรับดึงประวัติ (History)
 // URL: /api/pc-plan/history/:groupId
 router.get('/history/:groupId', controller.getPlanHistory);

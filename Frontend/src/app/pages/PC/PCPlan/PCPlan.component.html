@@ -3,20 +3,26 @@
 
   <div class="content-area">
 
-    <h2 style="margin-bottom: 20px; color: #333;">PC Plan</h2>
+    <div class="header">
+      <h4>PC Plan</h4>
+    </div>
+    <p>PC Planning</p>
 
     <div class="top-controls">
       <div class="form-group" style="width: 280px;">
         <label>Division</label>
-        <ng-select [(ngModel)]="selectedDivisionCode" (change)="onDivisionChange()" [disabled]="isLoadingMasterData"
-          placeholder="-- Select Division --" [clearable]="false" style="width: 100%;">
-          <ng-option *ngFor="let div of divisionOptions" [value]="div.code">
-            {{ div.label }}
-          </ng-option>
+        <ng-select [(ngModel)]="selectedDivisionCode" [items]="divisionOptions" bindLabel="label" bindValue="code"
+          (change)="onDivisionChange()" [disabled]="isLoadingMasterData" placeholder="-- Select Division --"
+          [clearable]="false" style="width: 100%;">
         </ng-select>
-        <small *ngIf="isLoadingMasterData" style="color: red; margin-top: 5px; display: block;">
-          ⏳ กำลังดึงข้อมูล กรุณารอสักครู่...
-        </small>
+        <div class="loading-indicator" *ngIf="isLoadingMasterData">
+          <span class="loading-spinner"></span>
+          <span>Loading basic data...</span>
+        </div>
+        <div class="loading-indicator" *ngIf="!isLoadingMasterData && isLoadingParts">
+          <span class="loading-spinner"></span>
+          <span>Loading parts... (You can select Machine/Fac)</span>
+        </div>
       </div>
 
 
@@ -25,11 +31,13 @@
 
         <input type="file" #fileInput (change)="onFileChange($event)" style="display: none;" accept=".xlsx, .xls" />
 
-        <button class="btn-excel upload" (click)="fileInput.click()">
+        <button class="btn-premium upload" (click)="fileInput.click()">
+          <i class="bi bi-file-earmark-arrow-up"></i>
           UPLOAD FOR EXCEL
         </button>
 
-        <button class="btn-excel download" (click)="downloadFormat()">
+        <button class="btn-premium download" (click)="downloadFormat()">
+          <i class="bi bi-file-earmark-arrow-down"></i>
           DOWNLOAD FORMAT
         </button>
 
@@ -40,7 +48,7 @@
       <table>
         <thead>
           <tr>
-            <th style="width: 130px;">Date <span style="color: red">*</span></th>
+            <th style="width: 160px;">Date <span style="color: red">*</span></th>
             <th>Machine Type <span style="color: red">*</span></th>
             <th style="width: 100px;">Fac <span style="color: red">*</span></th>
             <th style="width: 100px;">MC No. <span style="color: red">*</span></th>
@@ -56,48 +64,58 @@
         <tbody>
           <tr *ngFor="let item of planItems; let i = index">
 
-            <td><input type="date" [(ngModel)]="item.date"></td>
+            <td>
+              <p-calendar [(ngModel)]="item.date" dateFormat="dd/mm/yy" [showIcon]="true" appendTo="body"
+                placeholder="dd/mm/yyyy" [showButtonBar]="true" (onSelect)="saveCurrentState()"
+                (onBlur)="saveCurrentState()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}">
+              </p-calendar>
+            </td>
 
             <td>
               <ng-select [(ngModel)]="item.machineType" [items]="machineTypes" appendTo="body" placeholder="Select"
-                [clearable]="true" style="width: 100%; min-width: 120px;">
+                [clearable]="true" style="width: 100%; min-width: 120px;" (change)="saveCurrentState()">
               </ng-select>
             </td>
 
             <td>
               <ng-select [(ngModel)]="item.fac" [items]="facs" bindLabel="label" bindValue="value" appendTo="body"
-                placeholder="Select" [clearable]="true" style="width: 100%; min-width: 100px;">
+                placeholder="Select" [clearable]="true" style="width: 100%; min-width: 100px;"
+                (change)="saveCurrentState()">
               </ng-select>
             </td>
 
             <td>
-              <input type="text" [(ngModel)]="item.mcNo" placeholder="MC No." (focus)="selectAllText($event)">
+              <input type="text" [(ngModel)]="item.mcNo" placeholder="MC No." (focus)="selectAllText($event)"
+                (change)="saveCurrentState()">
             </td>
 
             <td>
               <ng-select [(ngModel)]="item.process" [items]="processes" appendTo="body" placeholder="Select"
-                [clearable]="true" style="width: 100%; min-width: 100px;">
+                [clearable]="true" style="width: 100%; min-width: 100px;" (change)="saveCurrentState()">
               </ng-select>
             </td>
 
             <td>
               <ng-select [(ngModel)]="item.partBef" [items]="partBef" appendTo="body" placeholder="Select"
-                [clearable]="true" style="width: 100%; min-width: 120px;">
+                [clearable]="true" style="width: 100%; min-width: 120px;" (change)="saveCurrentState()">
               </ng-select>
             </td>
 
             <td>
               <ng-select [(ngModel)]="item.partNo" [items]="partNos" appendTo="body" placeholder="Select"
-                [clearable]="true" style="width: 100%; min-width: 120px;">
+                [clearable]="true" style="width: 100%; min-width: 120px;" (change)="saveCurrentState()">
               </ng-select>
             </td>
 
-            <td><input type="number" [(ngModel)]="item.qty" (focus)="selectAllText($event)"></td>
-            <td><input type="text" [(ngModel)]="item.time" (focus)="selectAllText($event)"></td>
-            <td><input type="text" [(ngModel)]="item.comment" (focus)="selectAllText($event)"></td>
+            <td><input type="number" [(ngModel)]="item.qty" (focus)="selectAllText($event)"
+                (change)="saveCurrentState()"></td>
+            <td><input type="text" [(ngModel)]="item.time" (focus)="selectAllText($event)"
+                (change)="saveCurrentState()"></td>
+            <td><input type="text" [(ngModel)]="item.comment" (focus)="selectAllText($event)"
+                (change)="saveCurrentState()"></td>
 
             <td style="text-align: center;">
-              <button class="btn-delete" (click)="removeRow(i)">x</button>
+              <button class="btn-delete" (click)="removeRow(i)">DELETE</button>
             </td>
           </tr>
         </tbody>
@@ -106,9 +124,14 @@
 
     <div class="action-buttons">
       <button class="btn-add" (click)="addRow()" [disabled]="isLoadingMasterData">
-        {{ isLoadingMasterData ? '...' : '+' }}
+        {{ isLoadingMasterData ? '...' : 'ADD' }}
       </button>
-      <button class="btn-submit" (click)="onSubmit()">Send</button>
+      <div style="display: flex; gap: 1rem;">
+        <button class="btn-clear" (click)="clearAll()">
+          CLEAR ALL <i class="bi bi-trash3"></i>
+        </button>
+        <button class="btn-submit" (click)="onSubmit()">Send</button>
+      </div>
     </div>
 
   </div>

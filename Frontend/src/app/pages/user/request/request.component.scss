@@ -90,6 +90,15 @@
         align-items: center;
       }
 
+      // Fix p-calendar width
+      ::ng-deep .p-calendar {
+        width: 100%;
+      }
+
+      ::ng-deep .p-inputtext {
+        width: 100%;
+      }
+
       .req-row1 {
         display: grid;
         grid-template-columns: repeat(5, 1fr); // Force 5 columns side-by-side
