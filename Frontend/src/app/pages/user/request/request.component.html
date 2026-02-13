@@ -3,11 +3,13 @@
 
   <div class="content-area">
 
-    <div class="header">
-      <h4 *ngIf="Tooling_ === 'Setup tool'"> Request Setup Tool </h4>
-      <h4 *ngIf="Tooling_ !== 'Setup tool'"> Request Tooling</h4>
+    <div>
+      <div class="header">
+        <h4 *ngIf="Tooling_ === 'Setup tool'"> Request Setup Tool </h4>
+        <h4 *ngIf="Tooling_ !== 'Setup tool'"> Request Tooling</h4>
+      </div>
+      <p>Product Requisition</p>
     </div>
-    <p>Product Requisition</p>
 
     <div class="group-req">
 
@@ -126,10 +128,12 @@
 
           <div class="group-select" *ngIf="Case_ === 'SET'" style="flex: 1; min-width: 150px;">
             <label for="date"> DueDate </label>
-            <p-calendar [(ngModel)]="DueDate_" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="dd/mm/yyyy"
-              (onSelect)="saveState()" (onInput)="saveState()" [minDate]="today_" appendTo="body"
-              [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}">
-            </p-calendar>
+            <mat-form-field appearance="outline" style="width: 100%; display: block;">
+              <input matInput [matDatepicker]="picker" [(ngModel)]="DueDate_" placeholder="DD/MM/YYYY" [min]="today_"
+                (dateChange)="saveState()" readonly (click)="picker.open()">
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
           </div>
         </div>
       </div>

@@ -107,101 +107,86 @@ exports.insertPCPlan = async (req, res) => {
         );
 
         // ตรวจสอบ PlanDate เพื่อใช้ในการ Snapshot (สมมติว่าเป็นเดือนเดียวกันหมด)
+        // ตรวจสอบ PlanDate เพื่อใช้ในการ Snapshot (สมมติว่าเป็นเดือนเดียวกันหมด)
         const sampleDate = items[0].date;
 
-        if (isPMC) {
-            // ============================================
-            // PMC LOGIC: SNAPSHOT REVISON
-            // ============================================
-            console.log(`Processing PMC Snapshot for Div: ${division}, Date: ${sampleDate}`);
+        // ============================================
+        // ALL DIVISIONS LOGIC: SNAPSHOT REVISON
+        // ============================================
+        console.log(`Processing Snapshot for Div: ${division}, Date: ${sampleDate}`);
 
-            // Prepare JSON Data
-            const jsonItems = items.map(item => {
-                let status = 'Active';
-                const comment = (item.comment || '').toLowerCase();
+        // Prepare JSON Data
+        const jsonItems = items.map(item => {
+            let status = 'Active';
+            const comment = (item.comment || '').toLowerCase();
 
-                // ตรวจสอบคำว่า Cancel ใน Comment
-                if (comment.includes('cancel') || comment.includes('ยกเลิก')) {
-                    status = 'Cancelled';
-                }
-
-                return {
-                    PlanDate: new Date(item.date),
-                    Employee_ID: item.employeeId || '',
-                    Division: division,
-                    MC_Type: item.mcType || '',
-                    Facility: item.fac || '',
-                    Before_Part: item.partBefore || item.partBef || '',
-                    Process: item.process || '',
-                    MC_No: item.mcNo || '',
-                    PartNo: item.partNo || '',
-                    QTY: parseFloat(item.qty) || 0,
-                    Time: parseInt(item.time) || 0,
-                    Comment: item.comment || '',
-                    PlanStatus: status,
-                    GroupId: item.groupId || null, // Send GroupId if available
-                    Path_Dwg: item.pathDwg || null,
-                    Path_Layout: item.pathLayout || null,
-                    Path_IIQC: item.iiqc || null
-                };
-            });
-
-            const jsonString = JSON.stringify(jsonItems);
-
-            // Call Snapshot SP
-            await pool.request()
-                .input('JsonData', sql.NVarChar(sql.MAX), jsonString)
-                .input('Division', sql.NVarChar(50), division)
-                .input('TargetDate', sql.Date, new Date(sampleDate))
-                .execute('trans.Stored_PCPlan_Insert_PMC_Snapshot');
-
-            return res.status(200).send({
-                message: `PMC Snapshot processed. Rev updated for ${items.length} items.`,
-                successCount: items.length,
-                errorCount: 0
-            });
-
-        } else {
-            // ============================================
-            // GM/Others LOGIC: OVERWRITE (Classic)
-            // ============================================
-            console.log(`Processing Classic Overwrite for Div: ${division}`);
-
-            let successCount = 0;
-            let errorCount = 0;
-
-            for (const item of items) {
-                try {
-                    const request = pool.request();
-                    request.input('PlanDate', sql.Date, new Date(item.date));
-                    request.input('Employee_ID', sql.NVarChar(50), item.employeeId || '');
-                    request.input('Division', sql.NVarChar(50), item.division || '');
-                    request.input('MC_Type', sql.NVarChar(50), item.mcType || '');
-                    request.input('Facility', sql.NVarChar(50), item.fac || '');
-                    request.input('Before_Part', sql.NVarChar(50), item.partBefore || item.partBef || '');
-                    request.input('Process', sql.NVarChar(50), item.process || '');
-                    request.input('MC_No', sql.NVarChar(50), item.mcNo || '');
-                    request.input('PartNo', sql.NVarChar(50), item.partNo || '');
-                    request.input('QTY', sql.Float, parseFloat(item.qty) || 0);
-                    request.input('Time', sql.Int, parseInt(item.time) || 0);
-                    request.input('Comment', sql.NVarChar(255), item.comment || '');
-
-                    // ใช้ SP Insert_GM ที่สร้างใหม่ (หรือใช้ตัวเดิมก็ได้ แต่แนะให้ใช้ตัวใหม่ที่มี Update logic)
-                    await request.execute('trans.Stored_PCPlan_Insert_GM');
-
-                    successCount++;
-                } catch (err) {
-                    console.error('Error inserting item:', item, err);
-                    errorCount++;
-                }
+            // ตรวจสอบคำว่า Cancel ใน Comment
+            if (comment.includes('cancel') || comment.includes('ยกเลิก')) {
+                status = 'Cancelled';
             }
 
-            return res.status(200).send({
-                message: `Process complete (Overwrite). Success: ${successCount}, Failed: ${errorCount}`,
-                successCount,
-                errorCount
-            });
+            return {
+                PlanDate: new Date(item.date),
+                Employee_ID: item.employeeId || '',
+                Division: division,
+                MC_Type: item.mcType || '',
+                Facility: item.fac || '',
+                Before_Part: item.partBefore || item.partBef || '',
+                Process: item.process || '',
+                MC_No: item.mcNo || '',
+                PartNo: item.partNo || '',
+                QTY: parseFloat(item.qty) || 0,
+                Time: parseInt(item.time) || 0,
+                Comment: item.comment || '',
+                PlanStatus: status,
+                GroupId: item.groupId || null, // Send GroupId if available
+                Path_Dwg: item.pathDwg || null,
+                Path_Layout: item.pathLayout || null,
+                Path_IIQC: item.iiqc || null
+            };
+        });
+
+        const jsonString = JSON.stringify(jsonItems);
+
+        // Call Snapshot SP (Generic for all divisions now)
+        await pool.request()
+            .input('JsonData', sql.NVarChar(sql.MAX), jsonString)
+            .input('Division', sql.NVarChar(50), division)
+            .input('TargetDate', sql.Date, new Date(sampleDate))
+            .execute('trans.Stored_PCPlan_Insert_PMC_Snapshot');
+
+        // === Notification Trigger ===
+        try {
+            const io = req.app.get('socketio');
+            const notifyMsg = `New Plan: ${division} (Qty: ${items.length})`;
+
+            // 1. Save to DB
+            await pool.request()
+                .input('Event_Type', sql.NVarChar, 'NEW_PLAN')
+                .input('Message', sql.NVarChar, notifyMsg)
+                .input('Doc_No', sql.NVarChar, division) // Using Division as DocRef for now
+                .input('Action_By', sql.NVarChar, 'PC') // Todo: Get from req.user
+                .execute('trans.Stored_Insert_Notification_Log');
+
+            // 2. Emit Socket Event
+            if (io) {
+                io.emit('notification', {
+                    type: 'NEW_PLAN',
+                    message: notifyMsg,
+                    timestamp: new Date()
+                });
+                console.log(`[Notification] Emitted: ${notifyMsg}`);
+            }
+        } catch (notifyErr) {
+            console.error('Notification Error:', notifyErr);
+            // Don't fail the main request just because notification failed
         }
+
+        return res.status(200).send({
+            message: `Snapshot processed for ${division}. Rev updated for ${items.length} items.`,
+            successCount: items.length,
+            errorCount: 0
+        });
 
     } catch (err) {
         console.error('Error insertPCPlan:', err);
@@ -264,6 +249,27 @@ exports.deletePCPlanGroup = async (req, res) => {
             .execute('trans.Stored_PCPlan_Delete_Group');
 
         console.log(`[deletePCPlanGroup] GroupId: ${groupId}, Deleted Rows: ${result.rowsAffected[0]}`);
+
+        // === Notification Trigger ===
+        try {
+            const io = req.app.get('socketio');
+            const notifyMsg = `Plan Deleted: Group ${groupId}`;
+
+            await pool.request()
+                .input('Event_Type', sql.NVarChar, 'CANCEL_PLAN')
+                .input('Message', sql.NVarChar, notifyMsg)
+                .input('Doc_No', sql.NVarChar, groupId)
+                .input('Action_By', sql.NVarChar, 'PC')
+                .execute('trans.Stored_Insert_Notification_Log');
+
+            if (io) {
+                io.emit('notification', {
+                    type: 'CANCEL_PLAN',
+                    message: notifyMsg,
+                    timestamp: new Date()
+                });
+            }
+        } catch (e) { console.error('Notify Error:', e); }
 
         res.status(200).json({
             message: "Group deleted successfully",

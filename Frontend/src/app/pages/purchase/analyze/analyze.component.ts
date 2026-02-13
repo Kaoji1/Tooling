@@ -1,8 +1,7 @@
-
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { RouterOutlet } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AnalyzeService } from '../../../core/services/analyze.service';
@@ -31,19 +30,16 @@ import html2canvas from 'html2canvas';
 })
 export class AnalyzeComponent implements OnInit, AfterViewInit {
 
-
-
   public data: any[] = [];
   public loading: boolean = false;
   public error: string = '';
+  public dataFromDB: any[] = [];
 
   // ตัวเลือก dropdown
   divisions = [
     { name: '7122' },
     { name: '71DZ' }
   ];
-
-
 
   selectedDivisions: string[] = []; // เก็บ division ที่เลือก
   chart: Chart | null = null;
@@ -77,21 +73,34 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
   public pieChart: Chart | null = null;
   public horizontalBarChart: Chart | null = null;
   public stackedBarChart: Chart | null = null; // ถ้ามี stacked bar
-  constructor(private analyzePurchase: AnalyzeService
+
+  constructor(
+    private analyzeService: AnalyzeService,
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadData();
+    }
+  }
 
-
-  ngOnInit() {
-    this.uniqueItemNos = Array.from(new Set(this.data.map(d => d.ItemNo)));
-    this.Cases = Array.from(new Set(this.data.map(c => c.CASE)));
-    console.log(this.Cases); // เช็คว่ามีข้อมูลหรือไม่
-    this.renderHorizontalBarChart();
-    this.fetchAnalyzeData();
-    this.analyzePurchase.getdataall().subscribe(data => {
-      this.dataFromDB = data;
+  loadData() {
+    this.analyzeService.getdataall().subscribe({
+      next: (response: any[]) => {
+        this.data = response;
+        this.uniqueItemNos = Array.from(new Set(this.data.map(d => d.ItemNo)));
+        this.Cases = Array.from(new Set(this.data.map(c => c.CASE)));
+        console.log(this.Cases);
+        this.renderHorizontalBarChart();
+        this.fetchAnalyzeData();
+        this.dataFromDB = response;
+      },
+      error: (err) => {
+        console.error(err);
+      }
     });
-
   }
 
   onItemNoChange() {
@@ -104,7 +113,7 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
 
   fetchAnalyzeData() {
     this.loading = true;
-    this.analyzePurchase.getdataall().subscribe({
+    this.analyzeService.getdataall().subscribe({
       next: (response: any[]) => {
         this.data = response;
 
@@ -152,6 +161,7 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
 
 
   renderStatusChart() {
+    if (!isPlatformBrowser(this.platformId)) return;
     const canvas = document.getElementById('dailySalesChart') as HTMLCanvasElement;
     if (!canvas || !this.data.length) return;
 
@@ -281,6 +291,7 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
 
   // Export PNG
   exportStatusPNG() {
+    if (!isPlatformBrowser(this.platformId)) return;
     const canvas = this.chartWrapper.nativeElement.querySelector('canvas') as HTMLCanvasElement;
     if (!canvas) return;
     const link = document.createElement('a');
@@ -299,6 +310,7 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
   }
 
   renderStackedBarChart() {
+    if (!isPlatformBrowser(this.platformId)) return;
     const canvas = document.getElementById('stackedSalesChart') as HTMLCanvasElement;
     if (!canvas || !this.data?.length) return;
 
@@ -580,6 +592,7 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
 
   // Export PNG
   exportStackedPNG() {
+    if (!isPlatformBrowser(this.platformId)) return;
     const canvas = this.stackedWrapper.nativeElement.querySelector('canvas') as HTMLCanvasElement;
     if (!canvas) return;
     const link = document.createElement('a');
@@ -593,6 +606,7 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
 
 
   renderHorizontalBarChart() {
+    if (!isPlatformBrowser(this.platformId)) return;
     const canvas = document.getElementById('horizontalBarChart') as HTMLCanvasElement;
     if (!canvas || !this.data?.length) return;
 
@@ -871,6 +885,7 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
 
   // ------------------ Export PNG ------------------
   exportHorizontalBarPNG() {
+    if (!isPlatformBrowser(this.platformId)) return;
     if (!this.horizontalBarChart) return;
     const canvas = this.horizontalWrapper.nativeElement.querySelector('canvas') as HTMLCanvasElement;
     const url = canvas.toDataURL('image/png');
@@ -897,9 +912,9 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
   // }
 
   fileName = 'Report.xlsx';
-  dataFromDB: any[] = [];
 
   exportexcel() {
+    if (!isPlatformBrowser(this.platformId)) return;
     if (!this.dataFromDB || this.dataFromDB.length === 0) {
       alert("ไม่มีข้อมูลจาก Database");
       return;

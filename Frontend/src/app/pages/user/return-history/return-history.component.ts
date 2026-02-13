@@ -61,6 +61,7 @@ export class ReturnHistoryComponent implements OnInit {
                     PartNo: item.PartNo || '',
                     ItemNo: item.ItemNo || '',
                     Doc_No: item.Doc_No || '',
+                    Remark: item.Remark || '',
                     Status: item.Status || 'Pending'
                 }));
 
@@ -92,10 +93,11 @@ export class ReturnHistoryComponent implements OnInit {
             const matchItemNo = !this.selectedItemNos?.length || this.selectedItemNos.includes(item.ItemNo);
             const matchDocNo = !this.selectedDocNos?.length || this.selectedDocNos.includes(item.Doc_No);
 
-            // Filter by Date
+            // Filter by Date (Using Return_Date or DateTime_Record)
             let matchDate = true;
             if (this.fromDate || this.toDate) {
-                const itemDate = new Date(item.DateTime_Record);
+                const dateToCheck = item.Return_Date || item.DateTime_Record;
+                const itemDate = new Date(dateToCheck);
                 itemDate.setHours(0, 0, 0, 0); // Ignore time
 
                 if (this.fromDate) {
@@ -137,7 +139,7 @@ export class ReturnHistoryComponent implements OnInit {
             const valA = a[key] ?? '';
             const valB = b[key] ?? '';
 
-            if (key === 'DateTime_Record' || key === 'Return_Date') {
+            if (key === 'DateTime_Record' || key === 'Return_Date' || key === 'DateComplete') {
                 const dateA = new Date(valA).getTime();
                 const dateB = new Date(valB).getTime();
                 return this.sortAsc ? dateA - dateB : dateB - dateA;
@@ -183,7 +185,8 @@ export class ReturnHistoryComponent implements OnInit {
         const exportData = dataToExport.map((item, index) => ({
             'No.': index + 1,
             'Doc No': item.Doc_No,
-            'Date': item.DateTime_Record,
+            'Return Date': item.Return_Date || item.DateTime_Record,
+            'Date Complete': item.DateComplete,
             'Employee ID': item.Employee_ID,
             'Return By': item.Return_By,
             'Division': item.Division,

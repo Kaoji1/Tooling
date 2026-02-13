@@ -58,35 +58,35 @@
 // --- 2. Top Controls ---
 .top-controls {
   background-color: var(--color-surface);
-  padding: 1.5rem;
+  padding: 24px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  flex-wrap: wrap; // Responsive wrapping
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
-  z-index: 100; // Increase z-index to stay above sticky table headers (z-10)
+  align-items: end;
+  z-index: 100;
 
   .form-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    width: 300px;
-    max-width: 100%;
+    width: 100%;
 
     label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--color-text-sub);
+      font-size: 12px;
+      font-weight: 700;
+      color: #374151;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      margin-bottom: 0px;
     }
 
     // Modernize ng-select
     ::ng-deep .ng-select-container {
-      min-height: 42px !important;
+      min-height: 40px !important;
+      height: 40px !important;
       border-radius: var(--radius-md) !important;
       border-color: var(--color-border) !important;
       background-color: #f9fafb !important;
@@ -100,6 +100,8 @@
   .excel-buttons {
     display: flex;
     gap: 1.2rem;
+    grid-column: span 3;
+    justify-content: flex-end;
 
     .btn-premium {
       color: white;
@@ -116,6 +118,7 @@
       transition: all 0.2s ease;
       text-transform: uppercase;
       letter-spacing: 0.025em;
+      height: 40px;
 
       i {
         font-size: 1rem;
@@ -169,11 +172,11 @@
     thead {
       th {
         // Modern Table Header
-        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-        padding: 1rem;
+        background-color: #f8fafc;
+        padding: 0.75rem 1rem;
         text-align: left;
         font-weight: 700;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         color: #475569;
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -187,6 +190,20 @@
         span {
           margin-left: 2px;
         }
+
+        &.col-no {
+          width: 60px;
+          text-align: center;
+        }
+
+        &.col-part {
+          width: 180px;
+        }
+
+        &.col-qty {
+          width: 100px;
+          text-align: center;
+        }
       }
     }
 
@@ -195,10 +212,10 @@
         transition: background-color 0.15s;
 
         // --- Important Columns (QTY, Time, Comment) ---
-        // Standard style (White/Blue theme)
-        td:nth-child(8),
-        td:nth-child(9),
-        td:nth-child(10) {
+        // Offset by +2 due to Checkbox and NO. columns
+        td:nth-child(10),
+        td:nth-child(11),
+        td:nth-child(12) {
           input {
             font-weight: 600;
             color: var(--color-text-main);
@@ -216,19 +233,25 @@
 
         td {
           padding: 0.75rem 1rem;
+          font-size: 14px;
+          color: #374151;
           border-bottom: 1px solid var(--color-border);
           vertical-align: middle;
 
+          &.text-center {
+            text-align: center;
+          }
+
           input {
             width: 100%;
-            height: 36px;
+            height: 40px;
             /* Precise height to match ng-select */
             padding: 0 12px;
             border: 1px solid var(--color-border);
             background-color: white;
             border-radius: var(--radius-md);
-            font-size: 0.9rem;
-            color: var(--color-text-main);
+            font-size: 14px;
+            color: #374151;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
             &:hover {
@@ -245,8 +268,8 @@
 
           // Fix nested ng-selects in table
           ::ng-deep .ng-select .ng-select-container {
-            height: 36px !important;
-            min-height: 36px !important;
+            height: 40px !important;
+            min-height: 40px !important;
             border-color: var(--color-border);
             border-radius: var(--radius-md);
             background-color: white !important;
@@ -255,6 +278,21 @@
             &:hover {
               border-color: #94a3b8 !important;
             }
+          }
+
+          // Mat Form Field for Date
+          ::ng-deep .mat-mdc-form-field-wrapper {
+            padding-bottom: 0 !important;
+          }
+
+          ::ng-deep .mat-mdc-text-field-wrapper {
+            height: 40px !important;
+            background-color: white !important;
+          }
+
+          ::ng-deep .mat-mdc-form-field-flex {
+            height: 40px !important;
+            align-items: center !important;
           }
         }
       }
@@ -302,6 +340,34 @@
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
+    }
+  }
+
+  .btn-delete-all {
+    background: #fee2e2; // Red 100
+    color: #ef4444; // Red 500
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    border: 1px solid #fecaca; // Red 200
+    border-radius: 50px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.05);
+
+    &:hover {
+      background: #ef4444;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.96);
     }
   }
 

@@ -1,131 +1,138 @@
 <div class="layout">
     <app-sidebar></app-sidebar>
 
-    <div class="content">
-        <div class="premium-card fade-in">
-            <div class="header-content">
-                <h1 class="reh">Return History / ประวัติการเบิกคืน</h1>
-                <p class="the">The return history is here.</p>
+    <div class="content-area">
+
+        <div>
+            <div class="header">
+                <h4>Return History</h4>
             </div>
+            <p>The return history is here.</p>
+        </div>
 
-            <div class="box-input">
-                <div class="form-input">
+        <div class="box-input">
+            <div class="form-input">
 
-                    <div class="button-clear">
-                        <button class="btn btn-clear" type="button" (click)="clearFilters()">
-                            <i class="bi bi-x-circle-fill text-white"></i> Clear
-                        </button>
-                    </div>
+                <div class="button-clear">
+                    <button class="btn btn-clear" type="button" (click)="clearFilters()">
+                        <i class="bi bi-x-circle-fill text-white"></i> Clear
+                    </button>
+                </div>
 
-                    <div class="button-filter">
-                        <button class="btn btn-filter" type="button" (click)="onFilter()">
-                            <i class="bi bi-funnel-fill text-white"></i> Filter
-                        </button>
-                    </div>
+                <div class="button-filter">
+                    <button class="btn btn-filter" type="button" (click)="onFilter()">
+                        <i class="bi bi-funnel-fill text-white"></i> Filter
+                    </button>
+                </div>
 
-                    <div class="button-group">
-                        <button class="excel-button btn btn-success" type="button" (click)="exportExcel()">
-                            <i class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL
-                        </button>
-                        <!-- <button class="export-button btn btn-danger" type="button" (click)="exportAS400()">
-                        <i class="bi bi-database"></i> EXPORT TO AS400
-                    </button> -->
-                    </div>
+                <div class="button-group">
+                    <button class="excel-button btn btn-success" type="button" (click)="exportExcel()">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL
+                    </button>
                 </div>
             </div>
-
-            <div class="table-responsive">
-                <table class="table table-hover align-middle text-center" id="table-data">
-                    <thead>
-                        <tr class="filter-row">
-                            <td></td>
-                            <td></td>
-                            <td>
-                                <ng-select class="premium-select" [items]="divisionList" bindLabel="label"
-                                    bindValue="value" [(ngModel)]="selectedDivisions" [multiple]="true"
-                                    [closeOnSelect]="false" placeholder="Select Division">
-                                </ng-select>
-                            </td>
-                            <td>
-                                <ng-select class="premium-select" [items]="partNoList" bindLabel="label"
-                                    bindValue="value" [(ngModel)]="selectedPartNos" [multiple]="true"
-                                    [closeOnSelect]="false" placeholder="Select PartNo">
-                                </ng-select>
-                            </td>
-                            <td>
-                                <ng-select class="premium-select" [items]="docNoList" bindLabel="label"
-                                    bindValue="value" [(ngModel)]="selectedDocNos" [multiple]="true"
-                                    [closeOnSelect]="false" placeholder="Select DocNo">
-                                </ng-select>
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td><input type="date" class="premium-input" [(ngModel)]="toDate" placeholder="To Date">
-                            </td>
-                            <td><input type="date" class="premium-input" [(ngModel)]="fromDate" placeholder="From Date">
-                            </td>
-                            <td></td>
-                        </tr>
-                    </thead>
-
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 40px;">
-                                <input type="checkbox" [(ngModel)]="selectAllCheck" (change)="toggleAllCheckboxes()" />
-                            </th>
-                            <th style="width: 50px;">No.</th>
-                            <th (click)="onSort('Division')" class="sortable">DIVISION <span
-                                    *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                            <th (click)="onSort('PartNo')" class="sortable">PART NO. <span
-                                    *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                            <th (click)="onSort('Doc_No')" class="sortable">DOC NO. <span
-                                    *ngIf="sortKey === 'Doc_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                            <th>ITEM NO</th>
-                            <th>ITEM NAME</th>
-                            <th>SPEC</th>
-                            <th style="width: 80px;">QTY</th>
-                            <th>RETURN BY</th>
-                            <th (click)="onSort('DateTime_Record')" class="sortable">DATE <span
-                                    *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                            <th>STATUS</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr *ngIf="filteredList.length === 0">
-                            <td colspan="12" class="text-center text-muted py-4">
-                                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
-                                <p class="mt-2">No Data Found</p>
-                            </td>
-                        </tr>
-
-                        <tr *ngFor="let item of filteredList; let i = index" [ngClass]="getRowClass(item)">
-                            <td>
-                                <input type="checkbox" [(ngModel)]="item.Selection" (change)="onCheckboxChange(item)">
-                            </td>
-                            <td>{{ i + 1 }}</td>
-                            <td><span class="fw-medium">{{ item.Division }}</span></td>
-                            <td>{{ item.PartNo }}</td>
-                            <td>{{ item.Doc_No }}</td>
-                            <td>{{ item.ItemNo }}</td>
-                            <td class="text-start">{{ item.ItemName }}</td>
-                            <td class="text-start text-muted user-select-all">{{ item.Spec }}</td>
-                            <td><span class="badge bg-light text-dark border">{{ item.QTY }}</span></td>
-                            <td>{{ item.Return_By }}</td>
-                            <td>{{ item.DateTime_Record | date:'dd/MM/yy HH:mm' }}</td>
-                            <td>
-                                <span class="status-badge" [ngClass]="{
-                                    'pending': item.Status === 'Pending',
-                                    'complete': item.Status === 'Complete'
-                                }">
-                                    {{ item.Status }}
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle text-center" id="table-data">
+                <thead>
+                    <tr class="filter-row">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <ng-select class="premium-select" [items]="divisionList" bindLabel="label" bindValue="value"
+                                [(ngModel)]="selectedDivisions" [multiple]="true" [closeOnSelect]="false"
+                                placeholder="Select Division">
+                            </ng-select>
+                        </td>
+                        <td>
+                            <ng-select class="premium-select" [items]="partNoList" bindLabel="label" bindValue="value"
+                                [(ngModel)]="selectedPartNos" [multiple]="true" [closeOnSelect]="false"
+                                placeholder="Select PartNo">
+                            </ng-select>
+                        </td>
+                        <td>
+                            <ng-select class="premium-select" [items]="docNoList" bindLabel="label" bindValue="value"
+                                [(ngModel)]="selectedDocNos" [multiple]="true" [closeOnSelect]="false"
+                                placeholder="Select DocNo">
+                            </ng-select>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td> <!-- Remark -->
+                        <td><input type="date" class="premium-input" [(ngModel)]="toDate" placeholder="To Date">
+                        </td>
+                        <td><input type="date" class="premium-input" [(ngModel)]="fromDate" placeholder="From Date">
+                        </td>
+                        <td></td> <!-- Date Complete -->
+                        <td></td>
+                    </tr>
+                </thead>
+
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 40px;">
+                            <input type="checkbox" [(ngModel)]="selectAllCheck" (change)="toggleAllCheckboxes()" />
+                        </th>
+                        <th style="width: 50px;">No.</th>
+                        <th (click)="onSort('Division')" class="sortable">DIVISION <span
+                                *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('PartNo')" class="sortable">PART NO. <span *ngIf="sortKey === 'PartNo'">{{
+                                sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('Doc_No')" class="sortable">DOC NO. <span *ngIf="sortKey === 'Doc_No'">{{
+                                sortAsc ? '↑' : '↓' }}</span></th>
+                        <th>ITEM NO</th>
+                        <th>ITEM NAME</th>
+                        <th>SPEC</th>
+                        <th style="width: 80px;">QTY</th>
+                        <th>REMARK</th>
+                        <th>RETURN BY</th>
+                        <th (click)="onSort('Return_Date')" class="sortable">RETURN DATE <span
+                                *ngIf="sortKey === 'Return_Date'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('DateComplete')" class="sortable">DATE COMPLETE <span
+                                *ngIf="sortKey === 'DateComplete'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngIf="filteredList.length === 0">
+                        <td colspan="14" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                            <p class="mt-2">No Data Found</p>
+                        </td>
+                    </tr>
+
+                    <tr *ngFor="let item of filteredList; let i = index" [ngClass]="getRowClass(item)">
+                        <td>
+                            <input type="checkbox" [(ngModel)]="item.Selection" (change)="onCheckboxChange(item)">
+                        </td>
+                        <td>{{ i + 1 }}</td>
+                        <td><span class="fw-medium">{{ item.Division }}</span></td>
+                        <td>{{ item.PartNo }}</td>
+                        <td>{{ item.Doc_No }}</td>
+                        <td>{{ item.ItemNo }}</td>
+                        <td class="text-start">{{ item.ItemName }}</td>
+                        <td class="text-start text-muted user-select-all">{{ item.Spec }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ item.QTY }}</span></td>
+                        <td class="text-start">{{ item.Remark }}</td>
+                        <td>{{ item.Return_By }}</td>
+                        <td>{{ (item.Return_Date || item.DateTime_Record) | date:'dd/MM/yy HH:mm' }}</td>
+                        <td>{{ item.DateComplete | date:'dd/MM/yy HH:mm' }}</td>
+                        <td>
+                            <span class="status-badge" [ngClass]="{
+                                'pending': item.Status === 'Pending',
+                                'complete': item.Status === 'Complete'
+                            }">
+                                {{ item.Status }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
     </div>
 </div>

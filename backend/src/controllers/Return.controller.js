@@ -21,10 +21,10 @@ exports.getFacilities = async (req, res) => {
         const { divisionId } = req.params;
         const pool = await poolPromise;
         const result = await pool.request()
-            .input('Division_Id', sql.NVarChar, divisionId) // SP expects NVARCHAR
-            .execute('trans.Stored_Get_tb_Division_Facility_GM_PMC'); // Updated SP
-        // SP returns 2 sets: [0]=ProfitCenter, [1]=Facilities. We need [1].
-        res.status(200).json(result.recordsets[1] || []);
+            .input('Profit_Center', sql.NVarChar, divisionId) // SP expects @Profit_Center (passed as param)
+            .execute('trans.Stored_Get_Dropdown_Facility_By_Division');
+        // SP returns only one recordset with FacilityShort and FacilityName
+        res.status(200).json(result.recordset || []);
         // Note: Returns [Profit_Center_Name] and [FacilityName]
     } catch (err) {
         console.error(err);
@@ -38,11 +38,11 @@ exports.getProcesses = async (req, res) => {
         const { divisionId } = req.params;
         const pool = await poolPromise;
         const result = await pool.request()
-            .input('Input_Division', sql.Int, divisionId) // SP expects INT
-            .execute('trans.Stored_Get_tb_Process_Test'); // Updated SP
+            .input('Input_Division', sql.Int, divisionId)
+            .execute('trans.Stored_Get_tb_Process');
         res.status(200).json(result.recordset);
     } catch (err) {
-        console.error(err);
+        console.error('Backend - getProcesses Error:', err);
         res.status(500).send(err.message);
     }
 };
@@ -50,40 +50,49 @@ exports.getProcesses = async (req, res) => {
 // 4. Get PartNo Auto-complete
 exports.getPartNo = async (req, res) => {
     try {
-        const { divisionId } = req.query; // e.g. ?divisionId=1&partNo=abc
-        const { partNo } = req.params;    // /return/partno/:partNo
+        const { divisionId } = req.query;
+        const { partNo } = req.params;
 
         const pool = await poolPromise;
         const result = await pool.request()
             .input('Input_Division', sql.Int, divisionId)
             .input('Input_PartNo', sql.NVarChar, partNo)
-            .execute('trans.Stored_Get_tb_PartNo_Test'); // Updated SP
+            .execute('trans.Stored_Get_tb_PartNo');
 
         res.status(200).json(result.recordset);
     } catch (err) {
-        console.error(err);
+        console.error('Backend - getPartNo Error:', err);
         res.status(500).send(err.message);
     }
 };
 
 // 5. Get Item Details (Auto-fill)
+// 5. Get Item Details (Auto-fill or Autocomplete)
 exports.getItemDetails = async (req, res) => {
     try {
         const { itemNo } = req.params;
-        const { divisionId } = req.query;
+        const { divisionId, isAutocomplete } = req.query; // Added isAutocomplete flag
 
         const pool = await poolPromise;
         const result = await pool.request()
             .input('Input_ItemNo', sql.NVarChar, itemNo)
             .input('Input_Division', sql.Int, divisionId)
-            .execute('trans.Stored_Get_ItemDetail_AutoFill'); // Updated SP
+            .input('Is_Autocomplete', sql.Bit, isAutocomplete === 'true' ? 1 : 0) // Pass flag to SP
+            .execute('trans.Stored_Get_ItemDetail_AutoFill');
 
-        if (result.recordset.length > 0) {
-            res.status(200).json(result.recordset[0]);
+        // Logic:
+        // If Autocomplete=true -> Return Array (List of suggestions)
+        // If Autocomplete=false -> Return Object (Single item details)
+        if (isAutocomplete === 'true') {
+            res.status(200).json(result.recordset); // Return List
         } else {
-            // Return empty or specific status to let frontend handle it gracefully
-            res.status(404).json({ message: "Item not found" });
+            if (result.recordset.length > 0) {
+                res.status(200).json(result.recordset[0]); // Return Single Object
+            } else {
+                res.status(404).json({ message: "Item not found" });
+            }
         }
+
     } catch (err) {
         console.error(err);
         res.status(500).send(err.message);

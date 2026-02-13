@@ -30,27 +30,53 @@
     }
 }
 
-h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-text-main);
-    margin-bottom: 24px;
-    // Gradient text matching other pages
-    background: linear-gradient(90deg, var(--color-primary), #1e40af);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
+// Standardized Header
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+
+    h4 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0;
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.02em;
+    }
+}
+
+p {
+    color: #475569;
+    font-size: 0.9rem;
+    margin-top: 0.15rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &::before {
+        content: '';
+        display: inline-block;
+        width: 4px;
+        height: 16px;
+        background: linear-gradient(180deg, #3b82f6, #60a5fa);
+        border-radius: 2px;
+    }
 }
 
 // Filter Section (Card Style)
 .filter-section {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end; // Align bottom with inputs
-    gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: end; // Align bottom with inputs
+    gap: 1.5rem;
     background-color: var(--color-surface);
-    padding: 20px;
+    padding: 24px;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     margin-bottom: 24px;
@@ -59,25 +85,73 @@ h2 {
     .filter-group {
         display: flex;
         flex-direction: column;
-        min-width: 200px;
+        width: 100%;
+
+        &.date-filter {
+            min-width: 280px;
+        }
+
+        .date-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            mat-form-field {
+                flex: 1;
+            }
+
+            .btn-today {
+                background: linear-gradient(135deg, var(--color-primary) 0%, #1d4ed8 100%);
+                color: white;
+                border: none;
+                padding: 0 1.25rem;
+                border-radius: 50px; // Premium rounded pill
+                font-size: 0.8rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.025em;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                white-space: nowrap;
+                height: 38px; // Slightly more compact to match inputs
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+
+                &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+                    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+                }
+
+                &:active {
+                    transform: translateY(0);
+                    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+                }
+            }
+        }
 
         label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: var(--color-text-secondary);
+            font-weight: 700;
+            margin-bottom: 0px;
+            font-size: 12px;
+            color: #374151;
+            text-transform: uppercase;
         }
 
         input,
         select,
-        ::ng-deep .p-inputtext {
+        ::ng-deep .p-inputtext,
+        ::ng-deep .mat-mdc-text-field-wrapper {
             width: 100%;
-            padding: 10px 12px;
+            padding: 0 12px;
+            height: 40px !important;
             border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
             background-color: #fff;
             font-size: 14px;
-            color: var(--color-text-primary);
+            color: #374151;
             transition: all 0.2s;
 
             &:focus {
@@ -85,6 +159,15 @@ h2 {
                 box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
                 outline: none;
             }
+        }
+
+        ::ng-deep .mat-mdc-form-field-flex {
+            height: 40px !important;
+            align-items: center !important;
+        }
+
+        ::ng-deep .mat-mdc-form-field-wrapper {
+            padding-bottom: 0 !important;
         }
 
         // Specific fix for p-calendar wrapper to align correctly
@@ -119,13 +202,28 @@ h2 {
             z-index: 10;
 
             th {
-                padding: 12px 16px;
+                padding: 0.75rem 1rem;
                 text-align: left;
-                font-weight: 600;
-                color: var(--color-text-secondary);
-                font-size: 0.875rem;
+                font-weight: 700;
+                color: #475569;
+                font-size: 0.75rem;
                 border-bottom: 2px solid var(--color-border);
                 white-space: nowrap;
+                text-transform: uppercase;
+
+                &.col-no {
+                    width: 60px;
+                    text-align: center;
+                }
+
+                &.col-part {
+                    width: 180px;
+                }
+
+                &.col-qty {
+                    width: 100px;
+                    text-align: center;
+                }
             }
         }
 
@@ -210,10 +308,15 @@ h2 {
                 }
 
                 td {
-                    padding: 12px 16px;
-                    font-size: 0.875rem;
+                    padding: 0.75rem 1rem;
+                    font-size: 14px;
+                    color: #374151;
                     vertical-align: middle;
                     white-space: nowrap;
+
+                    &.text-center {
+                        text-align: center;
+                    }
                 }
             }
         }
@@ -556,4 +659,70 @@ h2 {
         color: #64748b; // Muted color by default
         transition: color 0.2s;
     }
+}
+
+// View Tabs Styling
+// View Tabs Styling
+// View Tabs Styling
+.view-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+
+    .view-tab {
+        background: white;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        padding: 10px 24px;
+        border-radius: 50px; // Pill shape
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+        &:hover {
+            background: #f8fafc;
+            color: var(--color-primary);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        &.active {
+            background: linear-gradient(135deg, var(--color-primary) 0%, #2563eb 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+            transform: translateY(-1px);
+
+            &:hover {
+                box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.4);
+            }
+        }
+    }
+}
+
+// Table Row Animation
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.table-container table tbody tr:not(.group-start) {
+    animation: slideInUp 0.3s ease-out forwards;
 }

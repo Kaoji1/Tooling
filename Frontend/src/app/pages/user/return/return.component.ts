@@ -7,6 +7,12 @@ import { HttpClientModule } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatInputModule } from '@angular/material/input';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { startWith, map } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 
 
@@ -18,7 +24,9 @@ interface ReturnItem {
   spec: string;
   qty: number;
   remark: string;
+  selected?: boolean; // New property for checkbox
 }
+
 
 @Component({
   selector: 'app-return',                     //  ชื่อ Tag สำหรับเรียกใช้ Component นี้ (<app-return>)
@@ -30,7 +38,12 @@ interface ReturnItem {
     FormsModule,                              //  นำเข้า module สำหรับทำ Two-way binding ([(ngModel)])
     SidebarComponent,                          //  นำเข้า Sidebar เพื่อมาแสดงผลในหน้านี้
     HttpClientModule,
-    NgSelectModule
+    NgSelectModule,
+    MatAutocompleteModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    MatIconModule,
+    MatButtonModule
   ]
 })
 export class ReturnComponent implements OnInit {
@@ -48,18 +61,45 @@ export class ReturnComponent implements OnInit {
   phoneNumber: string = '';
 
   // --- ส่วนของตาราง (Dynamic Table) ---
-  // เริ่มต้นให้มีแถวว่างๆ 1 แถวเสมอ
-  returnItems: ReturnItem[] = [
-    { partNo: '', itemNo: '', itemName: '', spec: '', qty: 0, remark: '' }
-  ];
+  // เริ่มต้นให้มีแถวว่างๆ = 0 items (ตามที่ user ขอ)
+  returnItems: ReturnItem[] = [];
 
   // Subject for ng-select typeahead
   partNoInput$ = new Subject<string>();
   currentRowIndex: number = -1;
   searchResults: { [index: number]: any[] } = {}; // Restore searchResults
 
+  // --- Smart Input (Scan/Type) ---
+  smartInputControl = new FormControl('');
+  smartInputSuggestions: any[] = [];
+  isSmartScanMode: boolean = true; // Toggle between Scan (Enter=Add) and Type (Enter=Select) - Actually hybrid is best.
+
+  // --- Table Input Autocomplete ---
+  tableInputControls: { [index: number]: FormControl } = {};
+  tableInputSuggestions: { [index: number]: any[] } = {};
+
+  // Checkbox State
+  isAllSelected: boolean = false;
+
   constructor(private returnService: ReturnService) {
-    // Setup Typeahead Search
+    // Setup Smart Input Autocomplete
+    this.smartInputControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(value => {
+        if (!value || value.length < 2 || !this.selectedDivisionId) {
+          return [];
+        }
+        return this.returnService.getItemDetails(value, this.selectedDivisionId, true); // true = Autocomplete
+      })
+    ).subscribe({
+      next: (data) => {
+        this.smartInputSuggestions = Array.isArray(data) ? data : [];
+      },
+      error: (err) => console.error('Smart Input Search Error:', err)
+    });
+
+    // Existing PartNo Typeahead setup...
     this.partNoInput$.pipe(
       debounceTime(400),
       distinctUntilChanged(),
@@ -77,40 +117,97 @@ export class ReturnComponent implements OnInit {
           this.searchResults[this.currentRowIndex] = data;
         }
       },
-      error: (err) => console.error('Search error:', err)
+      error: (err) => console.error('Return Page - Search error:', err)
     });
   }
 
-  // Called when ng-select receives focus
+  // Override setCurrentRow to use SweetAlert
   setCurrentRow(index: number) {
     if (!this.selectedDivisionId) {
-      // Alert if Division not selected
-      alert("กรุณาเลือก Division ก่อนค้นหา PartNo ครับ / Please select Division first.");
-      // Optional: Blur or clear focus?
+      Swal.fire({
+        icon: 'warning',
+        title: 'Division Required',
+        text: 'กรุณาเลือก Division ก่อนค้นหา PartNo ครับ / Please select Division first.',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#ffc107' // Orange warning
+      });
+      // unfocus
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
       return;
     }
     this.currentRowIndex = index;
+    // this.saveState(); // Not critical to save on focus
   }
+
+  // Check if any items are selected for bulk action
+  get hasSelectedItems(): boolean {
+    return this.returnItems.some(item => item.selected);
+  }
+
+  // Toggle All Checkboxes
+  toggleSelectAll() {
+    this.returnItems.forEach(item => item.selected = this.isAllSelected);
+    this.saveState(); // Save selection state (optional but good)
+  }
+
+  // Check if all are selected (to update header checkbox)
+  checkAllSelected() {
+    this.isAllSelected = this.returnItems.length > 0 && this.returnItems.every(item => item.selected);
+    this.saveState();
+  }
+
+  // Delete Selected Rows
+  deleteSelected() {
+    const selectedCount = this.returnItems.filter(i => i.selected).length;
+    if (selectedCount === 0) return;
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `Delete ${selectedCount} selected items? / ลบรายการที่เลือก ${selectedCount} รายการ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Filter out selected items
+        const keptItems: ReturnItem[] = [];
+        const keptSearchResults: { [index: number]: any[] } = {};
+        const keptControls: { [index: number]: FormControl } = {};
+
+        // Re-construct logic
+        // Since logic depends on index, better to just clear aux data and re-init
+        this.returnItems = this.returnItems.filter(i => !i.selected);
+        this.isAllSelected = false;
+        this.searchResults = {};
+        this.tableInputControls = {};
+
+        // Re-init controls for remaining items
+        this.returnItems.forEach((_, idx) => this.initTableInputControl(idx));
+
+        this.saveState(); // Save state
+      }
+    });
+  }
+
+  // Called when ng-select receives focus (kept for compatibility)
+  // setCurrentRow is already defined above
 
   // Called when user selects an option
   onPartNoSelect(index: number, event: any) {
-    // Event is the selected item (or null if cleared)
-    // If value is bound to partNo, it might be just string if bindValue used, or object if not.
-    // In HTML we used bindValue="PartNo", so 'event' is likely not the whole object unless we remove bindValue.
-    // Actually, usually ng-select (change) emits the selected value (Model).
-    // Let's rely on ngModel update.
-
-    // If we need the whole object (if PartNo isn't enough), we might change bindValue.
-    // But for now, user just asked for "PartNo Smoot".
-
-    // Clear results after selection to keep clean
-    // this.searchResults[index] = []; 
+    // ngModel handles update
+    this.saveState();
   }
 
   // Allow custom text input in ng-select
   addTagFn(term: string) {
     return { PartNo: term };
   }
+
 
   // Workaround since [dropdownClass] is not supported in this version
   onPartNoOpen() {
@@ -127,13 +224,11 @@ export class ReturnComponent implements OnInit {
     this.loadDivisions();
   }
 
-  // Remove old onPartNoInput/selectPartNo if not used
-
-
   loadDivisions() {
     this.returnService.getDivisions().subscribe({
       next: (data) => {
         this.divisions = data; // Returns [Division_Id, Profit_Center, Division_Name]
+        this.restoreState(); // Restore state AFTER divisions are loaded
       },
       error: (err) => {
         console.error('Error loading divisions:', err);
@@ -148,26 +243,18 @@ export class ReturnComponent implements OnInit {
     this.selectedProcess = '';
 
     if (this.selectedDivisionId) {
-      this.returnService.getFacilities(this.selectedDivisionId).subscribe({
+      // Get Profit_Center from selected division object
+      const selectedDiv = this.divisions.find(d => d.Division_Id === this.selectedDivisionId);
+      const profitCenter = selectedDiv?.Profit_Center || '';
+
+      this.returnService.getFacilities(profitCenter).subscribe({
         next: (data) => {
-          // data = [{ Profit_Center: '...', FacilityName: 'Turning F.1' }, ...]
-
-          // Logic: Extract "F.x", Map to Object, Unique
-          const mapped = data.map((item: any) => {
-            const name = item.FacilityName || '';
-            const match = name.match(/F\.\d+/);
-            const shortName = match ? match[0] : name; // Use Short Name if found, else original
-            return { label: shortName, value: shortName };
-          });
-
-          // Unique by label
-          const unique = new Map();
-          mapped.forEach((m: any) => {
-            if (m.label) unique.set(m.label, m);
-          });
-
-          // Convert back to array and Sort by label
-          this.facilities = Array.from(unique.values()).sort((a: any, b: any) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+          // data now uses trans.Stored_Get_Dropdown_Facility_By_Division
+          // which returns [FacilityShort, FacilityName]
+          this.facilities = data.map((item: any) => ({
+            label: item.FacilityShort,
+            value: item.FacilityShort
+          }));
         },
         error: (err) => console.error('Error loading facilities:', err)
       });
@@ -179,28 +266,186 @@ export class ReturnComponent implements OnInit {
         error: (err) => console.error('Error loading processes:', err)
       });
     }
+    this.saveState();
   }
 
-  // ฟังก์ชันเพิ่มแถวใหม่ (ปุ่ม + สีเขียว)
+  // ฟังก์ชันเพิ่มแถวใหม่ (kept if needed, but UI button removed)
   addRow() {
     this.returnItems.push({
-      partNo: '',
+      partNo: this.returnItems.length > 0 ? this.returnItems[this.returnItems.length - 1].partNo : '',
       itemNo: '',
       itemName: '',
       spec: '',
       qty: 0,
       remark: ''
     });
+    this.initTableInputControl(this.returnItems.length - 1);
+    this.saveState();
+  }
+
+  initTableInputControl(index: number) {
+    if (!this.tableInputControls[index]) {
+      this.tableInputControls[index] = new FormControl('');
+
+      this.tableInputControls[index].valueChanges.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(value => {
+          if (!value || value.length < 2 || !this.selectedDivisionId) {
+            return [];
+          }
+          return this.returnService.getItemDetails(value, this.selectedDivisionId!, true);
+        })
+      ).subscribe({
+        next: (data) => {
+          this.tableInputSuggestions[index] = Array.isArray(data) ? data : [];
+        },
+        error: (err) => console.error(`Table Input ${index} Error:`, err)
+      });
+    }
+  }
+
+
+  // Handle Smart Input Enter Key (Scan or Select)
+  onSmartInputEnter() {
+    // Validate Header Fields First
+    if (!this.selectedDivisionId || !this.selectedFacility || !this.selectedProcess) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required Fields',
+        text: 'Please select Division, Facility, and Process first.'
+      });
+      return;
+    }
+
+    const value = this.smartInputControl.value;
+    if (!value) return;
+
+    // 1. Try Exact Match First (AutoFill logic)
+    if (this.selectedDivisionId) {
+      this.returnService.getItemDetails(value, this.selectedDivisionId, false).subscribe({
+        next: (data) => {
+          if (data) {
+            // Found Exact Match! Add to table immediately using LAST ROW PartNo if available
+            const lastPartNo = this.returnItems.length > 0 ? this.returnItems[this.returnItems.length - 1].partNo : '';
+
+            const newItem: ReturnItem = {
+              partNo: lastPartNo, // Auto-carry PartNo
+              itemNo: data.ItemNo,
+              itemName: data.ItemName,
+              spec: data.SPEC,
+              qty: 1, // Default Qty 1 for scan
+              remark: ''
+            };
+
+            // Always ADD to bottom (since we removed the concept of empty row placeholder mostly)
+            this.returnItems.push(newItem);
+            this.initTableInputControl(this.returnItems.length - 1);
+
+            // Clear Input for next scan
+            this.smartInputControl.setValue('', { emitEvent: false });
+            this.smartInputSuggestions = [];
+
+            // Optional: Sound effect?
+            this.saveState();
+          } else {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Not Found',
+              text: 'Item not found in this Division / ไม่พบรายการ',
+              timer: 1500,
+              showConfirmButton: false
+            });
+          }
+        },
+        error: (err) => {
+          // If not found exact, maybe they meant to pick from suggestion?
+          // If suggestions exist, open panel?
+          // For now, just clear or alert?
+          // console.log('Smart Scan: Not found, maybe partial match?');
+        }
+      });
+    }
+  }
+
+  onSmartSuggestionSelected(event: any) {
+    // Validate Header Fields First
+    if (!this.selectedDivisionId || !this.selectedFacility || !this.selectedProcess) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required Fields',
+        text: 'Please select Division, Facility, and Process first.'
+      });
+      this.smartInputControl.setValue(''); // Clear input so they can't proceed
+      return;
+    }
+
+    const item = event.option.value; // expected whole object from value
+    const lastPartNo = this.returnItems.length > 0 ? this.returnItems[this.returnItems.length - 1].partNo : '';
+
+    const newItem: ReturnItem = {
+      partNo: lastPartNo,
+      itemNo: item.ItemNo,
+      itemName: item.ItemName,
+      spec: item.SPEC,
+      qty: 1,
+      remark: ''
+    };
+
+    this.returnItems.push(newItem);
+    this.initTableInputControl(this.returnItems.length - 1);
+
+    // Clear input
+    this.smartInputControl.setValue('');
+    this.smartInputSuggestions = [];
+    this.saveState();
+  }
+
+  // Table Input Selection
+  onTableSuggestionSelected(index: number, event: any) {
+    // Validate
+    if (!this.selectedDivisionId || !this.selectedFacility || !this.selectedProcess) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required Fields',
+        text: 'Please select Division, Facility, and Process / กรุณากรอกข้อมูลให้ครบถ้วน'
+      });
+      this.tableInputControls[index].setValue('', { emitEvent: false }); // Clear invalid input
+      return;
+    }
+
+    const item = event.option.value;
+    this.returnItems[index].itemNo = item.ItemNo;
+    this.returnItems[index].itemName = item.ItemName;
+    this.returnItems[index].spec = item.SPEC;
+    this.tableInputControls[index].setValue(item.ItemNo, { emitEvent: false });
+    this.tableInputSuggestions[index] = [];
+    this.saveState();
   }
 
   // ฟังก์ชันลบแถว (ปุ่ม - สีแดง ที่จะใส่เพิ่มให้ในตาราง)
   removeRow(index: number) {
-    if (this.returnItems.length > 1) {
-      this.returnItems.splice(index, 1);
-      delete this.searchResults[index]; // Clear search results
-    } else {
-      alert("ต้องมีอย่างน้อย 1 รายการครับ");
-    }
+    Swal.fire({
+      title: 'Delete Item?',
+      text: "Remove this item from the list? / ลบรายการนี้?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'DELETE', // Button text from user request (sort of)
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.returnItems.splice(index, 1);
+        delete this.searchResults[index];
+        this.searchResults = {};
+
+        // Re-init controls
+        this.tableInputControls = {};
+        this.returnItems.forEach((_, idx) => this.initTableInputControl(idx));
+        this.saveState();
+      }
+    });
   }
 
   // PartNo input handler
@@ -219,6 +464,7 @@ export class ReturnComponent implements OnInit {
   selectPartNo(index: number, partNo: string) {
     this.returnItems[index].partNo = partNo;
     this.searchResults[index] = []; // Clear list after selection
+    this.saveState();
   }
 
 
@@ -227,8 +473,8 @@ export class ReturnComponent implements OnInit {
     if (!itemNo) return;
 
     // เช็คว่าเลือก Division หรือยัง
-    if (!this.selectedDivisionId) {
-      alert("Please select a Division first / กรุณาเลือก Division ก่อนครับ");
+    if (!this.selectedDivisionId || !this.selectedFacility || !this.selectedProcess) {
+      Swal.fire({ icon: 'warning', title: 'Required Fields', text: 'Please select Division, Facility, and Process first.' });
       this.returnItems[index].itemNo = ''; // เคลียร์ค่าที่สแกนมา
       return;
     }
@@ -239,6 +485,7 @@ export class ReturnComponent implements OnInit {
           this.returnItems[index].itemName = data.ItemName;
           this.returnItems[index].spec = data.SPEC; // Updated to SPEC (UpperCase)
           // Also have UNIT, ON_HAND if needed
+          this.saveState();
         }
       },
       error: (err) => {
@@ -246,7 +493,7 @@ export class ReturnComponent implements OnInit {
         // Optional: clear fields or alert
         this.returnItems[index].itemName = '';
         this.returnItems[index].spec = '';
-        alert('Item not found / ไม่พบข้อมูลสินค้า');
+        Swal.fire({ icon: 'error', title: 'Not Found', text: 'Item not found / ไม่พบข้อมูลสินค้า' });
       }
     });
   }
@@ -254,14 +501,22 @@ export class ReturnComponent implements OnInit {
   // ฟังก์ชันกดปุ่ม Return (ส่งข้อมูล)
   onSubmit() {
     // 1. Validate
-    if (!this.selectedDivisionId) {
-      alert("Please select Division / กรุณาเลือก Division");
+    if (!this.selectedDivisionId || !this.selectedFacility || !this.selectedProcess) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Required Fields',
+        text: 'Please select Division, Facility, and Process / กรุณากรอกข้อมูลให้ครบถ้วน'
+      });
       return;
     }
     // Check at least one valid item
     const validItems = this.returnItems.filter(i => i.itemNo && i.qty > 0);
     if (validItems.length === 0) {
-      alert("Please add at least one valid item (ItemNo + Qty > 0) / กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ");
+      Swal.fire({
+        icon: 'warning',
+        title: 'No Items',
+        text: 'Please add at least one valid item (ItemNo + Qty > 0) / กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ'
+      });
       return;
     }
 
@@ -301,34 +556,108 @@ export class ReturnComponent implements OnInit {
 
     console.log('Sending Data:', dataToSend);
 
-    // 5. Call Service
-    this.returnService.saveReturnRequest(dataToSend).subscribe({
-      next: (res) => {
-        // alert(`Save Success! DocNo: ${res.docNo} / บันทึกสำเร็จ`);
-        // Use SweetAlert2 as requested
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: `Saved ${validItems.length} records successfully! (DocNo: ${res.docNo})`,
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#3085d6'
-        });
 
-        // Reset form or redirect
-        this.returnItems = [{ partNo: '', itemNo: '', itemName: '', spec: '', qty: 0, remark: '' }];
-        this.selectedFacility = '';
-        this.selectedProcess = '';
-        this.phoneNumber = '';
-      },
-      error: (err) => {
-        console.error('Save Error:', err);
-        // alert('Save Failed / บันทึกไม่สำเร็จ: ' + (err.error || err.message));
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Save Failed / บันทึกไม่สำเร็จ: ' + (err.error || err.message),
+    // 5. Confirmation & Call Service
+    Swal.fire({
+      title: 'Confirm to send data?',
+      text: 'ยืนยันจะเบิกไหม?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, Send!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.returnService.saveReturnRequest(dataToSend).subscribe({
+          next: (res) => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Success',
+              text: `Saved ${validItems.length} records successfully! (DocNo: ${res.docNo})`,
+              confirmButtonText: 'OK',
+              confirmButtonColor: '#3085d6'
+            });
+
+            // Reset form or redirect
+            this.clearState(); // Clear state on success
+          },
+          error: (err) => {
+            console.error('Save Error:', err);
+            // alert('Save Failed / บันทึกไม่สำเร็จ: ' + (err.error || err.message));
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Save Failed / บันทึกไม่สำเร็จ: ' + (err.error || err.message),
+            });
+          }
         });
       }
     });
   }
+
+  // --- State Persistence ---
+  saveState() {
+    const state = {
+      selectedDivisionId: this.selectedDivisionId,
+      selectedFacility: this.selectedFacility,
+      selectedProcess: this.selectedProcess,
+      phoneNumber: this.phoneNumber,
+      returnItems: this.returnItems,
+      currentRowIndex: this.currentRowIndex
+    };
+    this.returnService.setReturnState(state);
+  }
+
+  restoreState() {
+    const state = this.returnService.getReturnState();
+    if (state) {
+      this.selectedDivisionId = state.selectedDivisionId;
+      this.selectedFacility = state.selectedFacility;
+      this.selectedProcess = state.selectedProcess;
+      this.phoneNumber = state.phoneNumber;
+      this.returnItems = state.returnItems || [];
+      this.currentRowIndex = state.currentRowIndex || -1;
+
+      if (this.selectedDivisionId) {
+        this.loadDependentDropdowns();
+      }
+
+      // Force re-init controls for restored items
+      this.returnItems.forEach((_, idx) => this.initTableInputControl(idx));
+    }
+  }
+
+  clearState() {
+    // Keep Header Logic: Division, Facility, Process, Phone remain active
+    // Only clear Table Items
+    this.returnItems = [];
+    this.isAllSelected = false;
+    this.currentRowIndex = -1;
+    this.searchResults = {};
+    this.tableInputControls = {};
+
+    // Save state so that if user refreshes, these header values + empty table are loaded
+    this.saveState();
+  }
+
+  loadDependentDropdowns() {
+    if (this.selectedDivisionId) {
+      // We need profit center first
+      const selectedDiv = this.divisions.find(d => d.Division_Id === this.selectedDivisionId);
+      const profitCenter = selectedDiv?.Profit_Center;
+
+      if (profitCenter) {
+        this.returnService.getFacilities(profitCenter).subscribe(data => {
+          this.facilities = data.map((item: any) => ({
+            label: item.FacilityShort,
+            value: item.FacilityShort
+          }));
+        });
+      }
+
+      this.returnService.getProcesses(this.selectedDivisionId).subscribe(data => this.processes = data);
+    }
+  }
+
 }

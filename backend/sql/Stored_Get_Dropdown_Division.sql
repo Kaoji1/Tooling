@@ -18,9 +18,11 @@ BEGIN
     SELECT DISTINCT 
         [Division_Id],
         [Profit_Center],
-        [Profit_Center] AS [DivisionName], 
+        [Division_Name] AS [DivisionName], 
+        [Division_Name], -- Matches [Division_Name] in View and Frontend
         [Profit_Center] AS [CenterName]
-    FROM [db_Cost_Data_Centralized].[master].[tb_Master_Division_MMD]
-    ORDER BY [Profit_Center];
+    FROM [db_Tooling].[viewer].[View_tb_Division_For_Project_Request]
+    WHERE [Division_Id] IN (2, 3)
+    ORDER BY [Division_Id];
 END
 GO

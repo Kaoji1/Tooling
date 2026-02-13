@@ -216,22 +216,28 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    -- Define Date Range: Current Month Start to Next Month End
+    DECLARE @StartDate DATE = DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0);
+    DECLARE @EndDate DATE = DATEADD(month, DATEDIFF(month, 0, GETDATE()) + 2, 0);
+
     IF @ShowHistory = 1
     BEGIN
-        -- Show ALL records (Active + History)
+        -- Show ALL records (Active + History) within range
         SELECT *
         FROM [master].[tb_PC_Plan]
         WHERE IsActive = 1
-        -- Order by Date, then Group items together, then Latest Rev first
-        ORDER BY PlanDate DESC, GroupId, Revision DESC;
+          AND PlanDate >= @StartDate AND PlanDate < @EndDate
+        -- Order by Date ASC (Soonest first), then Group items together, then Latest Rev first
+        ORDER BY PlanDate ASC, GroupId, Revision DESC;
     END
     ELSE
     BEGIN
-        -- Show LATEST only
+        -- Show LATEST only within range
         WITH LatestRev AS (
             SELECT GroupId, MAX(Revision) as MaxRev
             FROM [master].[tb_PC_Plan]
             WHERE IsActive = 1
+              AND PlanDate >= @StartDate AND PlanDate < @EndDate
             GROUP BY GroupId
         )
         SELECT Main.*
@@ -240,7 +246,7 @@ BEGIN
             ON Main.GroupId = LatestRev.GroupId 
             AND Main.Revision = LatestRev.MaxRev
         WHERE Main.IsActive = 1
-        ORDER BY Main.PlanDate DESC, Main.Plan_ID DESC;
+        ORDER BY Main.PlanDate ASC, Main.Plan_ID DESC;
     END
 END
 GO

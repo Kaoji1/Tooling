@@ -14,7 +14,7 @@ body {
 }
 
 :root {
-  --font-primary: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-primary: 'Kanit', sans-serif;
   --color-primary: #3b82f6;
   /* Modern Blue */
   --color-primary-hover: #2563eb;
@@ -236,4 +236,179 @@ body {
   &:hover {
     box-shadow: 0 15px 20px -3px rgba(16, 185, 129, 0.4) !important;
   }
+}
+
+// ==========================================
+//    Angular Material Datepicker Customization
+// ==========================================
+
+/* 1. Lighter Border for Input */
+.mat-mdc-form-field-flex {
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  /* Lighter border */
+  transition: all 0.2s ease-in-out;
+}
+
+.mat-mdc-form-field-flex:hover {
+  border-color: #cbd5e1 !important;
+  /* Slightly darker on hover */
+}
+
+.mat-mdc-form-field-focus-overlay {
+  background-color: transparent !important;
+  /* Remove default gray bg on focus */
+}
+
+/* Remove default underline/ripple if using 'fill' appearance, though we use 'outline' mostly */
+.mdc-line-ripple {
+  display: none !important;
+}
+
+/* 2. Calendar Popup Background -> White */
+.mat-datepicker-content {
+  background-color: #ffffff !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* 3. Calendar Body Styling */
+.mat-calendar-body-cell-content {
+  border-radius: 50% !important;
+  /* Round shape */
+  color: #1e293b !important;
+  /* Dark text for enabled dates */
+  font-weight: 500 !important;
+}
+
+/* Hover state for enabled dates */
+.mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover>.mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  background-color: #f1f5f9 !important;
+  color: #3b82f6 !important;
+}
+
+/* Selected Date */
+.mat-calendar-body-selected {
+  background-color: #3b82f6 !important;
+  /* Primary Blue */
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* 4. Disabled Dates (Past) -> Faded/Lighter */
+.mat-calendar-body-disabled>.mat-calendar-body-cell-content {
+  color: #cbd5e1 !important;
+  /* Very light gray text */
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  background-color: transparent !important;
+  /* Ensure no bg */
+}
+
+/* Today's Date (if not selected) */
+.mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: #3b82f6 !important;
+  color: #3b82f6 !important;
+  background-color: transparent !important;
+}
+
+/* Header Styling */
+.mat-calendar-table-header th {
+  color: #64748b !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+}
+
+.mat-calendar-header {
+  padding: 0.5rem 0 !important;
+}
+
+.mat-calendar-previous-button,
+.mat-calendar-next-button {
+  color: #64748b !important;
+}
+
+/* 5. REMOVE BORDERS (The "Dark Box") */
+/* Hide the default MDC outline borders */
+.mdc-notched-outline__leading,
+.mdc-notched-outline__notch,
+.mdc-notched-outline__trailing {
+  border-color: transparent !important;
+  border: none !important;
+}
+
+/* Ensure no border on hover/focus */
+.mat-mdc-form-field:hover .mdc-notched-outline__leading,
+.mat-mdc-form-field:hover .mdc-notched-outline__notch,
+.mat-mdc-form-field:hover .mdc-notched-outline__trailing,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__notch,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: transparent !important;
+}
+
+/* Remove default background if any */
+.mat-mdc-form-field-flex {
+  background-color: #ffffff !important;
+  border: none !important;
+  /* Remove the border we added earlier too */
+  box-shadow: none !important;
+}
+
+/* Optional: Add a very subtle shadow or underline instead if they want *some* indication, 
+   but for now, just removing the "dark box" as requested. 
+   Let's keep the custom light border we added in step 1 but make it even lighter or remove it if strictly requested. 
+   The user said "square dark", usually referring to the default appearance. 
+   Let's force the custom border we created to be visible but the DEFAULT MDC border to be gone.
+*/
+
+/* Re-enforce our custom lighter border from Step 1, but ensure MDC is gone */
+.mat-mdc-form-field-flex {
+  border: 1px solid #e2e8f0 !important;
+  /* Keep our light border */
+}
+
+/* HIDE the strong default MDC border */
+.mdc-notched-outline {
+  display: none !important;
+}
+
+/* 6. COMPACT SIZE (Match other inputs ~38px) */
+/* Force height and center content */
+.mat-mdc-form-field-flex {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  align-items: center !important;
+}
+
+/* Fix input position */
+.mat-mdc-form-field-infix {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  border-top: 0 !important;
+}
+
+/* Fix Icon position */
+.mat-datepicker-toggle-default-icon {
+  width: 20px !important;
+  height: 20px !important;
+  vertical-align: middle !important;
+}
+
+.mat-mdc-icon-button.mat-mdc-button-base {
+  width: 38px !important;
+  height: 38px !important;
+  padding: 8px !important;
+  /* adjust for center */
+}
+
+/* Remove bottom spacing reserved for hint/error */
+.mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
 }
