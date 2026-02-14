@@ -7,12 +7,40 @@ import { FileUploadSerice } from '../../../core/services/FileUpload.service';
 import { HistoryPrint } from '../../../core/services/HistoryPrint.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import Swal from 'sweetalert2';
-import { CalendarModule } from 'primeng/calendar';
+import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
+import { CustomDateAdapter } from '../../../core/utils/custom-date-adapter';
+
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 @Component({
   selector: 'app-plan-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, CalendarModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SidebarComponent,
+    MatDatepickerModule,
+    MatInputModule,
+    MatNativeDateModule,
+    MatButtonModule
+  ],
+  providers: [
+    { provide: DateAdapter, useClass: CustomDateAdapter },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
+  ],
   templateUrl: './PlanList.component.html',
   styleUrls: ['./PlanList.component.scss']
 })
@@ -90,6 +118,19 @@ export class PlanListComponent implements OnInit {
     });
   }
 
+  // --- Datepicker Actions ---
+  setToday(picker: MatDatepicker<any> | null) {
+    this.filterDate = new Date();
+    this.applyFilter();
+    if (picker) picker.close();
+  }
+
+  clearDate(picker: MatDatepicker<any> | null) {
+    this.filterDate = null;
+    this.applyFilter();
+    if (picker) picker.close();
+  }
+
   loadPlanList() {
     this.pcPlanService.getPlanList(this.showHistory).subscribe({
       next: (res) => {
@@ -130,18 +171,59 @@ export class PlanListComponent implements OnInit {
   }
 
   // ฟังก์ชันสำหรับกรองข้อมูล
+  // View Mode: 'upcoming' | 'monthly' | 'engineer' | 'qc'
+  viewMode: string = 'upcoming'; // Default
+
+  setViewMode(mode: string) {
+    this.viewMode = mode;
+    this.applyFilter();
+  }
+
+  // ฟังก์ชันสำหรับกรองข้อมูล
   applyFilter() {
     this.updateMachineTypeOptions(); // Update Dropdown Options based on Division
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     this.filteredPlanList = this.planList.filter(item => {
-      // 1. Filter Date (ต้องแปลง format ให้ตรงกันก่อน)
+      // Parse Item Date
+      const [day, month, year] = item.date.split('/').map(Number);
+      const itemDate = new Date(year, month - 1, day);
+
+      // 1. Filter by View Mode
+      let matchView = true;
+      if (this.viewMode === 'upcoming') {
+        // Upcoming: Today to +2 Months
+        const twoMonthsLater = new Date(today);
+        twoMonthsLater.setMonth(today.getMonth() + 2);
+        matchView = itemDate >= today && itemDate <= twoMonthsLater;
+      } else if (this.viewMode === 'monthly') {
+        // Monthly: Current Month & Next Month
+        const startCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0); // Last day of next month
+        matchView = itemDate >= startCurrentMonth && itemDate <= endNextMonth;
+      } else if (this.viewMode === 'engineer') {
+        // Engineer: Missing Path Dwg OR Path Layout
+        const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
+        const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
+        matchView = !hasDwg || !hasLayout;
+      } else if (this.viewMode === 'qc') {
+        // QC: Missing Path IIQC
+        const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
+        matchView = !hasIIQC;
+      }
+
+      // 2. Filter Date (Specific Date Selection overrides View Mode date range if set)
       const matchDate = this.filterDate ? this.isDateMatch(item.date, this.filterDate) : true;
-      // 2. Filter Division
+
+      // 3. Filter Division
       const matchDivision = this.filterDivision ? item.division === this.filterDivision : true;
-      // 3. Filter Machine Type
+
+      // 4. Filter Machine Type
       const matchMachine = this.filterMachineType ? item.mcType === this.filterMachineType : true;
 
-      return matchDate && matchDivision && matchMachine;
+      return matchView && matchDate && matchDivision && matchMachine;
     });
 
     // เรียงลำดับ: วันที่ล่าสุด -> Revision ล่าสุด
@@ -152,7 +234,7 @@ export class PlanListComponent implements OnInit {
       const dateA = new Date(yearA, monthA - 1, dayA).getTime();
       const dateB = new Date(yearB, monthB - 1, dayB).getTime();
 
-      if (dateB !== dateA) return dateB - dateA;
+      if (dateB !== dateA) return dateA - dateB;
 
       // GroupId Check (Group items together just in case date is same) - Optional but good practice
       if (a.groupId && b.groupId && a.groupId !== b.groupId) {

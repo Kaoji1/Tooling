@@ -1,34 +1,28 @@
-import { CommonModule, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { notificationService } from '../../core/services/notification.service';
+import { NotificationService, NotificationLog } from '../../core/services/notification.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-notificationpurchase',
   standalone: true,
-  imports: [RouterModule, CommonModule, ],
+  imports: [RouterModule, CommonModule],
   templateUrl: './notificationPurchase.component.html',
   styleUrls: ['./notification.component.scss']
 })
 export class NotificationPurchaseComponent implements OnInit {
   isOpen = false;
-  notifications: any[] = [];
+  notifications$: Observable<NotificationLog[]>;
 
-  constructor(private notificationservice: notificationService) {}
+  constructor(private notificationService: NotificationService) {
+    this.notifications$ = this.notificationService.notifications$;
+  }
 
   ngOnInit() {
-    // รับ notification แบบ realtime จาก server
-    this.notificationservice.onNotification().subscribe((data) => {
-      this.notifications.unshift(data); // เพิ่ม notification ใหม่ด้านบน
-    });
   }
 
   toggleNotification() {
     this.isOpen = !this.isOpen;
-  }
-
-  // สำหรับทดสอบ ส่ง notification ไป server
-  sendTestNotification() {
-    this.notificationservice.sendNotification({ message: 'Hello from Purchase!' });
   }
 }

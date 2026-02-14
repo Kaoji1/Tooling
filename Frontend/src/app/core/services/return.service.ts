@@ -12,8 +12,8 @@ export class ReturnService {
 
     constructor(private http: HttpClient) { }
 
-    getItemDetails(itemNo: string, divisionId: number): Observable<any> {
-        return this.http.get<any>(`${this.baseUrl}/return/item/${itemNo}?divisionId=${divisionId}`);
+    getItemDetails(itemNo: string, divisionId: number, isAutocomplete: boolean = false): Observable<any> {
+        return this.http.get<any>(`${this.baseUrl}/return/item/${itemNo}?divisionId=${divisionId}&isAutocomplete=${isAutocomplete}`);
     }
 
     getPartNo(partNo: string, divisionId: number): Observable<any[]> {
@@ -24,8 +24,8 @@ export class ReturnService {
         return this.http.get<any[]>(`${this.baseUrl}/return/divisions`);
     }
 
-    getFacilities(divisionId: number): Observable<any[]> {
-        return this.http.get<any[]>(`${this.baseUrl}/return/facilities/${divisionId}`);
+    getFacilities(profitCenter: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/return/facilities/${profitCenter}`);
     }
 
     getProcesses(divisionId: number): Observable<any[]> {
@@ -38,5 +38,20 @@ export class ReturnService {
 
     getReturnHistory(): Observable<any[]> {
         return this.http.get<any[]>(`${this.baseUrl}/return/list`);
+    }
+
+    // --- State Persistence ---
+    private returnState: any = null;
+
+    setReturnState(state: any) {
+        this.returnState = state;
+    }
+
+    getReturnState(): any {
+        return this.returnState;
+    }
+
+    clearReturnState() {
+        this.returnState = null;
     }
 }

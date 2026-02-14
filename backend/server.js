@@ -78,6 +78,7 @@ const server = http.createServer(app); // ใช้ HTTP server ของ Node
 const io = new Server(server, {
   cors: { origin: '*' } // อนุญาตทุก domain เชื่อมต่อ Socket.IO
 });
+app.set('socketio', io); // Expose io instance to use in controllers
 
 // เมื่อ client เชื่อมต่อ
 io.on('connection', (socket) => {

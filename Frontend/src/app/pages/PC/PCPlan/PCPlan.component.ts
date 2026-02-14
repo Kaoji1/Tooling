@@ -8,10 +8,13 @@ import * as ExcelJS from 'exceljs';
 import Swal from 'sweetalert2';
 
 import { NgSelectModule } from '@ng-select/ng-select';
-import { CalendarModule } from 'primeng/calendar';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
+import { CustomDateAdapter } from '../../../core/utils/custom-date-adapter';
 
 export interface PlanItem {
-  date: string;
+  date: string | Date | null;
   machineType: string | null;
   fac: string | null;
   mcNo: string;
@@ -21,15 +24,41 @@ export interface PlanItem {
   qty: number | null;
   time: string;
   comment: string;
+  checked?: boolean; // Add checked property for selection
 }
+
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 @Component({
   selector: 'app-pc-plan',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent, NgSelectModule, CalendarModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SidebarComponent,
+    NgSelectModule,
+    MatDatepickerModule,
+    MatInputModule,
+    MatNativeDateModule
+  ],
+  providers: [
+    { provide: DateAdapter, useClass: CustomDateAdapter },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
+  ],
   templateUrl: './PCPlan.component.html',
   styleUrls: ['./PCPlan.component.scss']
 })
+
 export class PCPlanComponent implements OnInit {
 
   // --- ตัวแปรสำหรับ Dropdown ---
@@ -47,6 +76,8 @@ export class PCPlanComponent implements OnInit {
   planItems: PlanItem[] = [];
   isLoadingMasterData: boolean = false; // โหลด Machine/Fac (เร็ว)
   isLoadingParts: boolean = false;      // โหลด Process/PartNo (ช้า)
+  minDate: Date = new Date(); // Disable past dates
+  selectAll: boolean = false; // "Select All" checkbox state
 
   constructor(private pcPlanService: PCPlanService) { }
 
@@ -90,7 +121,10 @@ export class PCPlanComponent implements OnInit {
     const state = this.pcPlanService.getPlanState();
     if (state && state.planItems.length > 0) {
       this.selectedDivisionCode = state.selectedDivisionCode;
-      this.planItems = state.planItems;
+      this.planItems = state.planItems.map((item: any) => ({
+        ...item,
+        date: item.date ? new Date(item.date) : null
+      }));
       if (this.selectedDivisionCode) {
         this.loadMasterData(this.selectedDivisionCode);
       }
@@ -129,7 +163,7 @@ export class PCPlanComponent implements OnInit {
 
     // 2. ใส่ข้อมูลตัวอย่าง
     const row = worksheet.addRow({
-      Date: 'mm/dd/yyyy',
+      Date: 'DD/MM/YYYY',
       Div: '7122',
       MachineType: 'BM165',
       Fac: 'F.3',
@@ -274,12 +308,14 @@ export class PCPlanComponent implements OnInit {
     // ถ้าไม่มีข้อมูลเหลือเลย (หรือข้อมูลเดิมเป็นแถวว่างทั้งหมด) -> ก็ถือว่าเริ่มใหม่
     // ถ้ามีข้อมูลค้างอยู่ -> ก็จะต่อท้ายข้อมูลใหม่เข้าไปเลย
 
-    // 5. วนลูปเอาข้อมูลลงตาราง
     data.forEach(row => {
+      // Find Fac even if header is Facility or FAC
+      const rawFac = row['Fac'] || row['Facility'] || row['FAC'];
+
       this.planItems.push({
         date: this.excelDateToJSDate(row['Date']),
         machineType: row['Machine Type'] ? row['Machine Type'].toString().trim() : null,
-        fac: row['Fac'] ? row['Fac'].toString().trim() : null,
+        fac: rawFac ? rawFac.toString().trim() : null,
         mcNo: row['MC No.'] ? row['MC No.'].toString().trim() : '',
         process: row['Process'] ? row['Process'].toString().trim() : null,
         partBef: row['Part Before'] ? row['Part Before'].toString().trim() : null,
@@ -367,17 +403,13 @@ export class PCPlanComponent implements OnInit {
 
         // --- Populate Facilities ---
         const uniqueFacs = new Set<string>();
-        const tempFacs: any[] = [];
         res.facilities.forEach((x: any) => {
           const fullName = x.FacilityName || '';
           const match = fullName.match(/F\.\d+/);
           const shortName = match ? match[0] : fullName;
-          if (!uniqueFacs.has(shortName)) {
-            uniqueFacs.add(shortName);
-            tempFacs.push({ label: shortName, value: shortName });
-          }
+          if (shortName) uniqueFacs.add(shortName);
         });
-        this.facs = tempFacs.sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+        this.facs = Array.from(uniqueFacs).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
         this.isLoadingMasterData = false; // Hide Main Spinner (User can select Machine/Fac now)
 
@@ -417,7 +449,7 @@ export class PCPlanComponent implements OnInit {
   // --- ส่วนจัดการตาราง (เหมือนเดิม) ---
   addRow() {
     this.planItems.push({
-      date: '',
+      date: null,
       machineType: null,
       fac: null,
       process: null,
@@ -426,8 +458,11 @@ export class PCPlanComponent implements OnInit {
       mcNo: '',
       qty: null,
       time: '',
-      comment: ''
-    });
+      comment: '',
+      groupId: null,
+      revision: 1,
+      checked: false
+    } as any);
     this.saveCurrentState();
   }
 
@@ -458,8 +493,63 @@ export class PCPlanComponent implements OnInit {
   }
 
   removeRow(index: number) {
-    this.planItems.splice(index, 1);
-    this.saveCurrentState();
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.planItems.splice(index, 1);
+        this.saveCurrentState();
+        this.checkAllSelected(); // Re-check selection state
+        Swal.fire(
+          'Deleted!',
+          'Your row has been deleted.',
+          'success'
+        )
+      }
+    })
+  }
+
+  // --- Selection Logic ---
+
+  toggleAll() {
+    this.planItems.forEach(item => item.checked = this.selectAll);
+  }
+
+  checkAllSelected() {
+    this.selectAll = this.planItems.length > 0 && this.planItems.every(item => item.checked);
+  }
+
+  hasSelectedItems(): boolean {
+    return this.planItems.some(item => item.checked);
+  }
+
+  removeSelected() {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete selected!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.planItems = this.planItems.filter(item => !item.checked);
+        this.selectAll = false;
+        this.saveCurrentState();
+        Swal.fire(
+          'Deleted!',
+          'Selected items have been deleted.',
+          'success'
+        )
+      }
+    })
   }
 
   selectAllText(event: any) {
@@ -629,7 +719,7 @@ export class PCPlanComponent implements OnInit {
 
     if (!item.fac) {
       missing.push('Fac');
-    } else if (this.facs.length > 0 && !this.facs.some(f => f.value === item.fac)) {
+    } else if (this.facs.length > 0 && !this.facs.includes(item.fac)) {
       return `Facility '${item.fac}' is invalid.`;
     }
 

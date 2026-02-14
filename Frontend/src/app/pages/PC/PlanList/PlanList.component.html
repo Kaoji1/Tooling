@@ -3,16 +3,46 @@
 
   <div class="content-area">
 
-    <h2 class="mb-4">PC Plan List</h2>
+    <div>
+      <div class="header">
+        <h4>Plan List</h4>
+      </div>
+      <p>PC Plan List</p>
+    </div>
+
+    <div class="view-tabs" style="display: flex; gap: 8px; margin-bottom: 16px;">
+      <button class="view-tab" [class.active]="viewMode === 'monthly'" (click)="setViewMode('monthly')">
+        Monthly
+      </button>
+      <button class="view-tab" [class.active]="viewMode === 'upcoming'" (click)="setViewMode('upcoming')">
+        Upcoming
+      </button>
+      <button class="view-tab" [class.active]="viewMode === 'engineer'" (click)="setViewMode('engineer')">
+        Engineer
+      </button>
+      <button class="view-tab" [class.active]="viewMode === 'qc'" (click)="setViewMode('qc')">
+        QC
+      </button>
+    </div>
 
     <div class="filter-section">
 
-      <div class="filter-group">
+      <div class="filter-group date-filter">
         <label>Date</label>
-        <p-calendar [(ngModel)]="filterDate" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="dd/mm/yyyy"
-          (onSelect)="applyFilter()" (onInput)="applyFilter()" [showButtonBar]="true" appendTo="body"
-          [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}">
-        </p-calendar>
+        <div class="date-input-wrapper">
+          <mat-form-field appearance="outline" style="width: 100%;" subscriptSizing="dynamic">
+            <input matInput [matDatepicker]="picker" [(ngModel)]="filterDate" placeholder="DD/MM/YYYY"
+              (dateChange)="applyFilter()" (click)="picker.open()" readonly>
+            <button *ngIf="filterDate" matSuffix mat-icon-button aria-label="Clear"
+              (click)="clearDate(null); $event.stopPropagation()"
+              style="width: 24px; height: 24px; line-height: 24px; padding: 0; margin-right: 4px; border: none; background: transparent; cursor: pointer;">
+              <i class="bi bi-x-circle-fill" style="color: #ef4444; font-size: 16px;"></i>
+            </button>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+          <button class="btn-today" (click)="setToday(null)">Today</button>
+        </div>
       </div>
 
       <div class="filter-group">
@@ -43,17 +73,17 @@
       <table>
         <thead>
           <tr>
-            <th>Plan Date (dd/mm/yyyy)</th>
-            <th>Rev</th> <!-- New Column -->
-            <th>Status</th> <!-- New Column -->
+            <th style="width: 150px;">Plan Date</th>
+            <th class="col-no">Rev</th> <!-- New Column -->
+            <th style="width: 120px;">Status</th> <!-- New Column -->
             <th>MC Type</th>
             <th>Division</th>
             <th>Fac</th>
             <th>Process</th>
             <th>Part Before</th>
             <th>MC No.</th>
-            <th>Part No.</th>
-            <th>QTY</th>
+            <th class="col-part">Part No.</th>
+            <th class="col-qty">QTY</th>
             <th>Time</th>
             <th>Comment</th>
             <th>Path Dwg</th>

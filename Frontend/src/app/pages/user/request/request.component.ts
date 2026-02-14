@@ -10,7 +10,22 @@ import { CartService } from '../../../core/services/cart.service';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import { CalendarModule } from 'primeng/calendar';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
+import { CustomDateAdapter } from '../../../core/utils/custom-date-adapter';
+
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 @Component({
   selector: 'app-request',
@@ -22,9 +37,15 @@ import { CalendarModule } from 'primeng/calendar';
     FormsModule,
     NgSelectModule,
     NotificationComponent,
-    CalendarModule
+    MatDatepickerModule,
+    MatInputModule,
+    MatNativeDateModule
   ],
-  providers: [DatePipe],
+  providers: [
+    DatePipe,
+    { provide: DateAdapter, useClass: CustomDateAdapter },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
+  ],
   templateUrl: './request.component.html',
   styleUrl: './request.component.scss'
 })
@@ -799,7 +820,7 @@ export class requestComponent implements OnInit {
           hideClass: { popup: 'animate__animated animate__fadeOutDown animate__faster' }
         });
 
-        this.Clearall();
+        this.resetAfterSubmit();
       },
       error: (err) => {
         this.loading = false;
@@ -818,6 +839,30 @@ export class requestComponent implements OnInit {
         });
       }
     });
+  }
+
+  // ✅ New Logic: Reset only transaction data, keep headers
+  resetAfterSubmit() {
+    // Keep: Tooling_, Div_, Fac_, phone_, Case_
+
+    // Clear dependent dropdowns & inputs
+    this.DueDate_ = null;
+    this.PartNo_ = null;
+    this.Spec_ = null;
+    this.MachineType_ = null;
+    this.Process_ = null;
+    this.MCNo_ = '';
+    this.ItemNo_ = null;
+    this.PathDwg_ = null;
+
+    // Clear items/search results
+    this.items = [];
+    this.relatedSetupItems = [];
+    this.isSearched = false;
+    this.loading = false; // Ensure loading is off
+
+    // Save state (so headers persist on refresh)
+    this.saveState();
   }
 
   // function clearall

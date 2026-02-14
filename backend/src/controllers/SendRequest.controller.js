@@ -136,6 +136,35 @@ exports.Send_Request = async (req, res) => {
       });
     }
 
+    // === Notification Trigger ===
+    try {
+      const io = req.app.get('socketio');
+      const firstItem = items[0];
+      const notifyMsg = `New Request: ${firstItem.Doc_no} (${firstItem.Division}) - ${items.length} Items`;
+
+      // 1. Save to DB
+      await pool.request()
+        .input('Event_Type', sql.NVarChar, 'NEW_REQUEST')
+        .input('Message', sql.NVarChar, notifyMsg)
+        .input('Doc_No', sql.NVarChar, firstItem.Doc_no)
+        .input('Action_By', sql.NVarChar, firstItem.Employee_Name || 'System')
+        .execute('trans.Stored_Insert_Notification_Log');
+
+      // 2. Emit Real-time Event
+      if (io) {
+        io.emit('notification', {
+          type: 'NEW_REQUEST',
+          message: notifyMsg,
+          docNo: firstItem.Doc_no,
+          timestamp: new Date()
+        });
+        console.log('socket.io emit notification success');
+      }
+    } catch (notifError) {
+      console.error('Notification Trigger Failed:', notifError);
+      // Don't block the main response
+    }
+
     res.status(200).json({ message: " All rows have been successfully saved." });
 
   } catch (error) {
