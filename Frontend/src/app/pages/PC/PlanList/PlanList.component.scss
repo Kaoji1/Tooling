@@ -317,6 +317,33 @@ p {
                     &.text-center {
                         text-align: center;
                     }
+
+                    // Ref No (Batch ID) Style
+                    .date-wrapper {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+
+                        .plan-date {
+                            font-weight: 500;
+                        }
+
+                        .ref-no {
+                            font-size: 0.65rem;
+                            color: #3b82f6; // Blue 500
+                            background: #eff6ff; // Blue 50
+                            padding: 1px 6px;
+                            border-radius: 4px;
+                            margin-top: 2px;
+                            font-weight: 500;
+                            white-space: nowrap;
+                            max-width: 140px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            display: inline-block;
+                            border: 1px solid #dbeafe;
+                        }
+                    }
                 }
             }
         }

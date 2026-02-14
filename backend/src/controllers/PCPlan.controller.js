@@ -110,10 +110,18 @@ exports.insertPCPlan = async (req, res) => {
         // ตรวจสอบ PlanDate เพื่อใช้ในการ Snapshot (สมมติว่าเป็นเดือนเดียวกันหมด)
         const sampleDate = items[0].date;
 
+        // Generate Readable Batch ID (Plan ID) for this Transaction
+        // Format: PLAN-{Division}-{YYMMDD}-{HHmm}
+        // Example: PLAN-71DZ-260214-0930
+        const dateObj = new Date();
+        const yymmdd = dateObj.toISOString().slice(2, 10).replace(/-/g, ''); // 260214
+        const hhmm = dateObj.toTimeString().slice(0, 5).replace(/:/g, '');   // 0930
+        const batchId = `PLAN-${division}-${yymmdd}-${hhmm}`;
+
         // ============================================
         // ALL DIVISIONS LOGIC: SNAPSHOT REVISON
         // ============================================
-        console.log(`Processing Snapshot for Div: ${division}, Date: ${sampleDate}`);
+        console.log(`Processing Snapshot for Div: ${division}, Date: ${sampleDate}, BatchID: ${batchId}`);
 
         // Prepare JSON Data
         const jsonItems = items.map(item => {
@@ -139,7 +147,8 @@ exports.insertPCPlan = async (req, res) => {
                 Time: parseInt(item.time) || 0,
                 Comment: item.comment || '',
                 PlanStatus: status,
-                GroupId: item.groupId || null, // Send GroupId if available
+                // If item has no GroupId (New), assign the BatchId. If editing, keep existing.
+                GroupId: item.groupId || batchId,
                 Path_Dwg: item.pathDwg || null,
                 Path_Layout: item.pathLayout || null,
                 Path_IIQC: item.iiqc || null
@@ -158,13 +167,14 @@ exports.insertPCPlan = async (req, res) => {
         // === Notification Trigger ===
         try {
             const io = req.app.get('socketio');
-            const notifyMsg = `New Plan: ${division} (Qty: ${items.length})`;
+            // Use the BatchID in the message for specificity
+            const notifyMsg = `New Plan: ${batchId} (Qty: ${items.length})`;
 
             // 1. Save to DB
             await pool.request()
                 .input('Event_Type', sql.NVarChar, 'NEW_PLAN')
                 .input('Message', sql.NVarChar, notifyMsg)
-                .input('Doc_No', sql.NVarChar, division) // Using Division as DocRef for now
+                .input('Doc_No', sql.NVarChar, batchId) // Use BatchID as Doc Ref
                 .input('Action_By', sql.NVarChar, 'PC') // Todo: Get from req.user
                 .execute('trans.Stored_Insert_Notification_Log');
 
@@ -173,6 +183,7 @@ exports.insertPCPlan = async (req, res) => {
                 io.emit('notification', {
                     type: 'NEW_PLAN',
                     message: notifyMsg,
+                    docNo: batchId, // Send DocNo for frontend popup
                     timestamp: new Date()
                 });
                 console.log(`[Notification] Emitted: ${notifyMsg}`);

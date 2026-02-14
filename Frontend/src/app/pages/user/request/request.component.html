@@ -114,8 +114,15 @@
 
           <div class="group-select" style="flex: 1; min-width: 150px;">
             <label for="MCQTY">MC No</label>
-            <input type="text" pattern="[0-9,]*" class="form-control" placeholder="MC No" id="MCQTY"
-              [(ngModel)]="MCNo_" />
+            <div class="tag-input-container" (click)="tagInput.focus()">
+              <div class="tag-chip" *ngFor="let tag of mcTags; let i = index" [ngClass]="getTagClass(i)">
+                {{ tag }}
+                <span class="remove-tag" (click)="removeMCTag(i)">&times;</span>
+              </div>
+              <input type="text" #tagInput class="tag-input" placeholder="Type & Enter..."
+                (keydown)="addMCTag($event)" />
+            </div>
+            <div class="helper-text">Ex : 32 (Space), 43</div>
           </div>
 
           <div class="group-select" *ngIf="Case_ && Case_ !== 'SET'" style="flex: 1; min-width: 150px;">

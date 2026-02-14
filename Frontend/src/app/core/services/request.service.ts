@@ -153,6 +153,11 @@ export class RequestService {
     return this.httpClient.post(`${this.baseUrl}/get_MC_ByDivision`, data);
   }
 
+  // Add Request Tooling (Submit)
+  add_Request_Tooling(data: any): Observable<any> {
+    return this.httpClient.post(`${this.baseUrl}/add_Request_Tooling`, data);
+  }
+
   clearCache() {
     this.divisionCache$ = null;
     this.cache.clear();

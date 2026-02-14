@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core'; // Restored
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
-import { CommonModule, DatePipe } from '@angular/common'; // Added DatePipe
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
@@ -14,6 +14,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { CustomDateAdapter } from '../../../core/utils/custom-date-adapter';
+import { forkJoin, of } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -92,7 +94,8 @@ export class requestComponent implements OnInit {
   DueDate_: Date | null = null;
   today_: Date = new Date();
   InputDate_: string = '';
-  MCNo_: string = '';
+  MCNo_: string = ''; // Keep for backward compatibility or direct binding if needed, but mainly use mcTags
+  mcTags: string[] = []; // Store MC No tags
 
   // Table data
   items: any = []; // array เก่าวแปรสำหรับเก็บรายการข้อมูล (items) ที่มีอยู่แล้ว
@@ -170,7 +173,8 @@ export class requestComponent implements OnInit {
       PartNo: this.PartNo,
       Process: this.Process,
       MachineType: this.MachineType,
-      ItemNoList: this.ItemNoList
+      ItemNoList: this.ItemNoList,
+      mcTags: this.mcTags // Save tags
     };
     this.api.saveRequestState(state);
   }
@@ -201,6 +205,7 @@ export class requestComponent implements OnInit {
       this.Process = state.Process || [];
       this.MachineType = state.MachineType || [];
       this.ItemNoList = state.ItemNoList || [];
+      this.mcTags = state.mcTags || []; // Restore tags
     }
   }
 
@@ -453,12 +458,229 @@ export class requestComponent implements OnInit {
     // เรียก API ดึง MC ทั้งหมดใน Division นี้
     this.api.get_MC_ByDivision({ Division: divisionId }).subscribe({
       next: (response: any[]) => {
-        this.MachineType = response.map(m => ({
-          MC: m.MC
-        }));
+        // Did you mean to assign response to something? 
+        // Based on previous code, this was likely intended to populate MachineType or similar, 
+        // but the previous snapshot showed it commented out or empty next block.
+        // Assuming we just log it or maybe it's not used yet?
+        // Ah, looking at the previous file content, it was:
+        // this.MachineType = response.map(...)
+        // But in the snapshot I saw, lines 459-461 were messed up with 'error: (e)...' appearing inside next?
+        // Let's fix the structure.
+        this.MachineType = response.map(m => ({ MC: m.MC }));
         console.log('🔵 MC by Division loaded:', this.MachineType.length, 'items');
       },
-      error: (e) => console.error('get_MC_ByDivision Error:', e)
+      error: (e: any) => console.error('get_MC_ByDivision Error:', e)
+    });
+  }
+
+  async onSubmit() {
+    // 1. ตรวจสอบข้อมูล Header
+    const Division = this.Div_?.Division || this.Div_;
+    const FacilityName = this.Fac_
+      ? (typeof this.Fac_ === 'string' ? this.Fac_ : this.Fac_.FacilityShort)
+      : '';
+    const PartNo = this.PartNo_?.PartNo || this.PartNo_;
+    const Process = this.Process_?.Process || this.Process_;
+    const Case_ = this.Case_;
+
+    // Check if fields are missing (Reuse logic if needed, but for submit we double check)
+    // Actually items won't be in the list if search failed, but let's be safe.
+    if (!Division || !FacilityName || !PartNo || !Process || !Case_) {
+      Swal.fire('Error', 'Please fill in all Header fields.', 'warning');
+      return;
+    }
+
+    // 2. รวบรวม Item ที่ Checked
+    const cuttingItems = this.items.filter((i: any) => i.checked);
+    const setupItems = this.relatedSetupItems.filter((i: any) => i.checked);
+    const allItems = [...cuttingItems, ...setupItems];
+
+    if (allItems.length === 0) {
+      Swal.fire('No Items Selected', 'Please select at least one item.', 'warning');
+      return;
+    }
+
+    // 3. Prepare Premium "Bill" Html
+    let billHtml = `
+      <div style="text-align: left; font-family: 'Kanit', sans-serif; color: #334155; max-height: 400px; overflow-y: auto; padding-right: 5px;">
+        
+        <!-- Header Info -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; font-size: 0.9rem; background: #f8fafc; padding: 10px; border-radius: 8px;">
+           <div><small style="color:#94a3b8;">CASE</small><br><strong>${Case_}</strong></div>
+           <div><small style="color:#94a3b8;">DIVISION</small><br><strong>${Division}</strong></div>
+           <div><small style="color:#94a3b8;">FACTORY</small><br><strong>${FacilityName}</strong></div>
+           <div style="text-align:right;"><small style="color:#94a3b8;">TOTAL ITEMS</small><br><strong style="color:#2563eb; font-size:1.1rem;">${allItems.length}</strong></div>
+        </div>
+
+    `;
+
+    // --- Cutting Tool Section ---
+    if (cuttingItems.length > 0) {
+      billHtml += `
+        <div style="margin-bottom: 15px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px; color:#475569;">
+            <i class="bi bi-tools" style="color:#64748b;"></i>
+            <strong style="font-size:0.95rem;">Cutting Tool</strong>
+            <span style="font-size:0.8rem; background:#e2e8f0; padding:1px 6px; border-radius:4px;">${cuttingItems.length}</span>
+          </div>
+          <table style="width:100%; font-size:0.85rem; border-collapse:collapse;">
+            <tr style="border-bottom:1px solid #e2e8f0; color:#94a3b8; font-size:0.75rem;">
+              <th style="text-align:left; padding:4px 0;">Item Name (Spec)</th>
+              <th style="text-align:right; padding:4px 0;">Qty</th>
+            </tr>
+      `;
+      cuttingItems.forEach((item: any) => {
+        billHtml += `
+           <tr style="border-bottom:1px dashed #f1f5f9;">
+             <td style="padding:6px 0;">
+               <div style="font-weight:500;">${item.ItemName || item.ItemNo}</div>
+               <div style="font-size:0.75rem; color:#94a3b8;">${item.SPEC || '-'}</div>
+             </td>
+             <td style="text-align:right; font-weight:600; padding:6px 0;">${item.QTY}</td>
+           </tr>
+         `;
+      });
+      billHtml += `</table></div>`;
+    }
+
+    // --- Setup Tool Section ---
+    if (setupItems.length > 0) {
+      billHtml += `
+        <div style="margin-bottom: 10px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px; color:#475569;">
+            <i class="bi bi-gear" style="color:#64748b;"></i>
+            <strong style="font-size:0.95rem;">Setup Tool</strong>
+            <span style="font-size:0.8rem; background:#e2e8f0; padding:1px 6px; border-radius:4px;">${setupItems.length}</span>
+          </div>
+          <table style="width:100%; font-size:0.85rem; border-collapse:collapse;">
+            <tr style="border-bottom:1px solid #e2e8f0; color:#94a3b8; font-size:0.75rem;">
+              <th style="text-align:left; padding:4px 0;">Item Name (Spec)</th>
+              <th style="text-align:right; padding:4px 0;">Qty</th>
+            </tr>
+      `;
+      setupItems.forEach((item: any) => {
+        billHtml += `
+           <tr style="border-bottom:1px dashed #f1f5f9;">
+             <td style="padding:6px 0;">
+               <div style="font-weight:500;">${item.ItemName || item.ItemNo}</div>
+               <div style="font-size:0.75rem; color:#94a3b8;">${item.SPEC || '-'}</div>
+             </td>
+             <td style="text-align:right; font-weight:600; padding:6px 0;">${item.QTY}</td>
+           </tr>
+         `;
+      });
+      billHtml += `</table></div>`;
+    }
+
+    billHtml += `</div>`; // Close Main Div
+
+    // 4. Show Confirmation
+    const result = await Swal.fire({
+      title: '<span style="font-family: Kanit; font-weight: 700; color: #1e293b; font-size: 1.5rem;">Confirm Request</span>',
+      html: billHtml,
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Submit',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#3b82f6',
+      cancelButtonColor: '#94a3b8',
+      width: 500,
+      customClass: {
+        popup: 'swal-premium-popup-minimal',
+        confirmButton: 'swal-premium-btn-primary',
+        cancelButton: 'swal-premium-btn-secondary'
+      },
+      backdrop: `rgba(15, 23, 42, 0.6)`
+    });
+
+    if (!result.isConfirmed) return;
+
+    // 5. Show Loading
+    Swal.fire({
+      title: '',
+      html: '<div style="font-family: Kanit; margin-top: 10px;">Submitting your request...</div>',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+      customClass: { popup: 'swal-premium-popup-minimal' }
+    });
+
+    // 6. Execute Submit
+    this.submitItemsOneByOne(allItems, Division, FacilityName, PartNo, Process);
+  }
+
+  // แยก Logic Save ออกมาเพื่อความสะอาด
+  submitItemsOneByOne(
+    items: any[],
+    Division: string,
+    FacilityName: string,
+    PartNo: string,
+    Process: string
+  ): void {
+    let completedCount = 0;
+    let errorCount = 0;
+    const total = items.length;
+
+    // TODO: Consider sending BULK API instead of loop for atomic transaction
+    // But for now, keeping existing loop structure as requested/existing pattern.
+    // If user wants BULK later, we switch.
+
+    // Create an array of observables
+    const requests = items.map(item => {
+      const payload = {
+        Division: Division,
+        Facility: FacilityName,
+        Process: Process,
+        Part_No: PartNo,
+        ItemNo: item.ItemNo, // Ensure this maps to DB column
+        ItemName: item.ItemName || item.Cutting_Name || item.Setup_Name,
+        Spec: item.SPEC || item.Spec,
+        QTY: item.QTY,
+        Unit: item.Unit || 'pcs', // Default unit
+        Requester: 'Guest', // Todo: Get from Session
+        Remark: item.Remark || '',
+        MC_No: this.MCNo_ || '', // Use the bound MCNo
+        Ref_No: 'REQ-' + Date.now() // Simple Ref
+      };
+
+      return this.api.add_Request_Tooling(payload).pipe(
+        tap({
+          next: (res: any) => completedCount++,
+          error: (err: any) => {
+            console.error('Request Item Error:', err);
+            errorCount++;
+          }
+        }),
+        catchError((err: any) => of(null)) // Prevent chain breaking
+      );
+    });
+
+    // Execute All
+    forkJoin(requests).subscribe({
+      next: () => {
+        // Success Dialog (Premium)
+        Swal.fire({
+          title: '<span style="color:#059669; font-family: Kanit; font-weight: 700; font-size: 1.8rem;">Request Submitted!</span>',
+          html: `
+                 <div style="font-family: Kanit; color: #475569; margin-top: 10px;">
+                   <p style="font-size: 1.1rem;">Successfully submitted <strong>${completedCount}</strong> items.</p>
+                   ${errorCount > 0 ? `<p style="color:#ef4444; font-size:0.9rem;">(Failed: ${errorCount})</p>` : ''}
+                 </div>
+               `,
+          showConfirmButton: true,
+          confirmButtonText: 'Great!',
+          confirmButtonColor: '#10b981',
+          customClass: {
+            popup: 'swal-premium-popup-minimal',
+            confirmButton: 'swal-premium-btn-success'
+          },
+          backdrop: `rgba(15, 23, 42, 0.4)`
+        });
+
+        // Reset Form
+        this.resetAfterSubmit();
+      },
+      error: (err: any) => {
+        console.error('Submit Error:', err);
+      }
     });
   }
 
@@ -605,6 +827,41 @@ export class requestComponent implements OnInit {
     const setupChecked = (this.relatedSetupItems || []).filter((item: any) => item.checked).length;
     return mainChecked + setupChecked;
   }
+
+  // ==========================================
+  //    MC No Tag Input Logic
+  // ==========================================
+  addMCTag(event: any) {
+    const input = event.target;
+    const value = input.value.trim();
+
+    // Check if Enter or Space was pressed
+    if ((event.key === 'Enter' || event.key === ' ') && value) {
+      event.preventDefault(); // Prevent form submission or extra space
+
+      if (value) {
+        this.mcTags.push(value);
+        input.value = ''; // Clear input
+        this.saveState();
+      }
+    } else if (event.key === 'Backspace' && !value && this.mcTags.length > 0) {
+      // Remove last tag if backspace pressed on empty input
+      this.mcTags.pop();
+      this.saveState();
+    }
+  }
+
+  removeMCTag(index: number) {
+    this.mcTags.splice(index, 1);
+    this.saveState();
+  }
+
+  // Helper to get alternating colors for tags
+  getTagClass(index: number): string {
+    const classes = ['tag-blue', 'tag-green', 'tag-purple', 'tag-orange'];
+    return classes[index % classes.length];
+  }
+
   // ========================================
   //   Submit Request (Direct Insert)
   // ========================================
@@ -685,7 +942,7 @@ export class requestComponent implements OnInit {
         Req_QTY: item.QTY,
         DueDate: formattedDate,
         Status: 'Waiting',
-        MCNo: this.MCNo_,
+        MCNo: this.mcTags.length > 0 ? this.mcTags.join(',') : this.MCNo_, // Join tags or use input
         PathDwg: toolType === 'CuttingTool' ? this.PathDwg_ : null,
         ON_HAND: item.ON_HAND,
         PhoneNo: this.phone_,

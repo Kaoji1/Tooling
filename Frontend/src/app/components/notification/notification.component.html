@@ -24,7 +24,8 @@
         <p>No notifications yet</p>
       </div>
 
-      <div class="notification-item" *ngFor="let item of notifications$ | async" [class.unread]="!item.IsRead">
+      <div class="notification-item" *ngFor="let item of notifications$ | async" [class.unread]="!item.IsRead"
+        (click)="openDetail(item)">
         <div class="icon-wrapper" [ngClass]="{
                     'new-plan': item.Event_Type === 'NEW_PLAN',
                     'cancel-plan': item.Event_Type === 'CANCEL_PLAN'
@@ -37,6 +38,40 @@
           <p class="message">{{ item.Message }}</p>
           <span class="time">{{ item.Created_At | date:'dd/MM/yy HH:mm' }}</span>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Letter View Popup Overlay -->
+  <div class="letter-overlay" *ngIf="selectedNotification" (click)="closeDetail()">
+    <div class="letter-paper" (click)="$event.stopPropagation()">
+      <button class="close-btn" (click)="closeDetail()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <div class="letter-header">
+        <div class="stamp">
+          <i class="bi bi-envelope-paper-heart-fill"></i>
+        </div>
+        <div class="meta">
+          <h3>Notification</h3>
+          <span class="date">{{ selectedNotification.Created_At | date:'fullDate' }}</span>
+          <span class="time">{{ selectedNotification.Created_At | date:'shortTime' }}</span>
+        </div>
+      </div>
+
+      <div class="letter-body">
+        <h4 class="subject">{{ selectedNotification.Event_Type | titlecase }}</h4>
+        <p class="content">{{ selectedNotification.Message }}</p>
+
+        <div class="doc-ref" *ngIf="selectedNotification.Doc_No">
+          Reference: <strong>{{ selectedNotification.Doc_No }}</strong>
+        </div>
+      </div>
+
+      <div class="letter-footer">
+        <img src="assets/images/logo.png" alt="MinebeaMitsumi" class="logo-sign" onerror="this.style.display='none'">
+        <p>System Generated Notification</p>
       </div>
     </div>
   </div>

@@ -13,6 +13,7 @@ import { Observable } from 'rxjs';
 })
 export class NotificationComponent implements OnInit {
   isOpen = false;
+  selectedNotification: NotificationLog | null = null; // State for Popup
   unreadCount$: Observable<number>;
   notifications$: Observable<NotificationLog[]>;
 
@@ -28,14 +29,23 @@ export class NotificationComponent implements OnInit {
 
   togglePanel() {
     this.isOpen = !this.isOpen;
-    if (this.isOpen) {
-      // When opening, we might want to mark as read, or wait for user to click individual items
-      // For now, let's keep them unread until user clicks "Mark all as read" or similar
-    }
   }
 
   markAllRead() {
-    this.notificationService.markAsRead();
+    this.notificationService.markAllReadLocal();
+  }
+
+  openDetail(item: NotificationLog) {
+    this.selectedNotification = item;
+
+    // Auto mark as read when opened
+    if (!item.IsRead && item.Notification_ID) {
+      this.notificationService.markAsRead(item.Notification_ID);
+    }
+  }
+
+  closeDetail() {
+    this.selectedNotification = null;
   }
 
   // Close when clicking outside

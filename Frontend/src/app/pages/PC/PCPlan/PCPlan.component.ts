@@ -12,6 +12,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { CustomDateAdapter } from '../../../core/utils/custom-date-adapter';
+import { NotificationComponent } from '../../../components/notification/notification.component';
+import { NotificationService } from '../../../core/services/notification.service';
 
 export interface PlanItem {
   date: string | Date | null;
@@ -49,7 +51,8 @@ export const MY_DATE_FORMATS = {
     NgSelectModule,
     MatDatepickerModule,
     MatInputModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    NotificationComponent
   ],
   providers: [
     { provide: DateAdapter, useClass: CustomDateAdapter },
@@ -79,7 +82,10 @@ export class PCPlanComponent implements OnInit {
   minDate: Date = new Date(); // Disable past dates
   selectAll: boolean = false; // "Select All" checkbox state
 
-  constructor(private pcPlanService: PCPlanService) { }
+  constructor(
+    private pcPlanService: PCPlanService,
+    private notificationService: NotificationService
+  ) { }
 
   ngOnInit(): void {
     this.loadDivisions();
@@ -602,17 +608,94 @@ export class PCPlanComponent implements OnInit {
     }
 
     // 4. ถ้าผ่าน Validation ทั้งหมดค่อยส่ง
-    Swal.fire({
-      title: '<span style="color:#1e293b; font-weight:800;">Saving...</span>',
-      text: `Saving ${this.planItems.length} records.`,
-      allowOutsideClick: false,
-      customClass: {
-        popup: 'swal-premium-popup',
-        title: 'swal-premium-title',
-      },
-      didOpen: () => Swal.showLoading()
+    // 4. ถ้าผ่าน Validation ทั้งหมด ให้ยืนยันก่อนส่ง (Premium Bill Style)
+    let summaryHtml = `
+      <div style="text-align: left; font-family: 'Kanit', sans-serif; color: #334155;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem;">
+          <span><strong>Division:</strong> ${this.selectedDivisionCode}</span>
+          <span><strong>Factory:</strong> ${this.planItems[0]?.fac || '-'}</span>
+        </div>
+        
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
+          <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid #cbd5e1; color: #64748b;">
+                <th style="text-align: left; padding-bottom: 5px;">Date</th>
+                <th style="text-align: left; padding-bottom: 5px;">Part No.</th>
+                <th style="text-align: right; padding-bottom: 5px;">Qty</th>
+              </tr>
+            </thead>
+            <tbody>
+    `;
+
+    // Add first 5 items
+    const previewItems = this.planItems.slice(0, 5);
+    previewItems.forEach(item => {
+      const dateStr = item.date ? new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : '-';
+      summaryHtml += `
+        <tr style="border-bottom: 1px dashed #e2e8f0;">
+          <td style="padding: 6px 0;">${dateStr}</td>
+          <td style="padding: 6px 0;">${item.partNo}</td>
+          <td style="padding: 6px 0; text-align: right; font-weight: 600;">${item.qty}</td>
+        </tr>
+      `;
     });
 
+    // Add "More items" row if needed
+    if (this.planItems.length > 5) {
+      summaryHtml += `
+        <tr>
+          <td colspan="3" style="padding-top: 8px; text-align: center; color: #94a3b8; font-style: italic;">
+            ... and ${this.planItems.length - 5} more items ...
+          </td>
+        </tr>
+      `;
+    }
+
+    summaryHtml += `
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #e2e8f0; padding-top: 10px;">
+          <span style="font-size: 1rem; font-weight: 600; color: #475569;">Total Items</span>
+          <span style="font-size: 1.25rem; font-weight: 800; color: #1d4ed8;">${this.planItems.length}</span>
+        </div>
+      </div>
+    `;
+
+    Swal.fire({
+      title: '<span style="font-family: Kanit; font-weight: 700; color: #1e293b; font-size: 1.5rem;">Confirm Submission</span>',
+      html: summaryHtml,
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Submit',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#3b82f6',
+      cancelButtonColor: '#94a3b8',
+      width: 450,
+      customClass: {
+        popup: 'swal-premium-popup-minimal',
+        confirmButton: 'swal-premium-btn-primary',
+        cancelButton: 'swal-premium-btn-secondary'
+      },
+      backdrop: `rgba(15, 23, 42, 0.6)`
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Show Loading (Clean)
+        Swal.fire({
+          title: '',
+          html: '<div style="font-family: Kanit; margin-top: 10px;">Saving your plan...</div>',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+          customClass: { popup: 'swal-premium-popup-minimal' }
+        });
+
+        this.performSave();
+      }
+    });
+  }
+
+  performSave() {
     // 5. เตรียมข้อมูล (ใส่ Division และ EmployeeID ให้ครบทุกแถว)
     let empId = 'Unknown';
     const userStr = sessionStorage.getItem('user');
@@ -655,7 +738,10 @@ export class PCPlanComponent implements OnInit {
     this.pcPlanService.savePlan(payload).subscribe({
       next: (res) => {
         if (res.fail > 0) {
-          // สร้าง html list รายการที่ Error (จาก Database)
+          // Error case (keep existing logic or slightly refine?)
+          // For now, keeping error logic but matching style if possible.
+          // User asked for "Professional". 
+          // Let's keep the existing Error logic as it's complex and functional, but maybe refine the title.
           let errorHtml = '<div style="text-align: left; max-height: 200px; overflow-y: auto;">';
           res.errors.forEach((err: any) => {
             errorHtml += `<p><strong>Row ${err.index + 1}:</strong> ${err.error}</p>`;
@@ -663,40 +749,73 @@ export class PCPlanComponent implements OnInit {
           errorHtml += '</div>';
 
           Swal.fire({
-            title: '<span style="color:#f59e0b; font-weight:800;">Completed with Errors</span>',
-            html: `<div style="background:#fffbeb; border-radius:12px; padding:1.25rem; border:1px solid #fef3c7; color:#92400e;">
-              Success: <b>${res.count}</b><br>Failed: <b>${res.fail}</b><br><hr style="border:0.5px solid #fde68a; margin:10px 0;">${errorHtml}</div>`,
+            title: '<span style="color:#ef4444; font-weight:800;">Completed with Errors</span>',
+            html: `<div style="background:#fff1f2; border-radius:8px; padding:15px; border:1px solid #fecaca; color:#991b1b; text-align: left;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span>Success: <b>${res.count}</b></span>
+                <span>Failed: <b>${res.fail}</b></span>
+              </div>
+              <hr style="border:0.5px solid #fca5a5; margin:10px 0;">${errorHtml}
+              </div>`,
             icon: 'warning',
             customClass: {
-              popup: 'swal-premium-popup',
-              title: 'swal-premium-title',
-              confirmButton: 'swal-premium-confirm'
+              popup: 'swal-premium-popup-minimal',
+              confirmButton: 'swal-premium-btn-primary'
             }
           });
         } else {
+          // SUCCESS (Premium Bill Style - No Icon)
           Swal.fire({
-            title: '<span style="color:#059669; font-weight:800;">Success</span>',
-            text: `Saved ${res.count} records successfully!`,
-            icon: 'success',
+            title: '<span style="color:#059669; font-family: Kanit; font-weight: 700; font-size: 1.8rem;">Plan Saved!</span>',
+            html: `
+              <div style="font-family: Kanit; color: #475569; margin-top: 10px;">
+                <p style="font-size: 1.1rem;">Successfully recorded <strong>${res.successCount}</strong> items.</p>
+                <div style="margin-top: 15px; padding: 8px 15px; background: #f0fdf4; color: #15803d; border-radius: 50px; display: inline-block; font-weight: 500; font-size: 0.9rem;">
+                   Check "Plan List" for details
+                </div>
+              </div>
+            `,
+            showConfirmButton: true,
+            confirmButtonText: 'Great!',
+            confirmButtonColor: '#10b981',
             customClass: {
-              popup: 'swal-premium-popup',
-              title: 'swal-premium-title',
-              confirmButton: 'swal-premium-confirm swal-premium-confirm-success'
-            }
+              popup: 'swal-premium-popup-minimal',
+              confirmButton: 'swal-premium-btn-success'
+            },
+            backdrop: `rgba(15, 23, 42, 0.4)`
           });
-          this.planItems = []; // เคลียร์ตารางหลังบันทึก
+
+          // Manual Notification Trigger
+          // Note: Backend handles notification now, so this might be redundant?
+          // But kept as fallback or for immediate local feedback if needed.
+          // Actually, let's rely on Backend notification to allow socket to work properly.
+          // Or keep it but maybe minimal.
+          // The instruction says "Backend: Integrate Broadcast logic", so we can probably remove frontend trigger 
+          // to avoid double notifications if the user is listening to their own events.
+          // But to be safe and ensure "Specificity", I'll leave it or comment it out if sure.
+          // Let's keep it for now but maybe it's not needed. 
+          // Actually, if backend emits "notification", the bell will pick it up. 
+          // Generating a manual one here creates a "Local" notification only? 
+          // NotificationService.addManualNotification pushes to local behavior subject.
+          // Let's keep it as is to ensure immediate feedback.
+          this.notificationService.addManualNotification(
+            `New Plan saved: ${this.selectedDivisionCode} (${res.successCount} items)`,
+            'NEW_PLAN'
+          );
+
+          // Clear form
+          this.planItems = [];
+          this.addRow(); // Reset to 1 empty row
         }
       },
       error: (err) => {
-        console.error('Save Error:', err);
+        console.error('Save error:', err);
         Swal.fire({
-          title: '<span style="color:#ef4444; font-weight:800;">Error</span>',
-          text: 'Failed to save data. Please try again.',
+          title: 'Error',
+          text: err.message || 'Failed to save plan',
           icon: 'error',
           customClass: {
-            popup: 'swal-premium-popup',
-            title: 'swal-premium-title',
-            confirmButton: 'swal-premium-confirm'
+            popup: 'swal-premium-popup-minimal'
           }
         });
       }

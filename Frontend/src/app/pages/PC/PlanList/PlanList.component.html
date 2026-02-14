@@ -100,7 +100,14 @@
                 'row-complete': (item.pathDwg && item.pathDwg !== '-' && item.pathLayout && item.pathLayout !== '-' && item.iiqc && item.iiqc !== '-'),
                 'row-incomplete': (!item.pathDwg || item.pathDwg === '-' || !item.pathLayout || item.pathLayout === '-' || !item.iiqc || item.iiqc === '-')
               }">
-            <td>{{ item.date }}</td>
+            <td>
+              <div class="date-wrapper">
+                <span class="plan-date">{{ item.date }}</span>
+                <span class="ref-no" *ngIf="item.groupId && item.groupId.startsWith('PLAN-')" title="Reference No.">
+                  {{ item.groupId }}
+                </span>
+              </div>
+            </td>
             <td class="text-center">{{ item.revision }}</td> <!-- New Data -->
             <td class="text-center">
               <span class="badge" [ngClass]="{

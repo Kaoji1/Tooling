@@ -1,7 +1,10 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { io, Socket } from 'socket.io-client';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
+
+import { environment } from '../../../environments/environment';
 
 export interface NotificationLog {
   Notification_ID?: number;
@@ -25,12 +28,44 @@ export class NotificationService {
   private unreadCountSubject = new BehaviorSubject<number>(0);
   public unreadCount$ = this.unreadCountSubject.asObservable();
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private http: HttpClient
+  ) {
     // Connect to Backend Socket.IO only in Browser
     if (isPlatformBrowser(this.platformId)) {
-      this.socket = io('http://localhost:3000');
+      this.socket = io(environment.socketUrl, {
+        transports: ['websocket', 'polling'], // Allow both
+        reconnection: true,
+        reconnectionAttempts: 5
+      });
       this.setupSocketListeners();
+      this.fetchNotifications(); // Load history on init
     }
+  }
+
+  // Fetch initial history from DB
+  public fetchNotifications() {
+    this.http.get<NotificationLog[]>(`${environment.apiUrl}/notifications/list`)
+      .subscribe({
+        next: (data) => {
+          this.notificationsSubject.next(data);
+          this.updateUnreadCount();
+        },
+        error: (err) => console.error('Failed to fetch notifications:', err)
+      });
+  }
+
+  // Allow components to manually add notifications (Fallback/Local feedback)
+  public addManualNotification(message: string, type: string = 'INFO') {
+    const newNotif: NotificationLog = {
+      Event_Type: type,
+      Message: message,
+      Created_At: new Date(),
+      IsRead: false
+    };
+    this.addNotification(newNotif);
+    this.playNotificationSound(); // Optional: Play sound for manual too
   }
 
   private setupSocketListeners() {
@@ -73,7 +108,22 @@ export class NotificationService {
     this.unreadCountSubject.next(count);
   }
 
-  public markAsRead() {
+  public markAsRead(id: number) {
+    // Optimistic Update
+    const current = this.notificationsSubject.value.map(n =>
+      n.Notification_ID === id ? { ...n, IsRead: true } : n
+    );
+    this.notificationsSubject.next(current);
+    this.updateUnreadCount();
+
+    // API Call
+    this.http.put(`${environment.apiUrl}/notifications/read/${id}`, {}).subscribe({
+      error: (err) => console.error('Failed to mark as read:', err)
+    });
+  }
+
+  // Mark all (local only for now, or loop API if needed - usually rarely used if popup is one by one)
+  public markAllReadLocal() {
     const current = this.notificationsSubject.value.map(n => ({ ...n, IsRead: true }));
     this.notificationsSubject.next(current);
     this.updateUnreadCount();

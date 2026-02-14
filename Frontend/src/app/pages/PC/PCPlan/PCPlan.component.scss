@@ -197,12 +197,20 @@
         }
 
         &.col-part {
-          width: 180px;
+          width: 250px;
         }
 
         &.col-qty {
           width: 100px;
           text-align: center;
+        }
+
+        &.col-machine {
+          width: 240px;
+        }
+
+        &.col-process {
+          width: 180px;
         }
       }
     }

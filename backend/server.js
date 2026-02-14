@@ -62,6 +62,11 @@ app.use('/api', Permission);
 app.use('/api', HistoryPrint);
 app.use('/api', MasterPH);
 app.use('/api', Return);
+
+// === Notification Routes === (Using direct controller import)
+const NotificationController = require('./src/controllers/Notification.controller.js');
+app.get('/api/notifications/list', NotificationController.getNotifications);
+app.put('/api/notifications/read/:id', NotificationController.markAsRead);
 // app.use('/api',FileSaver);
 // app.use('/api',ExportToExcel);
 // app.use('/api', updateItem);
