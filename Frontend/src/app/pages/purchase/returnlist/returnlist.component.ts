@@ -52,27 +52,44 @@ export class ReturnlistComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        this.statusList = [
-            { label: 'Pending', value: 'Pending' },
-            { label: 'Confirmed', value: 'Confirmed' },
-            { label: 'Rejected', value: 'Rejected' },
-            // Add more as needed
-        ];
+        if (isPlatformBrowser(this.platformId)) {
+            this.loadReturns();
+        }
+    }
 
-        // In real scenario:
-        // this.loadReturns();
+    loadReturns() {
+        this.returnService.getReturnHistory().subscribe({
+            next: (data) => {
+                this.returns = data;
+                this.populateDropdowns();
+                this.onFilter();
+            },
+            error: (err) => {
+                console.error('Error fetching return list:', err);
+            }
+        });
+    }
+
+    populateDropdowns() {
+        // Extract unique Divisions
+        const divisions = [...new Set(this.returns.map(item => item.Division).filter(d => d))];
+        this.divisionList = divisions.map(d => ({ label: d, value: d }));
+
+        // Extract unique Statuses (if needed, or merge with default)
+        const statuses = [...new Set(this.returns.map(item => item.Status).filter(s => s))];
+        this.statusList = statuses.map(s => ({ label: s, value: s }));
     }
 
     onFilter() {
         this.filteredReturns = this.returns.filter(item => {
-            const matchDivision = !this.Division_ || item.division === this.Division_;
-            const matchStatus = !this.Status_ || item.status === this.Status_;
+            const matchDivision = !this.Division_ || item.Division === this.Division_;
+            const matchStatus = !this.Status_ || item.Status === this.Status_;
 
             let matchDate = true;
             if (this.dateFilter) {
                 const filterDate = new Date(this.dateFilter);
                 filterDate.setHours(0, 0, 0, 0);
-                const itemDate = new Date(item.returnDate);
+                const itemDate = new Date(item.Return_Date);
                 itemDate.setHours(0, 0, 0, 0);
                 matchDate = itemDate.getTime() === filterDate.getTime();
             }

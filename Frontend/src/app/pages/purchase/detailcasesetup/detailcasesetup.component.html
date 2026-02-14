@@ -1,15 +1,353 @@
 <div class="detail-layout">
+
     <app-sidebarpurchase></app-sidebarpurchase>
 
     <div class="main">
+        <!-- Header -->
         <div class="header">
-            <h1>Request List (Case SETUP)</h1>
-            <p>The loan withdrawal request for Case SETUP is here.</p>
+            <h1>Case Setup Request List</h1>
+            <p>The case setup withdrawal request is here.</p>
         </div>
 
-        <div class="table-responsive text-center p-5 text-muted">
-            <h3>Case SETUP Table</h3>
-            <p>This page is currently under construction. Data for Case SETUP will be displayed here.</p>
+
+        <!-- Action Bar (Buttons) -->
+        <div class="action-bar">
+            <!-- Division Filter -->
+            <div class="filter-group-div" style="display: flex; align-items: center; gap: 15px;">
+                <div style="display: flex; align-items: center;">
+                    <label style="margin-right: 10px; font-weight: 600;">Division:</label>
+                    <ng-select [items]="divisionList" bindLabel="label" bindValue="value" [(ngModel)]="Division_"
+                        (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
+                        style="min-width: 180px;">
+                    </ng-select>
+                </div>
+
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="header-actions">
+                <button class="btn btn-secondary btn-sm" (click)="clearFilters()">Clear</button>
+                <button class="btn btn-primary btn-sm" (click)="onFilter()">Filter</button>
+                <button class="btn-export" type="button" (click)="exportexcel()">
+                    EXPORT TO EXCEL
+                </button>
+                <button class="btn-Complete" type="button" (click)="completeSelected()"
+                    [disabled]="isViewer() || isCompleting">
+                    <ng-container *ngIf="!isCompleting; else loadingTpl">
+                        <i class="bi bi-check-circle-fill text-white"></i> Complete
+                    </ng-container>
+                    <ng-template #loadingTpl>
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        Loading...
+                    </ng-template>
+                </button>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-responsive">
+
+            <!-- Cutting Tool Table (If Tooling is Cutting Tool) -->
+            <ng-container *ngIf="Tooling_ === 'Cutting Tool'">
+                <table id="table-data" class="table table-bordered text-center">
+                    <thead>
+                        <tr class="header-group-row">
+                            <th colspan="23" style="text-align: center; color: red; padding: 20px;">
+                                This view is for Cutting Tool. Case Setup data usually belongs to 'Setup Tool'.
+                                If you need Cutting Tool columns here, please request adjustment.
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+            </ng-container>
+
+            <!-- Setup Tool Table (Primary View for Case Setup) -->
+            <ng-container *ngIf="Tooling_ === 'Setup Tool'">
+                <table id="table-setup" class="table table-bordered text-center">
+                    <thead>
+                        <!-- Filter Row -->
+                        <tr class="filter-row">
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <ng-select [items]="MRNoList" bindLabel="label" bindValue="value" [(ngModel)]="MRNo_"
+                                    (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
+                                    class="no-expand" style="min-width: 90px;">
+                                </ng-select>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <input type="date" [(ngModel)]="reqDateFrom" (change)="onFilter()" class="form-control"
+                                    placeholder="Req Date" style="min-width: 90px;">
+                            </td>
+                            <td>
+                                <input type="date" [(ngModel)]="DueDateFilter_" (change)="onFilter()"
+                                    class="form-control" placeholder="Due Date" style="min-width: 90px;">
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <ng-select [items]="PartNoList" bindLabel="label" bindValue="value"
+                                    [(ngModel)]="PartNo_" (change)="onFilter()" placeholder="Select" [clearable]="true"
+                                    appendTo="body" class="no-expand" style="min-width: 80px;">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <ng-select [items]="ProcessList" bindLabel="label" bindValue="value"
+                                    [(ngModel)]="Process_" (change)="onFilter()" placeholder="Select" [clearable]="true"
+                                    appendTo="body" class="no-expand" style="min-width: 80px;">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <ng-select [items]="FacList" bindLabel="label" bindValue="value" [(ngModel)]="Fac_"
+                                    (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
+                                    class="no-expand" style="min-width: 60px;">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <ng-select [items]="MCTypeList" bindLabel="label" bindValue="value"
+                                    [(ngModel)]="MCType_" (change)="onFilter()" placeholder="Select" [clearable]="true"
+                                    appendTo="body" class="no-expand" style="min-width: 70px;">
+                                </ng-select>
+                            </td>
+                            <td></td>
+                            <td>
+                                <ng-select [items]="CaseList" bindLabel="label" bindValue="value" [(ngModel)]="Case_"
+                                    (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
+                                    class="no-expand" style="min-width: 60px;">
+                                </ng-select>
+                            </td>
+                            <td>
+                                <ng-select [items]="ItemNoList" bindLabel="label" bindValue="value"
+                                    [(ngModel)]="ItemNoFilter_" (change)="onFilter()" placeholder="Select"
+                                    [clearable]="true" appendTo="body" class="no-expand" style="min-width: 80px;">
+                                </ng-select>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <ng-select [items]="StatusList" bindLabel="label" bindValue="value"
+                                    [(ngModel)]="Status_" (change)="onFilter()" placeholder="Select" [clearable]="true"
+                                    appendTo="body" class="no-expand" style="min-width: 90px;">
+                                </ng-select>
+                            </td>
+                            <td></td>
+                            <!-- Purchase Columns Filter Placeholders -->
+                            <td colspan="10"></td>
+                        </tr>
+                        <tr class="header-group-row">
+                            <th class="header-production" colspan="23">For Production (Case Setup)</th>
+                            <th class="header-purchase" colspan="10">For Purchase</th>
+                        </tr>
+                        <tr>
+                            <!-- Production Columns -->
+                            <th style="width: 40px;">
+                                <input type="checkbox" [(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"
+                                    [disabled]="isViewer()" />
+                            </th>
+                            <th style="width: 50px;">NO</th>
+                            <th style="min-width: 90px;">M/R No.</th>
+                            <th style="min-width: 120px;">MFGORDER No.</th>
+                            <th style="min-width: 120px;">Document</th>
+                            <th style="min-width: 90px;">Req Date</th>
+                            <th style="min-width: 90px;">Due Date</th>
+                            <th style="min-width: 80px;">Req By</th>
+                            <th style="width: 60px;">Div</th>
+                            <th style="min-width: 120px;">Part NO.</th>
+                            <th style="width: 80px;">Process</th>
+                            <th style="width: 50px;">Fac</th>
+                            <th style="width: 70px;">MC Type</th>
+                            <th style="width: 70px;">MC No</th>
+                            <th style="width: 60px;">Case</th>
+                            <th style="min-width: 120px;">Item NO.</th>
+                            <th style="min-width: 120px;">Item Name</th>
+                            <th style="min-width: 150px;">Spec</th>
+                            <th style="width: 60px;">QTY</th>
+                            <th style="width: 60px;">Total</th>
+                            <th style="width: 70px;">On Hand</th>
+                            <th style="min-width: 90px;">Status</th>
+                            <th style="min-width: 90px;">Phone</th>
+
+                            <!-- Purchase Columns -->
+                            <th style="min-width: 120px;">Item NO.</th>
+                            <th style="min-width: 120px;">Item Name</th>
+                            <th style="min-width: 150px;">Spec</th>
+                            <th style="width: 60px;">QTY</th>
+                            <th style="min-width: 100px;">Mat Lot</th>
+                            <th style="min-width: 100px;">PH Stock Loc</th>
+                            <th style="min-width: 80px;">Stock PD</th>
+                            <th style="min-width: 80px;">PH Stock</th>
+                            <th style="width: 70px;">Confirm</th>
+                            <th style="min-width: 120px;">Remark</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of paginatedItems; let i = index; trackBy: trackByRequestId" [ngClass]="{
+            'editing-row': editingIndex[item.ID_Request] === i,
+            'highlight-row': highlightedRow === i}">
+                            <!-- Checkbox -->
+                            <td><input type="checkbox" [(ngModel)]="item.Selection" [disabled]="isViewer()" /></td>
+
+                            <!-- NO -->
+                            <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+
+                            <!-- M/R No. -->
+                            <td>{{ item.MR_No }}</td>
+                            <td>{{ item.MFGOrderNo }}</td>
+
+                            <!-- Document -->
+                            <td style="white-space: nowrap;">{{ item.DocNo }}</td>
+
+                            <!-- Dates -->
+                            <td>{{ item.DateTime_Record | date:'dd/MM/yyyy'}}</td>
+                            <td>{{ item.DueDate | date:'dd/MM/yyyy'}}</td>
+
+                            <!-- Requester info -->
+                            <td>{{ item.Requester }}</td>
+                            <td>{{ item.Division}}</td>
+                            <td>{{ item.PartNo }}</td>
+                            <td>{{ item.Process }}</td>
+                            <td>{{ item.Fac }}</td>
+                            <td>{{ item.MCType }}</td>
+                            <td>{{ item.MCQTY }}</td>
+                            <td>{{ item.CASE }}</td>
+
+                            <!-- Item NO. -->
+                            <td>{{ item.Req_ItemNo }}</td>
+
+                            <!-- Item Name -->
+                            <td>{{ item.Req_ItemName }}</td>
+
+                            <!-- Spec -->
+                            <td class="spec-column">{{ item.Req_SPEC }}</td>
+
+                            <!-- QTY -->
+                            <td>{{ item.QTY }}</td>
+
+                            <!-- Total -->
+                            <td> - </td>
+
+                            <!-- On Hand -->
+                            <td>{{ item.ON_HAND }}</td>
+
+                            <!-- Status -->
+                            <td>{{ item.Status }}</td>
+
+                            <!-- Phone -->
+                            <td>{{ item.PhoneNo }}</td>
+
+                            <!-- ================= For Purchase ================= -->
+
+                            <!-- Item NO. -->
+                            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
+                                style="cursor: pointer; position: relative;">
+                                <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showItemNoSetup">
+                                    <input [(ngModel)]="item.ItemNo" (change)="onItemNoChange($event, item)"
+                                        (keydown.enter)="stopEdit(item.ID_Request)" (click)="$event.stopPropagation()"
+                                        type="text" class="form-control" style="min-width: 100px;" />
+                                </ng-container>
+                                <ng-template #showItemNoSetup>
+                                    <span style="text-decoration: underline;">
+                                        {{ item.ItemNo }}
+                                    </span>
+                                </ng-template>
+                            </td>
+
+                            <!-- Item Name -->
+                            <td>{{ item.ItemName }}</td>
+
+                            <!-- Spec -->
+                            <td>{{ item.SPEC }}</td>
+
+                            <!-- QTY -->
+                            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
+                                style="cursor: pointer;">
+                                <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showQtySetup">
+                                    <input [(ngModel)]="item.QTY" (keydown.enter)="stopEdit(item.ID_Request)"
+                                        (click)="$event.stopPropagation()" type="number" class="form-control"
+                                        style="width: 80px;" min="0" />
+                                </ng-container>
+                                <ng-template #showQtySetup>
+                                    <span style="text-decoration: underline;">
+                                        {{ item.QTY }}
+                                    </span>
+                                </ng-template>
+                            </td>
+
+                            <!-- Mat Lot -->
+                            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
+                                style="cursor: pointer;">
+                                <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showMatLotSetup">
+                                    <input [(ngModel)]="item.MatLot" (keydown.enter)="stopEdit(item.ID_Request)"
+                                        (click)="$event.stopPropagation()" type="text" class="form-control"
+                                        style="width: 100px;" />
+                                </ng-container>
+                                <ng-template #showMatLotSetup>
+                                    <span style="text-decoration: underline; min-height: 20px; display: inline-block;">
+                                        {{ item.MatLot || '&nbsp;' }}
+                                    </span>
+                                </ng-template>
+                            </td>
+
+                            <td></td> <!-- Stock Loc -->
+                            <td></td> <!-- Stock PD -->
+                            <td></td> <!-- PH Stock -->
+
+                            <!-- Confirm -->
+                            <td>
+                                <button class="btn btn-success btn-sm btn-ok" (click)="confirmItem(item)">OK</button>
+                            </td>
+
+                            <!-- Remark -->
+                            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
+                                style="cursor: pointer;">
+                                <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showRemarkSetup">
+                                    <input [(ngModel)]="item.Remark" (keydown.enter)="stopEdit(item.ID_Request)"
+                                        (click)="$event.stopPropagation()" type="text" class="form-control" />
+                                </ng-container>
+                                <ng-template #showRemarkSetup>
+                                    <span style="text-decoration: underline;">{{ item.Remark || '&nbsp;' }}</span>
+                                </ng-template>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </ng-container>
+
+        </div>
+
+        <!-- Pagination -->
+        <!-- Pagination Controls (Fixed Bottom) -->
+        <div class="pagination-wrapper"
+            *ngIf="(Tooling_ === 'Cutting Tool' || Tooling_ === 'Setup Tool') && totalPages > 1">
+            <div class="d-inline-block bg-white p-2 rounded shadow-sm border">
+                <span class="me-3">
+                    Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ min((currentPage * pageSize), request.length) }}
+                    of {{
+                    request.length }}
+                </span>
+                <div class="d-inline-block">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination mb-0">
+                            <li class="page-item" [class.disabled]="currentPage === 1">
+                                <button class="page-link" (click)="changePage(currentPage - 1)">Previous</button>
+                            </li>
+
+                            <li class="page-item" [class.active]="page === currentPage" *ngFor="let page of pages">
+                                <button class="page-link" (click)="changePage(page)">{{ page }}</button>
+                            </li>
+
+                            <li class="page-item" [class.disabled]="currentPage === totalPages">
+                                <button class="page-link" (click)="changePage(currentPage + 1)">Next</button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -23,6 +23,10 @@ export class DetailPurchaseRequestlistService {
     return this.httpClient.get(`${this.baseUrl}/Detail_Purchase_Setup`);
   }
 
+  Detail_CaseSetup(): Observable<any> {
+    return this.httpClient.get(`${this.baseUrl}/Detail_CaseSetup`);
+  }
+
   updateStatusToComplete(idOrIds: number | number[], status: string) {
     return this.httpClient.post(`${this.baseUrl}/Update_Status_Purchase`, {
       ID_Request: idOrIds,  //  ส่งเป็น array ได้

@@ -66,14 +66,14 @@
                     <tr>
                         <th class="col-checkbox" style="width: 50px; min-width: 50px;"><input type="checkbox"></th>
                         <th class="col-no" style="width: 60px; min-width: 60px;">NO</th>
-                        <th (click)="onSort('document')" style="cursor: pointer;">Document</th>
-                        <th (click)="onSort('returnDate')" style="cursor: pointer;">Return Date</th>
-                        <th (click)="onSort('returnBy')" style="cursor: pointer;">Return By</th>
-                        <th (click)="onSort('division')" style="cursor: pointer;">Division</th>
-                        <th (click)="onSort('process')" style="cursor: pointer;">Process</th>
-                        <th (click)="onSort('fac')" style="cursor: pointer;">Fac</th>
-                        <th (click)="onSort('itemNo')" style="cursor: pointer;">Item NO.</th>
-                        <th (click)="onSort('itemName')" style="cursor: pointer;">Item Name</th>
+                        <th (click)="onSort('Doc_No')" style="cursor: pointer;">Document</th>
+                        <th (click)="onSort('Return_Date')" style="cursor: pointer;">Return Date</th>
+                        <th (click)="onSort('Return_By')" style="cursor: pointer;">Return By</th>
+                        <th (click)="onSort('Division')" style="cursor: pointer;">Division</th>
+                        <th (click)="onSort('Process')" style="cursor: pointer;">Process</th>
+                        <th (click)="onSort('Facility')" style="cursor: pointer;">Fac</th>
+                        <th (click)="onSort('ItemNo')" style="cursor: pointer;">Item NO.</th>
+                        <th (click)="onSort('ItemName')" style="cursor: pointer;">Item Name</th>
                         <th>Spec</th>
                         <th>QTY</th>
                         <th>Phone</th>
@@ -89,19 +89,19 @@
                     <tr *ngFor="let item of displayedReturns; let i = index">
                         <td class="col-checkbox"><input type="checkbox"></td>
                         <td class="col-no">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                        <td>{{ item.document }}</td>
-                        <td>{{ item.returnDate | date:'MM/dd/yyyy' }}</td>
-                        <td>{{ item.returnBy }}</td>
-                        <td>{{ item.division }}</td>
-                        <td>{{ item.process }}</td>
-                        <td>{{ item.fac }}</td>
-                        <td>{{ item.itemNo }}</td>
-                        <td>{{ item.itemName }}</td>
-                        <td>{{ item.spec }}</td>
-                        <td>{{ item.qty }}</td>
-                        <td>{{ item.phone }}</td>
-                        <td>{{ item.remark }}</td>
-                        <td>{{ item.status }}</td>
+                        <td>{{ item.Doc_No }}</td>
+                        <td>{{ item.Return_Date | date:'dd/MM/yyyy' }}</td>
+                        <td>{{ item.Return_By }}</td>
+                        <td>{{ item.Division }}</td>
+                        <td>{{ item.Process }}</td>
+                        <td>{{ item.Facility }}</td>
+                        <td>{{ item.ItemNo }}</td>
+                        <td>{{ item.ItemName }}</td>
+                        <td>{{ item.Spec }}</td>
+                        <td>{{ item.QTY }}</td>
+                        <td>{{ item.Phone_No }}</td>
+                        <td>{{ item.Remark }}</td>
+                        <td>{{ item.Status }}</td>
                         <td>
                             <button class="btn btn-sm btn-success" (click)="confirmReturn(item)"
                                 style="background-color: #4ade80; border: none; padding: 5px 15px;">OK</button>

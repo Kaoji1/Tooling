@@ -377,13 +377,38 @@ exports.Detail_Purchase_Setup = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };
+
+exports.Detail_CaseSetup = async (req, res) => {
+  console.log('Fetching Case Setup Data');
+  try {
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .query(`
+        SELECT *
+        FROM [db_Tooling].[viewer].[View_CaseSetup_Request]
+        WHERE Status IN ('Waiting','In Progress')
+        ORDER BY ItemNo ASC
+      `);
+
+    if (result.recordset.length > 0) {
+      console.log('Case Setup Columns:', Object.keys(result.recordset[0]));
+    }
+
+    res.json(result.recordset);
+  }
+  catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
 exports.Get_ItemNo = async (req, res) => {
   console.log(req.body)
   try {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .query("EXEC Stored_View_CuttingTool_FindItem_Purchase");
+      .query("SELECT * FROM [db_Tooling].[viewer].[View_tb_Master_Purchase_SUM_ALL]");
 
     res.json(result.recordset);
   }
@@ -399,7 +424,7 @@ exports.get_ItemNo = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .query("EXEC Stored_View_CuttingTool_FindItem_Purchase");
+      .query("SELECT * FROM [db_Tooling].[viewer].[View_tb_Master_Purchase_SUM_ALL]");
 
     res.json(result.recordset);
   }
@@ -697,12 +722,13 @@ exports.Update_Request = async (req, res) => {
       DueDate,
       PathDwg,
       PathLayout,
-      SPEC,
       QTY,
       PhoneNo,
       MatLot,
       MR_No,
-      MFGOrderNo
+      MFGOrderNo,
+      ItemName,
+      SPEC
     } = req.body;
 
     const pool = await poolPromise;
@@ -729,6 +755,7 @@ exports.Update_Request = async (req, res) => {
       .input("MatLot", sql.NVarChar, MatLot)
       .input("MR_No", sql.NVarChar, MR_No)
       .input("MFGOrderNo", sql.NVarChar, MFGOrderNo)
+      .input("ItemName", sql.NVarChar, (ItemName || '').substring(0, 255) || null)
       .query(`
         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
         SET DocNo = @DocNo,
@@ -751,7 +778,8 @@ exports.Update_Request = async (req, res) => {
             PhoneNo = @PhoneNo,
             MatLot = @MatLot,
             MR_No = @MR_No,
-            MFGOrderNo = @MFGOrderNo
+            MFGOrderNo = @MFGOrderNo,
+            ItemName = @ItemName
         WHERE ID_Request = @ID_Request
       `);
     if (result.rowsAffected[0] > 0) {
@@ -760,8 +788,8 @@ exports.Update_Request = async (req, res) => {
       res.status(404).json({ success: false, message: "Request not found or no changes made" });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    console.error("Update_Request Error:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message, sqlError: error.originalError?.message });
   }
 };
 
@@ -788,7 +816,8 @@ exports.Add_New_Request = async (req, res) => {
       DueDate,
       PathDwg,
       PathLayout,
-      PhoneNo
+      PhoneNo,
+      ItemName
     } = req.body;
 
     if (!ItemNo && !SPEC) {
@@ -878,12 +907,13 @@ exports.Add_New_Request = async (req, res) => {
       .input("Remark", sql.NVarChar, Remark)
       .input("PhoneNo", sql.Int, PhoneNo)
       .input("MR_No", sql.NVarChar, MR_No)
+      .input("ItemName", sql.NVarChar, (ItemName || '').substring(0, 255) || null)
       .query(`
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] 
-        (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo, MFGOrderNo, MR_No)
+        (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo, MFGOrderNo, MR_No, ItemName)
         OUTPUT INSERTED.ID_Request
         VALUES 
-        (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, @MFGOrderNo, @MR_No);
+        (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, @MFGOrderNo, @MR_No, @ItemName);
       `);
 
     const ID_Request = result.recordset[0]?.ID_Request || null;

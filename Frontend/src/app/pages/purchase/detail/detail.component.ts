@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectionStrategy, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectionStrategy, ChangeDetectorRef, HostListener, OnDestroy } from '@angular/core';
 import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPurchase.component';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { RouterOutlet } from '@angular/router';
@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription, interval } from 'rxjs';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
 import { FileReadService } from '../../../core/services/FileRead.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -28,7 +28,7 @@ import * as XLSX from 'xlsx';
   styleUrls: ['./detail.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DetailComponent implements OnInit {
+export class DetailComponent implements OnInit, OnDestroy {
   userRole: string = 'view';
   allRequests: any[] = [];
   filteredRequests: any[] = [];
@@ -42,6 +42,8 @@ export class DetailComponent implements OnInit {
   totalPages: number = 1;
   displayedRequests: any[] = [];
   pages: number[] = [];
+
+  private refreshSubscription: Subscription = new Subscription();
 
   // Date Filter
   dateFilterType: 'both' | 'req' | 'due' = 'both';
@@ -190,26 +192,22 @@ export class DetailComponent implements OnInit {
       this.loadSetupData();
       this.get_ItemNo();
 
-      /* 
-      // Commented out to prevent stale data flicker
-      const savedRequests = localStorage.getItem('purchaseRequest');
-      if (savedRequests) {
-        try {
-          const parsed = JSON.parse(savedRequests);
-          if (Array.isArray(parsed)) {
-            this.request = parsed.map(r => ({
-              ...r,
-              QTY: r.QTY ?? r.Req_QTY,
-              _parsedRequestDate: r.DateTime_Record ? new Date(r.DateTime_Record) : null,
-              _parsedDueDate: r.DueDate ? new Date(r.DueDate) : null
-            }));
-            this.updatePagination();
-          }
-        } catch (e) {
-          console.error("Error parsing localStorage", e);
+      // Auto-refresh every 10 seconds
+      this.refreshSubscription = interval(10000).subscribe(() => {
+        // Only fetch if no unsaved changes (editing, selected, or dirty)
+        if (!this.hasUnsavedChanges()) {
+          // We need to pass a flag to Data_Purchase to avoid spinner
+          this.Detail_Purchase(true);
+          // Also refresh setup data if needed
+          this.loadSetupData();
         }
-      }
-      */
+      });
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
     }
   }
 
@@ -247,7 +245,28 @@ export class DetailComponent implements OnInit {
     }
   }
 
-  Detail_Purchase() {
+  hasUnsavedChanges(): boolean {
+    // 1. Is any row currently in edit mode?
+    if (Object.keys(this.editingIndex).length > 0) return true;
+
+    // 2. Is any row selected? (User might be batching)
+    if (this.request.some(r => r.Selection)) return true;
+
+    // 3. Has any row been modified but not saved? (Dirty check)
+    const isDirty = this.request.some(it => {
+      const itemNoChanged = (it.ItemNo || '') !== (it.Req_ItemNo || '');
+      const specChanged = (it.SPEC || '') !== (it.Req_SPEC || '');
+      const qtyChanged = (it.QTY ?? 0) !== (it.Req_QTY ?? (it.QTY ?? 0));
+      return itemNoChanged || specChanged || qtyChanged;
+    });
+
+    return isDirty;
+  }
+
+  Detail_Purchase(isBackgroundRefresh = false) {
+    // If not background refresh, show spinner (if you have one, currently no global spinner variable used here directly or it's not shown in snippet)
+    // But this method just fetches data.
+
     this.DetailPurchase.Detail_Request().subscribe({
       next: (response: any[]) => {
         if (!Array.isArray(response)) {
@@ -257,7 +276,9 @@ export class DetailComponent implements OnInit {
           return;
         }
 
-        const mapped = response.map(it => ({
+        const validResponse = response.filter(it => !['SET', 'Set', 'Setup'].includes(it.CASE));
+
+        const mapped = validResponse.map(it => ({
           ...it,
           ID_Request: Number(it.ID_Request),
           Selection: false,
@@ -269,7 +290,8 @@ export class DetailComponent implements OnInit {
           // Store original request info for Production columns
           Req_ItemNo: it.ItemNo,
           Req_PartNo: it.PartNo,
-          Req_SPEC: it.SPEC
+          Req_SPEC: it.SPEC,
+          Req_ItemName: it.ItemName
           // MFGOrderNo logic removed to use Backend value
         }));
 
@@ -402,6 +424,7 @@ export class DetailComponent implements OnInit {
   startEdit(caseKey: number, rowIndex: number) {
     // Note: rowIndex passed here is likely likely from displayedRequests (0-49) if called from template
     // Ideally, pass ID_Request instead of index to be safe
+    this.editingIndex = {};
     this.editingIndex[caseKey] = rowIndex;
   }
 
@@ -462,14 +485,33 @@ export class DetailComponent implements OnInit {
     }
   }
 
+  stopEdit(id: number) {
+    delete this.editingIndex[id];
+  }
+
   syncSpecWithItemNo(row: any) {
-    if (!row) return;
+    if (!row || !row.ItemNo) return;
     const list = this.ItemNo || [];
-    const found = list.find((x: any) => (typeof x === 'string' ? x : x?.ItemNo) === row.ItemNo);
+    const targetItemNo = String(row.ItemNo).trim();
+
+    const found = list.find((x: any) => {
+      const xItemNo = (typeof x === 'string' ? x : x?.ItemNo);
+      return String(xItemNo).trim() === targetItemNo;
+    });
+
     if (found && typeof found !== 'string') {
-      const spec = (found as any).SPEC;
+      const spec = (found as any).SPEC || (found as any).Specification || (found as any).Spec;
       if (typeof spec !== 'undefined' && spec !== null) {
         row.SPEC = String(spec);
+      } else {
+        row.SPEC = ''; // Reset if not found? Or keep old? Better to update if found.
+      }
+
+      const itemName = (found as any).ItemName || (found as any).EnglishName || (found as any).Name;
+      if (typeof itemName !== 'undefined' && itemName !== null) {
+        row.ItemName = String(itemName);
+      } else {
+        row.ItemName = '';
       }
     }
   }
@@ -695,6 +737,7 @@ export class DetailComponent implements OnInit {
         'Division': item.Division || '',
         'Part No.': item.PartNo || '',
         'Item No.': item.ItemNo || '',
+        'Item Name': item.ItemName || '',
         'Spec': item.SPEC || '',
         'Process': item.Process || '',
         'MC Type': item.MCType || '',
@@ -893,6 +936,6 @@ export class DetailComponent implements OnInit {
     // Let's assume we will add stopPropagation in HTML for robustness.
 
     // If clicking on empty space or non-interactive parts of table, clear edits
-    this.editingIndex = {};
+    this.editingIndex = {}; // Force Rebuild
   }
 }
