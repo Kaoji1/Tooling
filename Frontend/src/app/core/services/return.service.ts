@@ -40,6 +40,13 @@ export class ReturnService {
         return this.http.get<any[]>(`${this.baseUrl}/return/list`);
     }
 
+    getNextDocNo(process: string, facility: string, division: string): Observable<{ docNo: string }> {
+        const encodedProcess = encodeURIComponent(process);
+        const encodedFacility = encodeURIComponent(facility);
+        const encodedDivision = encodeURIComponent(division);
+        return this.http.get<{ docNo: string }>(`${this.baseUrl}/return/next-doc-no?process=${encodedProcess}&facility=${encodedFacility}&division=${encodedDivision}`);
+    }
+
     // --- State Persistence ---
     private returnState: any = null;
 

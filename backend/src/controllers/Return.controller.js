@@ -161,3 +161,62 @@ exports.getReturnList = async (req, res) => {
         res.status(500).send(err.message);
     }
 };
+
+// 8. Get Next Doc No
+exports.getNextDocNo = async (req, res) => {
+    try {
+        const { process, facility, division } = req.query; // Received division (71DZ, 7122, etc.)
+
+        // Logic mapping
+        // RET = RETURN
+        // TN = PROCESS (TURNING = TN, RL หรือ F&BORING = RL)
+        let processCode = 'XX';
+        if (process) {
+            const upProcess = process.toUpperCase();
+            if (upProcess.includes('TURNING')) processCode = 'TN';
+            else if (upProcess.includes('RL') || upProcess.includes('BORING')) processCode = 'RL';
+            else processCode = upProcess.substring(0, 2);
+        }
+
+        // 6 = FAC ( extract from F.1, F.4, F.6 )
+        let facCode = '0';
+        if (facility) {
+            const match = facility.match(/\d+/);
+            if (match) facCode = match[0];
+        }
+
+        // MONTH 12
+        const now = new Date();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+
+        const prefix = `RET${processCode}${facCode}${month}`;
+
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('Division', sql.NVarChar, division)
+            .input('MonthPattern', sql.NVarChar, '______' + month + '____') // RET(3) + Proc(2) + Fac(1) = 6 chars before Month
+            .query(`
+                SELECT TOP 1 Doc_No 
+                FROM [master].[tb_Return_List] 
+                WHERE Division = @Division 
+                  AND Doc_No LIKE @MonthPattern
+                ORDER BY RIGHT(Doc_No, 4) DESC
+            `);
+
+        let nextSeq = 1;
+        if (result.recordset.length > 0) {
+            const lastDocNo = result.recordset[0].Doc_No;
+            const lastSeq = parseInt(lastDocNo.substring(lastDocNo.length - 4));
+            if (!isNaN(lastSeq)) {
+                nextSeq = lastSeq + 1;
+            }
+        }
+
+        const docNo = `${prefix}${nextSeq.toString().padStart(4, '0')}`;
+        res.status(200).json({ docNo });
+
+    } catch (err) {
+        console.error('getNextDocNo Error:', err);
+        res.status(500).send(err.message);
+    }
+};

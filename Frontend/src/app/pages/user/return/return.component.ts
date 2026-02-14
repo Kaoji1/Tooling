@@ -534,63 +534,72 @@ export class ReturnComponent implements OnInit {
       console.error('Error parsing user:', e);
     }
 
-    // 3. Generate DocNo (Simple Client-side generation)
-    // Format: RET-YYYYMMDD-HHMMSS
-    const now = new Date();
-    const docNo = `RET-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
+    // 3. Generate DocNo (Ask Backend for structured ID)
+    const profitCenter = this.selectedDivision?.Profit_Center || this.divisions.find(d => d.Division_Id == this.selectedDivisionId)?.Profit_Center || '';
+    this.returnService.getNextDocNo(this.selectedProcess, this.selectedFacility, profitCenter).subscribe({
+      next: (res) => {
+        const docNo = res.docNo;
 
-    // 4. Prepare Data
-    const dataToSend = {
-      header: {
-        docNo: docNo,
-        employeeId: employeeId,
-        returnBy: returnBy,
-        divisionId: this.selectedDivisionId,
-        divisionName: this.selectedDivision?.Division_Name || this.divisions.find(d => d.Division_Id == this.selectedDivisionId)?.Division_Name,
-        facility: this.selectedFacility,
-        process: this.selectedProcess,
-        phone: this.phoneNumber
-      },
-      items: validItems
-    };
-
-    console.log('Sending Data:', dataToSend);
-
-
-    // 5. Confirmation & Call Service
-    Swal.fire({
-      title: 'Confirm to send data?',
-      text: 'ยืนยันจะเบิกไหม?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, Send!',
-      cancelButtonText: 'Cancel'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.returnService.saveReturnRequest(dataToSend).subscribe({
-          next: (res) => {
-            Swal.fire({
-              icon: 'success',
-              title: 'Success',
-              text: `Saved ${validItems.length} records successfully! (DocNo: ${res.docNo})`,
-              confirmButtonText: 'OK',
-              confirmButtonColor: '#3085d6'
-            });
-
-            // Reset form or redirect
-            this.clearState(); // Clear state on success
+        // 4. Prepare Data
+        const dataToSend = {
+          header: {
+            docNo: docNo,
+            employeeId: employeeId,
+            returnBy: returnBy,
+            divisionId: this.selectedDivisionId,
+            divisionName: this.selectedDivision?.Profit_Center || this.divisions.find(d => d.Division_Id == this.selectedDivisionId)?.Profit_Center,
+            facility: this.selectedFacility,
+            process: this.selectedProcess,
+            phone: this.phoneNumber
           },
-          error: (err) => {
-            console.error('Save Error:', err);
-            // alert('Save Failed / บันทึกไม่สำเร็จ: ' + (err.error || err.message));
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'Save Failed / บันทึกไม่สำเร็จ: ' + (err.error || err.message),
+          items: validItems
+        };
+
+        console.log('Sending Data:', dataToSend);
+
+        // 5. Confirmation & Call Service
+        Swal.fire({
+          title: 'Confirm to send data?',
+          text: `DocNo: ${docNo}\nยืนยันจะเบิกไหม?`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, Send!',
+          cancelButtonText: 'Cancel'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            this.returnService.saveReturnRequest(dataToSend).subscribe({
+              next: (saveRes) => {
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Success',
+                  text: `Saved ${validItems.length} records successfully! (DocNo: ${saveRes.docNo})`,
+                  confirmButtonText: 'OK',
+                  confirmButtonColor: '#3085d6'
+                });
+
+                // Reset form or redirect
+                this.clearState(); // Clear state on success
+              },
+              error: (err) => {
+                console.error('Save Error:', err);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'Save Failed / บันทึกไม่สำเร็จ: ' + (err.error || err.message),
+                });
+              }
             });
           }
+        });
+      },
+      error: (err) => {
+        console.error('Error getting DocNo:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to generate Document ID / ไม่สามารถสร้างเลขที่เอกสารได้',
         });
       }
     });
