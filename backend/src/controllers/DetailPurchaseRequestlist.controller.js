@@ -345,7 +345,7 @@ exports.Detail_Purchase = async (req, res) => {
         LEFT JOIN [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType] T2 
         ON T1.MCType = T2.MCT_MachineTypeName COLLATE Thai_CI_AS 
         WHERE T1.Status IN ('Waiting','In Progress')
-        ORDER BY T1.ItemNo ASC, T1.ID_Request ASC
+        ORDER BY T1.DateTime_Record ASC
       `);
 
     res.json(result.recordset);
@@ -367,7 +367,8 @@ exports.Detail_Purchase_Setup = async (req, res) => {
         SELECT *
         FROM [db_Tooling].[viewer].[View_SetupTool_RequestList]
         WHERE Status IN ('Waiting','In Progress')
-        ORDER BY ItemNo ASC, ID_RequestSetupTool ASC
+        AND ([CASE] IS NULL OR [CASE] != 'SET')
+        ORDER BY DateTime_Record ASC
       `);
 
     res.json(result.recordset);
@@ -388,7 +389,7 @@ exports.Detail_CaseSetup = async (req, res) => {
         SELECT *
         FROM [db_Tooling].[viewer].[View_CaseSetup_Request]
         WHERE Status IN ('Waiting','In Progress')
-        ORDER BY ItemNo ASC
+        ORDER BY DueDate ASC
       `);
 
     if (result.recordset.length > 0) {
@@ -437,14 +438,13 @@ exports.get_ItemNo = async (req, res) => {
 
 exports.Update_Status_Purchase = async (req, res) => {
   try {
-    const { ID_Request, Status } = req.body || {};
+    const { ID_Request, Status, TableType } = req.body || {};
 
     // Normalize → array
     let idList = [];
-    if (Array.isArray(ID_Request)) idList = ID_Request.map(Number);
-    else if (ID_Request !== undefined) idList = [Number(ID_Request)];
+    if (Array.isArray(ID_Request)) idList = ID_Request;
+    else if (ID_Request !== undefined) idList = [ID_Request];
 
-    idList = idList.filter(n => Number.isInteger(n));
     if (!idList.length) {
       return res.status(400).json({ success: false, message: "No valid ID_Request" });
     }
@@ -454,34 +454,97 @@ exports.Update_Status_Purchase = async (req, res) => {
 
     const pool = await poolPromise;
 
-    // 🔄 เรียก Stored Procedure หรือ Query
-    // Use parameters for the update to be safe
-    const placeholders = idList.map((_, i) => `@id${i}`).join(", ");
-    const rq = pool.request();
-    idList.forEach((id, i) => rq.input(`id${i}`, sql.Int, id));
-    rq.input("Status", sql.NVarChar, Status);
+    const performUpdate = async (type, ids) => {
+      const targetTable = type === 'Setup'
+        ? 'dbo.tb_IssueSetupTool_Request_Document'
+        : 'dbo.tb_IssueCuttingTool_Request_Document';
 
-    await rq.query(`
-      UPDATE d
-      SET d.Status = @Status,
-          d.DateComplete = CASE WHEN @Status = N'Complete' THEN SYSDATETIME() ELSE d.DateComplete END
-      FROM dbo.tb_IssueCuttingTool_Request_Document d
-      WHERE d.ID_Request IN (${placeholders});
-    `);
+      // Determine if searching by numeric ID or Public_Id
+      const isPublicId = typeof ids[0] === 'string';
+      const idColumn = isPublicId
+        ? 'Public_Id'
+        : (type === 'Setup' ? 'ID_RequestSetupTool' : 'ID_Request');
+
+      const rq = pool.request();
+      rq.input("Status", sql.NVarChar, Status);
+
+      let whereClause = "";
+      if (isPublicId) {
+        const placeholders = ids.map((_, i) => `@id${i}`).join(", ");
+        ids.forEach((id, i) => rq.input(`id${i}`, sql.NVarChar, id));
+        whereClause = `d.${idColumn} IN (${placeholders})`;
+      } else {
+        const numericIds = ids.map(Number);
+        const placeholders = numericIds.map((_, i) => `@id${i}`).join(", ");
+        numericIds.forEach((id, i) => rq.input(`id${i}`, sql.Int, id));
+        whereClause = `d.${idColumn} IN (${placeholders})`;
+      }
+
+      const result = await rq.query(`
+        UPDATE d
+        SET d.Status = @Status,
+            d.DateComplete = CASE WHEN @Status = N'Complete' THEN SYSDATETIME() ELSE d.DateComplete END
+        FROM ${targetTable} d
+        WHERE ${whereClause};
+      `);
+      return result.rowsAffected[0];
+    };
+
+    let rowsUpdated = 0;
+    let finalTableType = TableType;
+
+    // Detect if idList contains Public_Ids
+    const usesPublicId = typeof idList[0] === 'string';
+
+    if (usesPublicId) {
+      // Split by prefix
+      const cuttingIds = idList.filter(id => id.startsWith('C'));
+      const setupIds = idList.filter(id => id.startsWith('S'));
+
+      if (cuttingIds.length > 0) {
+        rowsUpdated += await performUpdate('Cutting', cuttingIds);
+        if (rowsUpdated > 0) finalTableType = 'Cutting';
+      }
+      if (setupIds.length > 0) {
+        const setupRows = await performUpdate('Setup', setupIds);
+        rowsUpdated += setupRows;
+        if (setupRows > 0) finalTableType = 'Setup';
+      }
+    } else {
+      // Legacy numeric ID logic
+      if (TableType === 'Cutting') {
+        rowsUpdated = await performUpdate('Cutting', idList);
+      } else if (TableType === 'Setup') {
+        rowsUpdated = await performUpdate('Setup', idList);
+      } else {
+        // Fallback: Try Cutting first, then Setup if nothing updated
+        console.log("No TableType provided for status update, trying Cutting Tool fallback...");
+        rowsUpdated = await performUpdate('Cutting', idList);
+        if (rowsUpdated > 0) {
+          finalTableType = 'Cutting';
+        } else {
+          console.log("Not found in Cutting Tool, trying Setup Tool fallback...");
+          rowsUpdated = await performUpdate('Setup', idList);
+          if (rowsUpdated > 0) finalTableType = 'Setup';
+        }
+      }
+    }
 
     // ส่งอีเมลถ้า Status = Complete
-    if (Status === "Complete") {
+    if (Status === "Complete" && rowsUpdated > 0) {
       try {
-        console.log("Attempting to send email for IDs:", idList);
+        console.log(`Attempting to send email for ${finalTableType} Tool, IDs:`, idList);
 
-        // Use a NEW request for fetching data for email
-        // Since idList contains only filtered integers, joining them is safe
+        const targetTable = finalTableType === 'Setup'
+          ? 'dbo.tb_IssueSetupTool_Request_Document'
+          : 'dbo.tb_IssueCuttingTool_Request_Document';
+        const idColumn = finalTableType === 'Setup' ? 'ID_RequestSetupTool' : 'ID_Request';
         const safeIds = idList.join(",");
 
         const rows = await pool.request().query(`
           SELECT Division, PartNo, ItemNo, SPEC, [CASE], MCType, MCNo, Fac, QTY, DueDate, Requester, Remark
-          FROM dbo.tb_IssueCuttingTool_Request_Document
-          WHERE ID_Request IN (${safeIds});
+          FROM ${targetTable}
+          WHERE ${idColumn} IN (${safeIds});
         `);
 
         console.log(`Found ${rows.recordset.length} items for email body.`);
@@ -490,8 +553,6 @@ exports.Update_Status_Purchase = async (req, res) => {
           `SELECT Email FROM tb_CuttingTool_Employee WHERE Role IN ('production','admin')`
         );
         const emailList = emailRes.recordset.map(r => r.Email).filter(Boolean);
-
-        console.log("Recipient emails:", emailList);
 
         if (emailList.length && rows.recordset.length) {
           const fmt = d => (d ? new Date(d).toLocaleDateString() : "-");
@@ -525,9 +586,10 @@ exports.Update_Status_Purchase = async (req, res) => {
           await transporter.sendMail({
             from: `"Indirect expense" <${process.env.EMAIL_USER}>`,
             to: emailList,
-            subject: `รายการเสร็จสิ้น ${rows.recordset.length} รายการ`,
+            subject: `รายการเสร็จสิ้น (${finalTableType}) ${rows.recordset.length} รายการ`,
             html: `
               <h1 style="color:black;">✅ Massage Notification!! Item has been successfully delivered.</h1>
+              <p>Type: ${finalTableType} Tooling</p>
               <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
                 <thead>
                   <tr style="background-color: #f2f2f2;">
@@ -561,7 +623,7 @@ exports.Update_Status_Purchase = async (req, res) => {
       }
     }
 
-    return res.json({ success: true, message: `Updated ${idList.length} item(s)` });
+    return res.json({ success: true, message: `Updated ${rowsUpdated} item(s) in ${finalTableType || 'unknown'} table` });
 
   } catch (err) {
     console.error(err);
@@ -728,68 +790,156 @@ exports.Update_Request = async (req, res) => {
       MR_No,
       MFGOrderNo,
       ItemName,
-      SPEC
+      SPEC,
+      TableType
     } = req.body;
 
     const pool = await poolPromise;
-    const result = await pool.request()
-      .input("ID_Request", sql.Int, ID_Request)
-      .input("DocNo", sql.NVarChar, DocNo)
-      .input("Requester", sql.NVarChar, Requester)
-      .input("PartNo", sql.NVarChar, PartNo)
-      .input("ItemNo", sql.NVarChar, ItemNo)
-      .input("SPEC", sql.NVarChar, SPEC)
-      .input("Process", sql.NVarChar, Process)
-      .input("MCType", sql.NVarChar, MCType)
-      .input("Fac", sql.Int, Fac)
-      .input("PathDwg", sql.NVarChar, PathDwg)
-      .input("ON_HAND", sql.Int, ON_HAND)
-      .input("Req_QTY", sql.Int, Req_QTY)
-      .input("QTY", sql.Int, QTY)
-      .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
-      .input("CASE", sql.NVarChar, CASE)
-      .input("Status", sql.NVarChar, Status)
-      .input("PathLayout", sql.NVarChar, PathLayout)
-      .input("Remark", sql.NVarChar, Remark)
-      .input("PhoneNo", sql.Int, PhoneNo)
-      .input("MatLot", sql.NVarChar, MatLot)
-      .input("MR_No", sql.NVarChar, MR_No)
-      .input("MFGOrderNo", sql.NVarChar, MFGOrderNo)
-      .input("ItemName", sql.NVarChar, (ItemName || '').substring(0, 255) || null)
-      .query(`
-        UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
-        SET DocNo = @DocNo,
-            Requester = @Requester,
-            PartNo = @PartNo,
-            ItemNo = @ItemNo,
-            SPEC = @SPEC,
-            Process = @Process,
-            MCType = @MCType,
-            Fac = @Fac,
-            PathDwg = @PathDwg,
-            ON_HAND = @ON_HAND,
-            Req_QTY = @Req_QTY,
-            QTY = @QTY,
-            DueDate = @DueDate,
-            [CASE] = @CASE,
-            Status = @Status,
-            PathLayout = @PathLayout,
-            Remark = @Remark,
-            PhoneNo = @PhoneNo,
-            MatLot = @MatLot,
-            MR_No = @MR_No,
-            MFGOrderNo = @MFGOrderNo,
-            ItemName = @ItemName
-        WHERE ID_Request = @ID_Request
-      `);
-    if (result.rowsAffected[0] > 0) {
-      res.json({ success: true, message: "Request detail updated successfully" });
+
+    // Helper function for Cutting Tool Update
+    const updateCutting = async (idValue, isPublic = false) => {
+      const idCol = isPublic ? "Public_Id" : "ID_Request";
+      return await pool.request()
+        .input("ID_Val", isPublic ? sql.NVarChar : sql.Int, idValue)
+        .input("DocNo", sql.NVarChar, DocNo)
+        .input("Requester", sql.NVarChar, Requester)
+        .input("PartNo", sql.NVarChar, PartNo)
+        .input("ItemNo", sql.NVarChar, ItemNo)
+        .input("SPEC", sql.NVarChar, SPEC)
+        .input("Process", sql.NVarChar, Process)
+        .input("MCType", sql.NVarChar, MCType)
+        .input("Fac", sql.Int, Fac)
+        .input("PathDwg", sql.NVarChar, PathDwg)
+        .input("ON_HAND", sql.Int, ON_HAND)
+        .input("Req_QTY", sql.Int, Req_QTY)
+        .input("QTY", sql.Int, QTY)
+        .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
+        .input("CASE", sql.NVarChar, CASE)
+        .input("Status", sql.NVarChar, Status)
+        .input("PathLayout", sql.NVarChar, PathLayout)
+        .input("Remark", sql.NVarChar, Remark)
+        .input("PhoneNo", sql.Int, PhoneNo)
+        .input("MatLot", sql.NVarChar, MatLot)
+        .input("MR_No", sql.NVarChar, MR_No)
+        .input("MFGOrderNo", sql.NVarChar, MFGOrderNo)
+        .input("ItemName", sql.NVarChar, (ItemName || '').substring(0, 255) || null)
+        .input("MCNo", sql.NVarChar, req.body.MCNo || req.body.MCQTY)
+        .query(`
+            UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
+            SET DocNo = @DocNo,
+                Requester = @Requester,
+                PartNo = @PartNo,
+                ItemNo = @ItemNo,
+                SPEC = @SPEC,
+                Process = @Process,
+                MCType = @MCType,
+                Fac = @Fac,
+                PathDwg = @PathDwg,
+                ON_HAND = @ON_HAND,
+                Req_QTY = @Req_QTY,
+                QTY = @QTY,
+                DueDate = @DueDate,
+                [CASE] = @CASE,
+                Status = @Status,
+                PathLayout = @PathLayout,
+                Remark = @Remark,
+                PhoneNo = @PhoneNo,
+                MatLot = @MatLot,
+                MR_No = @MR_No,
+                MFGOrderNo = @MFGOrderNo,
+                ItemName = @ItemName,
+                MCNo = @MCNo
+            WHERE ${idCol} = @ID_Val
+        `);
+    };
+
+    // Helper function for Setup Tool Update
+    const updateSetup = async (idValue, isPublic = false) => {
+      const idCol = isPublic ? "Public_Id" : "ID_RequestSetupTool";
+      return await pool.request()
+        .input("ID_Val", isPublic ? sql.NVarChar : sql.Int, idValue)
+        .input("DocNo", sql.NVarChar, DocNo)
+        .input("Requester", sql.NVarChar, Requester)
+        .input("PartNo", sql.NVarChar, PartNo)
+        .input("ItemNo", sql.NVarChar, ItemNo)
+        .input("SPEC", sql.NVarChar, SPEC)
+        .input("Process", sql.NVarChar, Process)
+        .input("MCType", sql.NVarChar, MCType)
+        .input("Fac", sql.Int, Fac)
+        .input("ON_HAND", sql.Int, ON_HAND)
+        .input("Req_QTY", sql.Int, Req_QTY)
+        .input("QTY", sql.Int, QTY)
+        .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
+        .input("CASE", sql.NVarChar, CASE)
+        .input("Status", sql.NVarChar, Status)
+        .input("Remark", sql.NVarChar, Remark)
+        .input("PhoneNo", sql.Int, PhoneNo)
+        .input("ItemName", sql.NVarChar, (ItemName || '').substring(0, 255) || null)
+        .input("MatLot", sql.NVarChar, MatLot)
+        .input("MR_No", sql.NVarChar, MR_No)
+        .input("MFGOrderNo", sql.NVarChar, MFGOrderNo)
+        .input("MCNo", sql.NVarChar, req.body.MCNo || req.body.MCQTY)
+        .query(`
+            UPDATE [dbo].[tb_IssueSetupTool_Request_Document]
+            SET DocNo = @DocNo,
+                Requester = @Requester,
+                PartNo = @PartNo,
+                ItemNo = @ItemNo,
+                SPEC = @SPEC,
+                Process = @Process,
+                MCType = @MCType,
+                Fac = @Fac,
+                ON_HAND = @ON_HAND,
+                Req_QTY = @Req_QTY,
+                QTY = @QTY,
+                DueDate = @DueDate,
+                [CASE] = @CASE,
+                Status = @Status,
+                Remark = @Remark,
+                PhoneNo = @PhoneNo,
+                ItemName = @ItemName,
+                MatLot = @MatLot,
+                MR_No = @MR_No,
+                MFGOrderNo = @MFGOrderNo,
+                MCNo = @MCNo
+            WHERE ${idCol} = @ID_Val
+        `);
+    };
+
+    let result;
+    const isPublic = typeof ID_Request === 'string';
+
+    if (isPublic) {
+      if (ID_Request.startsWith('C')) {
+        result = await updateCutting(ID_Request, true);
+      } else if (ID_Request.startsWith('S')) {
+        result = await updateSetup(ID_Request, true);
+      } else {
+        return res.status(400).json({ success: false, message: "Invalid Public ID format" });
+      }
     } else {
-      res.status(404).json({ success: false, message: "Request not found or no changes made" });
+      if (TableType === 'Cutting') {
+        result = await updateCutting(ID_Request, false);
+      } else if (TableType === 'Setup') {
+        result = await updateSetup(ID_Request, false);
+      } else {
+        // Fallback
+        result = await updateCutting(ID_Request, false);
+        if (!result || result.rowsAffected[0] === 0) {
+          result = await updateSetup(ID_Request, false);
+        }
+      }
     }
+
+    if (result && result.rowsAffected[0] > 0) {
+      res.json({ success: true, message: "Updated successfully" });
+    } else {
+      res.status(404).json({ success: false, message: "Record not found or no changes" });
+    }
+
   } catch (error) {
     console.error("Update_Request Error:", error);
-    res.status(500).json({ error: "Internal Server Error", details: error.message, sqlError: error.originalError?.message });
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };
 
@@ -833,7 +983,7 @@ exports.Add_New_Request = async (req, res) => {
           SELECT TOP 1 ItemNo
           FROM tb_IssueCuttingTool_Request_Document
           WHERE SPEC = @SPEC
-        `);
+          `);
 
       if (itemResult.recordset.length === 0) {
         return res.status(400).json({ message: "ItemNo not found in database." });
@@ -853,9 +1003,9 @@ exports.Add_New_Request = async (req, res) => {
           .input("MCType", sql.NVarChar, MCType)
           .query(`
               SELECT TOP 1 MC_Code 
-              FROM [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group] 
+              FROM[db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group] 
               WHERE MC_Group = @MCType
-            `);
+          `);
         machineCode = machineResult.recordset[0]?.MC_Code || '';
       }
 
@@ -909,11 +1059,11 @@ exports.Add_New_Request = async (req, res) => {
       .input("MR_No", sql.NVarChar, MR_No)
       .input("ItemName", sql.NVarChar, (ItemName || '').substring(0, 255) || null)
       .query(`
-        INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] 
-        (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo, MFGOrderNo, MR_No, ItemName)
+        INSERT INTO[dbo].[tb_IssueCuttingTool_Request_Document]
+          (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo, MFGOrderNo, MR_No, ItemName)
         OUTPUT INSERTED.ID_Request
-        VALUES 
-        (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, @MFGOrderNo, @MR_No, @ItemName);
+        VALUES
+            (@DocNo, @Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, @MFGOrderNo, @MR_No, @ItemName);
       `);
 
     const ID_Request = result.recordset[0]?.ID_Request || null;

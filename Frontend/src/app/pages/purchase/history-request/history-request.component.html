@@ -231,8 +231,8 @@
             <td [ngClass]="getRowClass(req)">{{ req.MatLot }}</td>
             <td [ngClass]="getRowClass(req)">{{ req.DateComplete ? (req.DateComplete | date: 'ddMMyyyy') : '' }}</td>
             <td [ngClass]="getRowClass(req)">
-              <span *ngIf="editingIndex[req.ID_Request] !== i">{{ req.QTY }}</span>
-              <input *ngIf="editingIndex[req.ID_Request] === i" type="number" [(ngModel)]="filteredRequests[i].QTY"
+              <span *ngIf="editingIndex[req.Public_Id] !== i">{{ req.QTY }}</span>
+              <input *ngIf="editingIndex[req.Public_Id] === i" type="number" [(ngModel)]="filteredRequests[i].QTY"
                 class="form-control form-control-sm" min="0" style="width: 80px;" />
             </td>
             <td [ngClass]="getRowClass(req)">{{ req.MCType?.substring() }}</td>
@@ -242,16 +242,15 @@
             <td [ngClass]="getRowClass(req)">{{ req.DateTime_Record ? (req.DateTime_Record | date: 'yyyyMMdd') : '' }}
             </td>
             <td>
-              <button *ngIf="editingIndex[req.ID_Request] !== i" class="btn btn-primary btn-sm"
-                (click)="startEdit(req.ID_Request, i)" [disabled]="isViewer()">
+              <button *ngIf="editingIndex[req.Public_Id] !== i" class="btn btn-primary btn-sm"
+                (click)="startEdit(req.Public_Id, i)" [disabled]="isViewer()">
                 <i class="bi bi-pencil-square text-white"></i>
               </button>
-              <button *ngIf="editingIndex[req.ID_Request] === i" class="btn btn-success btn-sm" (click)="saveEdit(req)"
+              <button *ngIf="editingIndex[req.Public_Id] === i" class="btn btn-success btn-sm" (click)="saveEdit(req)"
                 [disabled]="isViewer()">
                 <i class="bi bi-check-lg text-white"></i>
               </button>
-              <button *ngIf="editingIndex[req.ID_Request] === i" class="btn btn-danger btn-sm"
-                (click)="cancelEdit(req)">
+              <button *ngIf="editingIndex[req.Public_Id] === i" class="btn btn-danger btn-sm" (click)="cancelEdit(req)">
                 <i class="bi bi-x-lg text-white"></i>
               </button>
             </td>

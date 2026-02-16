@@ -44,6 +44,12 @@
             </div>
         </div>
 
+        <!-- Division Selection Message -->
+        <div *ngIf="!Division_" class="alert alert-info text-center mt-3" style="font-weight: 500;">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Please select a Division to view data. / กรุณาเลือก Division เพื่อดูข้อมูล
+        </div>
+
         <!-- Table Section -->
         <div class="table-responsive">
 
@@ -186,8 +192,11 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <tr *ngIf="Division_ && paginatedItems.length === 0">
+                            <td colspan="33" class="text-center text-muted">No items found. / ไม่พบข้อมูล</td>
+                        </tr>
                         <tr *ngFor="let item of paginatedItems; let i = index; trackBy: trackByRequestId" [ngClass]="{
-            'editing-row': editingIndex[item.ID_Request] === i,
+            'editing-row': editingIndex[item.Public_Id] === i,
             'highlight-row': highlightedRow === i}">
                             <!-- Checkbox -->
                             <td><input type="checkbox" [(ngModel)]="item.Selection" [disabled]="isViewer()" /></td>
@@ -243,11 +252,11 @@
                             <!-- ================= For Purchase ================= -->
 
                             <!-- Item NO. -->
-                            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
+                            <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
                                 style="cursor: pointer; position: relative;">
-                                <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showItemNoSetup">
+                                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showItemNoSetup">
                                     <input [(ngModel)]="item.ItemNo" (change)="onItemNoChange($event, item)"
-                                        (keydown.enter)="stopEdit(item.ID_Request)" (click)="$event.stopPropagation()"
+                                        (keydown.enter)="stopEdit(item.Public_Id)" (click)="$event.stopPropagation()"
                                         type="text" class="form-control" style="min-width: 100px;" />
                                 </ng-container>
                                 <ng-template #showItemNoSetup>
@@ -264,10 +273,10 @@
                             <td>{{ item.SPEC }}</td>
 
                             <!-- QTY -->
-                            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
+                            <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
                                 style="cursor: pointer;">
-                                <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showQtySetup">
-                                    <input [(ngModel)]="item.QTY" (keydown.enter)="stopEdit(item.ID_Request)"
+                                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showQtySetup">
+                                    <input [(ngModel)]="item.QTY" (keydown.enter)="stopEdit(item.Public_Id)"
                                         (click)="$event.stopPropagation()" type="number" class="form-control"
                                         style="width: 80px;" min="0" />
                                 </ng-container>
@@ -279,10 +288,10 @@
                             </td>
 
                             <!-- Mat Lot -->
-                            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
+                            <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
                                 style="cursor: pointer;">
-                                <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showMatLotSetup">
-                                    <input [(ngModel)]="item.MatLot" (keydown.enter)="stopEdit(item.ID_Request)"
+                                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showMatLotSetup">
+                                    <input [(ngModel)]="item.MatLot" (keydown.enter)="stopEdit(item.Public_Id)"
                                         (click)="$event.stopPropagation()" type="text" class="form-control"
                                         style="width: 100px;" />
                                 </ng-container>
@@ -303,10 +312,10 @@
                             </td>
 
                             <!-- Remark -->
-                            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
+                            <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
                                 style="cursor: pointer;">
-                                <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showRemarkSetup">
-                                    <input [(ngModel)]="item.Remark" (keydown.enter)="stopEdit(item.ID_Request)"
+                                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showRemarkSetup">
+                                    <input [(ngModel)]="item.Remark" (keydown.enter)="stopEdit(item.Public_Id)"
                                         (click)="$event.stopPropagation()" type="text" class="form-control" />
                                 </ng-container>
                                 <ng-template #showRemarkSetup>

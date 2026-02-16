@@ -25,12 +25,28 @@ import { ReturnService } from '../../../core/services/return.service';
 export class ReturnlistComponent implements OnInit {
     returns: any[] = [];
 
-    divisionList: { label: string; value: string }[] = [];
+    divisionList: { label: string; value: string }[] = [
+        { label: 'PMC', value: '71DZ' },
+        { label: 'GM', value: '7122' }
+    ];
     statusList: { label: string; value: string }[] = [];
 
     Division_: string | null = null;
     Status_: string | null = null;
-    dateFilter: string | null = null;
+    dateFilter: string | null = null; // Top date filter
+
+    // Column Filters
+    DocNoFilter_: string | null = null;
+    ProcessFilter_: string | null = null;
+    FacFilter_: string | null = null;
+    ItemNoFilter_: string | null = null;
+    ReturnDateFilter_: string | null = null;
+
+    // Dropdown Lists
+    DocNoList: any[] = [];
+    ProcessList: any[] = [];
+    FacList: any[] = [];
+    ItemNoList: any[] = [];
 
     // Sorting
     sortKey: string = '';
@@ -71,30 +87,43 @@ export class ReturnlistComponent implements OnInit {
     }
 
     populateDropdowns() {
-        // Extract unique Divisions
-        const divisions = [...new Set(this.returns.map(item => item.Division).filter(d => d))];
-        this.divisionList = divisions.map(d => ({ label: d, value: d }));
+        // Extract unique Statuses from all data
+        const getUniqueList = (key: string) => [...new Set(this.returns.map(item => item[key]).filter(x => x))].sort().map(x => ({ label: x, value: x }));
 
-        // Extract unique Statuses (if needed, or merge with default)
-        const statuses = [...new Set(this.returns.map(item => item.Status).filter(s => s))];
-        this.statusList = statuses.map(s => ({ label: s, value: s }));
+        this.statusList = getUniqueList('Status');
+        this.DocNoList = getUniqueList('Doc_No');
+        this.ProcessList = getUniqueList('Process');
+        this.FacList = getUniqueList('Facility');
+        this.ItemNoList = getUniqueList('ItemNo');
     }
 
     onFilter() {
-        this.filteredReturns = this.returns.filter(item => {
-            const matchDivision = !this.Division_ || item.Division === this.Division_;
-            const matchStatus = !this.Status_ || item.Status === this.Status_;
+        if (!this.Division_) {
+            this.filteredReturns = [];
+            this.displayedReturns = [];
+            this.updatePagination();
+            return;
+        }
 
-            let matchDate = true;
-            if (this.dateFilter) {
-                const filterDate = new Date(this.dateFilter);
+        this.filteredReturns = this.returns.filter(item => {
+            const matchDivision = item.Division === this.Division_;
+
+            // Column Filters
+            const matchDocNo = !this.DocNoFilter_ || item.Doc_No === this.DocNoFilter_;
+            const matchProcess = !this.ProcessFilter_ || item.Process === this.ProcessFilter_;
+            const matchFac = !this.FacFilter_ || item.Facility == this.FacFilter_;
+            const matchItemNo = !this.ItemNoFilter_ || (item.ItemNo && item.ItemNo.toLowerCase().includes(this.ItemNoFilter_.toLowerCase()));
+
+            let matchReturnDate = true;
+            if (this.ReturnDateFilter_) {
+                const filterDate = new Date(this.ReturnDateFilter_);
                 filterDate.setHours(0, 0, 0, 0);
                 const itemDate = new Date(item.Return_Date);
                 itemDate.setHours(0, 0, 0, 0);
-                matchDate = itemDate.getTime() === filterDate.getTime();
+                matchReturnDate = itemDate.getTime() === filterDate.getTime();
             }
 
-            return matchDivision && matchStatus && matchDate;
+            return matchDivision && matchDocNo && matchProcess && matchFac && matchItemNo && matchReturnDate;
         });
         this.currentPage = 1;
         this.updatePagination();
@@ -104,6 +133,13 @@ export class ReturnlistComponent implements OnInit {
         this.Division_ = null;
         this.Status_ = null;
         this.dateFilter = null;
+
+        this.DocNoFilter_ = null;
+        this.ProcessFilter_ = null;
+        this.FacFilter_ = null;
+        this.ItemNoFilter_ = null;
+        this.ReturnDateFilter_ = null;
+
         this.onFilter();
     }
 
@@ -166,6 +202,16 @@ export class ReturnlistComponent implements OnInit {
     exportToExcel() {
         console.log('Export to Excel clicked');
         // Implement export logic here
+    }
+
+    onClear() {
+        console.log('Clear clicked');
+        this.clearFilters();
+    }
+
+    onComplete() {
+        console.log('Complete clicked');
+        // Placeholder for complete action
     }
 
     confirmReturn(item: any) {
