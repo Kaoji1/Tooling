@@ -1,4 +1,10 @@
 // Blobal style.scss
+@import '@angular/cdk/overlay-prebuilt.css';
+
+/* Ensure CDK Overlay is always on top (higher than PrimeNG 999999?) */
+.cdk-overlay-container {
+  z-index: 99999 !important;
+}
 
 * {
   margin: 0;

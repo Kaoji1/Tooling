@@ -34,3 +34,21 @@ exports.markAsRead = async (req, res) => {
         res.status(500).send({ message: err.message });
     }
 };
+
+// 3. Mark All as Read
+exports.markAllRead = async (req, res) => {
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .execute('trans.Stored_Mark_All_Notifications_Read');
+
+        const updatedCount = result.recordset[0]?.UpdatedCount || 0;
+        res.status(200).send({
+            message: 'All notifications marked as read',
+            updatedCount
+        });
+    } catch (err) {
+        console.error('Error markAllRead:', err);
+        res.status(500).send({ message: err.message });
+    }
+};

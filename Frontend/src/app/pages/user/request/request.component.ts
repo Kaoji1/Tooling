@@ -8,7 +8,7 @@ import { NotificationComponent } from '../../../components/notification/notifica
 import { RequestService } from '../../../core/services/request.service';
 import { CartService } from '../../../core/services/cart.service';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import Swal from 'sweetalert2';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
@@ -118,6 +118,7 @@ export class requestComponent implements OnInit {
     private api: RequestService,
     private detailPurchaseService: DetailPurchaseRequestlistService,
     private router: Router,
+    private route: ActivatedRoute,
     private datePipe: DatePipe
   ) {
     // Set today's date for min date validation
@@ -144,8 +145,99 @@ export class requestComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.Get_Division();
-    this.loadState();
+    // 1. Load Divisions first
+    this.api.get_Setup_Division().subscribe({
+      next: (response: any[]) => {
+        // Map: Division_Id, Profit_Center, Division_Name
+        const mapped = response.map(item => ({
+          Division: item.Profit_Center,
+          Division_Id: item.Division_Id,
+          DivisionName: item.Profit_Center === '7122' ? 'GM'
+            : item.Profit_Center === '71DZ' ? 'PMC'
+              : item.Division_Name || item.Profit_Center,
+          Profit_Center: item.Profit_Center
+        }));
+
+        // Deduplicate
+        const seen = new Set();
+        this.Division = mapped.filter(item => {
+          const duplicate = seen.has(item.DivisionName);
+          seen.add(item.DivisionName);
+          return !duplicate;
+        });
+
+        // 2. Check Query Params AFTER Division is loaded
+        this.route.queryParams.subscribe(params => {
+          if (params['fromPlan']) {
+            this.autoFillFromPlan(params);
+          } else {
+            this.loadState();
+          }
+        });
+      },
+      error: (e: any) => console.error(e),
+    });
+  }
+
+  autoFillFromPlan(params: any) {
+    console.log('🚀 Auto-filling from Plan:', params);
+
+    // 1. Set Case & Tooling
+    this.Case_ = params['case'] || 'SET';
+    this.Tooling_ = 'Cutting tool';
+
+    // 2. Match Division
+    const divParam = params['division'];
+    const foundDiv = this.Division.find((d: any) =>
+      d.DivisionName === divParam || d.Profit_Center === divParam
+    );
+
+    if (foundDiv) {
+      this.Div_ = foundDiv;
+
+      // 3. Load PartNo (Cascade)
+      const divisionCode = foundDiv.Division || foundDiv;
+      this.get_Facility(foundDiv); // Fire and forget
+
+      this.api.get_CaseSET_Dropdown_PartNo({ Division: divisionCode, ItemNo: null }).subscribe((parts: any[]) => {
+        this.PartNo = parts.map((p: any) => ({ PartNo: p.PartNo }));
+
+        // 4. Match PartNo
+        const foundPart = this.PartNo.find((p: any) => p.PartNo === params['partNo']);
+        if (foundPart) {
+          this.PartNo_ = foundPart;
+
+          // 5. Load Process
+          this.api.get_CaseSET_Dropdown_Process({
+            Division: divisionCode,
+            PartNo: foundPart.PartNo,
+            ItemNo: null
+          }).subscribe((procs: any[]) => {
+            this.Process = procs.map(p => ({ Process: p.Process }));
+
+            // 6. Match Process
+            const foundProc = this.Process.find((p: any) => p.Process === params['process']);
+            if (foundProc) {
+              this.Process_ = foundProc;
+
+              // 7. Load MC
+              this.api.get_CaseSET_Dropdown_MC({
+                Division: divisionCode, PartNo: foundPart.PartNo, Process: foundProc.Process, ItemNo: null
+              }).subscribe((mcs: any[]) => {
+                this.MachineType = mcs.map((m: any) => ({ MC: m.MC }));
+
+                // 8. Match MC
+                const foundMC = this.MachineType.find((m: any) => m.MC === params['mc']);
+                if (foundMC) this.MachineType_ = foundMC;
+
+                // 9. Trigger View
+                setTimeout(() => this.Setview(), 100);
+              });
+            }
+          });
+        }
+      });
+    }
   }
 
   // ==========================================
@@ -224,30 +316,9 @@ export class requestComponent implements OnInit {
   }
 
   // เรียกใช้ตัวดึงapi (ดึงข้อมูล Division)
+  // เรียกใช้ตัวดึงapi (ดึงข้อมูล Division) - Replaced by ngOnInit logic but kept for reference if needed elsewhere
   Get_Division() {
-    // โหลด Division จาก SP: Stored_Get_Dropdown_PC_Plan_Division
-    this.api.get_Setup_Division().subscribe({
-      next: (response: any[]) => {
-        // Map: Division_Id, Profit_Center, Division_Name
-        const mapped = response.map(item => ({
-          Division: item.Profit_Center,  // ใช้ Profit_Center เป็นค่าหลักแทน Division_Id
-          Division_Id: item.Division_Id, // เก็บ Division_Id ตัวเลขไว้สำหรับ Facility SP
-          DivisionName: item.Profit_Center === '7122' ? 'GM'
-            : item.Profit_Center === '71DZ' ? 'PMC'
-              : item.Division_Name || item.Profit_Center,
-          Profit_Center: item.Profit_Center
-        }));
-
-        // Deduplicate by DivisionName
-        const seen = new Set();
-        this.Division = mapped.filter(item => {
-          const duplicate = seen.has(item.DivisionName);
-          seen.add(item.DivisionName);
-          return !duplicate;
-        });
-      },
-      error: (e: any) => console.error(e),
-    });
+    // ... moved to ngOnInit for better initialization flow
   }
 
   // Logic เมื่อเลือก Case

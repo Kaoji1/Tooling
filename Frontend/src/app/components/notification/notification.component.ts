@@ -3,16 +3,18 @@ import { Component, OnInit, ElementRef, HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NotificationService, NotificationLog } from '../../core/services/notification.service';
 import { Observable } from 'rxjs';
+import { NotificationInboxComponent } from './notification-inbox/notification-inbox.component';
 
 @Component({
   selector: 'app-notification',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NotificationInboxComponent],
   templateUrl: './notification.component.html',
   styleUrls: ['./notification.component.scss']
 })
 export class NotificationComponent implements OnInit {
   isOpen = false;
+  isInboxOpen = false; // State for Gmail-style Inbox
   selectedNotification: NotificationLog | null = null; // State for Popup
   unreadCount$: Observable<number>;
   notifications$: Observable<NotificationLog[]>;
@@ -28,11 +30,17 @@ export class NotificationComponent implements OnInit {
   ngOnInit(): void { }
 
   togglePanel() {
-    this.isOpen = !this.isOpen;
+    // Instead of the old dropdown, we open the new Inbox Modal
+    this.isInboxOpen = !this.isInboxOpen;
+    // this.isOpen = !this.isOpen; // Old dropdown toggle
+  }
+
+  closeInbox() {
+    this.isInboxOpen = false;
   }
 
   markAllRead() {
-    this.notificationService.markAllReadLocal();
+    this.notificationService.markAllRead();
   }
 
   openDetail(item: NotificationLog) {

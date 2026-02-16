@@ -35,4 +35,25 @@ export class AuthService {
   isAdmin(): boolean {
     return this.getUserRole() === 'admin';
   }
+
+  // --- New Role Helpers ---
+  isPC(): boolean {
+    const role = this.getUserRole().toLowerCase();
+    return role === 'pc' || role === 'admin';
+  }
+
+  isEngineer(): boolean {
+    const role = this.getUserRole().toLowerCase();
+    return role === 'engineering' || role === 'eng' || role === 'admin';
+  }
+
+  isQC(): boolean {
+    const role = this.getUserRole().toLowerCase();
+    return role === 'qc' || role === 'admin';
+  }
+
+  isPD(): boolean { // Production
+    const role = this.getUserRole().toLowerCase();
+    return role === 'production' || role === 'pd' || role === 'admin';
+  }
 }

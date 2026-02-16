@@ -109,13 +109,13 @@ exports.insertPCPlan = async (req, res) => {
         // ตรวจสอบ PlanDate เพื่อใช้ในการ Snapshot (สมมติว่าเป็นเดือนเดียวกันหมด)
         // ตรวจสอบ PlanDate เพื่อใช้ในการ Snapshot (สมมติว่าเป็นเดือนเดียวกันหมด)
         const sampleDate = items[0].date;
+        const divisionCode = items[0].division || 'Unknown';
+        console.log(`[insertPCPlan] Received Division: ${divisionCode}, Sample Date: ${sampleDate}`);
 
-        // Generate Readable Batch ID (Plan ID) for this Transaction
-        // Format: PLAN-{Division}-{YYMMDD}-{HHmm}
-        // Example: PLAN-71DZ-260214-0930
+        // Generate Batch ID for tracing, but GroupId will be unique per item for TRUE revision tracking
         const dateObj = new Date();
-        const yymmdd = dateObj.toISOString().slice(2, 10).replace(/-/g, ''); // 260214
-        const hhmm = dateObj.toTimeString().slice(0, 5).replace(/:/g, '');   // 0930
+        const yymmdd = dateObj.toISOString().slice(2, 10).replace(/-/g, '');
+        const hhmm = dateObj.toTimeString().slice(0, 5).replace(/:/g, '');
         const batchId = `PLAN-${division}-${yymmdd}-${hhmm}`;
 
         // ============================================
@@ -124,14 +124,20 @@ exports.insertPCPlan = async (req, res) => {
         console.log(`Processing Snapshot for Div: ${division}, Date: ${sampleDate}, BatchID: ${batchId}`);
 
         // Prepare JSON Data
-        const jsonItems = items.map(item => {
-            let status = 'Active';
+        const jsonItems = items.map((item, index) => {
+            // Priority: 1. status from payload, 2. comment keyword, 3. default 'Active'
+            let status = item.planStatus || 'Active';
             const comment = (item.comment || '').toLowerCase();
 
-            // ตรวจสอบคำว่า Cancel ใน Comment
-            if (comment.includes('cancel') || comment.includes('ยกเลิก')) {
+            if (!item.planStatus && (comment.includes('cancel') || comment.includes('ยกเลิก'))) {
                 status = 'Cancelled';
             }
+
+            // --- CRITICAL: UNIQUE GROUP ID PER ITEM ---
+            // If it's a new item (no groupId), we generate a unique ID.
+            // This prevents "batch overlap" where editing one item affects others.
+            // We can prefix it with batchId for traceability if we want, but GUID (NEWID) is safer.
+            const uniqueGroupId = item.groupId || `${batchId}-${index}-${Math.floor(Math.random() * 1000)}`;
 
             return {
                 PlanDate: new Date(item.date),
@@ -147,11 +153,11 @@ exports.insertPCPlan = async (req, res) => {
                 Time: parseInt(item.time) || 0,
                 Comment: item.comment || '',
                 PlanStatus: status,
-                // If item has no GroupId (New), assign the BatchId. If editing, keep existing.
-                GroupId: item.groupId || batchId,
-                Path_Dwg: item.pathDwg || null,
-                Path_Layout: item.pathLayout || null,
-                Path_IIQC: item.iiqc || null
+                GroupId: uniqueGroupId,
+                Revision: item.revision, // Pass target revision
+                Path_Dwg: (item.pathDwg && item.pathDwg !== '-') ? item.pathDwg : null,
+                Path_Layout: (item.pathLayout && item.pathLayout !== '-') ? item.pathLayout : null,
+                Path_IIQC: (item.iiqc && item.iiqc !== '-') ? item.iiqc : null
             };
         });
 
@@ -167,30 +173,48 @@ exports.insertPCPlan = async (req, res) => {
         // === Notification Trigger ===
         try {
             const io = req.app.get('socketio');
-            // Use the BatchID in the message for specificity
-            const notifyMsg = `New Plan: ${batchId} (Qty: ${items.length})`;
+            const firstItem = items[0];
+            const isCancellation = firstItem.planStatus === 'Cancelled';
+            const isRevision = firstItem.revision > 0;
+
+            let eventType = 'NEW_PLAN';
+            let notifyMsg = `Batch: <strong>${batchId}</strong> | Total: <strong>${items.length} Items</strong> imported by <em>User</em>.`;
+            let docRef = batchId;
+
+            if (isCancellation) {
+                eventType = 'CANCEL_PLAN';
+                notifyMsg = `Job: <strong>${firstItem.groupId}</strong> has been removed. Reason: <span class="italic">${firstItem.comment || 'N/A'}</span>`;
+                docRef = firstItem.groupId;
+            } else if (isRevision) {
+                eventType = 'PLAN_REVISION';
+                // Note: Simplified revision message as old values aren't easily accessible here without a DB lookup
+                notifyMsg = `Job: <strong>${firstItem.groupId}</strong> | Plan updated to Revision <strong>${firstItem.revision}</strong>. <span class="text-slate-600">Comment: ${firstItem.comment || '-'}</span>`;
+                docRef = firstItem.groupId;
+            }
 
             // 1. Save to DB
-            await pool.request()
-                .input('Event_Type', sql.NVarChar, 'NEW_PLAN')
+            const notifyResult = await pool.request()
+                .input('Event_Type', sql.NVarChar, eventType)
                 .input('Message', sql.NVarChar, notifyMsg)
-                .input('Doc_No', sql.NVarChar, batchId) // Use BatchID as Doc Ref
-                .input('Action_By', sql.NVarChar, 'PC') // Todo: Get from req.user
+                .input('Doc_No', sql.NVarChar, docRef)
+                .input('Action_By', sql.NVarChar, 'PC')
                 .execute('trans.Stored_Insert_Notification_Log');
+
+            const notificationId = notifyResult.recordset[0]?.Notification_ID;
 
             // 2. Emit Socket Event
             if (io) {
                 io.emit('notification', {
-                    type: 'NEW_PLAN',
+                    id: notificationId,
+                    type: eventType,
                     message: notifyMsg,
-                    docNo: batchId, // Send DocNo for frontend popup
+                    docNo: docRef,
                     timestamp: new Date()
                 });
-                console.log(`[Notification] Emitted: ${notifyMsg}`);
+                console.log(`[Notification] Emitted: ${eventType} with ID: ${notificationId}`);
             }
         } catch (notifyErr) {
             console.error('Notification Error:', notifyErr);
-            // Don't fail the main request just because notification failed
         }
 
         return res.status(200).send({
@@ -264,19 +288,23 @@ exports.deletePCPlanGroup = async (req, res) => {
         // === Notification Trigger ===
         try {
             const io = req.app.get('socketio');
-            const notifyMsg = `Plan Deleted: Group ${groupId}`;
+            const notifyMsg = `Job: <strong>${groupId}</strong> has been removed. Reason: <span class="italic text-red-500">Deleted by authorized user</span>`;
 
-            await pool.request()
+            const notifyResult = await pool.request()
                 .input('Event_Type', sql.NVarChar, 'CANCEL_PLAN')
                 .input('Message', sql.NVarChar, notifyMsg)
                 .input('Doc_No', sql.NVarChar, groupId)
                 .input('Action_By', sql.NVarChar, 'PC')
                 .execute('trans.Stored_Insert_Notification_Log');
 
+            const notificationId = notifyResult.recordset[0]?.Notification_ID;
+
             if (io) {
                 io.emit('notification', {
+                    id: notificationId,
                     type: 'CANCEL_PLAN',
                     message: notifyMsg,
+                    docNo: groupId,
                     timestamp: new Date()
                 });
             }
@@ -320,14 +348,62 @@ exports.updatePaths = async (req, res) => {
         if (!groupId) return res.status(400).send({ message: "GroupId is required" });
 
         const pool = await poolPromise;
-        await pool.request()
+        const result = await pool.request()
             .input('GroupId', sql.NVarChar, groupId)
             .input('Path_Dwg', sql.NVarChar, pathDwg || null)
             .input('Path_Layout', sql.NVarChar, pathLayout || null)
             .input('Path_IIQC', sql.NVarChar, iiqc || null)
             .execute('trans.Stored_PCPlan_Update_Paths');
 
-        res.status(200).json({ message: "Paths updated successfully" });
+        const affectedRows = result.rowsAffected[0] || 0;
+        console.log(`[updatePaths] GroupId: ${groupId}, Affected Rows: ${affectedRows}`);
+
+        // === Notification Trigger (Only if rows actually updated) ===
+        if (affectedRows > 0) {
+            try {
+                const io = req.app.get('socketio');
+                let attachedFiles = [];
+                let deptName = 'Engineering';
+                let statusMsg = '<span class="text-blue-600">Wait QC</span>';
+
+                if (pathDwg && pathDwg !== '-') attachedFiles.push('Drawing');
+                if (pathLayout && pathLayout !== '-') attachedFiles.push('Layout');
+                if (iiqc && iiqc !== '-') {
+                    attachedFiles.push('IIQC Table');
+                    deptName = 'QC';
+                    statusMsg = '<span class="text-green-600">Ready</span>';
+                }
+
+                if (attachedFiles.length > 0) {
+                    const notifyHeader = `Document Attached (${deptName})`;
+                    const notifyMsg = `Attached <strong>${attachedFiles.join(' & ')}</strong> for Job: <strong>${groupId}</strong>. Status: ${statusMsg}`;
+
+                    const notifyResult = await pool.request()
+                        .input('Event_Type', sql.NVarChar, 'UPDATE_PLAN')
+                        .input('Message', sql.NVarChar, notifyMsg)
+                        .input('Doc_No', sql.NVarChar, groupId)
+                        .input('Action_By', sql.NVarChar, deptName)
+                        .execute('trans.Stored_Insert_Notification_Log');
+
+                    const notificationId = notifyResult.recordset[0]?.Notification_ID;
+
+                    if (io) {
+                        io.emit('notification', {
+                            id: notificationId,
+                            type: 'UPDATE_PLAN',
+                            message: notifyMsg,
+                            docNo: groupId,
+                            timestamp: new Date()
+                        });
+                    }
+                }
+            } catch (e) { console.error('Notify Error:', e); }
+        }
+
+        res.status(200).json({
+            message: affectedRows > 0 ? "Paths updated successfully" : "No records satisfied update criteria",
+            affectedRows: affectedRows
+        });
     } catch (err) {
         console.error('Error updatePaths:', err);
         res.status(500).send({ message: err.message });

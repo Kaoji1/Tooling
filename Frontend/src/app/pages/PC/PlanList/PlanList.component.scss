@@ -24,9 +24,9 @@
         flex-direction: column;
         padding: 20px;
         background-color: var(--color-bg);
-        overflow-y: auto;
+        overflow: hidden; // Disable outer scroll
         height: 100%;
-        min-width: 0; // Prevent flex item overflow
+        min-width: 0;
     }
 }
 
@@ -183,12 +183,12 @@ p {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     padding: 1rem;
-    overflow-x: auto;
+    overflow: auto; // Handle both X and Y scroll
     border: 1px solid var(--color-border);
     flex: 1; // Take remaining height
     display: flex;
     flex-direction: column;
-    min-height: 400px; // Ensure visible
+    min-height: 0; // Allow shrinking in flex container
 
     table {
         width: 100%;
@@ -196,20 +196,27 @@ p {
         min-width: 1200px; // Ensure scrolling on small screens
 
         thead {
-            background-color: #f1f5f9;
+            // Remove background from thead to avoid stacking issues, apply to th instead
+            background-color: transparent;
             position: sticky;
             top: 0;
             z-index: 10;
 
             th {
-                padding: 0.75rem 1rem;
+                background-color: #ffffff; // Bright white to pop
+                padding: 1rem;
                 text-align: left;
-                font-weight: 700;
-                color: #475569;
+                font-weight: 800;
+                color: #1e293b;
                 font-size: 0.75rem;
-                border-bottom: 2px solid var(--color-border);
+                border-bottom: 2px solid #cbd5e1;
                 white-space: nowrap;
                 text-transform: uppercase;
+                letter-spacing: 0.05em;
+
+                // Strong shadow to create "Floating" effect
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                z-index: 100;
 
                 &.col-no {
                     width: 60px;
@@ -271,17 +278,27 @@ p {
                 // --- 3. Status Colors (Only if NOT History, or Latest) ---
                 // We use :not(.row-history) to prevent pink background on old revisions
 
-                // Status: Cancelled
+                // Status: Cancelled (High Visibility "Frozen" Look)
                 &.row-cancelled:not(.row-history) {
-                    background-color: #fef2f2;
+                    background-color: #f8fafc; // Grayer, "Inactive" background
+                    border-left: 6px solid #ef4444 !important; // Thick Red Warning Border
 
                     td {
-                        color: #991b1b;
+                        color: #94a3b8; // Dim all secondary text
                         text-decoration: line-through;
+                        opacity: 0.7;
                     }
 
-                    .badge {
-                        text-decoration: none;
+                    // Keep Status Badge prominent
+                    td.col-status {
+                        text-decoration: none !important;
+                        opacity: 1 !important;
+                    }
+
+                    // Dim Icons
+                    i.bi {
+                        opacity: 0.4;
+                        pointer-events: none;
                     }
                 }
 
@@ -370,31 +387,96 @@ p {
         filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1)); // Make it pop
     }
 
-    &.edit {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    // Old Edit styles removed as requested
+}
 
-        &:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
-        }
+// New View Pill Button
+.btn-view-pill {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%); // Green (Emerald)
+    color: white;
+    font-weight: 800;
+    font-size: 0.7rem;
+    padding: 6px 14px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+
+    &:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%); // Darker Green
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px -2px rgba(5, 150, 105, 0.4);
     }
 
-    &.history {
-        background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); // Yellow/Gold
+    &:active {
+        transform: translateY(0);
+    }
+}
 
-        &:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(202, 138, 4, 0.3);
-        }
+// New Edit Pill Button
+.btn-edit-pill {
+    background-color: #3b82f6; // Blue 500
+    color: white;
+    font-weight: 800;
+    font-size: 0.7rem;
+    padding: 6px 14px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+    letter-spacing: 0.05em;
+    display: inline-flex; // Ensure consistent alignment
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+
+    // Add margin if needed, or rely on me-1 class from bootstrap utils if used
+
+    &:hover {
+        background-color: #2563eb; // Blue 600
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.4);
     }
 
-    &.delete {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    &:active {
+        transform: translateY(0);
+    }
+}
 
-        &:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
-        }
+// New Delete Pill Button
+.btn-delete-pill {
+    background-color: #ef4444; // Red 500
+    color: white;
+    font-weight: 800;
+    font-size: 0.7rem; // Small but readable
+    padding: 6px 14px;
+    border-radius: 50px; // Pill shape
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    margin-left: 4px;
+
+    &:hover {
+        background-color: #dc2626; // Red 600
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px -2px rgba(220, 38, 38, 0.4);
+    }
+
+    &:active {
+        transform: translateY(0);
     }
 }
 
@@ -425,38 +507,60 @@ p {
     font-weight: 600;
     text-transform: uppercase;
     display: inline-block;
+    letter-spacing: 0.5px;
+    border: 1px solid transparent; // Default border
+
+    // Explicit Status Classes (High Contrast)
+    &.badge-wait-both {
+        background-color: #f5f3ff !important; // Violet 50
+        color: #5b21b6 !important; // Violet 800 - High Contrast
+        border-color: #ddd6fe !important; // Violet 200
+    }
+
+    &.badge-wait-eng {
+        background-color: #fee2e2 !important; // Red 100
+        color: #991b1b !important; // Red 800 - High Contrast
+        border-color: #fecaca !important; // Red 200
+    }
+
+    &.badge-wait-qc {
+        background-color: #ffedd5 !important; // Orange 100
+        color: #9a3412 !important; // Orange 800 - High Contrast
+        border-color: #fed7aa !important; // Orange 200
+    }
+
+    &.badge-ready {
+        background-color: #dcfce7 !important; // Green 100
+        color: #166534 !important; // Green 800 - High Contrast
+        border-color: #bbf7d0 !important; // Green 200
+    }
 
     &.bg-success {
-        background-color: #16a34a; // Green 600
+        background-color: #16a34a;
         color: #ffffff;
     }
 
     &.bg-danger {
-        background-color: #dc2626; // Red 600
+        background-color: #dc2626;
         color: #ffffff;
     }
 }
 
-// Override Row Style for Cancelled
-.table-container table tbody tr.row-cancelled {
-    background-color: #f8fafc !important;
-
-    td {
-        color: #94a3b8 !important;
-        text-decoration: line-through;
-
-        // Don't strike through buttons or badge
-        &:last-child,
-        padding {
-            text-decoration: none;
-        }
-    }
-
-    // Restore badge visibility
-    .badge {
-        text-decoration: none !important;
-        opacity: 1;
-    }
+// --- New Status Badges ---
+.badge-cancelled-solid {
+    background-color: #ef4444;
+    color: white !important;
+    font-weight: 800;
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.4);
+    border: none;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    text-decoration: none !important;
 }
 
 // --- Edit Modal Styles ---
@@ -492,28 +596,38 @@ p {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); // Premium Blue Header
+        color: white;
+        border-radius: 16px 16px 0 0; // Match modal rounded corners
 
         h3 {
             margin: 0;
             font-size: 1.25rem;
-            color: #0f172a;
-            font-weight: 600;
+            color: white;
+            font-weight: 700;
+            letter-spacing: 0.02em;
         }
 
         .btn-close {
-            background: none;
+            background: rgba(255, 255, 255, 0.2); // Semi-transparent white
             border: none;
             font-size: 1.5rem;
             line-height: 1;
-            color: #94a3b8;
+            color: white;
             cursor: pointer;
             padding: 4px;
-            border-radius: 4px;
+            border-radius: 50%; // Circle button
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.2s;
+            backdrop-filter: blur(4px);
 
             &:hover {
-                background-color: #f1f5f9;
-                color: #ef4444;
+                background-color: rgba(255, 255, 255, 0.4);
+                transform: rotate(90deg); // Nice interaction
             }
         }
     }
@@ -521,6 +635,53 @@ p {
     .modal-body {
         padding: 24px;
         overflow-y: auto;
+
+        // Special styling for History Table inside Modal
+        .table-container {
+            box-shadow: none !important;
+            border: 1px solid #e2e8f0;
+            max-height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+
+                thead {
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+
+                    th {
+                        background-color: #f8fafc; // Slightly lighter for modal
+                        color: #334155;
+                        padding: 12px 16px;
+                        font-size: 0.75rem;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        border-bottom: 2px solid #e2e8f0;
+                        white-space: nowrap;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); // Subtle shadow
+                    }
+                }
+
+                tbody {
+                    td {
+                        padding: 10px 16px;
+                        font-size: 0.85rem;
+                        border-bottom: 1px solid #f1f5f9;
+                        color: #475569;
+                    }
+
+                    tr:last-child td {
+                        border-bottom: none;
+                    }
+                }
+            }
+        }
 
         .form-grid {
             display: grid;
@@ -752,4 +913,226 @@ p {
 
 .table-container table tbody tr:not(.group-start) {
     animation: slideInUp 0.3s ease-out forwards;
+}
+
+// --- Level 1: Department Tabs (Soft Blue Theme) ---
+.dept-tabs-container {
+    display: inline-flex;
+    padding: 4px;
+    background-color: #f1f5f9; // bg-slate-100
+    border-radius: 12px; // rounded-xl
+    margin-bottom: 20px;
+
+    .dept-tabs {
+        display: flex;
+        gap: 4px;
+
+        .dept-tab {
+            padding: 8px 24px;
+            font-size: 0.875rem;
+            font-weight: 500; // font-medium
+            color: #64748b; // text-slate-500
+            border: none;
+            background: transparent;
+            border-radius: 8px; // rounded-lg
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+
+            &:hover {
+                color: #2563eb; // hover:text-blue-600
+                background-color: #eff6ff; // hover:bg-blue-50
+            }
+
+            &.active {
+                background-color: #dbeafe; // bg-blue-100
+                color: #1d4ed8; // text-blue-700
+                font-weight: 700; // font-bold
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); // shadow-sm
+            }
+        }
+    }
+}
+
+// --- Level 2: Sub Tabs (Upcoming Button & Date Range) ---
+.sub-tabs-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .sub-tabs {
+        display: flex;
+        gap: 12px;
+
+        .btn-upcoming-premium {
+            background-color: #ffffff; // bg-white
+            border: 1px solid #bfdbfe; // border-blue-200
+            color: #1d4ed8; // text-blue-700
+            font-weight: 700; // font-bold
+            padding: 8px 24px;
+            border-radius: 12px; // rounded-xl
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); // shadow-sm
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+                background-color: #eff6ff; // hover:bg-blue-50
+                border-color: #3b82f6;
+                transform: translateY(-1px);
+            }
+
+            &.active {
+                background-color: #dbeafe; // bg-blue-100
+                border-color: #2563eb; // blue-600
+                color: #1e40af; // blue-800
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+                border-width: 2px; // Slightly thicker to be very obvious
+                padding: 7px 23px; // Offset for 2px border to maintain height
+            }
+
+            .action-count {
+                margin-left: 6px;
+                color: #ef4444; // text-red-500
+                font-weight: 800; // extra bold
+                font-size: 0.8rem;
+                background-color: #fef2f2; // bg-red-50
+                padding: 1px 6px;
+                border-radius: 6px;
+                border: 1px solid #fee2e2;
+                transition: all 0.2s;
+            }
+
+            &:hover .action-count,
+            &.active .action-count {
+                transform: scale(1.1);
+                color: #dc2626; // text-red-600
+                background-color: #fee2e2;
+            }
+        }
+    }
+
+    // --- Level 3: Range Tabs (Soft Blue Theme) ---
+    .range-tabs-container {
+        display: inline-flex;
+        padding: 4px;
+        background-color: #f1f5f9; // bg-slate-100
+        border-radius: 12px; // rounded-xl
+        width: fit-content;
+        min-width: 300px;
+
+        .range-tabs {
+            display: flex;
+            gap: 4px;
+            width: 100%;
+
+            .range-tab {
+                flex: 1;
+                padding: 6px 20px;
+                font-size: 0.8rem;
+                font-weight: 500; // font-medium
+                color: #64748b; // text-slate-500
+                border: none;
+                background: transparent;
+                border-radius: 8px; // rounded-lg
+                cursor: pointer;
+                transition: all 0.2s;
+                white-space: nowrap;
+                text-align: center;
+
+                &:hover {
+                    color: #2563eb; // hover:text-blue-600
+                    background-color: #eff6ff; // hover:bg-blue-50
+                }
+
+                &.active {
+                    background-color: #dbeafe; // bg-blue-100
+                    color: #1d4ed8; // text-blue-700
+                    font-weight: 700; // font-bold
+                    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); // shadow-sm
+                }
+            }
+        }
+    }
+}
+
+// Print Modal Styles (Refactored)
+.print-options-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.print-option-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    min-height: 140px;
+
+    &:hover {
+        background-color: #f8fafc;
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+
+    &.selected {
+        background-color: #eff6ff; // blue-50
+        border-color: #3b82f6; // blue-500
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+    }
+
+    span {
+        font-weight: 600;
+        color: #475569;
+        font-size: 0.9rem;
+    }
+
+    i {
+        transition: transform 0.2s;
+    }
+
+    &:hover i {
+        transform: scale(1.1);
+    }
+}
+
+// Zoom Controls
+.zoom-controls {
+    display: flex;
+    align-items: center;
+
+    .btn-zoom {
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #475569;
+        transition: all 0.2s;
+
+        &:hover {
+            background-color: #f1f5f9;
+            color: #3b82f6;
+            border-color: #93c5fd;
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
+    }
 }

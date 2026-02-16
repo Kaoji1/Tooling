@@ -67,6 +67,7 @@ app.use('/api', Return);
 const NotificationController = require('./src/controllers/Notification.controller.js');
 app.get('/api/notifications/list', NotificationController.getNotifications);
 app.put('/api/notifications/read/:id', NotificationController.markAsRead);
+app.put('/api/notifications/mark-all-read', NotificationController.markAllRead);
 // app.use('/api',FileSaver);
 // app.use('/api',ExportToExcel);
 // app.use('/api', updateItem);

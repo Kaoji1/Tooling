@@ -6,7 +6,7 @@
     <div class="pulse-ring" *ngIf="(unreadCount$ | async)! > 0"></div>
   </button>
 
-  <!-- Notification Panel -->
+  <!-- Notification Panel (Old Dropdown - Hidden for now or can be kept) -->
   <div class="notification-panel" [class.show]="isOpen">
     <div class="panel-header">
       <div class="header-title">
@@ -32,7 +32,9 @@
                 }">
           <i class="bi bi-file-earmark-plus" *ngIf="item.Event_Type === 'NEW_PLAN'"></i>
           <i class="bi bi-x-circle" *ngIf="item.Event_Type === 'CANCEL_PLAN'"></i>
-          <i class="bi bi-info-circle" *ngIf="item.Event_Type !== 'NEW_PLAN' && item.Event_Type !== 'CANCEL_PLAN'"></i>
+          <i class="bi bi-paperclip" *ngIf="item.Event_Type === 'UPDATE_PLAN'"></i>
+          <i class="bi bi-info-circle"
+            *ngIf="!['NEW_PLAN', 'CANCEL_PLAN', 'UPDATE_PLAN'].includes(item.Event_Type)"></i>
         </div>
         <div class="content icon_content">
           <p class="message">{{ item.Message }}</p>
@@ -75,4 +77,8 @@
       </div>
     </div>
   </div>
+
+  <!-- Gmail-Style Inbox Modal -->
+  <app-notification-inbox [isOpen]="isInboxOpen" (close)="closeInbox()">
+  </app-notification-inbox>
 </div>

@@ -1,25 +1,75 @@
-<div class="login-page">
+<div class="login-page-container">
 
-  <div class="login-card">
-    <h1>Login</h1>
+  <!-- SVG Header -->
+  <div class="svg-header-container">
+    <svg viewBox="0 0 800 160">
+      <!-- Text 1: Brand Name -->
+      <text x="50%" y="45%" text-anchor="middle" class="brand-text">
+        <tspan *ngFor="let char of brandChars" class="hover-char">{{char}}</tspan>
+      </text>
+
+      <!-- Text 2: Subtitle -->
+      <text x="50%" y="75%" text-anchor="middle" class="sub-text">
+        <tspan *ngFor="let char of subtitleChars" class="hover-char-sub">{{char}}</tspan>
+      </text>
+    </svg>
+  </div>
+
+  <!-- Login Card -->
+  <div class="login-card-entrance">
+
+    <div style="margin-bottom: 2rem; text-align: center;">
+      <h2 style="font-size: 1.75rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem;">Welcome Back</h2>
+      <p style="color: #64748b; font-size: 0.95rem;">Please sign in to continue</p>
+    </div>
 
     <form (ngSubmit)="onLogin()" #loginForm="ngForm">
-      <label for="userid">Username:</label>
-      <input type="text" name="username" [(ngModel)]="Username" required placeholder="Enter username" />
-
-      <label for="password">Password:</label>
-      <input type="password" id="passwordinput" name="password" [(ngModel)]="Password" required
-        placeholder="Enter password" />
-
-      <div class="show-password">
-        <input type="checkbox" id="showpwd" (change)="togglePasswordVisibility()" />
-        <label for="showpwd">Show password</label>
+      <!-- Username -->
+      <div class="input-group">
+        <label for="userid">Username</label>
+        <div style="position: relative;">
+          <span class="icon-wrapper">
+            <i class="bi bi-person"></i>
+          </span>
+          <input type="text" name="username" [(ngModel)]="Username" required placeholder="Enter your ID">
+        </div>
       </div>
 
-      <button type="submit" class="btn-singin">SIGN IN</button>
+      <!-- Password -->
+      <div class="input-group password-group">
+        <label for="password">Password</label>
+        <div style="position: relative; display: flex; align-items: center; gap: 10px;">
+          <div style="position: relative; width: 100%;">
+            <span class="icon-wrapper">
+              <i class="bi bi-lock"></i>
+            </span>
+            <input [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="Password" required
+              placeholder="Enter password" class="password-input">
+          </div>
 
-      <p *ngIf="errorMessage" style="color:red;">{{ errorMessage }}</p>
+          <button type="button" (click)="togglePasswordVisibility()" class="toggle-password-btn-outside"
+            style="color: #94a3b8; background: none; border: none; cursor: pointer; font-size: 1.25rem; transition: color 0.2s;"
+            onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#94a3b8'">
+            <i class="bi" [ngClass]="showPassword ? 'bi-eye' : 'bi-eye-slash'"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="submit-btn">
+        SIGN IN
+        <i class="bi bi-arrow-right"></i>
+      </button>
+
+      <p *ngIf="errorMessage"
+        style="color: #ef4444; font-size: 0.875rem; text-align: center; margin-top: 1rem; background-color: #fef2f2; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #fee2e2;">
+        {{ errorMessage }}
+      </p>
     </form>
+  </div>
 
+  <!-- Decoration / Footer -->
+  <div class="footer-text">
+    &copy; MinebeaMitsumi - Smart Tooling System
   </div>
 </div>
