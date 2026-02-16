@@ -1,6 +1,9 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth.service'; // Start Import
+
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { PCPlanService } from '../../../core/services/PCPlan.service';
 import { FileUploadSerice } from '../../../core/services/FileUpload.service';
@@ -12,6 +15,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { CustomDateAdapter } from '../../../core/utils/custom-date-adapter';
+import { CalendarModule } from 'primeng/calendar';
+import { NotificationComponent } from '../../../components/notification/notification.component';
+import { PrintActionBtnComponent } from './components/print-action-btn/print-action-btn.component';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -35,7 +41,11 @@ export const MY_DATE_FORMATS = {
     MatDatepickerModule,
     MatInputModule,
     MatNativeDateModule,
-    MatButtonModule
+    MatButtonModule,
+
+    CalendarModule,
+    NotificationComponent,
+    PrintActionBtnComponent
   ],
   providers: [
     { provide: DateAdapter, useClass: CustomDateAdapter },
@@ -51,7 +61,27 @@ export class PlanListComponent implements OnInit {
   filterDivision: string = '';
   filterMachineType: string = '';
   showHistory: boolean = false; // Toggle for Global History
+
+  // New Tab Structure
+  departments: string[] = ['PC', 'PD', 'PH', 'En', 'QC', 'Gage', 'View'];
+  selectedDepartment: string = 'PC';
+
+  subTabs: string[] = ['Upcoming'];
+  selectedSubTab: string = 'Upcoming';
+
+  dateRanges: string[] = ['7 DAY', '30 DAY', 'ALL'];
+  selectedDateRange: string = 'ALL';
+
+  // For storing pre-calculated counts
+  subTabCounts: { [key: string]: number } = {};
+
   currentUser: any;
+
+  // --- Permission Helpers ---
+  get canEditPC(): boolean { return this.authService.isPC(); }
+  get canAttachEng(): boolean { return this.authService.isEngineer(); }
+  get canAttachQC(): boolean { return this.authService.isQC(); }
+  get canRequest(): boolean { return this.authService.isPD(); }
 
   // รายการใน Dropdown Filter
   divisions: string[] = ['GM', 'PMC'];
@@ -78,6 +108,8 @@ export class PlanListComponent implements OnInit {
     private fileUploadService: FileUploadSerice,
     private historyPrint: HistoryPrint,
     private sanitizer: DomSanitizer,
+    private router: Router,
+    private authService: AuthService, // Injected
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
@@ -132,6 +164,7 @@ export class PlanListComponent implements OnInit {
   }
 
   loadPlanList() {
+    // Add cache-buster to ensure we get fresh data after edits
     this.pcPlanService.getPlanList(this.showHistory).subscribe({
       next: (res) => {
         // Map ข้อมูลจาก Backend (PascalCase) -> Frontend (camelCase)
@@ -140,7 +173,8 @@ export class PlanListComponent implements OnInit {
           // Change to dd/mm/yyyy (en-GB)
           date: item.PlanDate ? new Date(item.PlanDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '',
           // empId: item.Employee_ID,
-          division: this.mapDivisionName(item.Division), // Map Code to Name
+          division: this.mapDivisionName(item.Division), // Map Code to Name for UI
+          divisionCode: item.Division, // Keep Code for DB updates
           mcType: item.MC_Type, // HTML ใช้ mcType
           fac: item.Facility,
           process: item.Process,
@@ -171,98 +205,164 @@ export class PlanListComponent implements OnInit {
   }
 
   // ฟังก์ชันสำหรับกรองข้อมูล
-  // View Mode: 'upcoming' | 'monthly' | 'engineer' | 'qc'
-  viewMode: string = 'upcoming'; // Default
-
-  setViewMode(mode: string) {
-    this.viewMode = mode;
-    this.applyFilter();
-  }
-
-  // ฟังก์ชันสำหรับกรองข้อมูล
   applyFilter() {
     this.updateMachineTypeOptions(); // Update Dropdown Options based on Division
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    this.filteredPlanList = this.planList.filter(item => {
-      // Parse Item Date
-      const [day, month, year] = item.date.split('/').map(Number);
-      const itemDate = new Date(year, month - 1, day);
+    // Pre-calculate Latest Revision and Max PlanID for each GroupId to use in sorting/filtering
+    const latestMap = new Map<string, number>();
+    const groupMaxIdMap = new Map<string, number>();
 
-      // 1. Filter by View Mode
-      let matchView = true;
-      if (this.viewMode === 'upcoming') {
-        // Upcoming: Today to +2 Months
-        const twoMonthsLater = new Date(today);
-        twoMonthsLater.setMonth(today.getMonth() + 2);
-        matchView = itemDate >= today && itemDate <= twoMonthsLater;
-      } else if (this.viewMode === 'monthly') {
-        // Monthly: Current Month & Next Month
-        const startCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const endNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0); // Last day of next month
-        matchView = itemDate >= startCurrentMonth && itemDate <= endNextMonth;
-      } else if (this.viewMode === 'engineer') {
-        // Engineer: Missing Path Dwg OR Path Layout
-        const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
-        const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
-        matchView = !hasDwg || !hasLayout;
-      } else if (this.viewMode === 'qc') {
-        // QC: Missing Path IIQC
-        const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
-        matchView = !hasIIQC;
-      }
+    this.planList.forEach(item => {
+      // Fallback to item.id if groupId is missing to treat it as a unique single-revision plan
+      const key = item.groupId && item.groupId !== '-' ? item.groupId : `temp_${item.id}`;
 
-      // 2. Filter Date (Specific Date Selection overrides View Mode date range if set)
-      const matchDate = this.filterDate ? this.isDateMatch(item.date, this.filterDate) : true;
+      // 1. Find Max Revision
+      const currentMaxRev = latestMap.get(key) || -1;
+      if (item.revision > currentMaxRev) latestMap.set(key, item.revision);
 
-      // 3. Filter Division
-      const matchDivision = this.filterDivision ? item.division === this.filterDivision : true;
-
-      // 4. Filter Machine Type
-      const matchMachine = this.filterMachineType ? item.mcType === this.filterMachineType : true;
-
-      return matchView && matchDate && matchDivision && matchMachine;
+      // 2. Find Max ID in group (for Recency sorting)
+      const currentMaxId = groupMaxIdMap.get(key) || -1;
+      if (item.id > currentMaxId) groupMaxIdMap.set(key, item.id);
     });
 
-    // เรียงลำดับ: วันที่ล่าสุด -> Revision ล่าสุด
+    // Reset counts for the current department
+    this.subTabCounts = {};
+    const isActionRequiredTab = (this.selectedSubTab === 'Action Required');
+
+    this.filteredPlanList = this.planList.filter(item => {
+      // Parse Item Date (Robustly)
+      const parts = item.date.split('/');
+      if (parts.length !== 3) return false;
+      const [day, month, year] = parts.map(Number);
+
+      // Safety check: If for some reason the database still sends BE years (2500+),
+      // treat them as AD (2000+) for UI date comparison consistency.
+      const normalizedYear = year > 2400 ? year - 543 : year;
+      const itemDate = new Date(normalizedYear, month - 1, day);
+
+      const key = item.groupId && item.groupId !== '-' ? item.groupId : `temp_${item.id}`;
+      const isLatest = item.revision === latestMap.get(key);
+      item.isLatest = isLatest; // Store for UI
+
+      // Add groupMaxId to item for sorting later
+      item.groupMaxId = groupMaxIdMap.get(key);
+
+      // --- Division Filtering Logic per Department ---
+      // PC department should default to PMC division
+      let matchDivision = this.filterDivision ? item.division === this.filterDivision : true;
+      if (!this.filterDivision) {
+        if (this.selectedDepartment === 'PC') {
+          matchDivision = item.division === 'PMC';
+        } else if (this.selectedDepartment === 'En' || this.selectedDepartment === 'QC') {
+          // Engineer/QC usually work on PMC plans or both? 
+          // Based on user feedback, they might be looking for PMC plans.
+          // Let's keep it 'All' for others unless specified.
+        }
+      }
+
+      const matchMachine = this.filterMachineType ? item.mcType === this.filterMachineType : true;
+      const isActiveLatest = (item.planStatus === 'Active' || item.planStatus === 'Incomplete') && isLatest;
+
+      // --- 1. Calculate Counts (Always respect Division/Machine filters) ---
+      if (matchDivision && matchMachine && isActiveLatest) {
+        // Count for 'Upcoming' (Global logic: Today + 2 Months)
+        const twoMonthsLater = new Date(today);
+        twoMonthsLater.setMonth(today.getMonth() + 2);
+        if (itemDate >= today && itemDate <= twoMonthsLater) {
+          this.subTabCounts['Upcoming'] = (this.subTabCounts['Upcoming'] || 0) + 1;
+        }
+
+        // Count for 'Action Required' (Department-specific logic)
+        if (this.selectedDepartment === 'En') {
+          const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
+          const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
+          if (!hasDwg || !hasLayout) this.subTabCounts['Action Required'] = (this.subTabCounts['Action Required'] || 0) + 1;
+        } else if (this.selectedDepartment === 'QC') {
+          const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
+          if (!hasIIQC) this.subTabCounts['Action Required'] = (this.subTabCounts['Action Required'] || 0) + 1;
+        }
+      }
+
+      // --- 2. Actual Filtering for the List ---
+      if (!matchDivision || !matchMachine) return false;
+
+      let matchSubTab = true;
+      if (this.selectedSubTab === 'Upcoming') {
+        const todayCopy = new Date(today);
+        let endDate = new Date(todayCopy);
+        if (this.selectedDateRange === '7 DAY') endDate.setDate(todayCopy.getDate() + 7);
+        else if (this.selectedDateRange === '30 DAY') endDate.setDate(todayCopy.getDate() + 30);
+        else endDate.setMonth(todayCopy.getMonth() + 2);
+        matchSubTab = itemDate >= today && itemDate <= endDate;
+      } else if (isActionRequiredTab) {
+        if (this.selectedDepartment === 'En') {
+          const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
+          const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
+          matchSubTab = !hasDwg || !hasLayout;
+        } else if (this.selectedDepartment === 'QC') {
+          const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
+          matchSubTab = !hasIIQC;
+        }
+      }
+
+      // 2. Filter Date (Ignore calendar filter if in Action Required mode)
+      const matchDate = (this.filterDate && !isActionRequiredTab) ? this.isDateMatch(item.date, this.filterDate) : true;
+
+      if (!matchSubTab || !matchDate) return false;
+
+      // 3. Revision Visibility Logic
+      // If Show History is ON, show all versions that passed the date/sub-tab filters
+      if (this.showHistory) return true;
+
+      // Normal Mode: Show only the Latest version that passed the filters
+      return isLatest;
+    });
+
+    // เรียงลำดับ: วันที่ -> Recency (ID ล่าสุดของกลุ่ม) -> Revision ล่าสุด
     this.filteredPlanList.sort((a, b) => {
-      // Parse dd/mm/yyyy to Date object for sorting
+      // 1. Sort by PlanDate (ASC) - Show soonest plans first for Upcoming
       const [dayA, monthA, yearA] = a.date.split('/').map(Number);
       const [dayB, monthB, yearB] = b.date.split('/').map(Number);
       const dateA = new Date(yearA, monthA - 1, dayA).getTime();
       const dateB = new Date(yearB, monthB - 1, dayB).getTime();
+      if (dateA !== dateB) return dateA - dateB;
 
-      if (dateB !== dateA) return dateA - dateB;
+      // 2. Recency Factor: Sort by the maximum ID found in the group
+      // This ensures edited/cancelled items (which have a higher max group ID) jump to the top of the date section.
+      const groupMaxA = a.groupMaxId || 0;
+      const groupMaxB = b.groupMaxId || 0;
+      if (groupMaxA !== groupMaxB) return groupMaxB - groupMaxA;
 
-      // GroupId Check (Group items together just in case date is same) - Optional but good practice
-      if (a.groupId && b.groupId && a.groupId !== b.groupId) {
-        return a.groupId.localeCompare(b.groupId);
-      }
-
+      // 3. Within same group, show Latest Revision first
       return (b.revision || 0) - (a.revision || 0);
     });
 
     // --- Post-Processing for Display ---
     // Mark 'isLatest' and 'isGroupStart' for UI Styling
     const seenGroups = new Set<string>();
-    let lastGroupId = '';
+    let lastGroupIdSection = '';
 
     this.filteredPlanList.forEach((item, index) => {
-      // 1. Check isLatest (First time seeing this GroupId in the sorted list = Latest)
-      // Since we sort by Revision DESC within Group, the first one is the latest.
-      if (!seenGroups.has(item.groupId)) {
+      const key = (item.groupId && item.groupId !== '-') ? item.groupId : `temp_${item.id}`;
+
+      // 1. Check isLatest (First time seeing this GroupId key in the sorted list = Latest)
+      if (!seenGroups.has(key)) {
         item.isLatest = true;
-        seenGroups.add(item.groupId);
+        seenGroups.add(key);
       } else {
         item.isLatest = false;
       }
 
-      // 2. Check isGroupStart (Separator)
-      if (item.groupId !== lastGroupId) {
+      // 2. Check isGroupStart (For UI separators)
+      // If groupId is '-', every item is its own group start
+      if (item.groupId === '-') {
         item.isGroupStart = true;
-        lastGroupId = item.groupId;
+      } else if (item.groupId !== lastGroupIdSection) {
+        item.isGroupStart = true;
+        lastGroupIdSection = item.groupId;
       } else {
         item.isGroupStart = false;
       }
@@ -292,6 +392,51 @@ export class PlanListComponent implements OnInit {
       year === filterDateObj.getFullYear();
   }
 
+  // --- Process Status Logic ---
+  getProcessStatus(item: any): { status: string, color: string, label: string } {
+    const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
+    const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
+    const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
+
+    const hasEn = hasDwg && hasLayout;
+    const hasQC = hasIIQC;
+
+    if (!hasEn && !hasQC) {
+      return { status: 'WAIT_BOTH', color: 'badge-wait-both', label: 'Wait En & QC' };
+    } else if (!hasEn) {
+      return { status: 'WAIT_ENG', color: 'badge-wait-eng', label: 'Wait Eng' };
+    } else if (!hasQC) {
+      return { status: 'WAIT_QC', color: 'badge-wait-qc', label: 'Wait QC' };
+    } else {
+      return { status: 'READY', color: 'badge-ready', label: 'Ready' };
+    }
+  }
+
+  // --- Request Navigation ---
+  onRequest(item: any) {
+    console.log('Navigating to Request with item:', item);
+
+    // Prepare Query Params
+    const queryParams = {
+      case: 'SET', // Force SET case
+      division: item.division, // Use mapped name (GM/PMC) or code? Need to check Request logic. 
+      // Request expects 'Division' (Profit_Center like 7122/71DZ) OR 'GM'/'PMC' if mapped?
+      // Request.ts uses: this.Div_?.Division || this.Div_
+      // PlanList item.division is mapped name (GM/PMC).
+      // Let's send what we have, Request should handle it or we might need to send Code.
+      // Wait, mapDivisionName converts code to name. PlanList displays Name.
+      // But Request might need the Code (7122) to query DB.
+      // Let's try sending the mapped name first, as Request probably allows selecting 'GM' in dropdown.
+      partNo: item.partNo,
+      process: item.process,
+      mc: item.mcType,
+      qty: item.qty,
+      fromPlan: 'true'
+    };
+
+    this.router.navigate(['/request'], { queryParams: queryParams });
+  }
+
   // --- Edit Logic ---
   isEditModalOpen: boolean = false;
   editData: any = {};
@@ -300,20 +445,123 @@ export class PlanListComponent implements OnInit {
     this.editData = { ...item }; // Clone data
     this.editData.originalItem = { ...item }; // Keep original for comparison
 
-    // Format Date for <input type="date"> (yyyy-MM-dd)
+    // Determine context based on selectedDepartment
+    this.editData.context = this.selectedDepartment;
+
+    // Format Date for p-calendar (Date object)
     if (this.editData.date) {
       const parts = this.editData.date.split('/');
       if (parts.length === 3) {
-        // parts: [dd, mm, yyyy] -> yyyy-MM-dd
-        this.editData.dateObj = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        // parts: [dd, mm, yyyy] -> new Date(yyyy, mm-1, dd)
+        this.editData.dateObj = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
       }
     }
 
     this.isEditModalOpen = true;
   }
 
+  onCancel(item: any) {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "Do you want to cancel this plan?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, cancel it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Create a new revision with status 'Cancelled'
+        // We reuse insertPCPlan logic but set status
+
+        // Need dateObj for payload
+        let dateObj = '';
+        if (item.date) {
+          const parts = item.date.split('/');
+          if (parts.length === 3) {
+            dateObj = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+          }
+        }
+
+        const payload = [{
+          date: dateObj,
+          employeeId: item.empId || this.currentUser.Employee_ID,
+          division: item.divisionCode || item.division,
+          // NOTE: Insert logic usually requires valid Data. 
+          // Let's assume item has enough info or we might need to adjust backend to accept just ID for status update?
+          // Existing backend 'insertPCPlan' creates NEW row.
+
+          mcType: item.mcType,
+          fac: item.fac,
+          partBefore: item.partBefore,
+          mcNo: item.mcNo,
+          partNo: item.partNo,
+          process: item.process,
+          qty: item.qty,
+          time: item.time,
+          comment: item.comment,
+          pathDwg: item.pathDwg === '-' ? '' : item.pathDwg,
+          pathLayout: item.pathLayout === '-' ? '' : item.pathLayout,
+          iiqc: item.iiqc === '-' ? '' : item.iiqc,
+
+          groupId: item.groupId,
+          revision: (item.revision || 0) + 1,
+          planStatus: 'Cancelled'
+        }];
+
+        this.pcPlanService.savePlan(payload).subscribe({
+          next: (res) => {
+            Swal.fire('Cancelled!', 'The plan has been cancelled.', 'success');
+            this.loadPlanList();
+          },
+          error: (err) => {
+            console.error('Cancel Error:', err);
+            Swal.fire('Error', 'Failed to cancel plan.', 'error');
+          }
+        });
+      }
+    });
+  }
+
   closeEditModal() {
     this.isEditModalOpen = false;
+  }
+
+  // --- Tab Selection ---
+  selectDepartment(dept: string) {
+    this.selectedDepartment = dept;
+
+    // Dynamically update sub-tabs based on department
+    if (dept === 'En' || dept === 'QC') {
+      this.subTabs = ['Upcoming', 'Action Required'];
+    } else {
+      this.subTabs = ['Upcoming'];
+    }
+
+    // Reset sub-tab if the current one is not available for the new department
+    if (!this.subTabs.includes(this.selectedSubTab)) {
+      this.selectedSubTab = 'Upcoming';
+    }
+
+    this.applyFilter();
+  }
+
+  getActionRequiredCount(dept: string): number {
+    return this.subTabCounts['Action Required'] || 0;
+  }
+
+  selectSubTab(tab: string) {
+    this.selectedSubTab = tab;
+    // Reset date range when switching sub-tabs if needed
+    if (tab === 'Upcoming') {
+      this.selectedDateRange = 'ALL';
+    }
+    this.applyFilter();
+  }
+
+  selectDateRange(range: string) {
+    this.selectedDateRange = range;
+    this.applyFilter();
   }
 
   saveEdit() {
@@ -335,6 +583,7 @@ export class PlanListComponent implements OnInit {
       this.editData.comment !== original.comment; // User said Comment cancel changes status, so it's a Plan change
 
     // Compare Path Fields
+    // Compare Path Fields
     const isPathChanged =
       this.editData.pathDwg !== original.pathDwg ||
       this.editData.pathLayout !== original.pathLayout ||
@@ -348,70 +597,124 @@ export class PlanListComponent implements OnInit {
       didOpen: () => Swal.showLoading()
     });
 
-    if (isPathChanged && !isPlanChanged) {
-      // --- CASE 1: ONLY Path Update (No Rev Change) ---
-      const pathPayload = {
-        groupId: this.editData.groupId,
-        pathDwg: this.editData.pathDwg,
-        pathLayout: this.editData.pathLayout,
-        iiqc: this.editData.iiqc
-      };
+    // --- EXECUTION LOGIC ---
+    console.log('Final Save Payload:', {
+      dept: this.selectedDepartment,
+      groupId: this.editData.groupId,
+      isPathChanged,
+      isPlanChanged
+    });
 
-      this.pcPlanService.updatePaths(pathPayload).subscribe({
-        next: (res) => {
-          Swal.fire('Success', 'Attachments updated!', 'success');
-          this.isEditModalOpen = false;
-          this.loadPlanList();
-        },
-        error: (err) => {
-          console.error('Update Path Error:', err);
-          Swal.fire('Error', 'Failed to update attachments.', 'error');
-        }
-      });
+    // 0. Remove the restrictive GroupId '-' check. The backend Procedure 'Stored_PCPlan_Insert_PMC_Snapshot' 
+    // now handles '-' by generating a NEWID() automatically. 
+    // This allows legacy items to be upgraded to the new revision system seamlessly.
 
-    } else {
-      // --- CASE 2: Plan Changed (New Revision) OR Nothing Changed ---
-      // 1. Prepare Payload
-      // Note: We send an array because backend insertPCPlan expects an array
-      const payload = [{
-        date: this.editData.dateObj, // yyyy-MM-dd
-        employeeId: this.editData.empId,
-        division: this.editData.division,
-        mcType: this.editData.mcType,
-        fac: this.editData.fac,
-        partBefore: this.editData.partBefore,
-        process: this.editData.process,
-        mcNo: this.editData.mcNo,
-        partNo: this.editData.partNo,
-        qty: this.editData.qty,
-        time: this.editData.time,
-        comment: this.editData.comment,
-        pathDwg: this.editData.pathDwg,
-        pathLayout: this.editData.pathLayout,
-        iiqc: this.editData.iiqc,
-        groupId: this.editData.groupId // Use existing GroupId
-      }];
+    // 1. If it's En or QC, they only update paths.
+    if (this.selectedDepartment === 'En' || this.selectedDepartment === 'QC') {
+      if (isPathChanged) {
+        const pathPayload = {
+          groupId: this.editData.groupId,
+          pathDwg: this.editData.pathDwg,
+          pathLayout: this.editData.pathLayout,
+          iiqc: this.editData.iiqc
+        };
 
-      this.pcPlanService.savePlan(payload).subscribe({
-        next: (res) => {
-          Swal.fire({
-            title: '<span style="color:#059669; font-weight:800;">Success</span>',
-            text: 'Plan updated successfully!',
-            icon: 'success',
-            customClass: {
-              popup: 'swal-premium-popup',
-              title: 'swal-premium-title',
-              confirmButton: 'swal-premium-confirm swal-premium-confirm-success'
+        this.pcPlanService.updatePaths(pathPayload).subscribe({
+          next: (res) => {
+            if (res.affectedRows === 0) {
+              Swal.fire('Warning', 'No records were updated. This might happen if the GroupId is invalid or the item is inactive.', 'warning');
+            } else {
+              Swal.fire('Success', 'Attachments updated!', 'success');
             }
-          });
-          this.isEditModalOpen = false;
-          this.loadPlanList(); // Reload to see new Revision
-        },
-        error: (err) => {
-          console.error('Save Edit Error:', err);
-          Swal.fire('Error', 'Failed to update plan.', 'error');
+            this.isEditModalOpen = false;
+            this.loadPlanList();
+          },
+          error: (err) => {
+            console.error('Update Path Error:', err);
+            Swal.fire('Error', err.error?.message || 'Failed to update attachments.', 'error');
+          }
+        });
+      } else {
+        Swal.fire('Info', 'No changes detected in attachments.', 'info');
+        this.isEditModalOpen = false;
+      }
+      return;
+    }
+
+    // 2. PC Logic: Prefer updatePaths if ONLY paths changed, otherwise savePlan (New Revision)
+    if (this.selectedDepartment === 'PC') {
+      if (isPathChanged && !isPlanChanged) {
+        // Efficiency: Just update paths if nothing else changed
+        const pathPayload = {
+          groupId: this.editData.groupId,
+          pathDwg: this.editData.pathDwg,
+          pathLayout: this.editData.pathLayout,
+          iiqc: this.editData.iiqc
+        };
+
+        this.pcPlanService.updatePaths(pathPayload).subscribe({
+          next: (res) => {
+            if (res.affectedRows === 0) {
+              Swal.fire('Warning', 'No records were updated.', 'warning');
+            } else {
+              Swal.fire('Success', 'Paths updated!', 'success');
+            }
+            this.isEditModalOpen = false;
+            this.loadPlanList();
+          },
+          error: (err) => {
+            console.error('Update Path Error:', err);
+            Swal.fire('Error', 'Failed to update paths.', 'error');
+          }
+        });
+      } else if (isPlanChanged) {
+        // Create a New Revision
+
+        // Final Date string for backend (yyyy-MM-dd)
+        let finalDate = '';
+        if (this.editData.dateObj instanceof Date) {
+          const d = this.editData.dateObj;
+          finalDate = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+        } else if (typeof this.editData.dateObj === 'string') {
+          finalDate = this.editData.dateObj; // Already yyyy-MM-dd if user didn't change it via calendar
         }
-      });
+
+        const payload = [{
+          date: finalDate,
+          employeeId: this.editData.empId,
+          division: this.editData.divisionCode || this.editData.division,
+          mcType: this.editData.mcType,
+          fac: this.editData.fac,
+          partBefore: this.editData.partBefore,
+          mcNo: this.editData.mcNo,
+          partNo: this.editData.partNo,
+          process: this.editData.process,
+          qty: this.editData.qty,
+          time: this.editData.time,
+          comment: this.editData.comment,
+          pathDwg: this.editData.pathDwg,
+          pathLayout: this.editData.pathLayout,
+          iiqc: this.editData.iiqc,
+          groupId: this.editData.groupId,
+          revision: (this.editData.revision || 0) + 1,
+          planStatus: 'Active'
+        }];
+
+        this.pcPlanService.savePlan(payload).subscribe({
+          next: (res) => {
+            Swal.fire('Success', 'Plan updated (New Revision)!', 'success');
+            this.isEditModalOpen = false;
+            this.loadPlanList();
+          },
+          error: (err) => {
+            console.error('Insert Plan Error:', err);
+            Swal.fire('Error', 'Failed to update plan.', 'error');
+          }
+        });
+      } else {
+        Swal.fire('Info', 'No changes detected.', 'info');
+        this.isEditModalOpen = false;
+      }
     }
   }
 
@@ -507,9 +810,11 @@ export class PlanListComponent implements OnInit {
   }
 
   mapDivisionName(code: string): string {
-    if (code === '7122' || code === '3') return 'GM'; // Handle both code and legacy ID
-    if (code === '71DZ' || code === '2') return 'PMC'; // Handle both code and legacy ID
-    return code; // Return original if no match
+    if (!code) return 'Unknown';
+    const c = code.toString().trim().toUpperCase();
+    if (c === '7122' || c === '3' || c === 'GM') return 'GM';
+    if (c === '71DZ' || c === '2' || c === 'PMC') return 'PMC';
+    return code;
   }
 
   openFile(filePath: string) {
@@ -546,17 +851,17 @@ export class PlanListComponent implements OnInit {
     });
   }
 
-  copyToClipboard(path: string) {
+  copyToClipboard(path: string, label: string = 'Path') {
     if (!path) return;
 
     // Attempt to copy using Clipboard API
     navigator.clipboard.writeText(path).then(() => {
       Swal.fire({
         icon: 'success',
-        title: '<span style="font-weight:700;">Copied!</span>',
-        text: 'Path copied to clipboard.',
+        title: `<span style="font-weight:700;">${label} Copied!</span>`,
+        text: `${label} copied to clipboard.`,
         toast: true,
-        position: 'top-end',
+        position: 'top',
         showConfirmButton: false,
         timer: 3000,
         timerProgressBar: true
@@ -570,6 +875,13 @@ export class PlanListComponent implements OnInit {
 
   // --- Print Functionality ---
 
+  // --- Print Handling ---
+  // --- Print Handling ---
+  selectPrintType(type: string) {
+    this.printType = type;
+    this.onPrintTypeChange();
+  }
+
   openPrintModal(item: any) {
     this.selectedItemForPrint = item;
     // User requested "don't input myself" and "count when printing".
@@ -580,15 +892,36 @@ export class PlanListComponent implements OnInit {
     this.isPrintModalOpen = true;
   }
 
+  previewZoom: number = 1;
+  previewBlobUrl: string | null = null;
+
   closePrintModal() {
     this.isPrintModalOpen = false;
     this.selectedItemForPrint = null;
     this.printQty = null;
     this.printType = null;
     this.previewUrl = null;
+    this.previewBlobUrl = null;
+    this.previewZoom = 1;
+  }
+
+  // --- Zoom Controls ---
+  zoomIn() {
+    this.previewZoom += 0.25;
+  }
+
+  zoomOut() {
+    if (this.previewZoom > 0.5) {
+      this.previewZoom -= 0.25;
+    }
+  }
+
+  resetZoom() {
+    this.previewZoom = 1;
   }
 
   onPrintTypeChange() {
+    this.previewZoom = 1;
     if (!this.selectedItemForPrint || !this.printType) {
       this.previewUrl = null;
       return;
@@ -609,15 +942,23 @@ export class PlanListComponent implements OnInit {
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
         const blob = new Blob([bytes], { type: 'application/pdf' });
-        const blobUrl = URL.createObjectURL(blob) + '#toolbar=0&navpanes=0&scrollbar=0';
-        this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
+        const blobUrl = URL.createObjectURL(blob);
+        this.previewBlobUrl = blobUrl; // Store raw URL for new tab opening
+        this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl + '#toolbar=0&navpanes=0&scrollbar=0');
       },
       error: err => {
         console.error('Error loading PDF:', err);
         Swal.fire('Error', 'Unable to load PDF preview.', 'error');
         this.previewUrl = null;
+        this.previewBlobUrl = null;
       }
     });
+  }
+
+  openInNewTab() {
+    if (this.previewBlobUrl) {
+      window.open(this.previewBlobUrl, '_blank');
+    }
   }
 
   printPdf() {
@@ -655,59 +996,69 @@ export class PlanListComponent implements OnInit {
         // This links the print history to the plan group.
         const docNoToSave = this.selectedItemForPrint.groupId;
 
-        // Map printType back to backend expected 'TypePrint' values if needed
-        // HistoryComponent sends 'PathLayout' or 'PathDwg'.
-        // My options are 'pathLayout' or 'pathDwg'.
-        // Let's capitalize to match history service expectations if they exist, 
-        // but looking at HistoryComponent.ts: { label: 'Layout', value: 'PathLayout' }
-        // My values are 'pathLayout' (camelCase from item props). 
-        // I should probably send 'PathLayout' or 'PathDwg' to be consistent with database if strictly required?
-        // HistoryComponent checks: c.TypePrint === 'PathLayout'
-        // So I should convert my 'pathLayout' -> 'PathLayout'.
-
         let typePrintToSend = '';
         if (this.printType === 'pathLayout') typePrintToSend = 'PathLayout';
         else if (this.printType === 'pathDwg') typePrintToSend = 'PathDwg';
+        else if (this.printType === 'iiqc') typePrintToSend = 'IIQC';
 
-        this.historyPrint.SaveHistoryPrint({
-          EmployeeID: employeeId,
-          Division: this.selectedItemForPrint.division || '', // Division name
-          DocNo: docNoToSave,
-          PratNo: this.selectedItemForPrint.partNo,
-          DueDate: this.selectedItemForPrint.date, // Plan Date
-          TypePrint: typePrintToSend,
-          Total: qty
-        }).subscribe({
-          next: () => {
-            // Update counts locally
-            this.updatePrintCounts();
-
-            this.closePrintModal();
-
-            // Create hidden iframe for print
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = blobUrl;
-            document.body.appendChild(iframe);
-
-            iframe.onload = () => {
-              // Just print once. History records the 'qty' entered by user.
-              // User must manually set copies in browser dialog if > 1.
-              iframe.contentWindow?.focus();
-              iframe.contentWindow?.print();
-
-              // Remove iframe after printing dialog closes (or short delay) to keep DOM clean
-              setTimeout(() => {
-                document.body.removeChild(iframe);
-              }, 1000);
-            };
-          },
-          error: err => {
-            console.error("Save history error:", err);
-            // Still print? Or block? HistoryComponent blocks on error implicitly if it crashes, but logic is inside success.
-            Swal.fire('Error', 'Failed to save print history.', 'error');
+        // Parse DueDate to ensure it's a valid Date object for SQL
+        let dueDateVal = this.selectedItemForPrint.date;
+        if (typeof dueDateVal === 'string') {
+          // Attempt to parse 'dd/mm/yyyy' or 'yyyy-mm-dd'
+          const parts = dueDateVal.split('/');
+          if (parts.length === 3) {
+            dueDateVal = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+          } else {
+            dueDateVal = new Date(dueDateVal);
           }
-        });
+        }
+        // Fallback to today if invalid
+        if (!dueDateVal || isNaN(dueDateVal.getTime())) {
+          dueDateVal = new Date();
+        }
+
+        // Create hidden iframe for print
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        iframe.style.visibility = 'hidden';
+        iframe.src = blobUrl;
+        document.body.appendChild(iframe);
+
+        iframe.onload = () => {
+          const contentWindow = iframe.contentWindow;
+          if (contentWindow) {
+            contentWindow.focus();
+            contentWindow.print();
+
+            // Check if user actually printed
+            const onPrintClose = () => {
+              setTimeout(() => {
+                Swal.fire({
+                  title: 'Did you print successfully?',
+                  text: "Click 'Yes' to save this print record.",
+                  icon: 'question',
+                  showCancelButton: true,
+                  confirmButtonText: 'Yes, I printed',
+                  cancelButtonText: 'No, Cancelled'
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    this.savePrintHistory(qty, docNoToSave, typePrintToSend, employeeId, dueDateVal);
+                  }
+                  document.body.removeChild(iframe);
+                  URL.revokeObjectURL(blobUrl);
+                });
+              }, 500);
+            };
+
+            contentWindow.onafterprint = onPrintClose;
+          }
+        };
+
       },
       error: err => {
         console.error('Error print PDF:', err);
@@ -715,6 +1066,29 @@ export class PlanListComponent implements OnInit {
       }
     });
   }
+
+  savePrintHistory(qty: number, docNoToSave: string, typePrintToSend: string, employeeId: string, dueDateVal: any) {
+    this.historyPrint.SaveHistoryPrint({
+      EmployeeID: employeeId,
+      Division: this.selectedItemForPrint.division || 'Unknown',
+      DocNo: docNoToSave || '-',
+      PratNo: this.selectedItemForPrint.partNo || '-',
+      DueDate: dueDateVal,
+      TypePrint: typePrintToSend,
+      Total: qty
+    }).subscribe({
+      next: () => {
+        this.updatePrintCounts();
+        this.closePrintModal();
+        Swal.fire('Success', 'Print history saved.', 'success');
+      },
+      error: err => {
+        console.error("Save history error:", err);
+        Swal.fire('Error', 'Failed to save print history.', 'error');
+      }
+    });
+  }
+
 
   updatePrintCounts() {
     this.historyPrint.get_Total().subscribe({
@@ -747,6 +1121,16 @@ export class PlanListComponent implements OnInit {
 
           item.printLayoutCount = layoutTotal;
           item.printDwgCount = dwgTotal;
+
+          const iiqcTotal = counts
+            .filter(c =>
+              String(c.DocNo).trim() === String(docNoKey).trim() &&
+              String(c.PratNo).trim() === String(item.partNo).trim() &&
+              c.TypePrint === 'IIQC'
+            )
+            .reduce((sum, c) => sum + Number(c.Total), 0);
+
+          item.printIiqcCount = iiqcTotal;
         });
       },
       error: e => console.error("Error fetching print counts:", e)

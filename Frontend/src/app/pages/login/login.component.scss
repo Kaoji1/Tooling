@@ -1,65 +1,246 @@
-$primary-color:#005BAC;
-$background-gradient:linear-gradient(to right, #112036, $primary-color);
-$card-bg:#fff;
-$input-border:#ccc;
+// Variables
+$brand-color: #005BAC;
+$text-secondary: #e2e8f0;
+$navy-start: #1e3a8a; // from-blue-900
+$navy-mid: #000428; // via-[#000428]
+$black: #000000; // to-[#000000]
 
-.login-page {
-  height: 100vh;
-  background: $background-gradient;
-  align-items: center;
+// Main Container
+.login-page-container {
+  min-height: 100vh;
+  width: 100%;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  font-family: Georgia;
+  position: relative;
+  overflow: hidden;
 
-  .login-card {
-    background-color: $card-bg;
-    border-radius: 30px;
-    padding: 40px;
-    width: 480px;
+  // Exact Gradient requested: bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900 via-[#000428] to-[#000000]
+  background: radial-gradient(ellipse at center, $navy-start 0%, $navy-mid 50%, $black 100%);
+  font-family: 'Kanit', sans-serif;
+}
 
-  }
+// SVG Header
+.svg-header-container {
+  z-index: 10;
+  margin-bottom: 2.5rem;
+  width: 100%;
+  max-width: 56rem;
+  padding: 0 1rem;
+  text-align: center;
+  user-select: none; // Disable text selection
 
-  h1 {
-    text-align: center;
-    margin: 30px;
-    font-weight: 100;
-    font-size: 40px;
-  }
-
-  label {
-
-    display: block;
-  }
-
-  input[type="text"],
-  input[type="password"] {
-
+  svg {
     width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid $input-border;
-    margin: 10px;
+    height: auto;
+    filter: drop-shadow(0 0 15px rgba(0, 91, 172, 0.5)); // Enhanced glow
+  }
+}
+
+// SVG Text Styles
+.brand-text {
+  font-family: 'Kanit', sans-serif;
+  font-size: 85px;
+  font-weight: 900;
+  font-style: italic;
+  fill: $brand-color;
+  fill-opacity: 0;
+
+  // White Stroke Outline
+  stroke: white;
+  stroke-width: 2px; // Thin white outline
+  paint-order: stroke fill; // Ensure stroke is behind/around fill if needed, or consistent
+
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation:
+    drawStroke 2.5s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards,
+    fadeInFill 1s cubic-bezier(0.39, 0.575, 0.565, 1) 2.2s forwards;
+
+
+  // Interactive Char Styles
+  .hover-char {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); // Bouncy transition
+    transform-box: fill-box;
+    transform-origin: center;
+    cursor: default;
+
+    &:hover {
+      transform: translateY(-15px); // Jump up
+      fill: white; // Turn white on hover
+      stroke: white; // Ensure stroke is also white or matches
+    }
+  }
+}
+
+.sub-text {
+  font-family: 'Kanit', sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  fill: $text-secondary;
+  fill-opacity: 0;
+  stroke: $text-secondary;
+  stroke-width: 0.8px;
+  stroke-dasharray: 500;
+  stroke-dashoffset: 500;
+  animation:
+    drawStroke 2s cubic-bezier(0.55, 0.055, 0.675, 0.19) 1s forwards,
+    fadeInFill 1s cubic-bezier(0.39, 0.575, 0.565, 1) 2.5s forwards;
+
+  .hover-char-sub {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), fill 0.2s, stroke 0.2s;
+    transform-box: fill-box;
+    transform-origin: center;
+    cursor: default;
+
+    // Random Minimal Colors Palette (Cool Tones)
+    $colors: #38bdf8, #818cf8, #2dd4bf, #a78bfa, #f472b6, #fbbf24;
+
+    @for $i from 1 through 6 {
+      &:nth-child(6n + #{$i}):hover {
+        transform: translateY(-10px);
+        fill: nth($colors, $i);
+        stroke: nth($colors, $i);
+        filter: drop-shadow(0 0 5px nth($colors, $i)); // Glow effect
+      }
+    }
+  }
+}
+
+// Login Card (Restored Style)
+.login-card-entrance {
+  z-index: 10;
+  width: 100%;
+  max-width: 400px;
+  background-color: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  padding: 2.5rem;
+
+  opacity: 0;
+  transform: translateY(40px);
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0s forwards;
+}
+
+// Form Elements
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155; // slate-700
+  margin-bottom: 0.5rem;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 1.25rem;
+
+  .icon-wrapper {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 1rem;
+    color: #94a3b8; // slate-400
+    pointer-events: none;
+    font-size: 1.1rem;
+    z-index: 10;
   }
 
-  .show-password {
-    font-size: 12px;
-    margin: 15px;
-    display: flex;
-    color: #878787;
-    gap: 5px;
-
-  }
-
-
-
-  .btn-singin {
-    background-color: #007bff;
+  input {
     width: 100%;
-    padding: 15px;
-    border-radius: 5px;
-    border: 1px solid $input-border;
-    color: #fff;
+    height: 50px;
+    padding: 0 1rem 0 3rem; // Left padding for icon
+    border: 1px solid #cbd5e1; // slate-300
+    border-radius: 0.75rem;
+    outline: none;
+    transition: all 0.2s;
+    font-size: 1rem;
+    color: #1e293b; // slate-800
+    background-color: #f8fafc; // slate-50
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+
+    &:focus {
+      background-color: white;
+      border-color: #3b82f6; // blue-500
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    &.password-input {
+      padding-right: 1rem; // Reset padding (no toggle inside)
+    }
   }
 
+  .toggle-password-btn {
+    display: none; // Hide old button style if present
+  }
+}
 
+.submit-btn {
+  width: 100%;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: white;
+  font-weight: 700;
+  padding: 0.875rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s;
+
+  &:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// Footer
+.footer-text {
+  position: absolute;
+  bottom: 1.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  width: 100%;
+}
+
+// Keyframes
+@keyframes drawStroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fadeInFill {
+  from {
+    fill-opacity: 0;
+  }
+
+  to {
+    fill-opacity: 1;
+  }
+}
+
+@keyframes slideUpFade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

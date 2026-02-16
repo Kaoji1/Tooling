@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
-import { Router} from '@angular/router';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common';
+import { NgIf, NgClass, NgFor } from '@angular/common';
 import { LoginService } from '../../core/services/Login.service';
 
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, NgIf],
+  imports: [FormsModule, NgIf, NgClass, NgFor],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -16,12 +16,17 @@ export class LoginComponent {
   Username: string = '';
   Password: string = '';
   errorMessage: string = '';
+  showPassword: boolean = false;
 
-  constructor(private router: Router, private LoginService: LoginService) {}
+  // Split text for interactive SVG
+  brandChars = "MinebeaMitsumi".split('');
+  subtitleChars = "Web Application For Request & Return Indirect Material".split('');
 
- onLogin() {
+  constructor(private router: Router, private LoginService: LoginService) { }
+
+  onLogin() {
     const credentials = { Username: this.Username, Password: this.Password };
-    
+
     this.LoginService.login(credentials).subscribe({
       next: (res) => {
         // console.log('Login response:', res);
@@ -42,7 +47,7 @@ export class LoginComponent {
             case 'production':
               this.router.navigate(['/production/request']);
               break;
-              case 'engineer':
+            case 'engineer':
               this.router.navigate(['/production/request']);
               break;
 
@@ -68,9 +73,8 @@ export class LoginComponent {
     });
   }
 
-  togglePasswordVisibility() { // แสดงรหัสผ่าน
-    const input = document.getElementById('passwordinput') as HTMLInputElement;
-    input.type = input.type === 'password' ? 'text' : 'password';
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
   }
 }
 // console.log()

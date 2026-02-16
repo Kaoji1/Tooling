@@ -143,22 +143,25 @@ exports.Send_Request = async (req, res) => {
       const notifyMsg = `New Request: ${firstItem.Doc_no} (${firstItem.Division}) - ${items.length} Items`;
 
       // 1. Save to DB
-      await pool.request()
+      const notifyResult = await pool.request()
         .input('Event_Type', sql.NVarChar, 'NEW_REQUEST')
         .input('Message', sql.NVarChar, notifyMsg)
         .input('Doc_No', sql.NVarChar, firstItem.Doc_no)
         .input('Action_By', sql.NVarChar, firstItem.Employee_Name || 'System')
         .execute('trans.Stored_Insert_Notification_Log');
 
+      const notificationId = notifyResult.recordset[0]?.Notification_ID;
+
       // 2. Emit Real-time Event
       if (io) {
         io.emit('notification', {
+          id: notificationId,
           type: 'NEW_REQUEST',
           message: notifyMsg,
           docNo: firstItem.Doc_no,
           timestamp: new Date()
         });
-        console.log('socket.io emit notification success');
+        console.log('socket.io emit notification success with ID:', notificationId);
       }
     } catch (notifError) {
       console.error('Notification Trigger Failed:', notifError);

@@ -79,6 +79,7 @@ export class NotificationService {
       console.log('New Notification Received:', data);
 
       const newNotif: NotificationLog = {
+        Notification_ID: data.id, // Capture the ID from backend for persistence
         Event_Type: data.type,
         Message: data.message,
         Doc_No: data.docNo,
@@ -122,11 +123,18 @@ export class NotificationService {
     });
   }
 
-  // Mark all (local only for now, or loop API if needed - usually rarely used if popup is one by one)
-  public markAllReadLocal() {
+  // Mark all (Persistent)
+  public markAllRead() {
+    // Optimistic Update
     const current = this.notificationsSubject.value.map(n => ({ ...n, IsRead: true }));
     this.notificationsSubject.next(current);
     this.updateUnreadCount();
+
+    // API Call
+    this.http.put(`${environment.apiUrl}/notifications/mark-all-read`, {}).subscribe({
+      next: (res) => console.log('All notifications marked as read in DB'),
+      error: (err) => console.error('Failed to mark all as read:', err)
+    });
   }
 
   public getUnreadCount(): Observable<number> {

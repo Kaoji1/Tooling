@@ -26,6 +26,8 @@ export interface PlanItem {
   qty: number | null;
   time: string;
   comment: string;
+  revision?: number;
+  groupId?: string;
   checked?: boolean; // Add checked property for selection
 }
 
@@ -134,6 +136,7 @@ export class PCPlanComponent implements OnInit {
       if (this.selectedDivisionCode) {
         this.loadMasterData(this.selectedDivisionCode);
       }
+      this.checkAllSelected(); // Sync 'Select All' checkbox
     } else {
       this.addRow();
     }
@@ -340,6 +343,9 @@ export class PCPlanComponent implements OnInit {
       timer: 2000,
       showConfirmButton: false
     });
+
+    // Save State for Persistence
+    this.saveCurrentState();
   }
 
   // ฟังก์ชันช่วยแปลงวันที่จาก Excel (ที่เป็นตัวเลข) เป็น string YYYY-MM-DD
@@ -525,10 +531,12 @@ export class PCPlanComponent implements OnInit {
 
   toggleAll() {
     this.planItems.forEach(item => item.checked = this.selectAll);
+    this.saveCurrentState();
   }
 
   checkAllSelected() {
     this.selectAll = this.planItems.length > 0 && this.planItems.every(item => item.checked);
+    this.saveCurrentState();
   }
 
   hasSelectedItems(): boolean {
@@ -608,49 +616,64 @@ export class PCPlanComponent implements OnInit {
     }
 
     // 4. ถ้าผ่าน Validation ทั้งหมดค่อยส่ง
-    // 4. ถ้าผ่าน Validation ทั้งหมด ให้ยืนยันก่อนส่ง (Premium Bill Style)
+    // 4. ถ้าผ่าน Validation ทั้งหมด ให้ยืนยันก่อนส่ง (Premium Bill Style - Aggregated)
+
+    // Aggregate Data by PartNo + Machine + Fac
+    const summaryMap = new Map<string, { qty: number, count: number, part: string, mc: string, fac: string }>();
+    let grandTotalQty = 0;
+
+    this.planItems.forEach(item => {
+      const part = item.partNo || '-';
+      const mc = item.machineType || '-';
+      const fac = item.fac || '-';
+      const key = `${part}|${mc}|${fac}`;
+      const qty = Number(item.qty) || 0;
+
+      if (!summaryMap.has(key)) {
+        summaryMap.set(key, { qty: 0, count: 0, part, mc, fac });
+      }
+
+      const current = summaryMap.get(key)!;
+      current.qty += qty;
+      current.count++;
+      grandTotalQty += qty;
+    });
+
+    const totalGroups = summaryMap.size;
+
     let summaryHtml = `
       <div style="text-align: left; font-family: 'Kanit', sans-serif; color: #334155;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem;">
           <span><strong>Division:</strong> ${this.selectedDivisionCode}</span>
-          <span><strong>Factory:</strong> ${this.planItems[0]?.fac || '-'}</span>
+          <span style="font-size: 0.8rem; color: #64748b;">(Grouped by Part + MC + Fac)</span>
         </div>
         
-        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
-          <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; max-height: 400px; overflow-y: auto;">
+          <table style="width: 100%; font-size: 0.8rem; border-collapse: collapse;">
             <thead>
-              <tr style="border-bottom: 1px solid #cbd5e1; color: #64748b;">
-                <th style="text-align: left; padding-bottom: 5px;">Date</th>
+              <tr style="border-bottom: 1px solid #cbd5e1; color: #64748b; position: sticky; top: 0; background: #f8fafc; z-index: 1;">
                 <th style="text-align: left; padding-bottom: 5px;">Part No.</th>
-                <th style="text-align: right; padding-bottom: 5px;">Qty</th>
+                <th style="text-align: left; padding-bottom: 5px;">MC Type</th>
+                <th style="text-align: center; padding-bottom: 5px;">Fac</th>
+                <th style="text-align: center; padding-bottom: 5px; width: 40px;">Freq.</th>
+                <th style="text-align: right; padding-bottom: 5px;">Total</th>
               </tr>
             </thead>
             <tbody>
     `;
 
-    // Add first 5 items
-    const previewItems = this.planItems.slice(0, 5);
-    previewItems.forEach(item => {
-      const dateStr = item.date ? new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }) : '-';
+    // Add Aggregated Items
+    summaryMap.forEach((data) => {
       summaryHtml += `
         <tr style="border-bottom: 1px dashed #e2e8f0;">
-          <td style="padding: 6px 0;">${dateStr}</td>
-          <td style="padding: 6px 0;">${item.partNo}</td>
-          <td style="padding: 6px 0; text-align: right; font-weight: 600;">${item.qty}</td>
+          <td style="padding: 6px 0; font-weight: 500;">${data.part}</td>
+          <td style="padding: 6px 0; color: #64748b;">${data.mc}</td>
+          <td style="padding: 6px 0; text-align: center; color: #64748b;">${data.fac}</td>
+          <td style="padding: 6px 0; text-align: center; color: #64748b;">${data.count}</td>
+          <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #1d4ed8;">${data.qty}</td>
         </tr>
       `;
     });
-
-    // Add "More items" row if needed
-    if (this.planItems.length > 5) {
-      summaryHtml += `
-        <tr>
-          <td colspan="3" style="padding-top: 8px; text-align: center; color: #94a3b8; font-style: italic;">
-            ... and ${this.planItems.length - 5} more items ...
-          </td>
-        </tr>
-      `;
-    }
 
     summaryHtml += `
             </tbody>
@@ -658,8 +681,13 @@ export class PCPlanComponent implements OnInit {
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #e2e8f0; padding-top: 10px;">
-          <span style="font-size: 1rem; font-weight: 600; color: #475569;">Total Items</span>
-          <span style="font-size: 1.25rem; font-weight: 800; color: #1d4ed8;">${this.planItems.length}</span>
+          <div style="font-size: 0.9rem; color: #64748b;">
+            <span>Total Groups: <strong style="color: #475569;">${totalGroups}</strong></span>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-size: 0.9rem; color: #64748b; margin-right: 10px;">Grand Total Qty</span>
+            <span style="font-size: 1.25rem; font-weight: 800; color: #1d4ed8;">${grandTotalQty}</span>
+          </div>
         </div>
       </div>
     `;
@@ -672,7 +700,7 @@ export class PCPlanComponent implements OnInit {
       cancelButtonText: 'Cancel',
       confirmButtonColor: '#3b82f6',
       cancelButtonColor: '#94a3b8',
-      width: 450,
+      width: 650,
       customClass: {
         popup: 'swal-premium-popup-minimal',
         confirmButton: 'swal-premium-btn-primary',
@@ -719,7 +747,11 @@ export class PCPlanComponent implements OnInit {
       let formattedDate = '';
       if (item.date) {
         const d = new Date(item.date);
-        const year = d.getFullYear();
+        let year = d.getFullYear();
+        // BE Year Fix: If year is in Buddhist Era format (e.g. 2569), convert to AD (2026)
+        if (year > 2400) {
+          year -= 543;
+        }
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const day = String(d.getDate()).padStart(2, '0');
         formattedDate = `${year}-${month}-${day}`;
@@ -727,10 +759,11 @@ export class PCPlanComponent implements OnInit {
 
       return {
         ...item,
-        date: formattedDate, // Send String YYYY-MM-DD
+        date: formattedDate, // Send String YYYY-MM-DD (AD)
         mcType: item.machineType, // Map Frontend 'machineType' to Backend 'mcType'
         division: selectedDiv?.profitCenter || this.selectedDivisionCode, // ส่ง Profit_Center ไปเก็บ
-        employeeId: empId
+        employeeId: empId,
+        revision: item.revision || 0 // Ensure new items start with 0 for SP to increment correctly
       };
     });
 
@@ -785,23 +818,13 @@ export class PCPlanComponent implements OnInit {
             backdrop: `rgba(15, 23, 42, 0.4)`
           });
 
-          // Manual Notification Trigger
-          // Note: Backend handles notification now, so this might be redundant?
-          // But kept as fallback or for immediate local feedback if needed.
-          // Actually, let's rely on Backend notification to allow socket to work properly.
-          // Or keep it but maybe minimal.
-          // The instruction says "Backend: Integrate Broadcast logic", so we can probably remove frontend trigger 
-          // to avoid double notifications if the user is listening to their own events.
-          // But to be safe and ensure "Specificity", I'll leave it or comment it out if sure.
-          // Let's keep it for now but maybe it's not needed. 
-          // Actually, if backend emits "notification", the bell will pick it up. 
-          // Generating a manual one here creates a "Local" notification only? 
-          // NotificationService.addManualNotification pushes to local behavior subject.
-          // Let's keep it as is to ensure immediate feedback.
+          // Manual Notification Trigger (Removed to avoid duplication with backend socket events)
+          /*
           this.notificationService.addManualNotification(
             `New Plan saved: ${this.selectedDivisionCode} (${res.successCount} items)`,
             'NEW_PLAN'
           );
+          */
 
           // Clear form
           this.planItems = [];

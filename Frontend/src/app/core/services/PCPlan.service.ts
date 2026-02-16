@@ -75,7 +75,8 @@ export class PCPlanService {
 
   // 5. ดึงรายการ  // --- New Methods ---
   getPlanList(showHistory: boolean = false): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/list?showHistory=${showHistory}`);
+    const timestamp = new Date().getTime();
+    return this.http.get<any>(`${this.baseUrl}/list?showHistory=${showHistory}&t=${timestamp}`);
   }
 
   updatePaths(data: any): Observable<any> {

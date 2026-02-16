@@ -40,6 +40,11 @@ CREATE OR ALTER PROCEDURE [trans].[Stored_PCPlan_Insert_GM]
     @Path_IIQC NVARCHAR(255) = NULL    -- New Param
 AS
 BEGIN
+    SET NOCOUNT ON;
+
+    -- BE Year Fix: If @PlanDate is in Buddhist Era format (> 2400), convert to AD (-543)
+    IF YEAR(@PlanDate) > 2400 SET @PlanDate = DATEADD(YEAR, -543, @PlanDate);
+
     -- Check if exists
     DECLARE @ExistingID INT = NULL;
     
@@ -104,20 +109,8 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- 1. Determine Target Month scope
-    DECLARE @Month INT = MONTH(@TargetDate);
-    DECLARE @Year INT = YEAR(@TargetDate);
-
-    -- 2. Find Current Max Revision for this Month/Division
-    DECLARE @CurrentRev INT = 0;
-    SELECT @CurrentRev = ISNULL(MAX(Revision), 0)
-    FROM [master].[tb_PC_Plan]
-    WHERE Division = @Division
-      AND MONTH(PlanDate) = @Month
-      AND YEAR(PlanDate) = @Year;
-
-    DECLARE @NewRev INT = @CurrentRev + 1;
-
+    -- 2. (REMOVED) Global Revision Calculation - Moving to Independent Revisions
+    
     -- 3. Parse JSON into Temp Table
     SELECT * INTO #IncomingData
     FROM OPENJSON(@JsonData)
@@ -135,60 +128,59 @@ BEGIN
         Comment NVARCHAR(255),
         PlanStatus NVARCHAR(20),
         GroupId NVARCHAR(50),
+        Revision INT,             -- Use Provided Revision if available
         Path_Dwg NVARCHAR(255),    -- Capture Path
         Path_Layout NVARCHAR(255), -- Capture Path
         Path_IIQC NVARCHAR(255)    -- Capture Path
     );
 
-    -- 4. CREATE SNAPSHOT (Rev N -> Rev N+1)
-    
-    -- 4a. Copy PREVIOUS items that are NOT in Incoming (Preserve Unchanged Items)
-    -- Logic: Exclude if GroupId matches (explicit update) OR Key matches (new upload update)
-    INSERT INTO [master].[tb_PC_Plan] (
-        PlanDate, Employee_ID, Division, MC_Type, Facility, 
-        Before_Part, Process, MC_No, PartNo, QTY, [Time], 
-        Comment, Revision, GroupId, IsActive, PlanStatus,
-        Path_Dwg, Path_Layout, Path_IIQC -- Copy Path
-    )
-    SELECT 
-        PlanDate, Employee_ID, Division, MC_Type, Facility, 
-        Before_Part, Process, MC_No, PartNo, QTY, [Time], 
-        Comment, @NewRev, GroupId, 1, PlanStatus,
-        Path_Dwg, Path_Layout, Path_IIQC -- Copy Path
-    FROM [master].[tb_PC_Plan] Old
-    WHERE Division = @Division
-      AND MONTH(PlanDate) = @Month 
-      AND YEAR(PlanDate) = @Year
-      AND Revision = @CurrentRev
-      AND IsActive = 1
-      AND NOT EXISTS (
-          SELECT 1 FROM #IncomingData New
-          WHERE 
-            -- Match by Explicit GroupId (Manual Edit)
-            (New.GroupId IS NOT NULL AND New.GroupId = Old.GroupId)
-            OR
-            -- Match by Key (File Upload where GroupId might be null)
-            (New.PlanDate = Old.PlanDate
-             AND New.MC_Type = Old.MC_Type
-             AND New.PartNo = Old.PartNo
-             AND New.Process = Old.Process)
-      );
+    -- BE Year Fix: Detect if year is Buddhist Era (> 2400) and convert to AD (-543)
+    -- This handles the @TargetDate safety
+    IF YEAR(@TargetDate) > 2400 SET @TargetDate = DATEADD(YEAR, -543, @TargetDate);
 
-    -- 4b. Insert INCOMING items
+    -- This handles all incoming items in the batch
+    UPDATE #IncomingData 
+    SET PlanDate = DATEADD(YEAR, -543, PlanDate) 
+    WHERE YEAR(PlanDate) > 2400;
+
+    -- 4. INSERT / UPDATE INDEPENDENTLY (No Snapshot Copying)
+    -- Group Items to process them one by one if they share same logic? 
+    -- Actually, we can just insert them. The Query SP handles finding the Latest.
+
     INSERT INTO [master].[tb_PC_Plan] (
         PlanDate, Employee_ID, Division, MC_Type, Facility, 
         Before_Part, Process, MC_No, PartNo, QTY, [Time], 
         Comment, Revision, GroupId, IsActive, PlanStatus,
-        Path_Dwg, Path_Layout, Path_IIQC -- Insert Path
+        Path_Dwg, Path_Layout, Path_IIQC
     )
     SELECT 
         New.PlanDate, New.Employee_ID, @Division, New.MC_Type, New.Facility, 
         New.Before_Part, New.Process, New.MC_No, New.PartNo, New.QTY, New.[Time], 
         New.Comment, 
-        @NewRev, 
-        -- Priority: 1. Use Provided GroupId. 2. Find Existing by Key. 3. New GroupId.
+        -- Revision Logic:
+        -- 1. If JSON provides Revision, use it (Manual Edit case).
+        -- 2. Otherwise, find Max Revision for this GroupId + 1 (Upload case).
+        ISNULL(New.Revision, (
+            SELECT ISNULL(MAX(Revision), -1) + 1 
+            FROM [master].[tb_PC_Plan] Old
+            WHERE Old.GroupId = 
+                CASE 
+                    WHEN (New.GroupId IS NOT NULL AND New.GroupId <> '' AND New.GroupId <> '-') THEN New.GroupId
+                    ELSE (
+                        SELECT TOP 1 GroupId 
+                        FROM [master].[tb_PC_Plan] Finder
+                        WHERE Finder.Division = @Division
+                          AND Finder.PlanDate = New.PlanDate
+                          AND Finder.MC_Type = New.MC_Type
+                          AND Finder.PartNo = New.PartNo
+                          AND Finder.Process = New.Process
+                          AND Finder.GroupId IS NOT NULL AND Finder.GroupId <> '-'
+                    )
+                END
+        )),
+        -- GroupId Logic: Use provided, find existing, or NEWID()
         ISNULL(
-            New.GroupId, 
+            CASE WHEN (New.GroupId IS NOT NULL AND New.GroupId <> '' AND New.GroupId <> '-') THEN New.GroupId ELSE NULL END,
             ISNULL((
                 SELECT TOP 1 GroupId 
                 FROM [master].[tb_PC_Plan] Old
@@ -197,11 +189,12 @@ BEGIN
                   AND Old.MC_Type = New.MC_Type
                   AND Old.PartNo = New.PartNo
                   AND Old.Process = New.Process
+                  AND Old.GroupId IS NOT NULL AND Old.GroupId <> '-'
             ), NEWID())
-        ), 
+        ),
         1,
         New.PlanStatus,
-        New.Path_Dwg, New.Path_Layout, New.Path_IIQC -- Insert Path
+        New.Path_Dwg, New.Path_Layout, New.Path_IIQC
     FROM #IncomingData New;
 
     -- Cleanup
@@ -216,9 +209,9 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Define Date Range: Current Month Start to Next Month End
-    DECLARE @StartDate DATE = DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0);
-    DECLARE @EndDate DATE = DATEADD(month, DATEDIFF(month, 0, GETDATE()) + 2, 0);
+    -- Define Date Range: Beginning of Last Month to End of Next Year
+    DECLARE @StartDate DATE = DATEADD(month, DATEDIFF(month, 0, GETDATE()) - 1, 0); 
+    DECLARE @EndDate DATE = DATEADD(year, DATEDIFF(year, 0, GETDATE()) + 2, 0); 
 
     IF @ShowHistory = 1
     BEGIN

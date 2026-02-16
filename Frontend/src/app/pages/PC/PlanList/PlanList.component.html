@@ -6,23 +6,42 @@
     <div>
       <div class="header">
         <h4>Plan List</h4>
+        <app-notification></app-notification>
       </div>
       <p>PC Plan List</p>
     </div>
 
-    <div class="view-tabs" style="display: flex; gap: 8px; margin-bottom: 16px;">
-      <button class="view-tab" [class.active]="viewMode === 'monthly'" (click)="setViewMode('monthly')">
-        Monthly
-      </button>
-      <button class="view-tab" [class.active]="viewMode === 'upcoming'" (click)="setViewMode('upcoming')">
-        Upcoming
-      </button>
-      <button class="view-tab" [class.active]="viewMode === 'engineer'" (click)="setViewMode('engineer')">
-        Engineer
-      </button>
-      <button class="view-tab" [class.active]="viewMode === 'qc'" (click)="setViewMode('qc')">
-        QC
-      </button>
+    <!-- Dept Tabs (Level 1) -->
+    <div class="dept-tabs-container">
+      <div class="dept-tabs">
+        <button *ngFor="let dept of departments" class="dept-tab" [class.active]="selectedDepartment === dept"
+          (click)="selectDepartment(dept)">
+          {{ dept }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Sub Tabs (Level 2) -->
+    <div class="sub-tabs-container" *ngIf="selectedDepartment">
+      <div class="sub-tabs">
+        <button *ngFor="let sub of subTabs" class="btn-upcoming-premium" [class.active]="selectedSubTab === sub"
+          (click)="selectSubTab(sub)">
+          {{ sub }}
+          <span *ngIf="sub === 'Action Required'" class="action-count">
+            ({{ getActionRequiredCount(selectedDepartment) }})
+          </span>
+        </button>
+      </div>
+
+      <!-- Level 3: Date Range Tabs (Specific for "Upcoming") -->
+      <div class="range-tabs-container" *ngIf="selectedSubTab === 'Upcoming'">
+        <div class="range-tabs">
+          <button *ngFor="let range of dateRanges" class="range-tab" [class.active]="selectedDateRange === range"
+            (click)="selectDateRange(range)">
+            {{ range }}
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="filter-section">
@@ -72,10 +91,16 @@
     <div class="table-container">
       <table>
         <thead>
+
+
+          <!-- Column Header -->
           <tr>
+            <th class="text-center" style="width: 50px;">No.</th>
+            <th class="text-center">Action</th>
+            <th class="text-center">Print</th>
             <th style="width: 150px;">Plan Date</th>
-            <th class="col-no">Rev</th> <!-- New Column -->
-            <th style="width: 120px;">Status</th> <!-- New Column -->
+            <th class="col-no">Rev</th>
+            <th style="width: 140px;">Status</th>
             <th>MC Type</th>
             <th>Division</th>
             <th>Fac</th>
@@ -89,31 +114,86 @@
             <th>Path Dwg</th>
             <th>Path Layout</th>
             <th>IIQC</th>
-            <th>Print</th>
-            <th class="text-center">Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of filteredPlanList" [class.row-cancelled]="item.planStatus === 'Cancelled'"
-            [class.row-latest]="item.isLatest && showHistory" [class.row-history]="!item.isLatest && showHistory"
-            [class.group-start]="item.isGroupStart && showHistory" [ngClass]="{
+          <tr *ngFor="let item of filteredPlanList; let i = index"
+            [class.row-cancelled]="item.planStatus === 'Cancelled'" [class.row-latest]="item.isLatest && showHistory"
+            [class.row-history]="!item.isLatest && showHistory" [class.group-start]="item.isGroupStart && showHistory"
+            [ngClass]="{
                 'row-complete': (item.pathDwg && item.pathDwg !== '-' && item.pathLayout && item.pathLayout !== '-' && item.iiqc && item.iiqc !== '-'),
                 'row-incomplete': (!item.pathDwg || item.pathDwg === '-' || !item.pathLayout || item.pathLayout === '-' || !item.iiqc || item.iiqc === '-')
               }">
+            <td class="text-center" style="font-weight: 600; color: #64748b;">{{ i + 1 }}</td>
+            <td style="text-align: center; white-space: nowrap;">
+              <ng-container *ngIf="item.isLatest && item.planStatus !== 'Cancelled'">
+                <!-- PC: EDIT, CANCEL, VIEW -->
+                <ng-container *ngIf="selectedDepartment === 'PC'">
+                  <button class="btn-view-pill me-1" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                  <button class="btn-edit-pill me-1" (click)="onEdit(item)" title="Edit">EDIT</button>
+                  <button class="btn-delete-pill" (click)="onCancel(item)" title="Cancel">CANCEL</button>
+                </ng-container>
+
+                <!-- PD: VIEW -->
+                <ng-container *ngIf="selectedDepartment === 'PD'">
+                  <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                </ng-container>
+
+                <!-- PH: VIEW -->
+                <ng-container *ngIf="selectedDepartment === 'PH'">
+                  <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                </ng-container>
+
+                <!-- EN: ADD PATH (EDIT), VIEW -->
+                <ng-container *ngIf="selectedDepartment === 'En'">
+                  <button class="btn-edit-pill me-1" (click)="onEdit(item)" title="Add Path">ADD PATH</button>
+                  <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                </ng-container>
+
+                <!-- QC: ADD PATH (EDIT), VIEW -->
+                <ng-container *ngIf="selectedDepartment === 'QC'">
+                  <button class="btn-edit-pill me-1" (click)="onEdit(item)" title="Add IIQC">ADD PATH</button>
+                  <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                </ng-container>
+
+                <!-- GAGE: VIEW -->
+                <ng-container *ngIf="selectedDepartment === 'Gage'">
+                  <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                </ng-container>
+
+                <!-- VIEW: VIEW ONLY -->
+                <ng-container *ngIf="selectedDepartment === 'View'">
+                  <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                </ng-container>
+              </ng-container>
+            </td>
+            <td style="width: 140px; padding: 4px;">
+              <ng-container *ngIf="item.isLatest && item.planStatus !== 'Cancelled'">
+                <app-print-action-btn [dwgCount]="item.printDwgCount || 0" [layoutCount]="item.printLayoutCount || 0"
+                  [iiqcCount]="item.printIiqcCount || 0" (onPrint)="openPrintModal(item)">
+                </app-print-action-btn>
+              </ng-container>
+            </td>
             <td>
               <div class="date-wrapper">
                 <span class="plan-date">{{ item.date }}</span>
-                <span class="ref-no" *ngIf="item.groupId && item.groupId.startsWith('PLAN-')" title="Reference No.">
-                  {{ item.groupId }}
-                </span>
               </div>
             </td>
-            <td class="text-center">{{ item.revision }}</td> <!-- New Data -->
-            <td class="text-center">
-              <span class="badge" [ngClass]="{
-                    'bg-danger': item.planStatus === 'Cancelled', 
-                    'bg-success': item.planStatus === 'Active'
-                }">{{ item.planStatus }}</span>
+            <td class="text-center">{{ item.revision }}</td>
+            <td class="text-center col-status">
+              <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                <ng-container *ngIf="item.planStatus === 'Cancelled'">
+                  <span class="badge-cancelled-solid">CANCELLED</span>
+                </ng-container>
+                <ng-container *ngIf="item.planStatus !== 'Cancelled'">
+                  <ng-container *ngIf="getProcessStatus(item) as status">
+                    <span class="badge" [className]="'badge ' + status.color"
+                      style="font-size: 0.75rem; padding: 3px 8px; border: 1px solid;">
+                      {{ status.label }}
+                    </span>
+                  </ng-container>
+                </ng-container>
+              </div>
             </td>
             <td>{{ item.mcType }}</td>
             <td>{{ item.division }}</td>
@@ -126,58 +206,36 @@
             <td>{{ item.time }}</td>
             <td>{{ item.comment }}</td>
             <td class="text-center">
-              <ng-container *ngIf="item.pathDwg">
-                <a (click)="openFile(item.pathDwg)" title="Click to Open File"
-                  style="color: #3b82f6; text-decoration: underline; cursor: pointer;">
-                  {{ item.pathDwg }}
-                </a>
+              <ng-container *ngIf="item.pathDwg && item.pathDwg.trim() !== '-'; else noDwg">
+                <i class="bi bi-file-earmark-text-fill" style="font-size: 1.2rem; color: #3b82f6; cursor: pointer;"
+                  title="Copy Path: {{ item.pathDwg }}" (click)="copyToClipboard(item.pathDwg, 'Drawing')"></i>
               </ng-container>
+              <ng-template #noDwg>
+                <i class="bi bi-dash-lg" style="color: #cbd5e1;"></i>
+              </ng-template>
             </td>
             <td class="text-center">
-              <ng-container *ngIf="item.pathLayout">
-                <a (click)="openFile(item.pathLayout)" title="Click to Open File"
-                  style="color: #3b82f6; text-decoration: underline; cursor: pointer;">
-                  {{ item.pathLayout }}
-                </a>
+              <ng-container *ngIf="item.pathLayout && item.pathLayout.trim() !== '-'; else noLayout">
+                <i class="bi bi-file-earmark-spreadsheet-fill"
+                  style="font-size: 1.2rem; color: #3b82f6; cursor: pointer;" title="Copy Path: {{ item.pathLayout }}"
+                  (click)="copyToClipboard(item.pathLayout, 'Layout')"></i>
               </ng-container>
+              <ng-template #noLayout>
+                <i class="bi bi-dash-lg" style="color: #cbd5e1;"></i>
+              </ng-template>
             </td>
             <td class="text-center">
-              <ng-container *ngIf="item.iiqc">
-                <a (click)="openFile(item.iiqc)" title="Click to Open File"
-                  style="color: #3b82f6; text-decoration: underline; cursor: pointer;">
-                  {{ item.iiqc }}
-                </a>
+              <ng-container *ngIf="item.iiqc && item.iiqc.trim() !== '-'; else noIiqc">
+                <i class="bi bi-file-earmark-check-fill" style="font-size: 1.2rem; color: #22c55e; cursor: pointer;"
+                  title="Copy Path: {{ item.iiqc }}" (click)="copyToClipboard(item.iiqc, 'IIQC')"></i>
               </ng-container>
-            </td>
-
-            <td style="width: 80px; padding: 4px;">
-              <div class="hihi">
-                <button class="print-button" (click)="openPrintModal(item)"
-                  style="border: none; background: transparent; cursor: pointer;" [disabled]="!canPrint">
-                  <i class="bi bi-printer-fill" style="color: black; font-size: 18px;"></i>
-                </button>
-                <div
-                  style="font-size: 11px; color: rgb(151, 4, 4); font-weight: bold; line-height: 1.1; margin-top: 2px;">
-                  L: {{ item.printLayoutCount || 0 }}<br>
-                  D: {{ item.printDwgCount || 0 }}
-                </div>
-              </div>
-            </td>
-
-            <td style="text-align: center; white-space: nowrap;">
-              <button class="btn-action history me-1" (click)="onViewHistory(item)" title="History">
-                <i class="bi bi-clock-history"></i>
-              </button>
-              <button class="btn-action edit me-1" (click)="onEdit(item)" title="Edit">
-                <i class="bi bi-pencil-square"></i>
-              </button>
-              <button class="btn-action delete" (click)="onDelete(item)" title="Delete">
-                <i class="bi bi-trash-fill"></i>
-              </button>
+              <ng-template #noIiqc>
+                <i class="bi bi-dash-lg" style="color: #cbd5e1;"></i>
+              </ng-template>
             </td>
           </tr>
           <tr *ngIf="filteredPlanList.length === 0">
-            <td colspan="18" style="text-align: center; padding: 2rem; color: #64748b;">No data found</td>
+            <td colspan="19" style="text-align: center; padding: 2rem; color: #64748b;">No data found</td>
           </tr>
         </tbody>
       </table>
@@ -190,70 +248,88 @@
 <div class="modal-backdrop" *ngIf="isEditModalOpen">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>Edit Plan (Rev {{editData.revision}})</h3>
+      <h3 *ngIf="selectedDepartment === 'PC'">Edit Plan (Rev {{editData.revision}})</h3>
+      <h3 *ngIf="selectedDepartment === 'En' || selectedDepartment === 'QC'">Add Attachments (Rev {{editData.revision}})
+      </h3>
       <button class="btn-close" (click)="closeEditModal()">&times;</button>
     </div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" [(ngModel)]="editData.dateObj">
-        </div>
-        <div class="form-group">
-          <label>Machine Type</label>
-          <input type="text" [(ngModel)]="editData.mcType">
-        </div>
-        <div class="form-group">
-          <label>Facility</label>
-          <input type="text" [(ngModel)]="editData.fac">
-        </div>
-        <div class="form-group">
-          <label>Process</label>
-          <input type="text" [(ngModel)]="editData.process">
-        </div>
-        <div class="form-group">
-          <label>Part Before</label>
-          <input type="text" [(ngModel)]="editData.partBefore">
-        </div>
-        <div class="form-group">
-          <label>MC No.</label>
-          <input type="text" [(ngModel)]="editData.mcNo">
-        </div>
-        <div class="form-group">
-          <label>Part No.</label>
-          <input type="text" [(ngModel)]="editData.partNo">
-        </div>
-        <div class="form-group">
-          <label>QTY</label>
-          <input type="number" [(ngModel)]="editData.qty">
-        </div>
-        <div class="form-group">
-          <label>Time</label>
-          <input type="number" [(ngModel)]="editData.time">
-        </div>
-        <div class="form-group full-width">
-          <label>Comment</label>
-          <input type="text" [(ngModel)]="editData.comment" name="comment" placeholder="Optional comments...">
-        </div>
 
-        <!-- Divider -->
-        <div style="grid-column: span 2; border-top: 1px dashed #e2e8f0; margin: 10px 0;"></div>
-        <h4 style="grid-column: span 2; font-size: 0.95rem; color: #334155; margin-bottom: 5px;">Attachments
-          (Engineer/QC Only)</h4>
+        <!-- PC ONLY FIELDS -->
+        <ng-container *ngIf="selectedDepartment === 'PC'">
+          <div class="form-group">
+            <label>Date</label>
+            <p-calendar [(ngModel)]="editData.dateObj" [showIcon]="true" dateFormat="dd/mm/yy" appendTo="body"
+              [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" placeholder="DD/MM/YYYY"></p-calendar>
+          </div>
+          <div class="form-group">
+            <label>Machine Type</label>
+            <input type="text" [(ngModel)]="editData.mcType">
+          </div>
+          <div class="form-group">
+            <label>Facility</label>
+            <input type="text" [(ngModel)]="editData.fac">
+          </div>
+          <div class="form-group">
+            <label>Process</label>
+            <input type="text" [(ngModel)]="editData.process">
+          </div>
+          <div class="form-group">
+            <label>Part Before</label>
+            <input type="text" [(ngModel)]="editData.partBefore">
+          </div>
+          <div class="form-group">
+            <label>MC No.</label>
+            <input type="text" [(ngModel)]="editData.mcNo">
+          </div>
+          <div class="form-group">
+            <label>Part No.</label>
+            <input type="text" [(ngModel)]="editData.partNo">
+          </div>
+          <div class="form-group">
+            <label>QTY</label>
+            <input type="number" [(ngModel)]="editData.qty">
+          </div>
+          <div class="form-group">
+            <label>Time</label>
+            <input type="number" [(ngModel)]="editData.time">
+          </div>
+          <div class="form-group full-width">
+            <label>Comment</label>
+            <input type="text" [(ngModel)]="editData.comment" name="comment" placeholder="Optional comments...">
+          </div>
+        </ng-container>
 
-        <!-- Path Inputs -->
-        <div class="form-group">
-          <label>Path Dwg</label>
-          <input type="text" [(ngModel)]="editData.pathDwg" name="pathDwg" placeholder="Enter path...">
-        </div>
-        <div class="form-group">
-          <label>Path Layout</label>
-          <input type="text" [(ngModel)]="editData.pathLayout" name="pathLayout" placeholder="Enter path...">
-        </div>
-        <div class="form-group">
-          <label>IIQC</label>
-          <input type="text" [(ngModel)]="editData.iiqc" name="iiqc" placeholder="Enter path...">
-        </div>
+        <!-- Attachments Header (Engineer only) -->
+        <ng-container *ngIf="selectedDepartment === 'En'">
+          <div class="form-group full-width">
+            <h4 style="font-size: 0.95rem; color: #334155; margin: 10px 0 5px;">Attachments (Engineer)</h4>
+          </div>
+        </ng-container>
+        <!-- Engineer Fields (Path) -->
+        <ng-container *ngIf="selectedDepartment === 'En'">
+          <div class="form-group">
+            <label>Path Dwg</label>
+            <input type="text" [(ngModel)]="editData.pathDwg" name="pathDwg" placeholder="Enter path...">
+          </div>
+          <div class="form-group">
+            <label>Path Layout</label>
+            <input type="text" [(ngModel)]="editData.pathLayout" name="pathLayout" placeholder="Enter path...">
+          </div>
+        </ng-container>
+
+        <!-- QC Fields (IIQC) -->
+        <ng-container *ngIf="selectedDepartment === 'QC'">
+          <div class="form-group full-width">
+            <h4 style="font-size: 0.95rem; color: #334155; margin: 10px 0 5px;">Attachments (QC)</h4>
+          </div>
+          <div class="form-group">
+            <label>IIQC</label>
+            <input type="text" [(ngModel)]="editData.iiqc" name="iiqc" placeholder="Enter path...">
+          </div>
+        </ng-container>
+
       </div>
     </div>
     <div class="modal-footer">
@@ -333,24 +409,77 @@
         </div>
 
         <!-- Controls -->
-        <div class="form-group">
-          <label>Type</label>
-          <select [(ngModel)]="printType" (change)="onPrintTypeChange()">
-            <option [ngValue]="null" disabled selected>Select Type</option>
-            <option *ngFor="let opt of printTypeOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Copies</label>
-          <input type="number" [(ngModel)]="printQty" min="1">
+        <h5 style="margin-bottom: 1rem; font-weight: 600; color: #475569;">Select Document Type:</h5>
+
+        <div class="print-options-grid">
+          <!-- Drawing -->
+          <button (click)="selectPrintType('pathDwg')" [class.selected]="printType === 'pathDwg'"
+            class="print-option-card">
+            <i class="bi bi-file-earmark-image text-blue-500" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+            <span>Drawing</span>
+            <span class="badge bg-blue-100 text-blue-800" *ngIf="selectedItemForPrint?.printDwgCount > 0"
+              style="margin-top: 0.5rem;">
+              {{ selectedItemForPrint?.printDwgCount }}
+            </span>
+          </button>
+
+          <!-- Layout -->
+          <button (click)="selectPrintType('pathLayout')" [class.selected]="printType === 'pathLayout'"
+            class="print-option-card">
+            <i class="bi bi-grid-3x3 text-indigo-500" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+            <span>Layout</span>
+            <span class="badge bg-indigo-100 text-indigo-800" *ngIf="selectedItemForPrint?.printLayoutCount > 0"
+              style="margin-top: 0.5rem;">
+              {{ selectedItemForPrint?.printLayoutCount }}
+            </span>
+          </button>
+
+          <!-- IIQC -->
+          <button (click)="selectPrintType('iiqc')" [class.selected]="printType === 'iiqc'" class="print-option-card">
+            <i class="bi bi-shield-check text-green-500" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+            <span>IIQC Doc</span>
+            <span class="badge bg-green-100 text-green-800" *ngIf="selectedItemForPrint?.printIiqcCount > 0"
+              style="margin-top: 0.5rem;">
+              {{ selectedItemForPrint?.printIiqcCount }}
+            </span>
+          </button>
         </div>
 
-        <!-- Preview -->
-        <div style="grid-column: span 2; height: 400px; border: 1px solid #ddd; margin-top: 10px;">
-          <iframe *ngIf="previewUrl" [src]="previewUrl" width="100%" height="100%" style="border: none;"></iframe>
-          <div *ngIf="!previewUrl"
-            style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">
-            Select Type to Preview (PDF Only)
+        <div class="form-group" style="max-width: 200px; margin-top: 1.5rem;">
+          <label style="font-weight: 600;">Number of Copies</label>
+          <input type="number" [(ngModel)]="printQty" min="1" class="form-control" style="padding: 0.5rem;">
+        </div>
+
+        <!-- Preview with Zoom -->
+        <div style="grid-column: span 2; margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <strong>Preview:</strong>
+            <div class="zoom-controls">
+              <button (click)="zoomOut()" class="btn-zoom" title="Zoom Out"><i class="bi bi-dash"></i></button>
+              <span style="margin: 0 10px; font-weight: 600; min-width: 40px; text-align: center;">{{ (previewZoom *
+                100) | number:'1.0-0' }}%</span>
+              <button (click)="zoomIn()" class="btn-zoom" title="Zoom In"><i class="bi bi-plus"></i></button>
+              <button (click)="resetZoom()" class="btn-zoom ms-2" title="Reset Zoom"><i
+                  class="bi bi-arrow-counterclockwise"></i></button>
+              <button (click)="openInNewTab()" class="btn-zoom ms-2" title="Open in New Tab"
+                style="width: auto; padding: 0 10px;">
+                <i class="bi bi-box-arrow-up-right"></i> <span style="margin-left: 5px; font-size: 0.8rem;">Full
+                  Screen</span>
+              </button>
+            </div>
+          </div>
+
+          <div
+            style="height: 400px; border: 1px solid #ddd; overflow: auto; background-color: #f3f4f6; position: relative;">
+            <div *ngIf="previewUrl" [style.width.%]="previewZoom * 100" [style.height.%]="previewZoom * 100"
+              [style.min-height.%]="100" [style.min-width.%]="100" style="transition: all 0.2s ease-out;">
+              <iframe [src]="previewUrl" width="100%" height="100%" style="border: none; background: white;"></iframe>
+            </div>
+
+            <div *ngIf="!previewUrl"
+              style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">
+              Select Type to Preview (PDF Only)
+            </div>
           </div>
         </div>
       </div>
