@@ -1,62 +1,72 @@
 <nav class="sidebar">
-  <!-- แถบของเมนูแยกกับusername -->
   <div class="top">
-    <img src="logominebea.png" width="205px" />
+
     <ul class="nav-links">
       <li routerLinkActive="active" *ngIf="role === 'PC' || role === 'view' || role === 'admin'">
         <a routerLink="/production/PCPlan">
-          <i class="bi bi-clipboard-data"></i> PC Plan
+          <i class="bi bi-clipboard-data"></i>
+          <span class="link-text">PC Plan</span>
         </a>
       </li>
 
       <li routerLinkActive="active">
         <a routerLink="/production/PlanList">
-          <i class="bi bi-list-check"></i> Plan List
+          <i class="bi bi-list-check"></i>
+          <span class="link-text">Plan List</span>
         </a>
       </li>
 
       <li routerLinkActive="active">
-        <a routerLink="/production/request"> <i class="bi bi-newspaper"></i> Request </a>
+        <a routerLink="/production/request">
+          <i class="bi bi-newspaper"></i>
+          <span class="link-text">Request</span>
+        </a>
       </li>
 
       <li routerLinkActive="active">
         <a routerLink="/production/cart">
           <i class="bi bi-cart"></i>
-          Cart <span class="cartCount" *ngIf="cartCount > 0" class="cart-count">{{ cartCount }}</span>
+          <span class="link-text">Cart</span>
+          <span class="cart-count" *ngIf="cartCount > 0">{{ cartCount }}</span>
         </a>
       </li>
 
       <li routerLinkActive="active">
-        <a routerLink="/production/return"> <i class="bi bi-arrow-counterclockwise"></i> Return </a>
+        <a routerLink="/production/return">
+          <i class="bi bi-arrow-counterclockwise"></i>
+          <span class="link-text">Return</span>
+        </a>
       </li>
 
       <li routerLinkActive="active">
-        <a routerLink="/production/history"> <i class="bi bi-clock-history"></i> History </a>
+        <a routerLink="/production/history">
+          <i class="bi bi-clock-history"></i>
+          <span class="link-text">History</span>
+        </a>
       </li>
 
       <li routerLinkActive="active">
-        <a routerLink="/production/return-history"> <i class="bi bi-clock-history"></i> Return History </a>
-      </li>
-      <li routerLinkActive="active">
-        <a routerLink="/production/historyprint"> <i class="bi bi-printer-fill"></i> History Print </a>
+        <a routerLink="/production/return-history">
+          <i class="bi bi-clock-history"></i>
+          <span class="link-text">Return History</span>
+        </a>
       </li>
 
-      <!-- <li routerLinkActive="active">
-          <a routerLink="/production/about-us"> About Us </a>
-        </li> -->
+      <li routerLinkActive="active">
+        <a routerLink="/production/historyprint">
+          <i class="bi bi-printer-fill"></i>
+          <span class="link-text">History Print</span>
+        </a>
+      </li>
     </ul>
   </div>
-  <!-- ฝั่งแสดงแถบUsernameและปุ่มlogout -->
-  <!-- Professional Profile & Logout Section -->
-  <!-- Professional Profile & Logout Section -->
+
   <div class="sidebar-footer">
-    <!-- User Profile Card -->
     <div class="user-profile-card">
       <div class="avatar-container">
         <div class="avatar-circle">
           {{ Employee_Name ? Employee_Name.charAt(0).toUpperCase() : 'U' }}
         </div>
-        <div class="status-indicator"></div>
       </div>
       <div class="user-info">
         <span class="user-name" title="{{ Employee_Name }}">{{ Employee_Name }}</span>
@@ -64,10 +74,6 @@
       </div>
     </div>
 
-    <!-- Separator -->
-    <div class="footer-separator"></div>
-
-    <!-- Logout Action -->
     <button (click)="logout()" class="btn-logout-premium">
       <div class="icon-wrapper">
         <i class="bi bi-box-arrow-right"></i>

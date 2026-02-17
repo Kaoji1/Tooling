@@ -1,163 +1,155 @@
-<!-- จัดเรียงsidebarและหน้าทั้งหน้า -->
-<div class="layout">
-  <!-- sidebarฝั่งuser -->
-  <app-sidebarpurchase></app-sidebarpurchase>
-  <router-outlet></router-outlet>
+<div class="content-area">
+  <div class="header">
+    <h1 class="re"> Total Item </h1>
+  </div>
 
-  <!-- ข้อมูลในหน้านี้ไม่รวมsidebar -->
-  <div class="content">
-    <div class="header">
-      <h1 class="re"> Total Item </h1>
-    </div>
+  <!--คำบรรยายใต้หัวข้อ-->
+  <p class="the"> Summary of all completed requests by item. </p>
 
-    <!--คำบรรยายใต้หัวข้อ-->
-    <p class="the"> Summary of all completed requests by item. </p>
-
-    <div class="box-input">
-      <div class="form-input">
-        <div class="input-container">
-          <!-- <span class="input-label">Item No</span> -->
-          <ng-select [items]="itemList" bindLabel="label" bindValue="value" placeholder="Select Item No"
-            [(ngModel)]="Item_" class="custom-select" (change)="onFilter()" [clearable]="true">
-          </ng-select>
-        </div>
-        <!-- <div class="input-container">
+  <div class="box-input">
+    <div class="form-input">
+      <div class="input-container">
+        <!-- <span class="input-label">Item No</span> -->
+        <ng-select [items]="itemList" bindLabel="label" bindValue="value" placeholder="Select Item No"
+          [(ngModel)]="Item_" class="custom-select" (change)="onFilter()" [clearable]="true">
+        </ng-select>
+      </div>
+      <!-- <div class="input-container">
           <input type="text" [(ngModel)]="ItemNo_" placeholder="Search Item No" class="custom-input"
             (input)="onFilter()">
           <span class="search-icon">🔍</span>
         </div> -->
 
-        <div class="input-container">
-          <!-- <span class="input-label">Process</span> -->
-          <ng-select [items]="processList" bindLabel="label" bindValue="value" placeholder="Select Process"
-            [(ngModel)]="Process_" class="custom-select" (change)="onFilter()" [clearable]="true">
-          </ng-select>
-        </div>
-        <!-- <div class="input-container">
+      <div class="input-container">
+        <!-- <span class="input-label">Process</span> -->
+        <ng-select [items]="processList" bindLabel="label" bindValue="value" placeholder="Select Process"
+          [(ngModel)]="Process_" class="custom-select" (change)="onFilter()" [clearable]="true">
+        </ng-select>
+      </div>
+      <!-- <div class="input-container">
           <input type="text" [(ngModel)]="Process_" placeholder="Search Process" class="custom-input"
             (input)="onFilter()">
           <span class="search-icon">🔍</span>
         </div> -->
-        <div class="group-select">
-          <label for="case">Division</label>
-          <ng-select [items]="divisionList" bindLabel="label" bindValue="value" [(ngModel)]="Division_"
-            placeholder="Select Division" style="width: 100%; min-width: 150px;">
-          </ng-select>
-        </div>
-
-        <div class="group-select">
-          <label for="case">Case</label>
-          <ng-select style="width: 150px; " [items]="categoryList" bindLabel="label" bindValue="value"
-            [(ngModel)]="Catagory_" placeholder="Select a Case" style="width: 100%; min-width: 150px;">
-          </ng-select>
-        </div>
-
-        <div class="group-select">
-          <label for="case">ItemNo</label>
-          <ng-select [items]="itemList" bindLabel="label" bindValue="value" placeholder="Select ItemNo"
-            [(ngModel)]="Item_" style="width: 100%; min-width: 150px;">
-          </ng-select>
-        </div>
-
-        <div class="group-select">
-          <label for="case">Process</label>
-          <ng-select [items]="processList" bindLabel="label" bindValue="value" placeholder="Select Process"
-            [(ngModel)]="Process_" style="width: 100%; min-width: 150px;">
-          </ng-select>
-        </div>
-
+      <div class="group-select">
+        <label for="case">Division</label>
+        <ng-select [items]="divisionList" bindLabel="label" bindValue="value" [(ngModel)]="Division_"
+          placeholder="Select Division" style="width: 100%; min-width: 150px;">
+        </ng-select>
       </div>
 
-      <div class="button-group">
+      <div class="group-select">
+        <label for="case">Case</label>
+        <ng-select style="width: 150px; " [items]="categoryList" bindLabel="label" bindValue="value"
+          [(ngModel)]="Catagory_" placeholder="Select a Case" style="width: 100%; min-width: 150px;">
+        </ng-select>
+      </div>
 
-        <div class="button-clear">
-          <button class="btn btn-clear" type="button" (click)="clearFilters()"><i
-              class="bi bi-x-circle-fill text-white"></i> Clear</button>
-        </div>
+      <div class="group-select">
+        <label for="case">ItemNo</label>
+        <ng-select [items]="itemList" bindLabel="label" bindValue="value" placeholder="Select ItemNo"
+          [(ngModel)]="Item_" style="width: 100%; min-width: 150px;">
+        </ng-select>
+      </div>
 
-        <div class="button-filter">
-          <button class="btn btn-filter" type="button" (click)="onFilter()"><i class="bi bi-funnel-fill text-white"></i>
-            Filter</button>
+      <div class="group-select">
+        <label for="case">Process</label>
+        <ng-select [items]="processList" bindLabel="label" bindValue="value" placeholder="Select Process"
+          [(ngModel)]="Process_" style="width: 100%; min-width: 150px;">
+        </ng-select>
+      </div>
 
-          <!-- <div class="button-sort">
+    </div>
+
+    <div class="button-group">
+
+      <div class="button-clear">
+        <button class="btn btn-clear" type="button" (click)="clearFilters()"><i
+            class="bi bi-x-circle-fill text-white"></i> Clear</button>
+      </div>
+
+      <div class="button-filter">
+        <button class="btn btn-filter" type="button" (click)="onFilter()"><i class="bi bi-funnel-fill text-white"></i>
+          Filter</button>
+
+        <!-- <div class="button-sort">
         <button class="btn-sort" type="button" (click)="onSort()" >
           <i class="bi bi-sort-down">Sort</i>
         </button>
       </div> -->
 
+      </div>
+
+
+    </div>
+
+    <!--ตาราง-->
+    <div class="table-responsive">
+      <table class="table table-bordered text-center">
+        <!-- หัวตาราง -->
+        <thead>
+          <tr>
+            <th>ItemNo</th>
+            <th (click)="onSort('Division')" style="cursor: pointer;">Division<span *ngIf="sortKey === 'Division'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Process')" style="cursor: pointer;">Process<span *ngIf="sortKey === 'Process'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Case')" style="cursor: pointer;">Case<span *ngIf="sortKey === 'Case'">{{ sortAsc ?
+                '↑'
+                : '↓' }}</span></th>
+            <th>Completed QTY</th>
+            <!-- <th>ShowAll</th> -->
+          </tr>
+        </thead>
+
+        <!-- ในตาราง -->
+        <tbody>
+          <tr *ngIf="displayedRequests.length === 0">
+            <td colspan="5" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> No items
+              found.</td>
+          </tr>
+          <tr *ngFor="let item of displayedRequests">
+            <td>{{ item.ItemNo }}</td>
+            <td>{{ item.Division }}</td>
+            <td>{{ item.Process }}</td>
+            <td>{{ item.Category }}</td>
+            <td>{{ item.Req_QTY }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-wrapper" *ngIf="totalPages > 1">
+      <nav aria-label="Navigation">
+        <ul class="pagination justify-content-center" style="cursor: pointer;">
+
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <a class="page-link" (click)="onPageChange(1)">First</a>
+          </li>
+
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <a class="page-link" (click)="onPageChange(currentPage - 1)">Previous</a>
+          </li>
+
+          <li class="page-item" *ngFor="let page of pages" [class.active]="currentPage === page">
+            <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+          </li>
+
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <a class="page-link" (click)="onPageChange(currentPage + 1)">Next</a>
+          </li>
+
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <a class="page-link" (click)="onPageChange(totalPages)">Last</a>
+          </li>
+
+        </ul>
+        <div class="text-center mt-2">
+          <small class="text-muted">
+            Page {{ currentPage }} of {{ totalPages }} (Total {{ filteredRequests.length }} items)
+          </small>
         </div>
-
-
-      </div>
-
-      <!--ตาราง-->
-      <div class="table-responsive">
-        <table class="table table-bordered text-center">
-          <!-- หัวตาราง -->
-          <thead>
-            <tr>
-              <th>ItemNo</th>
-              <th (click)="onSort('Division')" style="cursor: pointer;">Division<span *ngIf="sortKey === 'Division'">{{
-                  sortAsc ? '↑' : '↓' }}</span></th>
-              <th (click)="onSort('Process')" style="cursor: pointer;">Process<span *ngIf="sortKey === 'Process'">{{
-                  sortAsc ? '↑' : '↓' }}</span></th>
-              <th (click)="onSort('Case')" style="cursor: pointer;">Case<span *ngIf="sortKey === 'Case'">{{ sortAsc ?
-                  '↑'
-                  : '↓' }}</span></th>
-              <th>Completed QTY</th>
-              <!-- <th>ShowAll</th> -->
-            </tr>
-          </thead>
-
-          <!-- ในตาราง -->
-          <tbody>
-            <tr *ngIf="displayedRequests.length === 0">
-              <td colspan="5" class="text-center text-muted"> <i class="bi bi-exclamation-circle-fill"></i> No items
-                found.</td>
-            </tr>
-            <tr *ngFor="let item of displayedRequests">
-              <td>{{ item.ItemNo }}</td>
-              <td>{{ item.Division }}</td>
-              <td>{{ item.Process }}</td>
-              <td>{{ item.Category }}</td>
-              <td>{{ item.Req_QTY }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div class="pagination-wrapper" *ngIf="totalPages > 1">
-        <nav aria-label="Navigation">
-          <ul class="pagination justify-content-center" style="cursor: pointer;">
-
-            <li class="page-item" [class.disabled]="currentPage === 1">
-              <a class="page-link" (click)="onPageChange(1)">First</a>
-            </li>
-
-            <li class="page-item" [class.disabled]="currentPage === 1">
-              <a class="page-link" (click)="onPageChange(currentPage - 1)">Previous</a>
-            </li>
-
-            <li class="page-item" *ngFor="let page of pages" [class.active]="currentPage === page">
-              <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
-            </li>
-
-            <li class="page-item" [class.disabled]="currentPage === totalPages">
-              <a class="page-link" (click)="onPageChange(currentPage + 1)">Next</a>
-            </li>
-
-            <li class="page-item" [class.disabled]="currentPage === totalPages">
-              <a class="page-link" (click)="onPageChange(totalPages)">Last</a>
-            </li>
-
-          </ul>
-          <div class="text-center mt-2">
-            <small class="text-muted">
-              Page {{ currentPage }} of {{ totalPages }} (Total {{ filteredRequests.length }} items)
-            </small>
-          </div>
-        </nav>
-      </div>
+      </nav>
     </div>
   </div>

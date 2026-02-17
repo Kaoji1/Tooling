@@ -9,58 +9,50 @@ $hover-color: #f8fafc;
 $shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
 $radius: 12px;
 
-.layout {
+.content-area {
+    padding: 1.5rem 2rem;
     display: flex;
-    min-height: 100vh;
-    width: 100%;
+    flex-direction: column;
+    gap: 1.5rem;
     background-color: var(--color-bg, $background-color);
+    overflow: visible;
 
-    .content-area {
-        flex: 1;
-        padding: 1.5rem 2rem; // Match PCPlan/Request Padding
+    // Standardized Header
+    .header {
         display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        background-color: var(--color-bg, $background-color);
-        overflow: visible;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.25rem;
 
-        // Standardized Header
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.25rem;
-
-            h4 {
-                font-size: 1.5rem;
-                font-weight: 800;
-                margin: 0;
-                background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-                background-clip: text;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                letter-spacing: -0.02em;
-            }
+        h4 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
         }
+    }
 
-        p {
-            color: #475569;
-            font-size: 0.9rem;
-            margin-top: 0.15rem;
-            font-weight: 500;
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+    p {
+        color: #475569;
+        font-size: 0.9rem;
+        margin-top: 0.15rem;
+        font-weight: 500;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
 
-            &::before {
-                content: '';
-                display: inline-block;
-                width: 4px;
-                height: 16px;
-                background: linear-gradient(180deg, #3b82f6, #60a5fa);
-                border-radius: 2px;
-            }
+        &::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(180deg, #3b82f6, #60a5fa);
+            border-radius: 2px;
         }
     }
 }

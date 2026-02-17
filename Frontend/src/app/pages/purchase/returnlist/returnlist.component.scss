@@ -45,6 +45,7 @@
     /* Action & Filter Bar */
     .action-bar {
       display: flex;
+      align-content: center;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
@@ -289,7 +290,6 @@
           min-width: 100px;
         }
       }
-    }
 
     /* Pagination */
     .pagination-wrapper {

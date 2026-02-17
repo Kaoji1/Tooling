@@ -1,44 +1,44 @@
-/* จัดเลย์เอาต์ sidebar + content */
-.layout {
-   display: flex;
-  flex-direction: row;
-  height: 100vh;
-  width: 100%;
-  overflow: hidden;
-}
+/* Old .layout wrapper removed — SPA layout handled by app.component */
 
 
-.content {
-  flex: 1;               /* กินพื้นที่ที่เหลือ */
+.content-area {
+  flex: 1;
+  /* กินพื้นที่ที่เหลือ */
   padding: 20px;
   background-color: white;
-  overflow-y: auto;      /* เลื่อนเฉพาะ content */
+  overflow-y: auto;
+  /* เลื่อนเฉพาะ content */
   /* ลบ height: 100vh ออก */
-  display: flex;          /* ถ้าต้องการให้ child เต็มพื้นที่ */
+  display: flex;
+  /* ถ้าต้องการให้ child เต็มพื้นที่ */
   flex-direction: column;
 }
-    .header-group {
-      display: flex;
-      width: 100%;
-      justify-content: space-between;
-    }
-      .header {
-        display: block;
-      }
-        .h1 {
-          font-size: 22px;
-          margin-bottom: 5px;
-        }
 
-        .p {
-          font-size: 15px;
-          margin-bottom: 5px;
-          color: rgb(16, 3, 114);
-        }
-      
+.header-group {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.header {
+  display: block;
+}
+
+.h1 {
+  font-size: 22px;
+  margin-bottom: 5px;
+}
+
+.p {
+  font-size: 15px;
+  margin-bottom: 5px;
+  color: rgb(16, 3, 114);
+}
+
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 คอลัมน์ในแถว */
+  grid-template-columns: repeat(2, 1fr);
+  /* 2 คอลัมน์ในแถว */
   grid-auto-rows: minmax(400px, auto);
   gap: 20px;
   padding: 20px;
@@ -48,12 +48,12 @@
   background: #fff;
   padding: 10px;
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   justify-content: center;
   margin-bottom: 3ch;
 }
 
-.select{
+.select {
   margin-bottom: 50px;
 }
 
@@ -84,7 +84,7 @@
   border-radius: 8px;
   font-size: 15px;
   transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
 
@@ -93,7 +93,8 @@
 
 
 .card.large {
-  grid-column: span 2; /* การ์ดใหญ่ 2 column */
+  grid-column: span 2;
+  /* การ์ดใหญ่ 2 column */
   min-height: 400px;
 }
 
@@ -104,10 +105,10 @@
   margin: 0;
   font-size: 18px;
   font-weight: bold;
-  
+
 }
 
-.card-header{
+.card-header {
   background: #ffffff;
   display: flex;
   align-items: center;
@@ -128,4 +129,3 @@
   color: #888;
   margin-top: 10px;
 }
-

@@ -168,7 +168,7 @@ exports.insertPCPlan = async (req, res) => {
             .input('JsonData', sql.NVarChar(sql.MAX), jsonString)
             .input('Division', sql.NVarChar(50), division)
             .input('TargetDate', sql.Date, new Date(sampleDate))
-            .execute('trans.Stored_PCPlan_Insert_PMC_Snapshot');
+            .execute('trans.Stored_PCPlan_Insert_All_Snapshot_Excel');
 
         // === Notification Trigger ===
         try {

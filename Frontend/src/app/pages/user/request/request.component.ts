@@ -403,8 +403,8 @@ export class requestComponent implements OnInit {
   // เมื่อเลือก ItemNo
   onItemNoChange(event: any) {
     console.log('🟡 ItemNo changed:', this.ItemNo_);
-    // เมื่อเลือก/กรอก ItemNo ให้โหลด PartNo ใหม่
-    this.PartNo_ = null;
+    // เมื่อเลือก/กรอก ItemNo ให้โหลด PartNo ใหม่ (แต่ไม่ต้องเคลียร์ PartNo_ เดิมทิ้ง เพื่อให้ใช้กรองคู่กันได้)
+    // this.PartNo_ = null; 
     this.Process_ = null;
     this.MachineType_ = null;
     this.get_PartNo(this.Div_);
@@ -1021,72 +1021,79 @@ export class requestComponent implements OnInit {
         ItemName: item.ItemName || null,
         ToolType: toolType,
         MFGOrderNo: item.MFGOrderNo || null,
-        MR_No: item.MR_No || null
+        MR_No: item.MR_No || null,
+        Position: item.Position || null // ✅ Added for verification display
       };
     };
 
     const allItems: any[] = [];
 
     if (caseValue === 'SET') {
-      // CASE SET: ทั้ง Cutting + Setup ลง tb_IssueCaseSetup_Request_Document
       checkedCutting.forEach((item: any) => allItems.push(mapItem(item, 'CuttingTool')));
       checkedSetup.forEach((item: any) => allItems.push(mapItem(item, 'SetupTool')));
     } else if (this.Tooling_ === 'Setup tool') {
-      // Non-SET + Setup Tool
       checkedCutting.forEach((item: any) => allItems.push(mapItem(item, 'SetupTool')));
     } else {
-      // Non-SET + Cutting Tool (default)
       checkedCutting.forEach((item: any) => allItems.push(mapItem(item, 'CuttingTool')));
     }
 
-    // Build summary for confirmation dialog
-    const cuttingCount = allItems.filter(i => i.ToolType === 'CuttingTool').length;
-    const setupCount = allItems.filter(i => i.ToolType === 'SetupTool').length;
-
+    // 🎨 Build Detailed Verification Table
     let summaryHtml = `
-      <div style="text-align:left; padding: 0.5rem 0;">
-        <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #f1f5f9;">
-          <span style="color:#64748b;">Case</span>
-          <span style="font-weight:700; color:#1e293b;">${caseValue}</span>
+      <div style="font-family: 'Kanit', sans-serif; color: #1e293b;">
+        <!-- Header Info Cards -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
+          <div><small style="color:#64748b; text-transform:uppercase; font-size:0.65rem; font-weight:700;">Case Selection</small><br><strong style="color:#0f172a; font-size:0.9rem;">${caseValue}</strong></div>
+          <div><small style="color:#64748b; text-transform:uppercase; font-size:0.65rem; font-weight:700;">Division / Factory</small><br><strong style="color:#0f172a; font-size:0.9rem;">${Division} / F.${Factory}</strong></div>
+          <div style="text-align:right;"><small style="color:#64748b; text-transform:uppercase; font-size:0.65rem; font-weight:700;">Total Items</small><br><strong style="color:#2563eb; font-size:1rem;">${allItems.length}</strong></div>
         </div>
-        <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #f1f5f9;">
-          <span style="color:#64748b;">Division</span>
-          <span style="font-weight:700; color:#1e293b;">${Division}</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #f1f5f9;">
-          <span style="color:#64748b;">Factory</span>
-          <span style="font-weight:700; color:#1e293b;">F.${Factory}</span>
-        </div>`;
 
-    if (cuttingCount > 0) {
-      summaryHtml += `
-        <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #f1f5f9;">
-          <span style="color:#64748b;">🔧 Cutting Tool</span>
-          <span style="font-weight:700; color:#2563eb;">${cuttingCount} items</span>
-        </div>`;
-    }
-    if (setupCount > 0) {
-      summaryHtml += `
-        <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #f1f5f9;">
-          <span style="color:#64748b;">⚙️ Setup Tool</span>
-          <span style="font-weight:700; color:#7c3aed;">${setupCount} items</span>
-        </div>`;
-    }
-    summaryHtml += `
-        <div style="display:flex; justify-content:space-between; padding:0.75rem 0; margin-top:0.25rem;">
-          <span style="font-weight:700; color:#1e293b; font-size:1.05rem;">Total</span>
-          <span style="font-weight:800; color:#059669; font-size:1.1rem;">${allItems.length} items</span>
+        <!-- Detailed Table -->
+        <div style="max-height: 380px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left;">
+            <thead style="background: #f1f5f9; position: sticky; top: 0; z-index: 10;">
+              <tr>
+                <th style="padding: 10px 8px; border-bottom: 2px solid #e2e8f0; color:#475569; width: 130px;">Part No.</th>
+                <th style="padding: 10px 8px; border-bottom: 2px solid #e2e8f0; color:#475569;">Item Info</th>
+                <th style="padding: 10px 8px; border-bottom: 2px solid #e2e8f0; color:#475569; width: 90px;">Process/MC</th>
+                <th style="padding: 10px 8px; border-bottom: 2px solid #e2e8f0; color:#475569; width: 50px; text-align:center;">Case</th>
+                <th style="padding: 10px 8px; border-bottom: 2px solid #e2e8f0; color:#475569; width: 60px; text-align:center;">Pos.</th>
+                <th style="padding: 10px 8px; border-bottom: 2px solid #e2e8f0; color:#475569; width: 50px; text-align:right;">QTY</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${allItems.map(item => `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                  <td style="padding: 8px; font-weight: 600; color: #334155;">${item.PartNo}</td>
+                  <td style="padding: 8px;">
+                    <div style="font-weight: 700; color: #0f172a;">${item.ItemNo}</div>
+                    <div style="font-size: 0.7rem; color: #64748b; line-height: 1.2;">${item.ItemName || ''}</div>
+                    <div style="font-size: 0.7rem; color: #94a3b8; font-style: italic;">${item.SPEC || '-'}</div>
+                  </td>
+                  <td style="padding: 8px; color: #475569;">
+                    <div style="font-weight: 600;">${item.Process}</div>
+                    <div style="font-size: 0.7rem;">${item.MCType || '-'}</div>
+                  </td>
+                  <td style="padding: 8px; text-align:center;"><span style="background:#f1f5f9; padding:2px 4px; border-radius:4px; font-size:0.7rem; font-weight:600;">${item.CASE}</span></td>
+                  <td style="padding: 8px; text-align:center; color:#64748b; font-size:0.75rem;">${item.Position || '-'}</td>
+                  <td style="padding: 8px; text-align:right; font-weight:800; color:#2563eb; font-size:0.95rem;">${item.QTY}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top: 12px; font-size: 0.75rem; color: #94a3b8; text-align: right;">
+          * Please verify all item details and quantities before clicking Submit.
         </div>
       </div>`;
 
     // 🎨 Premium Confirmation Dialog
     Swal.fire({
-      title: '<span style="font-size:1.3rem; font-weight:800; color:#1e293b;">Confirm Submission</span>',
+      title: '<span style="font-size:1.3rem; font-weight:800; color:#1e293b; font-family: \'Kanit\', sans-serif;">Final Request Verification</span>',
       html: summaryHtml,
-      icon: 'question',
+      width: 'min(950px, 90%)',
       showCancelButton: true,
-      confirmButtonText: '<i class="bi bi-shield-check"></i>&nbsp; Yes, Submit',
-      cancelButtonText: '<i class="bi bi-x-lg"></i>&nbsp; Cancel',
+      confirmButtonText: '<i class="bi bi-shield-check"></i>&nbsp; Yes, Submit Now',
+      cancelButtonText: '<i class="bi bi-x-lg"></i>&nbsp; Back to Edit',
       confirmButtonColor: '#2563eb',
       cancelButtonColor: '#94a3b8',
       reverseButtons: true,
@@ -1195,18 +1202,21 @@ export class requestComponent implements OnInit {
 
   // function clearall
   Clearall() {
-    // Delete select group
-    this.Tooling_ = null; // ✅ Reset Tooling Selection
+    // Delete select group - KEEP Tooling_ and Case_ as requested
+    // this.Tooling_ = null; 
+    // this.Case_ = null;
+
     this.Div_ = null;
     this.Fac_ = null;
     this.DueDate_ = null;
-    this.Case_ = null;
     this.PartNo_ = null;
     this.Spec_ = null;
     this.MachineType_ = null;
     this.Process_ = null;
     this.phone_ = '';
     this.MCNo_ = '';
+    this.mcTags = []; // ✅ Clear tags as well
+    this.ItemNo_ = null;
 
     // Delete items
     this.items = [];
@@ -1214,7 +1224,9 @@ export class requestComponent implements OnInit {
     this.PathDwg_ = null;
     this.loading = false;
     this.isSearched = false;
-    this.api.clearRequestState(); // ✅ Clear saved state
+
+    // Save state (persists the cleared form but keeps the Case/Tooling mode)
+    this.saveState();
   }
 
   // upload file

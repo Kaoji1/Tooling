@@ -418,3 +418,144 @@ body {
 .mat-mdc-form-field-subscript-wrapper {
   display: none !important;
 }
+
+// ==========================================
+//    SPA Layout Shell (Centralized)
+// ==========================================
+
+.app-shell {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--color-bg);
+
+  .sidebar-container {
+    height: 100%;
+    position: relative;
+    z-index: 1001;
+    width: 64px; // Slimmer compact width
+    overflow: hidden; // ✂️ ป้องกันเนื้อหาล้นออกตอนยังแคบ
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      width: 260px;
+    }
+  }
+
+  .main-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .content-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+    position: relative;
+
+    // Hide scrollbar but keep functionality
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &:hover::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: transparent;
+    }
+  }
+}
+
+// Glassmorphism Overlay — inside .app-shell scope for sibling combinator
+.app-shell {
+  .glass-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  // 🔄 CSS-only: sidebar hover → overlay active (sibling combinator)
+  .sidebar-container:hover~.glass-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  // 🎯 Sidebar text visibility (Global — same specificity for default & hover)
+  .sidebar .link-text {
+    opacity: 0;
+  }
+
+  .sidebar .user-info,
+  .sidebar .logout-text {
+    opacity: 0;
+  }
+
+  // 🎯 Sidebar inner <nav> expansion on hover (Global — applies to both production & purchase)
+  .sidebar-container:hover .sidebar {
+    width: 260px;
+    background: rgba(255, 255, 255, 0.92);
+
+    .link-text {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .user-info,
+    .logout-text {
+      opacity: 1;
+    }
+  }
+}
+
+// Hide Sidebar on Login Page Helper
+.hide-sidebar .sidebar-container {
+  display: none !important;
+}
+
+// Global Layout Helpers (for pages to transition)
+.layout {
+  display: block !important;
+  padding: 0 !important;
+  min-height: auto !important;
+}
+
+.content-area {
+  padding: 30px !important;
+  width: 100% !important;
+  max-width: 100%; // Let it fill space
+  margin: 0;
+  box-sizing: border-box;
+}
+
+// Header refinements for SPA
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-main);
+    letter-spacing: -0.5px;
+  }
+}
