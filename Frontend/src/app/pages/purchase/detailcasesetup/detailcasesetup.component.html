@@ -26,100 +26,99 @@
             Please select a Division to view data. / กรุณาเลือก Division เพื่อดูข้อมูล
         </div>
 
-        <!-- Table Section -->
-        <div class="table-responsive">
+        <!-- Table Section Container -->
+        <div class="table-responsive" *ngIf="Division_">
+            <!-- 1. Cutting Tool Table -->
+            <ng-container *ngIf="Tooling_ === 'Cutting Tool'">
+                <table class="table table-bordered text-center">
+                    <thead>
+                        <tr class="header-group-row">
+                            <th colspan="23" style="text-align: center; color: red; padding: 20px;">
+                                This view is for Cutting Tool. Case Setup data usually belongs to 'Setup Tool'.
+                                If you need Cutting Tool columns here, please request adjustment.
+                            </th>
+                        </tr>
+                    </thead>
+                </table>
+            </ng-container>
 
-    <!-- Table Section -->
-    <div class="table-responsive">
-
-        <!-- Cutting Tool Table (If Tooling is Cutting Tool) -->
-        <ng-container *ngIf="Tooling_ === 'Cutting Tool'">
-            <table id="table-data" class="table table-bordered text-center">
-                <thead>
-                    <tr class="header-group-row">
-                        <th colspan="23" style="text-align: center; color: red; padding: 20px;">
-                            This view is for Cutting Tool. Case Setup data usually belongs to 'Setup Tool'.
-                            If you need Cutting Tool columns here, please request adjustment.
-                        </th>
-                    </tr>
-                </thead>
-            </table>
-        </ng-container>
+            <!-- 2. Setup Tool Table (Purchase View) -->
+            <ng-container *ngIf="Tooling_ === 'Setup Tool'">
+                <table id="table-data" class="table table-bordered text-center">
+                    <thead>
+                        <tr class="header-cols">
+                            <th class="col-checkbox"><input type="checkbox" [(ngModel)]="selectAllChecked"
+                                    (change)="toggleAllCheckboxes()" [disabled]="isViewer()" /></th>
+                            <th class="col-no">NO</th>
+                            <th style="min-width: 120px;">M/R No.</th>
+                            <th style="min-width: 120px;">Mfg Order</th>
+                            <th style="min-width: 150px;">Doc No.</th>
+                            <th style="min-width: 100px;">Record Date</th>
+                            <th style="min-width: 100px;">Due Date</th>
+                            <th style="min-width: 120px;">Requester</th>
+                            <th style="min-width: 80px;">Div</th>
+                            <th style="min-width: 120px;">Part No.</th>
+                            <th style="min-width: 120px;">Process</th>
+                            <th style="min-width: 60px;">Fac</th>
+                            <th style="min-width: 100px;">Machine</th>
+                            <th style="min-width: 60px;">MC Qty</th>
+                            <th style="width: 70px;">Case</th>
+                            <th style="min-width: 120px;">Req Item NO.</th>
+                            <th style="min-width: 150px;">Req Item Name</th>
+                            <th style="min-width: 150px;">Req Spec</th>
+                            <th style="width: 60px;">QTY</th>
+                            <th style="width: 60px;">Total</th>
+                            <th style="width: 80px;">On Hand</th>
+                            <th style="min-width: 100px;">Status</th>
+                            <th style="min-width: 120px;">Phone</th>
 
                             <!-- Purchase Columns -->
-                            <th style="min-width: 120px;">Item NO.</th>
-                            <th style="min-width: 120px;">Item Name</th>
-                            <th style="min-width: 150px;">Spec</th>
-                            <th style="width: 60px;">QTY</th>
-                            <th style="min-width: 100px;">Mat Lot</th>
-                            <th style="min-width: 100px;">PH Stock Loc</th>
-                            <th style="min-width: 80px;">Stock PD</th>
-                            <th style="min-width: 80px;">PH Stock</th>
-                            <th style="width: 70px;">Confirm</th>
-                            <th style="min-width: 120px;">Remark</th>
+                            <th style="min-width: 120px; background-color: #f0f0d0;">PH: Item NO.</th>
+                            <th style="min-width: 120px; background-color: #f0f0d0;">PH: Item Name</th>
+                            <th style="min-width: 150_px; background-color: #f0f0d0;">PH: Spec</th>
+                            <th style="width: 60px; background-color: #f0f0d0;">PH: QTY</th>
+                            <th style="min-width: 100px; background-color: #f0f0d0;">Mat Lot</th>
+                            <th style="min-width: 100px; background-color: #f0f0d0;">PH Stock Loc</th>
+                            <th style="min-width: 80px; background-color: #f0f0d0;">Stock PD</th>
+                            <th style="min-width: 80px; background-color: #f0f0d0;">PH Stock</th>
+                            <th style="width: 70px; background-color: #f0f0d0;">Confirm</th>
+                            <th style="min-width: 120px; background-color: #f0f0d0;">Remark</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngIf="Division_ && paginatedItems.length === 0">
+                        <tr *ngIf="paginatedItems.length === 0">
                             <td colspan="33" class="text-center text-muted">No items found. / ไม่พบข้อมูล</td>
                         </tr>
                         <tr *ngFor="let item of paginatedItems; let i = index; trackBy: trackByRequestId" [ngClass]="{
-            'editing-row': editingIndex[item.Public_Id] === i,
-            'highlight-row': highlightedRow === i}">
-                        <!-- Checkbox -->
-                        <td><input type="checkbox" [(ngModel)]="item.Selection" [disabled]="isViewer()" /></td>
+                            'editing-row': editingIndex[item.Public_Id] === i,
+                            'highlight-row': highlightedRow === i}">
 
-                        <!-- NO -->
-                        <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                            <!-- Columns -->
+                            <td><input type="checkbox" [(ngModel)]="item.Selection" [disabled]="isViewer()" /></td>
+                            <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                            <td>{{ item.MR_No }}</td>
+                            <td>{{ item.MFGOrderNo }}</td>
+                            <td style="white-space: nowrap;">{{ item.DocNo }}</td>
+                            <td>{{ item.DateTime_Record | date:'dd/MM/yyyy'}}</td>
+                            <td>{{ item.DueDate | date:'dd/MM/yyyy'}}</td>
+                            <td>{{ item.Requester }}</td>
+                            <td>{{ item.Division}}</td>
+                            <td>{{ item.PartNo }}</td>
+                            <td>{{ item.Process }}</td>
+                            <td>{{ item.Fac }}</td>
+                            <td>{{ item.MCType }}</td>
+                            <td>{{ item.MCQTY }}</td>
+                            <td>{{ item.CASE }}</td>
+                            <td>{{ item.Req_ItemNo }}</td>
+                            <td>{{ item.Req_ItemName }}</td>
+                            <td class="spec-column">{{ item.Req_SPEC }}</td>
+                            <td>{{ item.QTY }}</td>
+                            <td> - </td>
+                            <td>{{ item.ON_HAND }}</td>
+                            <td>{{ item.Status }}</td>
+                            <td>{{ item.PhoneNo }}</td>
 
-                        <!-- M/R No. -->
-                        <td>{{ item.MR_No }}</td>
-                        <td>{{ item.MFGOrderNo }}</td>
-
-                        <!-- Document -->
-                        <td style="white-space: nowrap;">{{ item.DocNo }}</td>
-
-                        <!-- Dates -->
-                        <td>{{ item.DateTime_Record | date:'dd/MM/yyyy'}}</td>
-                        <td>{{ item.DueDate | date:'dd/MM/yyyy'}}</td>
-
-                        <!-- Requester info -->
-                        <td>{{ item.Requester }}</td>
-                        <td>{{ item.Division}}</td>
-                        <td>{{ item.PartNo }}</td>
-                        <td>{{ item.Process }}</td>
-                        <td>{{ item.Fac }}</td>
-                        <td>{{ item.MCType }}</td>
-                        <td>{{ item.MCQTY }}</td>
-                        <td>{{ item.CASE }}</td>
-
-                        <!-- Item NO. -->
-                        <td>{{ item.Req_ItemNo }}</td>
-
-                        <!-- Item Name -->
-                        <td>{{ item.Req_ItemName }}</td>
-
-                        <!-- Spec -->
-                        <td class="spec-column">{{ item.Req_SPEC }}</td>
-
-                        <!-- QTY -->
-                        <td>{{ item.QTY }}</td>
-
-                        <!-- Total -->
-                        <td> - </td>
-
-                        <!-- On Hand -->
-                        <td>{{ item.ON_HAND }}</td>
-
-                        <!-- Status -->
-                        <td>{{ item.Status }}</td>
-
-                        <!-- Phone -->
-                        <td>{{ item.PhoneNo }}</td>
-
-                        <!-- ================= For Purchase ================= -->
-
-                            <!-- Item NO. -->
+                            <!-- Purchase Input Cols -->
                             <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
                                 style="cursor: pointer; position: relative;">
                                 <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showItemNoSetup">
@@ -128,19 +127,11 @@
                                         type="text" class="form-control" style="min-width: 100px;" />
                                 </ng-container>
                                 <ng-template #showItemNoSetup>
-                                    <span style="text-decoration: underline;">
-                                        {{ item.ItemNo }}
-                                    </span>
+                                    <span style="text-decoration: underline;">{{ item.ItemNo }}</span>
                                 </ng-template>
                             </td>
-
-                        <!-- Item Name -->
-                        <td>{{ item.ItemName }}</td>
-
-                        <!-- Spec -->
-                        <td>{{ item.SPEC }}</td>
-
-                            <!-- QTY -->
+                            <td>{{ item.ItemName }}</td>
+                            <td>{{ item.SPEC }}</td>
                             <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
                                 style="cursor: pointer;">
                                 <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showQtySetup">
@@ -149,13 +140,9 @@
                                         style="width: 80px;" min="0" />
                                 </ng-container>
                                 <ng-template #showQtySetup>
-                                    <span style="text-decoration: underline;">
-                                        {{ item.QTY }}
-                                    </span>
+                                    <span style="text-decoration: underline;">{{ item.QTY }}</span>
                                 </ng-template>
                             </td>
-
-                            <!-- Mat Lot -->
                             <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
                                 style="cursor: pointer;">
                                 <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showMatLotSetup">
@@ -164,22 +151,16 @@
                                         style="width: 100px;" />
                                 </ng-container>
                                 <ng-template #showMatLotSetup>
-                                    <span style="text-decoration: underline; min-height: 20px; display: inline-block;">
-                                        {{ item.MatLot || '&nbsp;' }}
-                                    </span>
+                                    <span
+                                        style="text-decoration: underline; min-height: 20px; display: inline-block;">{{
+                                        item.MatLot || '&nbsp;' }}</span>
                                 </ng-template>
                             </td>
-
-                        <td></td> <!-- Stock Loc -->
-                        <td></td> <!-- Stock PD -->
-                        <td></td> <!-- PH Stock -->
-
-                        <!-- Confirm -->
-                        <td>
-                            <button class="btn btn-success btn-sm btn-ok" (click)="confirmItem(item)">OK</button>
-                        </td>
-
-                            <!-- Remark -->
+                            <td></td> <!-- Stock Loc -->
+                            <td></td> <!-- Stock PD -->
+                            <td></td> <!-- PH Stock -->
+                            <td><button class="btn btn-success btn-sm btn-ok" (click)="confirmItem(item)">OK</button>
+                            </td>
                             <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
                                 style="cursor: pointer;">
                                 <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showRemarkSetup">
@@ -194,6 +175,7 @@
                     </tbody>
                 </table>
             </ng-container>
+        </div>
 
     </div>
 
