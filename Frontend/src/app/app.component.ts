@@ -18,12 +18,21 @@ import { filter } from 'rxjs/operators';
 export class AppComponent {
   title = 'Frontend';
   showNotification = true;
+  isLoginPage = true;
+  isProductionRoute = false;
+  isPurchaseRoute = false;
 
   constructor(private router: Router) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      this.showNotification = !event.url.includes('/login');
+    ).subscribe((event: NavigationEnd) => {
+      const url = event.urlAfterRedirects || event.url;
+
+      this.isLoginPage = url.includes('/login') || url === '/';
+      this.isProductionRoute = url.includes('/production');
+      this.isPurchaseRoute = url.includes('/purchase');
+
+      this.showNotification = !this.isLoginPage;
     });
   }
 }

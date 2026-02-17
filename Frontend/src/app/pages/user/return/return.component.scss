@@ -1,15 +1,5 @@
-.layout {
-  display: flex;
-  height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f9fa;
-  /* Slightly lighter bg */
-}
-
 .content-area {
-  flex-grow: 1;
   padding: 30px;
-  overflow-y: auto;
 }
 
 .header {

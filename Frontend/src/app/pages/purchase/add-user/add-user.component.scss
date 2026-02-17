@@ -1,116 +1,120 @@
-.layout {
-  display: flex;
-  flex-direction: row;
-  height: 100%;
+.content-area {
+  display: block;
   width: 100%;
-  overflow: hidden;
+  height: 100vh;
+  padding: 20px;
+  background-color: white;
 
-  .content {
-    display: block;
+  .row {
+    justify-content: space-around;
+  }
+
+  .header-group {
+    display: flex;
     width: 100%;
-    height:100vh ;
-    padding: 20px;
-    background-color: white;
+    justify-content: space-between;
 
-    .row {
-      justify-content: space-around;
+    .header {
+      display: block;
+
+      .h1 {
+        font-size: 22px;
+        margin-bottom: 5px;
+      }
+
+      .p {
+        font-size: 15px;
+        margin-bottom: 5px;
+        color: rgb(16, 3, 114);
+      }
     }
 
-    .header-group {
-      display: flex;
+    .button-per {
+      display: block;
+      background-color: #4db6b6;
+      margin: 10px;
+      margin-top: 70px;
+      margin-left: 900px;
+      border: none;
+      /* ปรับให้เป็น none ดีกว่า */
+      border-radius: 10px;
+      height: 45px;
+      width: 200px;
+      font-size: 20px;
+      color: #fff;
+      /* ให้ตัวหนังสือสีขาว */
+      cursor: pointer;
+      transition: 0.2s;
+      /* transition นุ่มขึ้น */
+    }
+
+    /* hover effect */
+    .button-per:hover {
+      background-color: #3a9999;
+      /* เปลี่ยนสีเข้มขึ้น */
+      color: black;
+      /* ใส่เงา */
+    }
+
+    .button {
+      display: block;
+      background-color: #4db6b6;
+      margin: 30px;
+      border: none;
+      /* ปรับ border ให้เป็น none */
+      border-radius: 10px;
+      height: 45px;
+      width: 200px;
+      font-size: 20px;
+      margin-top: 70px;
+      color: #fff;
+      /* สีตัวอักษรเริ่มต้น */
+      cursor: pointer;
+      transition: 0.2s;
+      /* transition นุ่มขึ้น */
+
+    }
+
+    /* hover effect */
+    .button:hover {
+      background-color: #3a9999;
+      /* เปลี่ยนสีเข้มขึ้น */
+      color: black;
+      /* ตัวอักษรเปลี่ยนเป็นสีดำ */
+    }
+  }
+
+
+  //       .button {
+  //         display: block;
+  //         background-color: #4db6b6;
+  //         margin: 30px;
+  //         border: 10px;
+  //         border-radius: 10px;
+  //         height: 45px;
+  //         width: 200px;
+  //         font-size: 20px;
+  //         margin-top: 70px;
+  //   cursor: pointer;
+  //   transition: 0.2s; /* transition นุ่มขึ้น */
+
+  //       }
+
+  //       .button-per:hover {
+  //   background-color: #3a9999;  /* เปลี่ยนสีเข้มขึ้น */
+  //   color: black; /* ใส่เงา */
+  // }
+  //     }
+  .table-responsive {
+    max-height: 70vh; // ตารางสูงไม่เกิน 70% ของจอ
+    width: 100%; // กว้างเต็ม 100% ของจอ
+    overflow: auto;
+
+
+    table {
       width: 100%;
-      justify-content: space-between;
-
-      .header {
-        display: block;
-
-        .h1 {
-          font-size: 22px;
-          margin-bottom: 5px;
-        }
-
-        .p {
-          font-size: 15px;
-          margin-bottom: 5px;
-          color: rgb(16, 3, 114);
-        }
-      }
-.button-per {
-  display: block;
-  background-color: #4db6b6;
-  margin: 10px;
-  margin-top: 70px;
-  margin-left: 900px;
-  border: none; /* ปรับให้เป็น none ดีกว่า */
-  border-radius: 10px;
-  height: 45px;
-  width: 200px;
-  font-size: 20px;
-  color: #fff; /* ให้ตัวหนังสือสีขาว */
-  cursor: pointer;
-  transition: 0.2s; /* transition นุ่มขึ้น */
-}
-
-/* hover effect */
-.button-per:hover {
-  background-color: #3a9999;  /* เปลี่ยนสีเข้มขึ้น */
-  color: black; /* ใส่เงา */
-}
-
-.button {
-  display: block;
-  background-color: #4db6b6;
-  margin: 30px;
-  border: none; /* ปรับ border ให้เป็น none */
-  border-radius: 10px;
-  height: 45px;
-  width: 200px;
-  font-size: 20px;
-  margin-top: 70px;
-  color: #fff; /* สีตัวอักษรเริ่มต้น */
-  cursor: pointer;
-  transition:  0.2s ; /* transition นุ่มขึ้น */
-  
-}
-
-/* hover effect */
-.button:hover {
-  background-color: #3a9999;  /* เปลี่ยนสีเข้มขึ้น */
-  color: black;               /* ตัวอักษรเปลี่ยนเป็นสีดำ */
-}
-}
-
-
-//       .button {
-//         display: block;
-//         background-color: #4db6b6;
-//         margin: 30px;
-//         border: 10px;
-//         border-radius: 10px;
-//         height: 45px;
-//         width: 200px;
-//         font-size: 20px;
-//         margin-top: 70px;
-//   cursor: pointer;
-//   transition: 0.2s; /* transition นุ่มขึ้น */
-
-//       }
-
-//       .button-per:hover {
-//   background-color: #3a9999;  /* เปลี่ยนสีเข้มขึ้น */
-//   color: black; /* ใส่เงา */
-// }
-//     }
-    .table-responsive {
-      max-height: 70vh;  // ตารางสูงไม่เกิน 70% ของจอ
-  width: 100%;      // กว้างเต็ม 100% ของจอ
-  overflow: auto;
-
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        color: #4a4949;
+      border-collapse: collapse;
+      color: #4a4949;
 
 
       th,
@@ -144,13 +148,13 @@
     }
 
   }
-    i {
-      color: #0066B3;
-    }
 
-    //สีน้ำเงิน
+  i {
+    color: #0066B3;
+  }
+
+  //สีน้ำเงิน
 
 
 
-}
 }

@@ -1,39 +1,14 @@
-<!-- Layout หลักที่จัดเรียง sidebar กับ content -->
-<div class="layout">
-  <!-- Sidebar ฝั่งซ้าย -->
-  <app-sidebarpurchase></app-sidebarpurchase>
+<div class="content-area">
 
-  <!-- Content ด้านขวา -->
-  <div class="content">
+  <div class="header-content">
+    <h1 class="reh">Request History</h1>
+  </div>
 
+  <p class="the">The loan withdrawal history is here.</p>
 
-
-    <!-- เพิ่ม div สำหรับสถานะแนวตั้ง พร้อมข้อความ -->
-    <!-- <div class="status-indicator-vertical">
-      <div class="status-item">
-        <span class="status yellow"></span>
-        <span class="status-label">= Waiting</span>
-      </div>
-      <div class="status-item">
-        <span class="status green"></span>
-        <span class="status-label">= Complete</span>
-      </div>
-    </div> -->
-
-    <!-- Header -->
-
-    <div class="header-content">
-      <h1 class="reh">Request History</h1>
-      <!-- <app-notification class="noti"></app-notification> -->
-    </div>
-
-
-    <!-- คำอธิบายใต้หัวข้อ -->
-    <p class="the">The loan withdrawal history is here.</p>
-
-    <div class="box-input">
-      <div class="form-input">
-        <!-- <div class="group-select">
+  <div class="box-input">
+    <div class="form-input">
+      <!-- <div class="group-select">
           <label for="division">Division</label>
           <ng-select style="width: 145px;" [items]="divisionList" bindLabel="label" bindValue="value"
             [(ngModel)]="Division_" placeholder="Select a Division">
@@ -78,186 +53,184 @@
 
 
 
-        <div class="form-input">
-          <!-- ปุ่มอื่น ๆ -->
+      <div class="form-input">
+        <!-- ปุ่มอื่น ๆ -->
 
-          <div class="button-clear">
-            <button class="btn btn-clear" type="button" (click)="clearFilters()"><i
-                class="bi bi-x-circle-fill text-white"></i> Clear</button>
-          </div>
+        <div class="button-clear">
+          <button class="btn btn-clear" type="button" (click)="clearFilters()"><i
+              class="bi bi-x-circle-fill text-white"></i> Clear</button>
+        </div>
 
-          <div class="button-filter">
-            <button class="btn btn-filter" type="button" (click)="onFilter()"><i
-                class="bi bi-funnel-fill text-white"></i> Filter</button>
-          </div>
+        <div class="button-filter">
+          <button class="btn btn-filter" type="button" (click)="onFilter()"><i class="bi bi-funnel-fill text-white"></i>
+            Filter</button>
+        </div>
 
 
-          <!-- <button class="btn-sort" type="button" (click)="onSort()"><i class="bi bi-sort-down" ></i>Sort</button> -->
+        <!-- <button class="btn-sort" type="button" (click)="onSort()"><i class="bi bi-sort-down" ></i>Sort</button> -->
 
-          <!-- กลุ่มปุ่ม export -->
-          <div class="button-group">
-            <button class="excel-button" type="button" class="btn btn-success" (click)="exportexcel()"><i
-                class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL</button>
-            <button class="export-button" type="button" class="btn btn-danger" (click)="exportas400()"><i
-                class="bi bi-database"></i> EXPORT TO
-              AS400 </button>
-          </div>
+        <!-- กลุ่มปุ่ม export -->
+        <div class="button-group">
+          <button class="excel-button" type="button" class="btn btn-success" (click)="exportexcel()"><i
+              class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL</button>
+          <button class="export-button" type="button" class="btn btn-danger" (click)="exportas400()"><i
+              class="bi bi-database"></i> EXPORT TO
+            AS400 </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Modal Success -->
-    <div class="modal fade" id="completeModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header justify-content-center border-0">
-            <i class="bi bi-check-circle-fill text-success" style="font-size: 120px;"></i>
-          </div>
-          <div class="modal-body justify-content-center border-0">
-            <h1 class="modal-title w-0 text-center" id="export">EXPORT AS400 success!</h1>
-          </div>
-          <div class="modal-footer justify-content-center border-0">
-            <button type="button" class="btn btn-primary btn-lg px-4"
-              onclick="window.location.href='nextpage.html'">OK</button>
-          </div>
+  <!-- Modal Success -->
+  <div class="modal fade" id="completeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header justify-content-center border-0">
+          <i class="bi bi-check-circle-fill text-success" style="font-size: 120px;"></i>
+        </div>
+        <div class="modal-body justify-content-center border-0">
+          <h1 class="modal-title w-0 text-center" id="export">EXPORT AS400 success!</h1>
+        </div>
+        <div class="modal-footer justify-content-center border-0">
+          <button type="button" class="btn btn-primary btn-lg px-4"
+            onclick="window.location.href='nextpage.html'">OK</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- ตารางข้อมูล -->
-    <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle text-center" id="table-data">
+  <!-- ตารางข้อมูล -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle text-center" id="table-data">
 
-        <thead>
-          <tr [ngStyle]="{'border': 'none'}">
-            <td [ngStyle]="{'border': 'none'}"></td>
-            <td [ngStyle]="{'border': 'none'}"></td>
-            <td [ngStyle]="{'border': 'none'}"></td>
-            <td [ngStyle]="{'border': 'none'}">
-              <ng-select style="width: 180px;" class="no-expand" [items]="divisionList" bindLabel="label"
-                bindValue="value" [(ngModel)]="Division_" [multiple]="true" [closeOnSelect]="false"
-                placeholder="Select a Division">
-              </ng-select>
-            </td>
-            <td [ngStyle]="{'border': 'none'}">
-              <ng-select style="width: 180px;" class="no-expand" [items]="ItemNoList" bindLabel="label"
-                bindValue="value" [(ngModel)]="ItemNo_" [multiple]="true" [closeOnSelect]="false"
-                placeholder="Select a ItemNo" [clearable]="true">
-              </ng-select>
-            </td>
-            <td [ngStyle]="{'border': 'none'}">
-              <ng-select style="width: 220px;" class="no-expand" [items]="PartNoList" bindLabel="label"
-                bindValue="value" [(ngModel)]="PartNo_" [multiple]="true" [closeOnSelect]="false"
-                placeholder="Select a PartNo" [clearable]="true">
-              </ng-select>
-            </td>
-            <td [ngStyle]="{'border': 'none'}"></td> <!-- Empty for MFG Order No -->
-            <td [ngStyle]="{'border': 'none'}">
-              <ng-select style="width: 220px;" class="no-expand" [items]="DocumentNoList" bindLabel="label"
-                bindValue="value" [(ngModel)]="DocumentNo_" [multiple]="true" [closeOnSelect]="false"
-                placeholder="Select a DOCUMENT NO." [clearable]="true">
-              </ng-select>
-            </td>
-            <td [ngStyle]="{'border': 'none'}"></td>
-            <td [ngStyle]="{'border': 'none'}"></td>
-            <td [ngStyle]="{'border': 'none'}"></td>
-            <!-- <ng-select [items]="DateCompleteList" bindLabel="label" bindValue="value" [(ngModel)]="DateComplete_"
+      <thead>
+        <tr [ngStyle]="{'border': 'none'}">
+          <td [ngStyle]="{'border': 'none'}"></td>
+          <td [ngStyle]="{'border': 'none'}"></td>
+          <td [ngStyle]="{'border': 'none'}"></td>
+          <td [ngStyle]="{'border': 'none'}">
+            <ng-select style="width: 180px;" class="no-expand" [items]="divisionList" bindLabel="label"
+              bindValue="value" [(ngModel)]="Division_" [multiple]="true" [closeOnSelect]="false"
+              placeholder="Select a Division">
+            </ng-select>
+          </td>
+          <td [ngStyle]="{'border': 'none'}">
+            <ng-select style="width: 180px;" class="no-expand" [items]="ItemNoList" bindLabel="label" bindValue="value"
+              [(ngModel)]="ItemNo_" [multiple]="true" [closeOnSelect]="false" placeholder="Select a ItemNo"
+              [clearable]="true">
+            </ng-select>
+          </td>
+          <td [ngStyle]="{'border': 'none'}">
+            <ng-select style="width: 220px;" class="no-expand" [items]="PartNoList" bindLabel="label" bindValue="value"
+              [(ngModel)]="PartNo_" [multiple]="true" [closeOnSelect]="false" placeholder="Select a PartNo"
+              [clearable]="true">
+            </ng-select>
+          </td>
+          <td [ngStyle]="{'border': 'none'}"></td> <!-- Empty for MFG Order No -->
+          <td [ngStyle]="{'border': 'none'}">
+            <ng-select style="width: 220px;" class="no-expand" [items]="DocumentNoList" bindLabel="label"
+              bindValue="value" [(ngModel)]="DocumentNo_" [multiple]="true" [closeOnSelect]="false"
+              placeholder="Select a DOCUMENT NO." [clearable]="true">
+            </ng-select>
+          </td>
+          <td [ngStyle]="{'border': 'none'}"></td>
+          <td [ngStyle]="{'border': 'none'}"></td>
+          <td [ngStyle]="{'border': 'none'}"></td>
+          <!-- <ng-select [items]="DateCompleteList" bindLabel="label" bindValue="value" [(ngModel)]="DateComplete_"
                 placeholder="Select a TRANSACTION" [clearable]="true">
               </ng-select> -->
-            <td [ngStyle]="{'border': 'none'}"></td>
-            <td [ngStyle]="{'border': 'none'}"></td>
-            <td [ngStyle]="{'border': 'none'}"></td>
-            <td [ngStyle]="{'border': 'none'}"></td>
-            <td [ngStyle]="{'border': 'none'}"><input type="date" [(ngModel)]="toDate" placeholder="duedate"></td>
-            <td [ngStyle]="{'border': 'none'}"><input type="date" [(ngModel)]="fromDate" placeholder="datesetup"></td>
-            <td [ngStyle]="{'border': 'none'}"></td>
+          <td [ngStyle]="{'border': 'none'}"></td>
+          <td [ngStyle]="{'border': 'none'}"></td>
+          <td [ngStyle]="{'border': 'none'}"></td>
+          <td [ngStyle]="{'border': 'none'}"></td>
+          <td [ngStyle]="{'border': 'none'}"><input type="date" [(ngModel)]="toDate" placeholder="duedate"></td>
+          <td [ngStyle]="{'border': 'none'}"><input type="date" [(ngModel)]="fromDate" placeholder="datesetup"></td>
+          <td [ngStyle]="{'border': 'none'}"></td>
 
-        </thead>
+      </thead>
 
-        <thead class="table-light">
-          <tr>
-            <th style="width: 30px;">
-              <input type="checkbox" [(ngModel)]="selectAllCheck" (change)="toggleAllCheckboxes()" />
-            </th>
-            <th style="width: 60px;">No.</th>
-            <th style="min-width: 120px;">Account</th>
-            <th style="min-width: 120px;" (click)="onSort('Division')" style="cursor: pointer;">DIVISION <span
-                *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th style="min-width: 120px; white-space: nowrap;" (click)="onSort('ItemNo')" style="cursor: pointer;">ITEM
-              NO.<span *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th style="min-width: 120px; white-space: nowrap;" (click)="onSort('PartNo')" style="cursor: pointer;">PART
-              NO.<span *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th style="min-width: 120px;" (click)="onSort('MFG_Order_No')" style="cursor: pointer;">MFG ORDER NO.<span
-                *ngIf="sortKey === 'MFG_Order_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th style="min-width: 120px;" (click)="onSort('DocNo')" style="cursor: pointer;">DOCUMENT NO.<span
-                *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th style="min-width: 120px;">STK LOC.</th>
-            <th style="min-width: 120px;">LOT MAT' L</th>
-            <th style="min-width: 200px; white-space: nowrap;">TRANSACTION (DMY)</th>
-            <th style="min-width: 80px;">QTY</th>
-            <th>M/C TYPE</th>
-            <th style="min-width: 120px; white-space: nowrap;">M/C NO.</th>
+      <thead class="table-light">
+        <tr>
+          <th style="width: 30px;">
+            <input type="checkbox" [(ngModel)]="selectAllCheck" (change)="toggleAllCheckboxes()" />
+          </th>
+          <th style="width: 60px;">No.</th>
+          <th style="min-width: 120px;">Account</th>
+          <th style="min-width: 120px;" (click)="onSort('Division')" style="cursor: pointer;">DIVISION <span
+              *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="min-width: 120px; white-space: nowrap;" (click)="onSort('ItemNo')" style="cursor: pointer;">ITEM
+            NO.<span *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="min-width: 120px; white-space: nowrap;" (click)="onSort('PartNo')" style="cursor: pointer;">PART
+            NO.<span *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="min-width: 120px;" (click)="onSort('MFG_Order_No')" style="cursor: pointer;">MFG ORDER NO.<span
+              *ngIf="sortKey === 'MFG_Order_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="min-width: 120px;" (click)="onSort('DocNo')" style="cursor: pointer;">DOCUMENT NO.<span
+              *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="min-width: 120px;">STK LOC.</th>
+          <th style="min-width: 120px;">LOT MAT' L</th>
+          <th style="min-width: 200px; white-space: nowrap;">TRANSACTION (DMY)</th>
+          <th style="min-width: 80px;">QTY</th>
+          <th>M/C TYPE</th>
+          <th style="min-width: 120px; white-space: nowrap;">M/C NO.</th>
 
-            <th style="min-width: 120px;">DECLATION NO.</th>
-            <th (click)="onSort('DueDate')" style="cursor: pointer; white-space: nowrap;">Due date <span
-                *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th (click)="onSort('DateTime_Record')" style="cursor: pointer;">Request date <span
-                *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-            <th>Edit</th>
-          </tr>
-        </thead>
+          <th style="min-width: 120px;">DECLATION NO.</th>
+          <th (click)="onSort('DueDate')" style="cursor: pointer; white-space: nowrap;">Due date <span
+              *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th (click)="onSort('DateTime_Record')" style="cursor: pointer;">Request date <span
+              *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th>Edit</th>
+        </tr>
+      </thead>
 
-        <tbody>
-          <!-- กรณีไม่มีข้อมูล -->
-          <tr *ngIf="filteredRequests.length === 0">
-            <td colspan="10" class="text-center text-muted py-3">
-              <i class="bi bi-exclamation-circle-fill"></i> Please select the to view item.
-            </td>
-          </tr>
+      <tbody>
+        <!-- กรณีไม่มีข้อมูล -->
+        <tr *ngIf="filteredRequests.length === 0">
+          <td colspan="10" class="text-center text-muted py-3">
+            <i class="bi bi-exclamation-circle-fill"></i> Please select the to view item.
+          </td>
+        </tr>
 
-          <!-- แสดงข้อมูล -->
-          <tr *ngFor="let req of filteredRequests; let i = index" [attr.data-index]="i">
-            <td [ngClass]="getRowClass(req)">
-              <input type="checkbox" [(ngModel)]="req.Selection" (change)="onCheckboxChange(req, i)">
-            </td>
-            <td [ngClass]="getRowClass(req)">{{ i + 1 }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.ACCOUNT }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.Division }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.ItemNo }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.PartNo }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.MFG_Order_No }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.DocNo }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.Stock_Location }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.MatLot }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.DateComplete ? (req.DateComplete | date: 'ddMMyyyy') : '' }}</td>
-            <td [ngClass]="getRowClass(req)">
-              <span *ngIf="editingIndex[req.ID_Request] !== i">{{ req.QTY }}</span>
-              <input *ngIf="editingIndex[req.ID_Request] === i" type="number" [(ngModel)]="filteredRequests[i].QTY"
-                class="form-control form-control-sm" min="0" style="width: 80px;" />
-            </td>
-            <td [ngClass]="getRowClass(req)">{{ req.MCType?.substring() }}</td>
-            <td [ngClass]="getRowClass(req)">{{ formatMC(req) }}</td>
-            <td></td>
-            <td [ngClass]="getRowClass(req)">{{ req.DueDate ? (req.DueDate | date: 'yyyyMMdd') : '' }}</td>
-            <td [ngClass]="getRowClass(req)">{{ req.DateTime_Record ? (req.DateTime_Record | date: 'yyyyMMdd') : '' }}
-            </td>
-            <td>
-              <button *ngIf="editingIndex[req.ID_Request] !== i" class="btn btn-primary btn-sm"
-                (click)="startEdit(req.ID_Request, i)" [disabled]="isViewer()">
-                <i class="bi bi-pencil-square text-white"></i>
-              </button>
-              <button *ngIf="editingIndex[req.ID_Request] === i" class="btn btn-success btn-sm" (click)="saveEdit(req)"
-                [disabled]="isViewer()">
-                <i class="bi bi-check-lg text-white"></i>
-              </button>
-              <button *ngIf="editingIndex[req.ID_Request] === i" class="btn btn-danger btn-sm"
-                (click)="cancelEdit(req)">
-                <i class="bi bi-x-lg text-white"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+        <!-- แสดงข้อมูล -->
+        <tr *ngFor="let req of filteredRequests; let i = index" [attr.data-index]="i">
+          <td [ngClass]="getRowClass(req)">
+            <input type="checkbox" [(ngModel)]="req.Selection" (change)="onCheckboxChange(req, i)">
+          </td>
+          <td [ngClass]="getRowClass(req)">{{ i + 1 }}</td>
+          <td [ngClass]="getRowClass(req)">{{ req.ACCOUNT }}</td>
+          <td [ngClass]="getRowClass(req)">{{ req.Division }}</td>
+          <td [ngClass]="getRowClass(req)">{{ req.ItemNo }}</td>
+          <td [ngClass]="getRowClass(req)">{{ req.PartNo }}</td>
+          <td [ngClass]="getRowClass(req)">{{ req.MFG_Order_No }}</td>
+          <td [ngClass]="getRowClass(req)">{{ req.DocNo }}</td>
+          <td [ngClass]="getRowClass(req)">{{ req.Stock_Location }}</td>
+          <td [ngClass]="getRowClass(req)">{{ req.MatLot }}</td>
+          <td [ngClass]="getRowClass(req)">{{ req.DateComplete ? (req.DateComplete | date: 'ddMMyyyy') : '' }}</td>
+          <td [ngClass]="getRowClass(req)">
+            <span *ngIf="editingIndex[req.ID_Request] !== i">{{ req.QTY }}</span>
+            <input *ngIf="editingIndex[req.ID_Request] === i" type="number" [(ngModel)]="filteredRequests[i].QTY"
+              class="form-control form-control-sm" min="0" style="width: 80px;" />
+          </td>
+          <td [ngClass]="getRowClass(req)">{{ req.MCType?.substring() }}</td>
+          <td [ngClass]="getRowClass(req)">{{ formatMC(req) }}</td>
+          <td></td>
+          <td [ngClass]="getRowClass(req)">{{ req.DueDate ? (req.DueDate | date: 'yyyyMMdd') : '' }}</td>
+          <td [ngClass]="getRowClass(req)">{{ req.DateTime_Record ? (req.DateTime_Record | date: 'yyyyMMdd') : '' }}
+          </td>
+          <td>
+            <button *ngIf="editingIndex[req.ID_Request] !== i" class="btn btn-primary btn-sm"
+              (click)="startEdit(req.ID_Request, i)" [disabled]="isViewer()">
+              <i class="bi bi-pencil-square text-white"></i>
+            </button>
+            <button *ngIf="editingIndex[req.ID_Request] === i" class="btn btn-success btn-sm" (click)="saveEdit(req)"
+              [disabled]="isViewer()">
+              <i class="bi bi-check-lg text-white"></i>
+            </button>
+            <button *ngIf="editingIndex[req.ID_Request] === i" class="btn btn-danger btn-sm" (click)="cancelEdit(req)">
+              <i class="bi bi-x-lg text-white"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>

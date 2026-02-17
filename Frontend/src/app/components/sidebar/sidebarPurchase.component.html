@@ -1,72 +1,83 @@
 <nav class="sidebar">
   <div class="top">
-    <!-- logo -->
-    <img src="logominebea.png" width="205px" />
-    <!-- แถบเมนู -->
+
     <ul class="nav-links">
-
-      <!--แถบเมนู Request List-->
       <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-        <a routerLink="/purchase/detail"> <i class="bi bi-newspaper"></i> Request List </a>
-      </li>
-
-      <!--แถบเมนู Request List (Case SETUP)-->
-      <li routerLinkActive="active">
-        <a routerLink="/purchase/detailcasesetup">
-          <i class="bi bi-tools"></i> Case SETUP
+        <a routerLink="/purchase/detail">
+          <i class="bi bi-newspaper"></i>
+          <span class="link-text">Request List</span>
         </a>
       </li>
 
-      <!--แถบเมนู Total Item-->
       <li routerLinkActive="active">
-        <a routerLink="/purchase/requestlist"> <i class="bi bi-card-checklist"></i> Total Item</a>
+        <a routerLink="/purchase/detailcasesetup">
+          <i class="bi bi-tools"></i>
+          <span class="link-text">Case SETUP</span>
+        </a>
       </li>
 
-      <!--แถบเมนู Return List-->
       <li routerLinkActive="active">
-        <a routerLink="/purchase/returnlist"> <i class="bi bi-arrow-return-left"></i> Return List</a>
+        <a routerLink="/purchase/requestlist">
+          <i class="bi bi-card-checklist"></i>
+          <span class="link-text">Total Item</span>
+        </a>
       </li>
 
-      <!--แถบเมนู history-request-->
       <li routerLinkActive="active">
-        <a routerLink="/purchase/history-request"> <i class="bi bi-clock-history"></i> History </a>
-      </li>
-      <!-- <li routerLinkActive="active">
-          <a routerLink="/purchase/permission"> <i class="bi bi-person-fill-add" style="font-size: 25px;"></i> Add Permission </a>
-        </li> -->
-
-      <!--แถบเมนู Dashboard-->
-      <li routerLinkActive="active">
-        <a routerLink="/purchase/analyze"> <i class="bi bi-clipboard-data"></i> Dashboard </a>
+        <a routerLink="/purchase/returnlist">
+          <i class="bi bi-arrow-return-left"></i>
+          <span class="link-text">Return List</span>
+        </a>
       </li>
 
-      <!--แถบเมนู Master PH-->
       <li routerLinkActive="active">
-        <a routerLink="/purchase/master-ph"> <i class="bi bi-database"></i> Master PH </a>
+        <a routerLink="/purchase/history-request">
+          <i class="bi bi-clock-history"></i>
+          <span class="link-text">History</span>
+        </a>
       </li>
 
-
-
-      <!-- <li routerLinkActive="active">
-        <a routerLink="/purchase/analyzeSmartRack"> <i class="bi bi-hdd-rack"></i> SmartRack </a>
-      </li> -->
-
-      <!--แถบเมนู Add User-->
       <li routerLinkActive="active">
-        <a routerLink="/purchase/add-user"> <i class="bi bi-person-fill-add" style="font-size: 25px;"></i> Add User </a>
+        <a routerLink="/purchase/analyze">
+          <i class="bi bi-clipboard-data"></i>
+          <span class="link-text">Dashboard</span>
+        </a>
       </li>
-      <!-- 
-         <li routerLinkActive="active">
-         <a routerLink="/detail"> <i class="bi bi-file-earmark-spreadsheet"></i> Import Excel </a>
-        </li>
-         -->
 
+      <li routerLinkActive="active">
+        <a routerLink="/purchase/master-ph">
+          <i class="bi bi-database"></i>
+          <span class="link-text">Master PH</span>
+        </a>
+      </li>
+
+      <li routerLinkActive="active">
+        <a routerLink="/purchase/add-user">
+          <i class="bi bi-person-fill-add"></i>
+          <span class="link-text">Add User</span>
+        </a>
+      </li>
     </ul>
-
   </div>
-  <!-- ปุ่มlogout+Username -->
-  <div class="bottom">
-    <div class="user-info" style="font-size: 18px;"> {{ Employee_Name }} </div>
-    <button (click)="logout()" class="logout-btn"><i class="bi bi-box-arrow-right" style="color: red;"></i></button>
+
+  <div class="sidebar-footer">
+    <div class="user-profile-card">
+      <div class="avatar-container">
+        <div class="avatar-circle">
+          {{ Employee_Name ? Employee_Name.charAt(0).toUpperCase() : 'U' }}
+        </div>
+      </div>
+      <div class="user-info">
+        <span class="user-name" title="{{ Employee_Name }}">{{ Employee_Name }}</span>
+        <span class="user-role">PURCHASE</span>
+      </div>
+    </div>
+
+    <button (click)="logout()" class="btn-logout-premium">
+      <div class="icon-wrapper">
+        <i class="bi bi-box-arrow-right"></i>
+      </div>
+      <span class="logout-text">Sign Out</span>
+    </button>
   </div>
 </nav>

@@ -1,67 +1,81 @@
-// Sidebar Modern Styles (Light & Clean)
+@import '../../../styles.scss';
+
+// Sidebar Modern Styles (Glassmorphism & Expandable)
 .sidebar {
-  min-height: 100vh;
-  width: 250px;
-  background-color: var(--color-surface); // Reverted to Light
+  height: 100vh;
+  width: 64px; // Slimmer compact width
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px); // More blur for premium feel
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-sizing: border-box;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); // Reverted shadow
-  border-right: 1px solid var(--color-border);
-  z-index: 50;
-  color: var(--color-text-main); // Reverted text color
+  box-shadow: 4px 0 25px rgba(0, 0, 0, 0.04);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 1001;
+  color: var(--color-text-main);
+  transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
 
   .top {
-
-    // Logo Section
-    .logo {
-      font-size: 1.5rem;
-      font-weight: 800;
-      text-align: center;
-      margin: 1.5rem 0;
-      color: var(--color-primary);
-      letter-spacing: -0.5px;
-      padding: 0;
-    }
+    display: flex;
+    flex-direction: column;
+    padding-top: 24px;
 
     // Navigation Links
     .nav-links {
       list-style: none;
       margin: 0;
-      padding: 0 1rem;
+      padding: 0 8px; // Uniform padding for capsule look
       font-size: 0.95rem;
       cursor: pointer;
 
       li {
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.4rem;
+        position: relative;
 
         a {
-          color: #94a3b8; // Muted blue-grey
+          color: #64748b;
           display: flex;
           align-items: center;
-          padding: 0.85rem 1rem;
-          border-radius: 12px;
+          height: 48px;
+          margin: 0 4px; // Floating spacing effect
+          padding: 0;
+          border-radius: 24px; // Capsule shape
           text-decoration: none;
           position: relative;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           font-weight: 600;
-          gap: 1rem;
+          white-space: nowrap;
 
           // Icons
           i {
-            font-size: 1.25rem;
+            min-width: 44px; // Re-centered for 64px bar (8px padding + 4px margin = 12px off-center)
+            font-size: 1.35rem;
             color: #64748b;
             transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
           }
 
-          &:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: white;
-            transform: translateX(5px);
+          .link-text {
+            transform: translateX(-8px);
+            transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-left: 2px;
+            z-index: 2;
+          }
+
+          &:hover:not(.active) {
+            background-color: rgba(59, 130, 246, 0.06);
+            color: var(--color-primary);
 
             i {
-              color: #38bdf8; // Bright Blue on hover
+              color: var(--color-primary);
               transform: scale(1.1);
             }
           }
@@ -69,57 +83,60 @@
           // Badge (Cart Notification)
           span.cart-count {
             position: absolute;
-            top: 50%;
-            right: 0.75rem;
-            transform: translateY(-50%);
-            background: linear-gradient(135deg, #ef4444, #b91c1c);
-            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
+            top: 6px;
+            left: 24px; // Positioned perfectly over the icon
+            background: #ef4444;
             color: white;
-            padding: 0.2rem 0.5rem;
-            border-radius: 6px;
-            font-size: 0.7rem;
+            padding: 2px 5px;
+            border-radius: 99px;
+            font-size: 0.6rem;
             font-weight: 800;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+            z-index: 3;
           }
         }
 
-        // Active State
+        // --- Active State (Floating Capsule) ---
         &.active a {
-          background: linear-gradient(90deg, #3b82f6, #2563eb);
+          background: linear-gradient(135deg, #3b82f6, #2563eb);
           color: white;
-          box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); // Glow effect
+          box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3); // Soft glowing shadow
+          transform: translateY(-1px);
 
           i {
             color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
           }
 
-          &:hover {
-            transform: none;
+          .link-text {
+            color: white;
           }
         }
       }
     }
   }
 
-  // ==========================================
-  //    Professional Footer (Profile & Logout)
-  // ==========================================
+
+
+  // Professional Footer (Profile & Logout)
   .sidebar-footer {
-    padding: 1.25rem;
-    background: linear-gradient(to top, #f8fafc, white);
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 16px 8px; // Slimmer padding
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
 
     .user-profile-card {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
-      margin-bottom: 1rem;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding-left: 2px;
 
       .avatar-container {
         position: relative;
 
         .avatar-circle {
-          width: 42px;
-          height: 42px;
+          width: 40px; // Slightly smaller for 64px width
+          height: 40px;
           border-radius: 12px;
           background: linear-gradient(135deg, var(--color-primary), #60a5fa);
           color: white;
@@ -127,25 +144,15 @@
           align-items: center;
           justify-content: center;
           font-weight: 700;
-          font-size: 1.1rem;
-          box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
-        }
-
-        .status-indicator {
-          position: absolute;
-          bottom: -2px;
-          right: -2px;
-          width: 11px;
-          height: 11px;
-          background-color: #22c55e;
-          border: 2px solid white;
-          border-radius: 50%;
+          font-size: 1rem;
+          box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
         }
       }
 
       .user-info {
         flex: 1;
         overflow: hidden;
+        transition: opacity 0.3s ease;
 
         .user-name {
           display: block;
@@ -159,63 +166,51 @@
 
         .user-role {
           display: block;
-          font-size: 0.75rem;
-          color: #64748b;
-          font-weight: 500;
+          font-size: 0.7rem;
+          color: #94a3b8;
+          font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 0.025em;
-          margin-top: 2px;
         }
       }
     }
 
-    .footer-separator {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
-      margin-bottom: 1rem;
-    }
-
-    // Logout Button — White theme
     .btn-logout-premium {
       width: 100%;
+      height: 40px; // Match avatar height
       background: white;
       border: 1px solid #e2e8f0;
-      padding: 0.7rem;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
+      padding: 0;
       color: #64748b;
       transition: all 0.25s ease;
+      overflow: hidden;
 
       .icon-wrapper {
+        min-width: 40px; // Match button height
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: transform 0.25s ease;
-        font-size: 1rem;
+        font-size: 1.1rem;
       }
 
       .logout-text {
-        font-weight: 600;
+        font-weight: 700;
         font-size: 0.85rem;
+        transition: opacity 0.3s ease;
+        white-space: nowrap;
       }
 
       &:hover {
         background: #fef2f2;
         border-color: #fecaca;
         color: #ef4444;
-
-        .icon-wrapper {
-          transform: translateX(3px);
-        }
-      }
-
-      &:active {
-        transform: scale(0.98);
       }
     }
   }
+
+
 }

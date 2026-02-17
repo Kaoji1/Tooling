@@ -1,12 +1,6 @@
-.layout {
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
+// Old .layout wrapper removed — SPA layout handled by app.component
 
-.content {
+.content-area {
   width: 100%;
   height: 100%;
   overflow: auto;
@@ -116,7 +110,7 @@
   }
 
 
-    .button-group {
+  .button-group {
     display: flex;
     flex-direction: column;
     /* เรียงปุ่มในแนวตั้ง */
@@ -124,7 +118,7 @@
     /* ระยะห่างระหว่างปุ่ม */
     align-items: center;
     justify-content: flex-start;
-margin-bottom: 20px;
+    margin-bottom: 20px;
     /* จัดปุ่มให้อยู่ตรงกลาง (ในแนวขวาง) */
 
 
@@ -198,48 +192,48 @@ margin-bottom: 20px;
     /* สำหรับจัดตำแหน่งภายใน */
 
     .btn-clear {
-    width: 120px;
-    height: 50px;
-    background-color: #708090;
-    color: white;
-    border: none;
-    gap: 5px;
-    border-radius: 10px;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-  
-    justify-content: center;
-    cursor: pointer;
-    margin-top: 40px;
-    // margin-left: 1200px;
-    // margin-left: 5px;
-  }
+      width: 120px;
+      height: 50px;
+      background-color: #708090;
+      color: white;
+      border: none;
+      gap: 5px;
+      border-radius: 10px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
 
-  /* ปุ่ม filter และ sort */
-  .btn-filter,
-  .btn-sort {
-    width: 120px;
-    height: 50px;
-    background-color: #4db6b6;
-    color: white;
-    border: none;
-    gap: 5px;
-    border-radius: 10px;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    margin-top: 40px;
-    margin-left: 5px;
-  }
+      justify-content: center;
+      cursor: pointer;
+      margin-top: 40px;
+      // margin-left: 1200px;
+      // margin-left: 5px;
+    }
 
-  /* ปรับ margin-left เฉพาะ btn-filter เพื่อจัดวางให้เหมาะสม */
-  .btn-filter {
-    margin-left: 5px;
+    /* ปุ่ม filter และ sort */
+    .btn-filter,
+    .btn-sort {
+      width: 120px;
+      height: 50px;
+      background-color: #4db6b6;
+      color: white;
+      border: none;
+      gap: 5px;
+      border-radius: 10px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-top: 40px;
+      margin-left: 5px;
+    }
+
+    /* ปรับ margin-left เฉพาะ btn-filter เพื่อจัดวางให้เหมาะสม */
+    .btn-filter {
+      margin-left: 5px;
+    }
   }
-}
 }
 
 
@@ -290,8 +284,8 @@ input {
 
 
 .table-responsive {
- max-height: 70vh;  // ตารางสูงไม่เกิน 70% ของจอ
-  width: 100%;      // กว้างเต็ม 100% ของจอ
+  max-height: 70vh; // ตารางสูงไม่เกิน 70% ของจอ
+  width: 100%; // กว้างเต็ม 100% ของจอ
   overflow: auto;
   // margin-top: 30px;
 
@@ -301,7 +295,7 @@ input {
     margin-top: 20px;
     color: #4a494a;
     // table-layout: fixed; // ช่วยไม่ให้คอลัมน์ยืดแปลกๆ
-    
+
 
 
     thead th {
@@ -317,7 +311,7 @@ input {
       padding: 6px 10px; // ลด padding รวม
       vertical-align: middle; // จัดกึ่งกลางแนวตั้ง
       white-space: nowrap; // ไม่ให้ตัดบรรทัด
-      
+
     }
 
     /* ✅ โฟกัสคอลัมน์ checkbox (คอลัมน์แรก) */
@@ -355,11 +349,13 @@ thead th {
 // }
 
 .exported-row {
-  background-color: #d4edda; /* สีเขียวอ่อน */
+  background-color: #d4edda;
+  /* สีเขียวอ่อน */
 }
 
 .default-row {
-  background-color: white; /* สีปกติ */
+  background-color: white;
+  /* สีปกติ */
 }
 
 
@@ -393,26 +389,33 @@ thead th {
         border-color: #0066B3;
       }
     }
-    
-  }
-  
-}
- .bg-complete {
-      background-color: #C1F8CF !important;
-      color: #0c0c0c;
-    }
 
-    .bg-white {
-      background-color: #ffffff !important;
-      color: #000000;
-    }
+  }
+
+}
+
+.bg-complete {
+  background-color: #C1F8CF !important;
+  color: #0c0c0c;
+}
+
+.bg-white {
+  background-color: #ffffff !important;
+  color: #000000;
+}
+
 ::ng-deep .no-expand .ng-select-container {
-  max-width: 220px !important; /* คุมความกว้าง */
-  overflow: hidden;             /* กันล้น */
-  text-overflow: ellipsis;      /* ขึ้น … */
-  white-space: nowrap;          /* ไม่ขึ้นบรรทัดใหม่ */
+  max-width: 220px !important;
+  /* คุมความกว้าง */
+  overflow: hidden;
+  /* กันล้น */
+  text-overflow: ellipsis;
+  /* ขึ้น … */
+  white-space: nowrap;
+  /* ไม่ขึ้นบรรทัดใหม่ */
 }
 
 ::ng-deep .no-expand .ng-value-container {
-  flex-wrap: nowrap !important; /* กัน tag หลายตัวขึ้นบรรทัดใหม่ */
+  flex-wrap: nowrap !important;
+  /* กัน tag หลายตัวขึ้นบรรทัดใหม่ */
 }

@@ -472,7 +472,7 @@ export class PCPlanComponent implements OnInit {
       time: '',
       comment: '',
       groupId: null,
-      revision: 1,
+      revision: 0,
       checked: false
     } as any);
     this.saveCurrentState();

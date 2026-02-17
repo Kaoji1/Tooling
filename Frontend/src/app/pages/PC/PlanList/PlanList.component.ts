@@ -290,22 +290,29 @@ export class PlanListComponent implements OnInit {
       if (!matchDivision || !matchMachine) return false;
 
       let matchSubTab = true;
+
+      // Calculate Date Range match (Common for both Upcoming and Action Required)
+      const todayCopy = new Date(today);
+      let endDate = new Date(todayCopy);
+      if (this.selectedDateRange === '7 DAY') endDate.setDate(todayCopy.getDate() + 7);
+      else if (this.selectedDateRange === '30 DAY') endDate.setDate(todayCopy.getDate() + 30);
+      else endDate.setMonth(todayCopy.getMonth() + 2); // Default 'ALL' = 2 months
+
+      const isInRange = (this.selectedDateRange === 'ALL') ? true : (itemDate >= today && itemDate <= endDate);
+
       if (this.selectedSubTab === 'Upcoming') {
-        const todayCopy = new Date(today);
-        let endDate = new Date(todayCopy);
-        if (this.selectedDateRange === '7 DAY') endDate.setDate(todayCopy.getDate() + 7);
-        else if (this.selectedDateRange === '30 DAY') endDate.setDate(todayCopy.getDate() + 30);
-        else endDate.setMonth(todayCopy.getMonth() + 2);
         matchSubTab = itemDate >= today && itemDate <= endDate;
       } else if (isActionRequiredTab) {
+        let actionNeeded = false;
         if (this.selectedDepartment === 'En') {
           const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
           const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
-          matchSubTab = !hasDwg || !hasLayout;
+          actionNeeded = !hasDwg || !hasLayout;
         } else if (this.selectedDepartment === 'QC') {
           const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
-          matchSubTab = !hasIIQC;
+          actionNeeded = !hasIIQC;
         }
+        matchSubTab = actionNeeded && isInRange;
       }
 
       // 2. Filter Date (Ignore calendar filter if in Action Required mode)
@@ -437,13 +444,42 @@ export class PlanListComponent implements OnInit {
     this.router.navigate(['/request'], { queryParams: queryParams });
   }
 
-  // --- Edit Logic ---
+  onAdd() {
+    this.editData = {
+      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      dateObj: new Date(),
+      division: 'PMC', // Default to PMC
+      divisionCode: '7122',
+      mcType: '',
+      fac: '',
+      partBefore: '',
+      mcNo: '',
+      partNo: '',
+      qty: 0,
+      time: '',
+      comment: '',
+      pathDwg: '',
+      pathLayout: '',
+      iiqc: '',
+      revision: 0,
+      planStatus: 'Active',
+      groupId: '-', // Special marker for new plan
+      isNew: true
+    };
+    this.isEditModalOpen = true;
+  }
+
   isEditModalOpen: boolean = false;
   editData: any = {};
 
   onEdit(item: any) {
     this.editData = { ...item }; // Clone data
     this.editData.originalItem = { ...item }; // Keep original for comparison
+
+    // Strip hyphens from paths for easier editing
+    this.editData.pathDwg = this.editData.pathDwg === '-' ? '' : this.editData.pathDwg;
+    this.editData.pathLayout = this.editData.pathLayout === '-' ? '' : this.editData.pathLayout;
+    this.editData.iiqc = this.editData.iiqc === '-' ? '' : this.editData.iiqc;
 
     // Determine context based on selectedDepartment
     this.editData.context = this.selectedDepartment;
@@ -533,13 +569,11 @@ export class PlanListComponent implements OnInit {
 
     // Dynamically update sub-tabs based on department
     if (dept === 'En' || dept === 'QC') {
-      this.subTabs = ['Upcoming', 'Action Required'];
+      // Reorder: Action Required first, then Upcoming
+      this.subTabs = ['Action Required', 'Upcoming'];
+      this.selectedSubTab = 'Action Required'; // Auto-select Action Required
     } else {
       this.subTabs = ['Upcoming'];
-    }
-
-    // Reset sub-tab if the current one is not available for the new department
-    if (!this.subTabs.includes(this.selectedSubTab)) {
       this.selectedSubTab = 'Upcoming';
     }
 
