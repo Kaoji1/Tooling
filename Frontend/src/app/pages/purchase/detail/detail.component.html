@@ -1,4 +1,4 @@
-<div class="content-area">
+<div class="page-layout">
 
   <div class="header">
     <h1>Request List</h1>
@@ -8,30 +8,59 @@
 
   <!-- Action Bar (Buttons) -->
   <div class="action-bar">
-    <!-- Division Filter (Moved from Table) -->
-    <div class="filter-group-div" style="display: flex; align-items: center; gap: 15px;">
+    <!-- Filter Group -->
+    <div class="filter-group" style="display: flex; align-items: center; gap: 15px;">
       <!-- Division Filter -->
-      <div style="display: flex; align-items: center;">
-        <label style="margin-right: 10px; font-weight: 600;">Division:</label>
+      <div class="group-select">
+        <label>Division:</label>
         <ng-select [items]="divisionList" bindLabel="label" bindValue="value" [(ngModel)]="Division_"
           (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body" style="min-width: 180px;">
         </ng-select>
       </div>
 
-      <!-- Tooling Filter (Moved from Table) -->
-      <div style="display: flex; align-items: center;">
-        <label style="margin-right: 10px; font-weight: 600;">Tool:</label>
+      <!-- Tooling Filter -->
+      <div class="group-select">
+        <label>Tool:</label>
         <ng-select [items]="ToolingList" bindLabel="label" bindValue="value" [(ngModel)]="Tooling_"
           (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body" style="min-width: 150px;">
         </ng-select>
       </div>
     </div>
 
-    <!-- Division & Tooling Selection Message -->
-    <div *ngIf="!Division_ || !Tooling_" class="alert alert-info text-center mt-3" style="font-weight: 500;">
-      <i class="bi bi-info-circle-fill me-2"></i>
-      Please select Division and Tooling to view data. / กรุณาเลือก Division และ Tooling เพื่อแสดงข้อมูล
+    <!-- Actions Group -->
+    <div class="actions">
+      <!-- Clear Filter -->
+      <button class="btn-clear" (click)="clearFilters()">
+        <i class="bi bi-eraser-fill"></i> CLEAR
+      </button>
+
+      <!-- Complete Button -->
+      <button class="btn-complete" (click)="completeSelected()">
+        <i class="bi bi-check-circle-fill"></i> COMPLETE
+      </button>
+
+      <!-- Export Excel -->
+      <button class="btn-export" (click)="exportexcel()">
+        <i class="bi bi-file-earmark-excel-fill"></i> EXPORT TO EXCEL
+      </button>
     </div>
+  </div>
+
+  <!-- Division & Tooling Selection Message -->
+  <div *ngIf="!Division_ || !Tooling_" class="alert alert-info text-center mt-3" style="font-weight: 500;">
+    <i class="bi bi-info-circle-fill me-2"></i>
+    Please select Division and Tooling to view data. / กรุณาเลือก Division และ Tooling เพื่อแสดงข้อมูล
+  </div>
+
+      <!-- Cutting Tool Table (Show ONLY if Cutting Tool is selected) -->
+      <ng-container *ngIf="Tooling_ === 'Cutting Tool'">
+        <table id="table-data" class="table table-bordered text-center">
+          <thead>
+            <!-- Filter Row (Top of Thead) -->
+            <tr class="filter-row">
+              <!-- Spacers: Checkbox, NO -->
+              <td></td>
+              <td></td>
 
     <!-- Table Section -->
     <div class="table-responsive">
@@ -175,7 +204,8 @@
                   sortAsc ? '↑' : '↓' }}</span></th> -->
               <th (click)="onSort('Requester')" style="min-width: 80px;">Req By <span *ngIf="sortKey === 'Requester'">{{
                   sortAsc ? '↑' : '↓' }}</span></th>
-              <th (click)="onSort('Division')" style="width: 60px;">Div <span *ngIf="sortKey === 'Division'">{{ sortAsc
+              <th (click)="onSort('Division')" style="width: 60px;">Div <span *ngIf="sortKey === 'Division'">{{
+                  sortAsc
                   ?
                   '↑' : '↓' }}</span></th>
               <th (click)="onSort('PartNo')" style="min-width: 120px;">Part NO. <span *ngIf="sortKey === 'PartNo'">{{
@@ -186,20 +216,24 @@
               <th (click)="onSort('Fac')" style="width: 50px;">Fac <span *ngIf="sortKey === 'Fac'">{{ sortAsc ? '↑' :
                   '↓'
                   }}</span></th>
-              <th (click)="onSort('MCType')" style="width: 70px;">MC Type <span *ngIf="sortKey === 'MCType'">{{ sortAsc
+              <th (click)="onSort('MCType')" style="width: 70px;">MC Type <span *ngIf="sortKey === 'MCType'">{{
+                  sortAsc
                   ?
                   '↑' : '↓' }}</span></th>
               <th (click)="onSort('MCQTY')" style="width: 70px;">MC No <span *ngIf="sortKey === 'MCQTY'">{{ sortAsc ?
                   '↑'
                   : '↓' }}</span></th>
-              <th (click)="onSort('CASE')" style="width: 60px;">Case <span *ngIf="sortKey === 'CASE'">{{ sortAsc ? '↑' :
+              <th (click)="onSort('CASE')" style="width: 60px;">Case <span *ngIf="sortKey === 'CASE'">{{ sortAsc ? '↑'
+                  :
                   '↓' }}</span></th>
               <th (click)="onSort('ItemNo')" style="min-width: 120px;">Item NO. <span *ngIf="sortKey === 'ItemNo'">{{
                   sortAsc ? '↑' : '↓' }}</span></th>
               <th style="min-width: 120px;">Item Name</th>
-              <th (click)="onSort('SPEC')" style="min-width: 150px;">Spec <span *ngIf="sortKey === 'SPEC'">{{ sortAsc ?
+              <th (click)="onSort('SPEC')" style="min-width: 150px;">Spec <span *ngIf="sortKey === 'SPEC'">{{ sortAsc
+                  ?
                   '↑' : '↓' }}</span></th>
-              <th (click)="onSort('Req_QTY')" style="width: 60px;">QTY <span *ngIf="sortKey === 'Req_QTY'">{{ sortAsc ?
+              <th (click)="onSort('Req_QTY')" style="width: 60px;">QTY <span *ngIf="sortKey === 'Req_QTY'">{{ sortAsc
+                  ?
                   '↑' : '↓' }}</span></th>
               <th style="width: 60px;">Total</th>
               <th (click)="onSort('ON_HAND')" style="width: 70px;">On Hand <span *ngIf="sortKey === 'ON_HAND'">{{

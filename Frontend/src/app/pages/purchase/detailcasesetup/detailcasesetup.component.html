@@ -1,4 +1,4 @@
-<div class="content-area">
+<div class="page-layout">
 
     <div class="header">
         <h1>Case Setup Request List</h1>
@@ -8,204 +8,211 @@
 
     <!-- Action Bar (Buttons) -->
     <div class="action-bar">
-        <!-- Division Filter -->
-        <div class="filter-group-div" style="display: flex; align-items: center; gap: 15px;">
-            <div style="display: flex; align-items: center;">
-                <label style="margin-right: 10px; font-weight: 600;">Division:</label>
+        <!-- Filter Group -->
+        <div class="filter-group" style="display: flex; align-items: center; gap: 15px;">
+            <div class="group-select">
+                <label>Division:</label>
                 <ng-select [items]="divisionList" bindLabel="label" bindValue="value" [(ngModel)]="Division_"
                     (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
                     style="min-width: 180px;">
                 </ng-select>
             </div>
-
         </div>
 
-        <!-- Division Selection Message -->
-        <div *ngIf="!Division_" class="alert alert-info text-center mt-3" style="font-weight: 500;">
-            <i class="bi bi-info-circle-fill me-2"></i>
-            Please select a Division to view data. / กรุณาเลือก Division เพื่อดูข้อมูล
+        <!-- Actions Group -->
+        <div class="actions">
+            <button class="btn-clear" (click)="clearFilters()">
+                <i class="bi bi-eraser-fill"></i> CLEAR
+            </button>
+            <button class="btn-complete" (click)="completeSelected()">
+                <i class="bi bi-check-circle-fill"></i> COMPLETE
+            </button>
+            <button class="btn-export" (click)="exportexcel()">
+                <i class="bi bi-file-earmark-excel-fill"></i> EXPORT TO EXCEL
+            </button>
         </div>
+    </div>
 
-        <!-- Table Section Container -->
-        <div class="table-responsive" *ngIf="Division_">
-            <!-- 1. Cutting Tool Table -->
-            <ng-container *ngIf="Tooling_ === 'Cutting Tool'">
-                <table class="table table-bordered text-center">
-                    <thead>
-                        <tr class="header-group-row">
-                            <th colspan="23" style="text-align: center; color: red; padding: 20px;">
-                                This view is for Cutting Tool. Case Setup data usually belongs to 'Setup Tool'.
-                                If you need Cutting Tool columns here, please request adjustment.
-                            </th>
-                        </tr>
-                    </thead>
-                </table>
-            </ng-container>
+    <!-- Division Selection Message -->
+    <div *ngIf="!Division_" class="alert alert-info text-center mt-3" style="font-weight: 500;">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        Please select a Division to view data. / กรุณาเลือก Division เพื่อดูข้อมูล
+    </div>
 
-            <!-- 2. Setup Tool Table (Purchase View) -->
-            <ng-container *ngIf="Tooling_ === 'Setup Tool'">
-                <table id="table-data" class="table table-bordered text-center">
-                    <thead>
-                        <tr class="header-cols">
-                            <th class="col-checkbox"><input type="checkbox" [(ngModel)]="selectAllChecked"
-                                    (change)="toggleAllCheckboxes()" [disabled]="isViewer()" /></th>
-                            <th class="col-no">NO</th>
-                            <th style="min-width: 120px;">M/R No.</th>
-                            <th style="min-width: 120px;">Mfg Order</th>
-                            <th style="min-width: 150px;">Doc No.</th>
-                            <th style="min-width: 100px;">Record Date</th>
-                            <th style="min-width: 100px;">Due Date</th>
-                            <th style="min-width: 120px;">Requester</th>
-                            <th style="min-width: 80px;">Div</th>
-                            <th style="min-width: 120px;">Part No.</th>
-                            <th style="min-width: 120px;">Process</th>
-                            <th style="min-width: 60px;">Fac</th>
-                            <th style="min-width: 100px;">Machine</th>
-                            <th style="min-width: 60px;">MC Qty</th>
-                            <th style="width: 70px;">Case</th>
-                            <th style="min-width: 120px;">Req Item NO.</th>
-                            <th style="min-width: 150px;">Req Item Name</th>
-                            <th style="min-width: 150px;">Req Spec</th>
-                            <th style="width: 60px;">QTY</th>
-                            <th style="width: 60px;">Total</th>
-                            <th style="width: 80px;">On Hand</th>
-                            <th style="min-width: 100px;">Status</th>
-                            <th style="min-width: 120px;">Phone</th>
+    <!-- Table Section Container -->
+    <div class="table-responsive" *ngIf="Division_">
+        <!-- 1. Cutting Tool Table -->
+        <ng-container *ngIf="Tooling_ === 'Cutting Tool'">
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr class="header-group-row">
+                        <th colspan="23" style="text-align: center; color: red; padding: 20px;">
+                            This view is for Cutting Tool. Case Setup data usually belongs to 'Setup Tool'.
+                            If you need Cutting Tool columns here, please request adjustment.
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </ng-container>
 
-                            <!-- Purchase Columns -->
-                            <th style="min-width: 120px; background-color: #f0f0d0;">PH: Item NO.</th>
-                            <th style="min-width: 120px; background-color: #f0f0d0;">PH: Item Name</th>
-                            <th style="min-width: 150_px; background-color: #f0f0d0;">PH: Spec</th>
-                            <th style="width: 60px; background-color: #f0f0d0;">PH: QTY</th>
-                            <th style="min-width: 100px; background-color: #f0f0d0;">Mat Lot</th>
-                            <th style="min-width: 100px; background-color: #f0f0d0;">PH Stock Loc</th>
-                            <th style="min-width: 80px; background-color: #f0f0d0;">Stock PD</th>
-                            <th style="min-width: 80px; background-color: #f0f0d0;">PH Stock</th>
-                            <th style="width: 70px; background-color: #f0f0d0;">Confirm</th>
-                            <th style="min-width: 120px; background-color: #f0f0d0;">Remark</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngIf="paginatedItems.length === 0">
-                            <td colspan="33" class="text-center text-muted">No items found. / ไม่พบข้อมูล</td>
-                        </tr>
-                        <tr *ngFor="let item of paginatedItems; let i = index; trackBy: trackByRequestId" [ngClass]="{
+        <!-- 2. Setup Tool Table (Purchase View) -->
+        <ng-container *ngIf="Tooling_ === 'Setup Tool'">
+            <table id="table-data" class="table table-bordered text-center">
+                <thead>
+                    <tr class="header-cols">
+                        <th class="col-checkbox"><input type="checkbox" [(ngModel)]="selectAllChecked"
+                                (change)="toggleAllCheckboxes()" [disabled]="isViewer()" /></th>
+                        <th class="col-no">NO</th>
+                        <th style="min-width: 120px;">M/R No.</th>
+                        <th style="min-width: 120px;">Mfg Order</th>
+                        <th style="min-width: 150px;">Doc No.</th>
+                        <th style="min-width: 100px;">Record Date</th>
+                        <th style="min-width: 100px;">Due Date</th>
+                        <th style="min-width: 120px;">Requester</th>
+                        <th style="min-width: 80px;">Div</th>
+                        <th style="min-width: 120px;">Part No.</th>
+                        <th style="min-width: 120px;">Process</th>
+                        <th style="min-width: 60px;">Fac</th>
+                        <th style="min-width: 100px;">Machine</th>
+                        <th style="min-width: 60px;">MC Qty</th>
+                        <th style="width: 70px;">Case</th>
+                        <th style="min-width: 120px;">Req Item NO.</th>
+                        <th style="min-width: 150px;">Req Item Name</th>
+                        <th style="min-width: 150px;">Req Spec</th>
+                        <th style="width: 60px;">QTY</th>
+                        <th style="width: 60px;">Total</th>
+                        <th style="width: 80px;">On Hand</th>
+                        <th style="min-width: 100px;">Status</th>
+                        <th style="min-width: 120px;">Phone</th>
+
+                        <!-- Purchase Columns -->
+                        <th style="min-width: 120px; background-color: #f0f0d0;">PH: Item NO.</th>
+                        <th style="min-width: 120px; background-color: #f0f0d0;">PH: Item Name</th>
+                        <th style="min-width: 150_px; background-color: #f0f0d0;">PH: Spec</th>
+                        <th style="width: 60px; background-color: #f0f0d0;">PH: QTY</th>
+                        <th style="min-width: 100px; background-color: #f0f0d0;">Mat Lot</th>
+                        <th style="min-width: 100px; background-color: #f0f0d0;">PH Stock Loc</th>
+                        <th style="min-width: 80px; background-color: #f0f0d0;">Stock PD</th>
+                        <th style="min-width: 80px; background-color: #f0f0d0;">PH Stock</th>
+                        <th style="width: 70px; background-color: #f0f0d0;">Confirm</th>
+                        <th style="min-width: 120px; background-color: #f0f0d0;">Remark</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="paginatedItems.length === 0">
+                        <td colspan="33" class="text-center text-muted">No items found. / ไม่พบข้อมูล</td>
+                    </tr>
+                    <tr *ngFor="let item of paginatedItems; let i = index; trackBy: trackByRequestId" [ngClass]="{
                             'editing-row': editingIndex[item.Public_Id] === i,
                             'highlight-row': highlightedRow === i}">
 
-                            <!-- Columns -->
-                            <td><input type="checkbox" [(ngModel)]="item.Selection" [disabled]="isViewer()" /></td>
-                            <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                            <td>{{ item.MR_No }}</td>
-                            <td>{{ item.MFGOrderNo }}</td>
-                            <td style="white-space: nowrap;">{{ item.DocNo }}</td>
-                            <td>{{ item.DateTime_Record | date:'dd/MM/yyyy'}}</td>
-                            <td>{{ item.DueDate | date:'dd/MM/yyyy'}}</td>
-                            <td>{{ item.Requester }}</td>
-                            <td>{{ item.Division}}</td>
-                            <td>{{ item.PartNo }}</td>
-                            <td>{{ item.Process }}</td>
-                            <td>{{ item.Fac }}</td>
-                            <td>{{ item.MCType }}</td>
-                            <td>{{ item.MCQTY }}</td>
-                            <td>{{ item.CASE }}</td>
-                            <td>{{ item.Req_ItemNo }}</td>
-                            <td>{{ item.Req_ItemName }}</td>
-                            <td class="spec-column">{{ item.Req_SPEC }}</td>
-                            <td>{{ item.QTY }}</td>
-                            <td> - </td>
-                            <td>{{ item.ON_HAND }}</td>
-                            <td>{{ item.Status }}</td>
-                            <td>{{ item.PhoneNo }}</td>
+                        <!-- Columns -->
+                        <td><input type="checkbox" [(ngModel)]="item.Selection" [disabled]="isViewer()" /></td>
+                        <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                        <td>{{ item.MR_No }}</td>
+                        <td>{{ item.MFGOrderNo }}</td>
+                        <td style="white-space: nowrap;">{{ item.DocNo }}</td>
+                        <td>{{ item.DateTime_Record | date:'dd/MM/yyyy'}}</td>
+                        <td>{{ item.DueDate | date:'dd/MM/yyyy'}}</td>
+                        <td>{{ item.Requester }}</td>
+                        <td>{{ item.Division}}</td>
+                        <td>{{ item.PartNo }}</td>
+                        <td>{{ item.Process }}</td>
+                        <td>{{ item.Fac }}</td>
+                        <td>{{ item.MCType }}</td>
+                        <td>{{ item.MCQTY }}</td>
+                        <td>{{ item.CASE }}</td>
+                        <td>{{ item.Req_ItemNo }}</td>
+                        <td>{{ item.Req_ItemName }}</td>
+                        <td class="spec-column">{{ item.Req_SPEC }}</td>
+                        <td>{{ item.QTY }}</td>
+                        <td> - </td>
+                        <td>{{ item.ON_HAND }}</td>
+                        <td>{{ item.Status }}</td>
+                        <td>{{ item.PhoneNo }}</td>
 
-                            <!-- Purchase Input Cols -->
-                            <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
-                                style="cursor: pointer; position: relative;">
-                                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showItemNoSetup">
-                                    <input [(ngModel)]="item.ItemNo" (change)="onItemNoChange($event, item)"
-                                        (keydown.enter)="stopEdit(item.Public_Id)" (click)="$event.stopPropagation()"
-                                        type="text" class="form-control" style="min-width: 100px;" />
-                                </ng-container>
-                                <ng-template #showItemNoSetup>
-                                    <span style="text-decoration: underline;">{{ item.ItemNo }}</span>
-                                </ng-template>
-                            </td>
-                            <td>{{ item.ItemName }}</td>
-                            <td>{{ item.SPEC }}</td>
-                            <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
-                                style="cursor: pointer;">
-                                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showQtySetup">
-                                    <input [(ngModel)]="item.QTY" (keydown.enter)="stopEdit(item.Public_Id)"
-                                        (click)="$event.stopPropagation()" type="number" class="form-control"
-                                        style="width: 80px;" min="0" />
-                                </ng-container>
-                                <ng-template #showQtySetup>
-                                    <span style="text-decoration: underline;">{{ item.QTY }}</span>
-                                </ng-template>
-                            </td>
-                            <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
-                                style="cursor: pointer;">
-                                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showMatLotSetup">
-                                    <input [(ngModel)]="item.MatLot" (keydown.enter)="stopEdit(item.Public_Id)"
-                                        (click)="$event.stopPropagation()" type="text" class="form-control"
-                                        style="width: 100px;" />
-                                </ng-container>
-                                <ng-template #showMatLotSetup>
-                                    <span
-                                        style="text-decoration: underline; min-height: 20px; display: inline-block;">{{
-                                        item.MatLot || '&nbsp;' }}</span>
-                                </ng-template>
-                            </td>
-                            <td></td> <!-- Stock Loc -->
-                            <td></td> <!-- Stock PD -->
-                            <td></td> <!-- PH Stock -->
-                            <td><button class="btn btn-success btn-sm btn-ok" (click)="confirmItem(item)">OK</button>
-                            </td>
-                            <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
-                                style="cursor: pointer;">
-                                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showRemarkSetup">
-                                    <input [(ngModel)]="item.Remark" (keydown.enter)="stopEdit(item.Public_Id)"
-                                        (click)="$event.stopPropagation()" type="text" class="form-control" />
-                                </ng-container>
-                                <ng-template #showRemarkSetup>
-                                    <span style="text-decoration: underline;">{{ item.Remark || '&nbsp;' }}</span>
-                                </ng-template>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </ng-container>
-        </div>
-
+                        <!-- Purchase Input Cols -->
+                        <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
+                            style="cursor: pointer; position: relative;">
+                            <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showItemNoSetup">
+                                <input [(ngModel)]="item.ItemNo" (change)="onItemNoChange($event, item)"
+                                    (keydown.enter)="stopEdit(item.Public_Id)" (click)="$event.stopPropagation()"
+                                    type="text" class="form-control" style="min-width: 100px;" />
+                            </ng-container>
+                            <ng-template #showItemNoSetup>
+                                <span style="text-decoration: underline;">{{ item.ItemNo }}</span>
+                            </ng-template>
+                        </td>
+                        <td>{{ item.ItemName }}</td>
+                        <td>{{ item.SPEC }}</td>
+                        <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()" style="cursor: pointer;">
+                            <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showQtySetup">
+                                <input [(ngModel)]="item.QTY" (keydown.enter)="stopEdit(item.Public_Id)"
+                                    (click)="$event.stopPropagation()" type="number" class="form-control"
+                                    style="width: 80px;" min="0" />
+                            </ng-container>
+                            <ng-template #showQtySetup>
+                                <span style="text-decoration: underline;">{{ item.QTY }}</span>
+                            </ng-template>
+                        </td>
+                        <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()" style="cursor: pointer;">
+                            <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showMatLotSetup">
+                                <input [(ngModel)]="item.MatLot" (keydown.enter)="stopEdit(item.Public_Id)"
+                                    (click)="$event.stopPropagation()" type="text" class="form-control"
+                                    style="width: 100px;" />
+                            </ng-container>
+                            <ng-template #showMatLotSetup>
+                                <span style="text-decoration: underline; min-height: 20px; display: inline-block;">{{
+                                    item.MatLot || '&nbsp;' }}</span>
+                            </ng-template>
+                        </td>
+                        <td></td> <!-- Stock Loc -->
+                        <td></td> <!-- Stock PD -->
+                        <td></td> <!-- PH Stock -->
+                        <td><button class="btn btn-success btn-sm btn-ok" (click)="confirmItem(item)">OK</button>
+                        </td>
+                        <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()" style="cursor: pointer;">
+                            <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showRemarkSetup">
+                                <input [(ngModel)]="item.Remark" (keydown.enter)="stopEdit(item.Public_Id)"
+                                    (click)="$event.stopPropagation()" type="text" class="form-control" />
+                            </ng-container>
+                            <ng-template #showRemarkSetup>
+                                <span style="text-decoration: underline;">{{ item.Remark || '&nbsp;' }}</span>
+                            </ng-template>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </ng-container>
     </div>
 
-    <!-- Pagination -->
-    <!-- Pagination Controls (Fixed Bottom) -->
-    <div class="pagination-wrapper"
-        *ngIf="(Tooling_ === 'Cutting Tool' || Tooling_ === 'Setup Tool') && totalPages > 1">
-        <div class="d-inline-block bg-white p-2 rounded shadow-sm border">
-            <span class="me-3">
-                Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ min((currentPage * pageSize), request.length) }}
-                of {{
-                request.length }}
-            </span>
-            <div class="d-inline-block">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination mb-0">
-                        <li class="page-item" [class.disabled]="currentPage === 1">
-                            <button class="page-link" (click)="changePage(currentPage - 1)">Previous</button>
-                        </li>
+</div>
 
-                        <li class="page-item" [class.active]="page === currentPage" *ngFor="let page of pages">
-                            <button class="page-link" (click)="changePage(page)">{{ page }}</button>
-                        </li>
+<!-- Pagination -->
+<!-- Pagination Controls (Fixed Bottom) -->
+<div class="pagination-wrapper" *ngIf="(Tooling_ === 'Cutting Tool' || Tooling_ === 'Setup Tool') && totalPages > 1">
+    <div class="d-inline-block bg-white p-2 rounded shadow-sm border">
+        <span class="me-3">
+            Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ min((currentPage * pageSize), request.length) }}
+            of {{
+            request.length }}
+        </span>
+        <div class="d-inline-block">
+            <nav aria-label="Page navigation">
+                <ul class="pagination mb-0">
+                    <li class="page-item" [class.disabled]="currentPage === 1">
+                        <button class="page-link" (click)="changePage(currentPage - 1)">Previous</button>
+                    </li>
 
-                        <li class="page-item" [class.disabled]="currentPage === totalPages">
-                            <button class="page-link" (click)="changePage(currentPage + 1)">Next</button>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
+                    <li class="page-item" [class.active]="page === currentPage" *ngFor="let page of pages">
+                        <button class="page-link" (click)="changePage(page)">{{ page }}</button>
+                    </li>
+
+                    <li class="page-item" [class.disabled]="currentPage === totalPages">
+                        <button class="page-link" (click)="changePage(currentPage + 1)">Next</button>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
 </div>
