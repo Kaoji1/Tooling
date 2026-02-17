@@ -560,7 +560,7 @@ export class ReturnComponent implements OnInit {
         // 5. Confirmation & Call Service
         Swal.fire({
           title: 'Confirm to send data?',
-          text: `DocNo: ${docNo}\nยืนยันจะเบิกไหม?`,
+          text: `DocNo: ${docNo}\nยืนยันการคืนไหม?`,
           icon: 'question',
           showCancelButton: true,
           confirmButtonColor: '#3085d6',

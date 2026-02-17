@@ -280,7 +280,8 @@ export class DetailComponent implements OnInit, OnDestroy {
 
         const mapped = validResponse.map(it => ({
           ...it,
-          ID_Request: Number(it.ID_Request),
+          ID_Request: it.ID_Request, // Keep as string (Public ID if from view, or numeric string)
+          Public_Id: it.Public_Id || it.ID_Request,
           Selection: false,
           QTY: it.QTY ?? it.Req_QTY,
           ACCOUNT: it.ACCOUNT ?? it.account,
@@ -291,22 +292,15 @@ export class DetailComponent implements OnInit, OnDestroy {
           Req_ItemNo: it.ItemNo,
           Req_PartNo: it.PartNo,
           Req_SPEC: it.SPEC,
-          Req_ItemName: it.ItemName
+          Req_ItemName: it.ItemName,
           // MFGOrderNo logic removed to use Backend value
+          TableType: 'Cutting' // Explicitly mark as Cutting Tool
         }));
 
-        const seen = new Set<number>();
-        const unique = mapped.filter(it => {
-          const id = Number(it.ID_Request);
-          if (!Number.isFinite(id)) return true;
-          if (seen.has(id)) return false;
-          seen.add(id);
-          return true;
-        });
-
-        this.allRequests = unique;
-        this.request = [...unique];
-        this.updatePagination();
+        this.allRequests = mapped;
+        this.request = [...mapped];
+        // FIX: Call onFilter instead of updatePagination to re-apply active filters after refresh
+        this.onFilter();
 
         this.SpecList = Array.from(new Set(this.allRequests.map(x => x.SPEC))).filter(x => x).sort().map(x => ({ label: x, value: x }));
         this.ProcessList = Array.from(new Set(this.allRequests.map(x => x.Process))).filter(x => x).sort().map(x => ({ label: x, value: x }));
@@ -336,16 +330,23 @@ export class DetailComponent implements OnInit, OnDestroy {
 
         const mapped = response.map(it => ({
           ...it,
-          ID_Request: Number(it.ID_RequestSetupTool), // Map ID for compatibility
+          ID_Request: it.ID_RequestSetupTool, // Map ID for compatibility
+          Public_Id: it.Public_Id || it.ID_RequestSetupTool,
           Selection: false,
           QTY: it.QTY ?? it.Req_QTY,
           MCQTY: it.MCQTY ?? it.MCNo, // Map MCNo to MCQTY Setup Tool
           _parsedRequestDate: it.DateTime_Record ? new Date(it.DateTime_Record) : null,
-          _parsedDueDate: it.DueDate ? new Date(it.DueDate) : null
+          _parsedDueDate: it.DueDate ? new Date(it.DueDate) : null,
+          TableType: 'Setup' // Explicitly mark as Setup Tool
         }));
 
         this.allSetupRequests = mapped;
         this.setupRequests = [...mapped];
+
+        // FIX: If currently viewing Setup Tool, re-apply filters after refresh
+        if (this.Tooling_ === 'Setup Tool') {
+          this.onFilter();
+        }
 
         // Merge lists for dropdowns if needed, or keeping separate?
         // For now, let's just load it.
@@ -355,19 +356,19 @@ export class DetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  trackByRequestId(index: number, item: any): string {
+    return item.Public_Id || item.ID_Request;
+  }
+
   get_ItemNo() {
     this.DetailPurchase.get_ItemNo().subscribe({
       next: (response: any[]) => {
-        const uniqueItems = new Map();
-        response.forEach(item => {
-          if (item.ItemNo && !uniqueItems.has(item.ItemNo)) {
-            uniqueItems.set(item.ItemNo, {
-              ...item,
-              ACCOUNT: item.ACCOUNT ?? item.account ?? ''
-            });
-          }
-        });
-        this.ItemNo = Array.from(uniqueItems.values());
+        // Remove unique filter to allow all items (or handle duplicates differently if needed)
+        // Since backend orders by LAST_UPDATE DESC, the first match found by .find() in syncSpecWithItemNo will be the latest.
+        this.ItemNo = response.map(item => ({
+          ...item,
+          ACCOUNT: item.ACCOUNT ?? item.account ?? ''
+        }));
         this.cdr.markForCheck();
       },
       error: (e: any) => console.error("Error API get_ItemNo:", e),
@@ -378,7 +379,7 @@ export class DetailComponent implements OnInit, OnDestroy {
 
 
   onQtyChange(row: any) {
-    const index = this.request.findIndex(r => r.ID_Request === row.ID_Request);
+    const index = this.request.findIndex(r => (r.Public_Id || r.ID_Request) === (row.Public_Id || row.ID_Request));
     if (index > -1) {
       this.request[index].QTY = row.QTY;
     }
@@ -421,99 +422,98 @@ export class DetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  startEdit(caseKey: number, rowIndex: number) {
-    // Note: rowIndex passed here is likely likely from displayedRequests (0-49) if called from template
-    // Ideally, pass ID_Request instead of index to be safe
+  startEdit(publicId: string, rowIndex: number) {
     this.editingIndex = {};
-    this.editingIndex[caseKey] = rowIndex;
+    this.editingIndex[publicId] = rowIndex;
   }
 
-  saveEdit(caseKey: number, rowIndex: number) {
-    // Use ID to find the actual item in the full list
-    const realIndex = this.request.findIndex(r => r.ID_Request === caseKey);
-    const item = this.request[realIndex];
+  saveEdit(publicId: string) {
+    const item = this.request.find(r => r.Public_Id === publicId);
 
     if (!item) return;
 
     this.syncSpecWithItemNo(item);
     const snapshot = { ...item };
 
-    const mergeSafe = (original: any, resp: any) => {
-      const merged = { ...original, ...(resp || {}) };
-      merged.ID_Request = Number(resp?.ID_Request ?? original.ID_Request);
-      if (resp?.ItemNo == null) merged.ItemNo = original.ItemNo;
-      if (resp?.SPEC == null) merged.SPEC = original.SPEC;
-      merged.Selection = !!original.Selection;
-      merged.isNew = false;
-      return merged;
-    };
-
-    const hasId = Number.isInteger(Number(item.ID_Request));
+    const hasId = item.ID_Request != null;
 
     if (!hasId) {
-      this.DetailPurchase.insertRequest(item).subscribe({
-        next: (res) => {
-          this.request[realIndex] = mergeSafe(item, res);
-          delete this.editingIndex[caseKey];
-          if (isPlatformBrowser(this.platformId)) {
-            localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
-          }
-          this.updatePagination();
-          Swal.fire({ icon: 'success', title: 'Your work has been saved', showConfirmButton: false, timer: 1330 });
-        },
-        error: (err) => {
-          this.request[realIndex] = snapshot;
-          alert('เกิดข้อผิดพลาดในการบันทึกแถวใหม่');
-        }
-      });
+      // Insert new
     } else {
       this.DetailPurchase.updateRequest(item).subscribe({
         next: (res) => {
-          this.request[realIndex] = mergeSafe(item, res);
-          delete this.editingIndex[caseKey];
+          item.isNew = false;
+          delete this.editingIndex[publicId];
           if (isPlatformBrowser(this.platformId)) {
             localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
           }
           this.updatePagination();
           Swal.fire({ icon: 'success', title: 'Your work has been saved', showConfirmButton: false, timer: 1330 });
+          this.cdr.markForCheck();
         },
         error: (err) => {
-          this.request[realIndex] = snapshot;
+          Object.assign(item, snapshot);
           alert('เกิดข้อผิดพลาดในการบันทึกแถว');
         }
       });
     }
   }
 
-  stopEdit(id: number) {
-    delete this.editingIndex[id];
+  stopEdit(publicId: string) {
+    const item = this.request.find(r => r.Public_Id === publicId);
+    if (item) {
+      this.syncSpecWithItemNo(item);
+    }
+    delete this.editingIndex[publicId];
+    this.cdr.markForCheck();
   }
 
   syncSpecWithItemNo(row: any) {
     if (!row || !row.ItemNo) return;
-    const list = this.ItemNo || [];
     const targetItemNo = String(row.ItemNo).trim();
+    const divisionId = row.Division || '71DZ'; // Default to PMC if not set
 
-    const found = list.find((x: any) => {
+    // 1. Try local lookup first (for immediate feedback if possible)
+    const list = this.ItemNo || [];
+    const foundLocal = list.find((x: any) => {
       const xItemNo = (typeof x === 'string' ? x : x?.ItemNo);
       return String(xItemNo).trim() === targetItemNo;
     });
 
-    if (found && typeof found !== 'string') {
-      const spec = (found as any).SPEC || (found as any).Specification || (found as any).Spec;
-      if (typeof spec !== 'undefined' && spec !== null) {
-        row.SPEC = String(spec);
-      } else {
-        row.SPEC = ''; // Reset if not found? Or keep old? Better to update if found.
-      }
-
-      const itemName = (found as any).ItemName || (found as any).EnglishName || (found as any).Name;
-      if (typeof itemName !== 'undefined' && itemName !== null) {
-        row.ItemName = String(itemName);
-      } else {
-        row.ItemName = '';
-      }
+    if (foundLocal && typeof foundLocal !== 'string') {
+      this.updateRowWithFound(row, foundLocal);
     }
+
+    // 2. Always/Fallback to Server lookup for precision and to solve "Delay/Missing" issues
+    this.DetailPurchase.getItemDetailsByNo(targetItemNo, divisionId).subscribe({
+      next: (foundServer: any) => {
+        if (foundServer) {
+          this.updateRowWithFound(row, foundServer);
+        }
+      },
+      error: (err) => {
+        console.warn(`Item lookup failed for ${targetItemNo} on server:`, err);
+        // If not found on server AND not found locally, then clear
+        if (!foundLocal) {
+          row.SPEC = '';
+          row.ItemName = '';
+          this.cdr.markForCheck();
+        }
+      }
+    });
+  }
+
+  private updateRowWithFound(row: any, found: any) {
+    const spec = found.SPEC || found.Specification || found.Spec;
+    const itemName = found.ItemName || found.EnglishName || found.Name;
+
+    if (typeof spec !== 'undefined' && spec !== null) {
+      row.SPEC = String(spec).trim();
+    }
+    if (typeof itemName !== 'undefined' && itemName !== null) {
+      row.ItemName = String(itemName).trim();
+    }
+    this.cdr.markForCheck();
   }
 
   onItemNoChange(event: any, item: any) {
@@ -594,14 +594,14 @@ export class DetailComponent implements OnInit, OnDestroy {
             const idSet = new Set(ids);
 
             // Remove from request (displayed list)
-            this.request = this.request.filter(r => !idSet.has(Number(r.ID_Request)));
+            this.request = this.request.filter(r => !idSet.has(r.ID_Request) && !idSet.has(r.Public_Id));
 
             // Remove from allRequests (source list)
-            this.allRequests = this.allRequests.filter(r => !idSet.has(Number(r.ID_Request)));
+            this.allRequests = this.allRequests.filter(r => !idSet.has(r.ID_Request) && !idSet.has(r.Public_Id));
 
             // Remove from setup requests if applicable
-            this.allSetupRequests = this.allSetupRequests.filter(r => !idSet.has(Number(r.ID_Request)));
-            this.setupRequests = this.setupRequests.filter(r => !idSet.has(Number(r.ID_Request)));
+            this.allSetupRequests = this.allSetupRequests.filter(r => !idSet.has(r.ID_Request) && !idSet.has(r.Public_Id));
+            this.setupRequests = this.setupRequests.filter(r => !idSet.has(r.ID_Request) && !idSet.has(r.Public_Id));
 
             if (isPlatformBrowser(this.platformId)) {
               localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
@@ -652,16 +652,17 @@ export class DetailComponent implements OnInit, OnDestroy {
     this.DetailPurchase.updateRequest(item).subscribe({
       next: () => {
         // 2. Update Status to Complete
-        this.DetailPurchase.updateStatusToComplete([id], 'Complete').subscribe({
+        const idForUpdate = item.Public_Id || item.ID_Request;
+        this.DetailPurchase.updateStatusToComplete([idForUpdate], 'Complete', item.TableType).subscribe({
           next: () => {
             // Remove from view
-            this.request = this.request.filter(r => r.ID_Request !== item.ID_Request);
-            this.allRequests = this.allRequests.filter(r => r.ID_Request !== item.ID_Request);
-            this.allSetupRequests = this.allSetupRequests.filter(r => r.ID_Request !== item.ID_Request);
-            this.setupRequests = this.setupRequests.filter(r => r.ID_Request !== item.ID_Request);
+            this.request = this.request.filter(r => r.Public_Id !== item.Public_Id);
+            this.allRequests = this.allRequests.filter(r => r.Public_Id !== item.Public_Id);
+            this.allSetupRequests = this.allSetupRequests.filter(r => r.Public_Id !== item.Public_Id);
+            this.setupRequests = this.setupRequests.filter(r => r.Public_Id !== item.Public_Id);
 
             // Remove explicit editing index if any
-            delete this.editingIndex[item.ID_Request];
+            delete this.editingIndex[item.Public_Id];
 
             if (isPlatformBrowser(this.platformId)) {
               localStorage.setItem('purchaseRequest', JSON.stringify(this.request));
@@ -798,11 +799,11 @@ export class DetailComponent implements OnInit, OnDestroy {
     this.request = source.filter(item => {
       const status = (item.Status ?? '').toLowerCase().trim();
 
-      const matchStatus = !this.Status_?.length || this.Status_.toLowerCase().includes(status);
+      const matchStatus = !this.Status_?.length || (status && status.includes(this.Status_.toLowerCase()));
 
-      const matchDivision = !this.Division_?.length || this.Division_.includes(item.Division);
-      const matchProcess = !this.Process_?.length || this.Process_.includes(item.Process);
-      const matchCase = !this.Case_?.length || this.Case_.includes(item.CASE);
+      const matchDivision = !this.Division_?.length || item.Division === this.Division_;
+      const matchProcess = !this.Process_?.length || item.Process === this.Process_;
+      const matchCase = !this.Case_?.length || item.CASE === this.Case_;
 
       // Tooling_ is now a Switcher, not a Row Filter.
       // If it's 'Cutting Tool', we assume ALL current data is Cutting Tool (or handled elsewhere).
@@ -911,9 +912,6 @@ export class DetailComponent implements OnInit, OnDestroy {
     this.onFilter();
   }
 
-  trackByRequestId(index: number, item: any): number {
-    return item.ID_Request;
-  }
 
   @HostListener('document:click', ['$event'])
   onClick(event: MouseEvent) {

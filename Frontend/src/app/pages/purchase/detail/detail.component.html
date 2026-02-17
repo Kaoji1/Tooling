@@ -27,24 +27,14 @@
       </div>
     </div>
 
-    <!-- Action Buttons -->
-    <div class="header-actions">
-      <button class="btn btn-secondary btn-sm" (click)="clearFilters()">Clear</button>
-      <button class="btn btn-primary btn-sm" (click)="onFilter()">Filter</button>
-      <button class="btn-export" type="button" (click)="exportexcel()">
-        EXPORT TO EXCEL
-      </button>
-      <button class="btn-Complete" type="button" (click)="completeSelected()" [disabled]="isViewer() || isCompleting">
-        <ng-container *ngIf="!isCompleting; else loadingTpl">
-          <i class="bi bi-check-circle-fill text-white"></i> Complete
-        </ng-container>
-        <ng-template #loadingTpl>
-          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          Loading...
-        </ng-template>
-      </button>
+    <!-- Division & Tooling Selection Message -->
+    <div *ngIf="!Division_ || !Tooling_" class="alert alert-info text-center mt-3" style="font-weight: 500;">
+      <i class="bi bi-info-circle-fill me-2"></i>
+      Please select Division and Tooling to view data. / กรุณาเลือก Division และ Tooling เพื่อแสดงข้อมูล
     </div>
-  </div>
+
+    <!-- Table Section -->
+    <div class="table-responsive">
 
   <!-- Table Section -->
   <div class="table-responsive">
@@ -240,10 +230,10 @@
         </thead>
 
 
-        <!-- ในตาราง -->
-        <tbody>
-          <tr *ngFor="let item of displayedRequests; let i = index; trackBy: trackByRequestId" [ngClass]="{
-            'editing-row': editingIndex[item.ID_Request] === i,
+          <!-- ในตาราง -->
+          <tbody>
+            <tr *ngFor="let item of displayedRequests; let i = index; trackBy: trackByRequestId" [ngClass]="{
+            'editing-row': editingIndex[item.Public_Id] === i,
             'highlight-row': highlightedRow === i}">
 
             <!-- Checkbox -->
@@ -317,20 +307,20 @@
 
             <!-- ================= For Purchase ================= -->
 
-            <!-- Item NO. -->
-            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
-              style="cursor: pointer; position: relative;">
-              <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showItemNo">
-                <input [(ngModel)]="item.ItemNo" (change)="onItemNoChange($event, item)"
-                  (keydown.enter)="stopEdit(item.ID_Request)" (click)="$event.stopPropagation()" type="text"
-                  class="form-control" style="min-width: 100px;" />
-              </ng-container>
-              <ng-template #showItemNo>
-                <span style="text-decoration: underline;">
-                  {{ item.ItemNo }}
-                </span>
-              </ng-template>
-            </td>
+              <!-- Item NO. -->
+              <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
+                style="cursor: pointer; position: relative;">
+                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showItemNo">
+                  <input [(ngModel)]="item.ItemNo" (change)="onItemNoChange($event, item)"
+                    (keydown.enter)="stopEdit(item.Public_Id)" (click)="$event.stopPropagation()" type="text"
+                    class="form-control" style="min-width: 100px;" />
+                </ng-container>
+                <ng-template #showItemNo>
+                  <span style="text-decoration: underline;">
+                    {{ item.ItemNo }}
+                  </span>
+                </ng-template>
+              </td>
 
             <!-- Item Name -->
             <td>{{ item.ItemName }}</td>
@@ -338,30 +328,31 @@
             <!-- Spec -->
             <td>{{ item.SPEC }}</td>
 
-            <!-- QTY (Editable) -->
-            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()" style="cursor: pointer;">
-              <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showQty">
-                <input [(ngModel)]="item.QTY" (keydown.enter)="stopEdit(item.ID_Request)"
-                  (click)="$event.stopPropagation()" type="number" class="form-control" style="width: 80px;" min="0" />
-              </ng-container>
-              <ng-template #showQty>
-                <span style="text-decoration: underline;">{{
-                  item.QTY }}</span>
-              </ng-template>
-            </td>
+              <!-- QTY (Editable) -->
+              <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()" style="cursor: pointer;">
+                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showQty">
+                  <input [(ngModel)]="item.QTY" (keydown.enter)="stopEdit(item.Public_Id)"
+                    (click)="$event.stopPropagation()" type="number" class="form-control" style="width: 80px;"
+                    min="0" />
+                </ng-container>
+                <ng-template #showQty>
+                  <span style="text-decoration: underline;">{{
+                    item.QTY }}</span>
+                </ng-template>
+              </td>
 
-            <!-- Mat Lot -->
-            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()" style="cursor: pointer;">
-              <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showMatLot">
-                <input [(ngModel)]="item.MatLot" (keydown.enter)="stopEdit(item.ID_Request)"
-                  (click)="$event.stopPropagation()" type="text" class="form-control" style="width: 100px;" />
-              </ng-container>
-              <ng-template #showMatLot>
-                <span style="text-decoration: underline; min-height: 20px; display: inline-block;">
-                  {{ item.MatLot || '&nbsp;' }}
-                </span>
-              </ng-template>
-            </td>
+              <!-- Mat Lot -->
+              <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()" style="cursor: pointer;">
+                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showMatLot">
+                  <input [(ngModel)]="item.MatLot" (keydown.enter)="stopEdit(item.Public_Id)"
+                    (click)="$event.stopPropagation()" type="text" class="form-control" style="width: 100px;" />
+                </ng-container>
+                <ng-template #showMatLot>
+                  <span style="text-decoration: underline; min-height: 20px; display: inline-block;">
+                    {{ item.MatLot || '&nbsp;' }}
+                  </span>
+                </ng-template>
+              </td>
 
             <!-- PH Stock Location (Placeholder) -->
             <td></td>
@@ -377,16 +368,16 @@
               <button class="btn btn-success btn-sm btn-ok" (click)="confirmItem(item)">OK</button>
             </td>
 
-            <!-- Remark -->
-            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()" style="cursor: pointer;">
-              <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showRemark">
-                <input [(ngModel)]="item.Remark" (keydown.enter)="stopEdit(item.ID_Request)"
-                  (click)="$event.stopPropagation()" type="text" class="form-control" />
-              </ng-container>
-              <ng-template #showRemark>
-                <span style="text-decoration: underline;">{{ item.Remark || '&nbsp;' }}</span>
-              </ng-template>
-            </td>
+              <!-- Remark -->
+              <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()" style="cursor: pointer;">
+                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showRemark">
+                  <input [(ngModel)]="item.Remark" (keydown.enter)="stopEdit(item.Public_Id)"
+                    (click)="$event.stopPropagation()" type="text" class="form-control" />
+                </ng-container>
+                <ng-template #showRemark>
+                  <span style="text-decoration: underline;">{{ item.Remark || '&nbsp;' }}</span>
+                </ng-template>
+              </td>
 
           </tr>
         </tbody>
@@ -502,22 +493,22 @@
             <th style="min-width: 90px;">Status</th>
             <th style="min-width: 90px;">Phone</th>
 
-            <!-- Purchase Columns (Matched to Cutting Tool) -->
-            <th style="min-width: 120px;">Item NO.</th>
-            <th style="min-width: 120px;">Item Name</th>
-            <th style="min-width: 150px;">Spec</th>
-            <th style="width: 60px;">QTY</th>
-            <th style="min-width: 100px;">Mat Lot</th>
-            <th style="min-width: 100px;">PH Stock Loc</th>
-            <th style="min-width: 80px;">Stock PD</th>
-            <th style="min-width: 80px;">PH Stock</th>
-            <th style="width: 70px;">Confirm</th>
-            <th style="min-width: 120px;">Remark</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of displayedRequests; let i = index; trackBy: trackByRequestId" [ngClass]="{
-            'editing-row': editingIndex[item.ID_Request] === i,
+              <!-- Purchase Columns (Matched to Cutting Tool) -->
+              <th style="min-width: 120px;">Item NO.</th>
+              <th style="min-width: 120px;">Item Name</th>
+              <th style="min-width: 150px;">Spec</th>
+              <th style="width: 60px;">QTY</th>
+              <th style="min-width: 100px;">Mat Lot</th>
+              <th style="min-width: 100px;">PH Stock Loc</th>
+              <th style="min-width: 80px;">Stock PD</th>
+              <th style="min-width: 80px;">PH Stock</th>
+              <th style="width: 70px;">Confirm</th>
+              <th style="min-width: 120px;">Remark</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of displayedRequests; let i = index; trackBy: trackByRequestId" [ngClass]="{
+            'editing-row': editingIndex[item.Public_Id] === i,
             'highlight-row': highlightedRow === i}">
             <!-- Checkbox -->
             <td><input type="checkbox" [(ngModel)]="item.Selection" [disabled]="isViewer()" /></td>
@@ -572,20 +563,20 @@
 
             <!-- ================= For Purchase ================= -->
 
-            <!-- Item NO. -->
-            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()"
-              style="cursor: pointer; position: relative;">
-              <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showItemNoSetup">
-                <input [(ngModel)]="item.ItemNo" (change)="onItemNoChange($event, item)"
-                  (keydown.enter)="stopEdit(item.ID_Request)" (click)="$event.stopPropagation()" type="text"
-                  class="form-control" style="min-width: 100px;" />
-              </ng-container>
-              <ng-template #showItemNoSetup>
-                <span style="text-decoration: underline;">
-                  {{ item.ItemNo }}
-                </span>
-              </ng-template>
-            </td>
+              <!-- Item NO. -->
+              <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
+                style="cursor: pointer; position: relative;">
+                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showItemNoSetup">
+                  <input [(ngModel)]="item.ItemNo" (change)="onItemNoChange($event, item)"
+                    (keydown.enter)="stopEdit(item.Public_Id)" (click)="$event.stopPropagation()" type="text"
+                    class="form-control" style="min-width: 100px;" />
+                </ng-container>
+                <ng-template #showItemNoSetup>
+                  <span style="text-decoration: underline;">
+                    {{ item.ItemNo }}
+                  </span>
+                </ng-template>
+              </td>
 
             <!-- Item Name -->
             <td>{{ item.ItemName }}</td>
@@ -593,31 +584,32 @@
             <!-- Spec -->
             <td>{{ item.SPEC }}</td>
 
-            <!-- QTY -->
-            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()" style="cursor: pointer;">
-              <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showQtySetup">
-                <input [(ngModel)]="item.QTY" (keydown.enter)="stopEdit(item.ID_Request)"
-                  (click)="$event.stopPropagation()" type="number" class="form-control" style="width: 80px;" min="0" />
-              </ng-container>
-              <ng-template #showQtySetup>
-                <span style="text-decoration: underline;">
-                  {{ item.QTY }}
-                </span>
-              </ng-template>
-            </td>
+              <!-- QTY -->
+              <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()" style="cursor: pointer;">
+                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showQtySetup">
+                  <input [(ngModel)]="item.QTY" (keydown.enter)="stopEdit(item.Public_Id)"
+                    (click)="$event.stopPropagation()" type="number" class="form-control" style="width: 80px;"
+                    min="0" />
+                </ng-container>
+                <ng-template #showQtySetup>
+                  <span style="text-decoration: underline;">
+                    {{ item.QTY }}
+                  </span>
+                </ng-template>
+              </td>
 
-            <!-- Mat Lot -->
-            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()" style="cursor: pointer;">
-              <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showMatLotSetup">
-                <input [(ngModel)]="item.MatLot" (keydown.enter)="stopEdit(item.ID_Request)"
-                  (click)="$event.stopPropagation()" type="text" class="form-control" style="width: 100px;" />
-              </ng-container>
-              <ng-template #showMatLotSetup>
-                <span style="text-decoration: underline; min-height: 20px; display: inline-block;">
-                  {{ item.MatLot || '&nbsp;' }}
-                </span>
-              </ng-template>
-            </td>
+              <!-- Mat Lot -->
+              <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()" style="cursor: pointer;">
+                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showMatLotSetup">
+                  <input [(ngModel)]="item.MatLot" (keydown.enter)="stopEdit(item.Public_Id)"
+                    (click)="$event.stopPropagation()" type="text" class="form-control" style="width: 100px;" />
+                </ng-container>
+                <ng-template #showMatLotSetup>
+                  <span style="text-decoration: underline; min-height: 20px; display: inline-block;">
+                    {{ item.MatLot || '&nbsp;' }}
+                  </span>
+                </ng-template>
+              </td>
 
             <td></td> <!-- Stock Loc -->
             <td></td> <!-- Stock PD -->
@@ -628,20 +620,21 @@
               <button class="btn btn-success btn-sm btn-ok" (click)="confirmItem(item)">OK</button>
             </td>
 
-            <!-- Remark -->
-            <td (click)="startEdit(item.ID_Request, i); $event.stopPropagation()" style="cursor: pointer;">
-              <ng-container *ngIf="editingIndex[item.ID_Request] === i; else showRemark">
-                <input [(ngModel)]="item.Remark" (keydown.enter)="stopEdit(item.ID_Request)"
-                  (click)="$event.stopPropagation()" type="text" class="form-control" />
-              </ng-container>
-              <ng-template #showRemark>
-                <span style="text-decoration: underline;">{{ item.Remark || '&nbsp;' }}</span>
-              </ng-template>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </ng-container>
+              <!-- Remark -->
+              <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()" style="cursor: pointer;">
+                <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showRemark">
+                  <input [(ngModel)]="item.Remark" (keydown.enter)="stopEdit(item.Public_Id)"
+                    (click)="$event.stopPropagation()" type="text" class="form-control" />
+                </ng-container>
+                <ng-template #showRemark>
+                  <span style="text-decoration: underline;">{{ item.Remark || '&nbsp;' }}</span>
+                </ng-template>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </ng-container>
 
 
 

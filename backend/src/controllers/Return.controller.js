@@ -76,7 +76,7 @@ exports.getItemDetails = async (req, res) => {
         const pool = await poolPromise;
         const result = await pool.request()
             .input('Input_ItemNo', sql.NVarChar, itemNo)
-            .input('Input_Division', sql.Int, divisionId)
+            .input('Input_Division', sql.NVarChar, divisionId) // Allow both Int (from Return) and String (from Detail)
             .input('Is_Autocomplete', sql.Bit, isAutocomplete === 'true' ? 1 : 0) // Pass flag to SP
             .execute('trans.Stored_Get_ItemDetail_AutoFill');
 

@@ -129,8 +129,8 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
 
                 this.allRequests = res.map(item => ({
                     ...item,
-                    // View_CaseSetup_Request might return OriginalID instead of ID_Request
-                    ID_Request: Number(item.ID_Request ?? item.OriginalID),
+                    ID_Request: item.ID_Request ?? item.OriginalID,
+                    Public_Id: item.Public_Id || item.ID_Request || item.OriginalID,
                     Selection: false,
                     QTY: item.QTY ?? item.Req_QTY,
                     // Store original state for Inhibition check
@@ -139,7 +139,8 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
                     _originalQTY: item.QTY ?? item.Req_QTY,
                     Req_ItemName: item.ItemName,
                     Req_SPEC: item.SPEC,
-                    Req_ItemNo: item.ItemNo
+                    Req_ItemNo: item.ItemNo,
+                    TableType: (item.ToolingType === 'CuttingTool') ? 'Cutting' : 'Setup'
                 }));
 
                 this.filteredListToDisplay(); // Initial Copy
@@ -336,8 +337,8 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
         this.paginatedItems.forEach(req => req.Selection = this.selectAllChecked);
     }
 
-    trackByRequestId(index: number, item: any): number {
-        return item.ID_Request;
+    trackByRequestId(index: number, item: any): string {
+        return item.Public_Id || item.ID_Request;
     }
 
     min(a: number, b: number): number {
@@ -387,27 +388,51 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
         XLSX.writeFile(wb, 'CaseSetup_Export.xlsx');
     }
 
-    startEdit(id: number, index: number) {
+    saveEdit(publicId: string) {
+        const item = this.request.find(r => r.Public_Id === publicId);
+
+        if (!item) return;
+
+        this.syncSpecWithItemNo(item);
+        const snapshot = { ...item };
+
+        const hasId = item.ID_Request != null;
+
+        if (!hasId) {
+            // Logic for manual insert? (Not yet clear if used)
+        } else {
+            this.detailService.updateRequest(item).subscribe({
+                next: (res) => {
+                    item.isNew = false;
+                    delete this.editingIndex[publicId];
+                    this.updatePagination();
+                    Swal.fire({ icon: 'success', title: 'Your work has been saved', showConfirmButton: false, timer: 1330 });
+                    this.cdRef.detectChanges();
+                },
+                error: (err) => {
+                    Object.assign(item, snapshot);
+                    alert('เกิดข้อผิดพลาดในการบันทึกแถว');
+                }
+            });
+        }
+    }
+    startEdit(publicId: string, index: number) {
         this.editingIndex = {};
-        this.editingIndex[id] = index;
+        this.editingIndex[publicId] = index;
     }
 
     confirmItem(item: any) {
         if (!item) return;
         if (item.QTY == null || item.QTY === '') item.QTY = item.Req_QTY ?? 0;
 
-        const id = Number(item.ID_Request);
-        if (!Number.isInteger(id)) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Invalid ID_Request for this item.' });
-            return;
-        }
+        const idForUpdate = item.Public_Id || item.ID_Request;
 
         this.detailService.updateRequest(item).subscribe({
             next: () => {
-                this.detailService.updateStatusToComplete([id], 'Complete').subscribe({
+                this.detailService.updateStatusToComplete([idForUpdate], 'Complete', item.TableType).subscribe({
                     next: () => {
-                        this.removeFromLists(id);
-                        delete this.editingIndex[item.ID_Request];
+                        this.removeFromLists(item.Public_Id);
+                        delete this.editingIndex[item.Public_Id];
                         this.updatePagination();
                         Swal.fire({ icon: 'success', title: 'Confirmed!', showConfirmButton: false, timer: 1200 });
                         this.cdRef.detectChanges();
@@ -445,11 +470,11 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
         }).then((result) => {
             if (result.isConfirmed) {
                 this.isCompleting = true;
-                const ids = selectedItems.map(item => item.ID_Request);
+                const ids = selectedItems.map(item => item.Public_Id || item.ID_Request);
 
                 this.detailService.updateStatusToComplete(ids, 'Complete').subscribe({
                     next: (res: any) => {
-                        ids.forEach((id: number) => this.removeFromLists(id));
+                        ids.forEach((id: string) => this.removeFromLists(id));
                         this.updatePagination();
                         this.isCompleting = false;
                         Swal.fire({
@@ -476,26 +501,22 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
         });
     }
 
-    removeFromLists(id: number) {
-        this.request = this.request.filter(r => r.ID_Request !== id);
-        this.displayedRequests = this.displayedRequests.filter(r => r.ID_Request !== id);
-        this.allRequests = this.allRequests.filter(r => r.ID_Request !== id);
+    removeFromLists(id: string) {
+        this.request = this.request.filter(r => (r.Public_Id !== id && r.ID_Request !== id));
+        this.displayedRequests = this.displayedRequests.filter(r => (r.Public_Id !== id && r.ID_Request !== id));
+        this.allRequests = this.allRequests.filter(r => (r.Public_Id !== id && r.ID_Request !== id));
     }
 
     ItemNo: any[] = [];
     get_ItemNo() {
         this.detailService.get_ItemNo().subscribe({
             next: (response: any[]) => {
-                const uniqueItems = new Map();
-                response.forEach(item => {
-                    if (item.ItemNo && !uniqueItems.has(item.ItemNo)) {
-                        uniqueItems.set(item.ItemNo, {
-                            ...item,
-                            ACCOUNT: item.ACCOUNT ?? item.account ?? ''
-                        });
-                    }
-                });
-                this.ItemNo = Array.from(uniqueItems.values());
+                // Remove unique filter to allow all items.
+                // Backend orders by LAST_UPDATE DESC, so .find() will hit the latest one first.
+                this.ItemNo = response.map(item => ({
+                    ...item,
+                    ACCOUNT: item.ACCOUNT ?? item.account ?? ''
+                }));
             },
             error: (e: any) => console.error("Error API get_ItemNo:", e),
         });
@@ -503,36 +524,62 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
 
     syncSpecWithItemNo(row: any) {
         if (!row || !row.ItemNo) return;
-        const list = this.ItemNo || [];
         const targetItemNo = String(row.ItemNo).trim();
+        const divisionId = row.Division || '71DZ'; // Default to PMC if not set
 
-        const found = list.find((x: any) => {
+        // 1. Try local lookup first (for immediate feedback)
+        const list = this.ItemNo || [];
+        const foundLocal = list.find((x: any) => {
             const xItemNo = (typeof x === 'string' ? x : x?.ItemNo);
             return String(xItemNo).trim() === targetItemNo;
         });
 
-        if (found && typeof found !== 'string') {
-            const spec = (found as any).SPEC || (found as any).Specification || (found as any).Spec;
-            if (typeof spec !== 'undefined' && spec !== null) {
-                row.SPEC = String(spec);
-            } else {
-                row.SPEC = '';
-            }
-
-            const itemName = (found as any).ItemName || (found as any).EnglishName || (found as any).Name;
-            if (typeof itemName !== 'undefined' && itemName !== null) {
-                row.ItemName = String(itemName);
-            } else {
-                row.ItemName = '';
-            }
+        if (foundLocal && typeof foundLocal !== 'string') {
+            this.updateRowWithFound(row, foundLocal);
         }
+
+        // 2. Fetch from Server for precision and to solve "Delay/Missing" issues
+        this.detailService.getItemDetailsByNo(targetItemNo, divisionId).subscribe({
+            next: (foundServer: any) => {
+                if (foundServer) {
+                    this.updateRowWithFound(row, foundServer);
+                }
+            },
+            error: (err) => {
+                console.warn(`Item lookup failed for ${targetItemNo} on server:`, err);
+                // If not found on server AND not found locally, clear values
+                if (!foundLocal) {
+                    row.SPEC = '';
+                    row.ItemName = '';
+                    this.cdRef.detectChanges();
+                }
+            }
+        });
+    }
+
+    private updateRowWithFound(row: any, found: any) {
+        const spec = found.SPEC || found.Specification || found.Spec;
+        const itemName = found.ItemName || found.EnglishName || found.Name;
+
+        if (typeof spec !== 'undefined' && spec !== null) {
+            row.SPEC = String(spec).trim();
+        }
+        if (typeof itemName !== 'undefined' && itemName !== null) {
+            row.ItemName = String(itemName).trim();
+        }
+        this.cdRef.detectChanges();
     }
 
     onItemNoChange(event: any, item: any) {
         this.syncSpecWithItemNo(item);
     }
 
-    stopEdit(id: number) {
+    stopEdit(id: string) {
+        const item = this.request.find(r => r.Public_Id === id);
+        if (item) {
+            this.syncSpecWithItemNo(item);
+        }
         delete this.editingIndex[id];
+        this.cdRef.detectChanges();
     }
 }

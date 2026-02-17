@@ -101,7 +101,7 @@ export class HistoryRequestComponent implements OnInit {
       if (storedRequests) {
         const savedRequests = JSON.parse(storedRequests);
         this.requests.forEach(req => {
-          const saved = savedRequests.find((r: any) => r.ID_Request === req.ID_Request);
+          const saved = savedRequests.find((r: any) => (r.Public_Id || r.ID_Request) === (req.Public_Id || req.ID_Request));
           if (saved) {
             req.Selection = saved.Selection;
           }
@@ -137,6 +137,8 @@ export class HistoryRequestComponent implements OnInit {
         // แทนค่า null/undefined ด้วยค่า default
         this.requests = response.map(item => ({
           ...item,
+          ID_Request: item.ID_Request,
+          Public_Id: item.Public_Id || item.ID_Request,
           PartNo: (item.PartNo ?? '').substring(0, 11),
           Status: item.Status ?? '',
           DateRequest: item.DateRequest ?? item.DueDate ?? '',
@@ -385,13 +387,14 @@ export class HistoryRequestComponent implements OnInit {
   }
 
   saveEdit(item: any) {
-    const index = this.editingIndex[item.ID_Request];
+    const publicId = item.Public_Id || item.ID_Request;
+    const index = this.editingIndex[publicId];
     if (index !== undefined) {
       // อัปเดต filteredRequests
       this.filteredRequests[index].QTY = item.QTY;
 
       // อัปเดต requests ตาม ID ให้ตรงกับ filteredRequests
-      const reqIndex = this.requests.findIndex(r => r.ID_Request === item.ID_Request);
+      const reqIndex = this.requests.findIndex(r => (r.Public_Id || r.ID_Request) === publicId);
       if (reqIndex !== -1) {
         this.requests[reqIndex].QTY = item.QTY;
       }
@@ -402,19 +405,19 @@ export class HistoryRequestComponent implements OnInit {
       }
 
       // ลบค่า editingIndex
-      delete this.editingIndex[item.ID_Request];
+      delete this.editingIndex[publicId];
 
       Swal.fire({ icon: 'success', title: 'Updated!', text: 'QTY updated successfully.' });
     }
   }
 
   cancelEdit(item: any) {
-    // ถ้าอยากให้ input คืนค่าเดิมจาก requests
-    const req = this.requests.find(r => r.ID_Request === item.ID_Request);
-    if (req && this.editingIndex[item.ID_Request] !== undefined) {
-      this.filteredRequests[this.editingIndex[item.ID_Request]].QTY = req.QTY;
+    const publicId = item.Public_Id || item.ID_Request;
+    const req = this.requests.find(r => (r.Public_Id || r.ID_Request) === publicId);
+    if (req && this.editingIndex[publicId] !== undefined) {
+      this.filteredRequests[this.editingIndex[publicId]].QTY = req.QTY;
     }
-    delete this.editingIndex[item.ID_Request];
+    delete this.editingIndex[publicId];
   }
 
 

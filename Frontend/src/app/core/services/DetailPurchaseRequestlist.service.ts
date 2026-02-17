@@ -27,10 +27,11 @@ export class DetailPurchaseRequestlistService {
     return this.httpClient.get(`${this.baseUrl}/Detail_CaseSetup`);
   }
 
-  updateStatusToComplete(idOrIds: number | number[], status: string) {
+  updateStatusToComplete(idOrIds: number | number[], status: string, tableType?: string) {
     return this.httpClient.post(`${this.baseUrl}/Update_Status_Purchase`, {
       ID_Request: idOrIds,  //  ส่งเป็น array ได้
-      Status: status
+      Status: status,
+      TableType: tableType
     });
   }
 
@@ -56,5 +57,12 @@ export class DetailPurchaseRequestlistService {
 
   get_ItemNo(): Observable<any> { // ฟังก์ชันสำหรับดึงหมายเลขชิ้นส่วน
     return this.httpClient.get(`${this.baseUrl}/get_ItemNo`); // ส่ง HTTP GET Division
+  }
+
+  getItemDetailsByNo(itemNo: string, divisionId: string | number): Observable<any> {
+    // ใช้ endpoint จาก Return.controller ที่รองรับการหาข้อมูลรายชิ้นอยู่แล้ว
+    return this.httpClient.get(`${this.baseUrl}/return/item/${itemNo}`, {
+      params: { divisionId: String(divisionId), isAutocomplete: 'false' }
+    });
   }
 }
