@@ -7,8 +7,8 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
--- Description: Get Return List for History Page
--- Updates: Added DateComplete, Remark, Return_Date
+-- Description:	ดึงข้อมูลรายการคืนสินค้า (Return List) สำหรับแสดงผลในหน้าเว็บ
+--              (แสดงเฉพาะรายการที่ยังไม่ Complete)
 ALTER PROCEDURE [trans].[Stored_Get_Return_List]
 AS
 BEGIN
@@ -32,6 +32,6 @@ BEGIN
         DateComplete,
         Status
     FROM [master].[tb_Return_List]
-    ORDER BY DateTime_Record DESC;
+    ORDER BY DateTime_Record ASC;
 END
 GO

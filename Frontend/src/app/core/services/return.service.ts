@@ -47,6 +47,10 @@ export class ReturnService {
         return this.http.get<{ docNo: string }>(`${this.baseUrl}/return/next-doc-no?process=${encodedProcess}&facility=${encodedFacility}&division=${encodedDivision}`);
     }
 
+    updateReturnStatus(data: { id: number, status: string, updateBy?: string }): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/return/update-status`, data);
+    }
+
     // --- State Persistence ---
     private returnState: any = null;
 

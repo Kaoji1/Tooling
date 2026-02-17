@@ -138,11 +138,12 @@
 
         thead {
           tr.filter-row td {
-            background-color: transparent !important;
-            padding: 4px 5px !important;
+            background-color: #fff !important;
+            padding: 6px 5px !important;
+            height: 45px;
             position: sticky;
             top: 0;
-            z-index: 12;
+            z-index: 102;
             border: none !important;
 
             .form-control {
@@ -156,19 +157,26 @@
               height: 32px !important;
               font-size: 0.8rem;
             }
+
+            ::ng-deep .ng-dropdown-panel {
+              min-width: 100%;
+              width: auto !important;
+            }
           }
 
           tr.header-group-row th {
             background-color: #fffbeb !important;
             color: #78350f;
             text-align: left;
-            padding: 0.75rem 1rem;
+            padding: 0 1rem;
+            height: 40px;
+            vertical-align: middle;
             font-weight: 700;
             font-size: 0.9rem;
             border-bottom: 2px solid #f59e0b;
             position: sticky;
-            top: 40px; // Height of filter row
-            z-index: 11;
+            top: 45px; // Height of filter row
+            z-index: 101;
           }
 
           tr.header-cols th {
@@ -180,8 +188,8 @@
             border: 1px solid var(--color-border);
             white-space: nowrap;
             position: sticky;
-            top: 81px; // 40 (Filter) + 41 (Group)
-            z-index: 10;
+            top: 85px; // 45 (Filter) + 40 (Group)
+            z-index: 100;
             cursor: pointer;
 
             &:hover {
@@ -234,7 +242,7 @@
         }
 
         .col-doc {
-          min-width: 140px;
+          min-width: 200px;
         }
 
         .col-date {
@@ -376,4 +384,11 @@ input[type="date"] {
   border-color: var(--color-border) !important;
   font-size: 0.9rem;
   min-height: 38px !important;
+}
+
+::ng-deep .ng-dropdown-panel.auto-width-dropdown {
+  width: auto !important;
+  min-width: 200px !important;
+  max-width: 500px;
+  /* Optional cap */
 }

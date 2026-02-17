@@ -1547,122 +1547,16 @@ exports.Add_New_Request_Bulk = async (req, res) => {
 
     const pool = await poolPromise;
 
-    // Group items by keys that determine DocNo: Division, CASE, Process, Fac
-    const groups = {};
-    for (const item of items) {
-      const key = `${item.Division}_${item.CASE}_${item.Process}_${item.Fac}`;
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(item);
-    }
+    // 🔄 Call Professional Stored Procedure
+    // Note: DocNo and MFGOrderNo are now generated inside the Stored Procedure
+    const result = await pool.request()
+      .input("ItemsJson", sql.NVarChar(sql.MAX), JSON.stringify(items))
+      .execute("trans.Stored_Insert_Request_Bulk");
 
-    let totalInserted = 0;
-    let totalCaseSetup = 0;
-    let totalCutting = 0;
-    let totalSetup = 0;
-
-    for (const key in groups) {
-      const groupItems = groups[key];
-      const firstItem = groupItems[0];
-
-      // Logic for generating DocNo
-      let docNo = '';
-      const division = firstItem.Division ? firstItem.Division.toUpperCase() : '';
-      const case_ = firstItem.CASE;
-      const process = firstItem.Process;
-      const factory = firstItem.Fac;
-
-      if (case_ && process && factory) {
-        let casePart = '';
-        switch (case_.toUpperCase()) {
-          case 'F/A': casePart = 'FA'; break;
-          case 'N/G': casePart = 'NG'; break;
-          case 'P/P': casePart = 'PP'; break;
-          case 'R/W': casePart = 'RW'; break;
-          default: casePart = case_.toUpperCase();
-        }
-
-        let processPart = '';
-        const proc = process.toLowerCase();
-        if (['turning', 'milling', 'milling2'].includes(proc)) processPart = (proc === 'turning') ? 'TN' : 'ML';
-        else if (['f&boring', 'rl'].some(p => proc.includes(p))) processPart = 'RL';
-        else processPart = 'XX';
-
-        const factoryPart = factory.toString().toUpperCase();
-        const now = new Date();
-        const yy = now.getFullYear().toString().slice(-2);
-        const mm = (now.getMonth() + 1).toString().padStart(2, '0');
-        const dd = now.getDate().toString().padStart(2, '0');
-        const datePart = `${yy}${mm}${dd}`;
-
-        let prefix = division === '71DZ' ? `${casePart}${processPart}${factoryPart}${datePart}` : `${processPart}${factoryPart}${casePart}${datePart}`;
-
-        // Ensure no duplicate suffix is added; allow duplicate DocNo
-        docNo = prefix;
-      }
-
-      // Generate MFGOrderNo for each item
-      const normalizedItems = await Promise.all(groupItems.map(async (it) => {
-        let GeneratedMFGOrderNo = '';
-        try {
-          const Division = it.Division ? it.Division.toUpperCase() : '';
-          const MCType = it.MCType;
-          const PartNo = it.PartNo;
-          const CASE = it.CASE;
-          const Process = it.Process;
-          const Fac = it.Fac;
-
-          let machineCode = '';
-          if (['PMC', '71DZ', 'GM', '7122'].includes(Division)) {
-            // Centralized Lookup
-            const machineResult = await pool.request()
-              .input("MCType", sql.NVarChar, MCType)
-              .query(`
-                  SELECT TOP 1 MC_Code 
-                  FROM [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group] 
-                  WHERE MC_Group = @MCType
-                `);
-            machineCode = machineResult.recordset[0]?.MC_Code || '';
-            console.log(`[Bulk Insert Debug] Centralized Lookup Result:`, machineResult.recordset);
-          }
-
-          if (['PMC', '71DZ'].includes(Division)) {
-            const partNoPrefix = (PartNo || '').substring(0, 6);
-            GeneratedMFGOrderNo = `M${partNoPrefix}${machineCode}`;
-          } else if (['GM', '7122'].includes(Division)) {
-            const partNoPrefix = (PartNo || '').substring(0, 6);
-            GeneratedMFGOrderNo = `P${partNoPrefix}${machineCode}`;
-          } else {
-            const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-            GeneratedMFGOrderNo = `${CASE}${Process}F${Fac}${dateStr}`;
-          }
-        } catch (err) {
-          console.error('Error generating MFGOrderNo in Bulk:', err);
-          const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-          GeneratedMFGOrderNo = `${it.CASE}${it.Process}F${it.Fac}${dateStr}`;
-        }
-
-        // Generate MR_No (yyMMdd)
-        const GeneratedMR_No = new Date().toISOString().slice(2, 10).replace(/-/g, '');
-
-        return {
-          ...it,
-          DocNo: docNo,
-          MCNo: it.MCNo || it.MCNo_,
-          MFGOrderNo: GeneratedMFGOrderNo,
-          MR_No: GeneratedMR_No
-        };
-      }));
-
-      // 🔄 Call Professional Stored Procedure
-      const result = await pool.request()
-        .input("ItemsJson", sql.NVarChar(sql.MAX), JSON.stringify(normalizedItems))
-        .execute("trans.Stored_Insert_Request_Bulk");
-
-      totalInserted += result.recordset[0].InsertedCount;
-      totalCaseSetup += result.recordset[0].CaseSetupCount || 0;
-      totalCutting += result.recordset[0].CuttingCount || 0;
-      totalSetup += result.recordset[0].SetupCount || 0;
-    }
+    let totalInserted = result.recordset[0].InsertedCount;
+    let totalCaseSetup = result.recordset[0].CaseSetupCount || 0;
+    let totalCutting = result.recordset[0].CuttingCount || 0;
+    let totalSetup = result.recordset[0].SetupCount || 0;
 
     res.status(201).json({
       message: 'Bulk insert completed successfully',
@@ -1678,3 +1572,5 @@ exports.Add_New_Request_Bulk = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+

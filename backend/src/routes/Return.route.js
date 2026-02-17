@@ -10,5 +10,6 @@ router.get('/return/partno/:partNo', returnController.getPartNo); // New Route f
 router.post('/return/save', returnController.saveReturnRequest); // Main Save Route
 router.get('/return/list', returnController.getReturnList); // New History Route
 router.get('/return/next-doc-no', returnController.getNextDocNo); // New Route for DocNo Sequence
+router.post('/return/update-status', returnController.updateReturnStatus); // New Route for Status Update
 
 module.exports = router;

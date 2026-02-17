@@ -5,6 +5,9 @@ import { NotificationPurchaseComponent } from '../../../components/notification/
 import { RouterOutlet, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { forkJoin } from 'rxjs';
+import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 // Using ReturnService if available, otherwise just mock
 import { ReturnService } from '../../../core/services/return.service';
 
@@ -31,16 +34,19 @@ export class ReturnlistComponent implements OnInit {
     ];
     statusList: { label: string; value: string }[] = [];
 
+    // Filters
     Division_: string | null = null;
     Status_: string | null = null;
-    dateFilter: string | null = null; // Top date filter
+    dateFilter: string | null = null;
 
-    // Column Filters
     DocNoFilter_: string | null = null;
+    ReturnDateFilter_: string | null = null;
     ProcessFilter_: string | null = null;
     FacFilter_: string | null = null;
     ItemNoFilter_: string | null = null;
-    ReturnDateFilter_: string | null = null;
+
+    // Toggle for Complete Items
+    showCompleted: boolean = false;
 
     // Dropdown Lists
     DocNoList: any[] = [];
@@ -61,8 +67,11 @@ export class ReturnlistComponent implements OnInit {
     displayedReturns: any[] = [];
     pages: number[] = [];
 
+    // Checkbox State
+    selectAllChecked: boolean = false;
+
     constructor(
-        private returnService: ReturnService, // If not used yet, we might mock
+        private returnService: ReturnService,
         private router: Router,
         @Inject(PLATFORM_ID) private platformId: Object
     ) { }
@@ -76,7 +85,7 @@ export class ReturnlistComponent implements OnInit {
     loadReturns() {
         this.returnService.getReturnHistory().subscribe({
             next: (data) => {
-                this.returns = data;
+                this.returns = data.map(item => ({ ...item, Selection: false })); // Add Selection property
                 this.populateDropdowns();
                 this.onFilter();
             },
@@ -98,6 +107,8 @@ export class ReturnlistComponent implements OnInit {
     }
 
     onFilter() {
+        this.selectAllChecked = false; // Reset select all
+
         if (!this.Division_) {
             this.filteredReturns = [];
             this.displayedReturns = [];
@@ -123,14 +134,24 @@ export class ReturnlistComponent implements OnInit {
                 matchReturnDate = itemDate.getTime() === filterDate.getTime();
             }
 
-            return matchDivision && matchDocNo && matchProcess && matchFac && matchItemNo && matchReturnDate;
+            // Status Filter Logic
+            // Toggle OFF: Show Incomplete (Active)
+            // Toggle ON: Show Complete (History)
+            let matchStatus = true;
+            if (this.showCompleted) {
+                matchStatus = item.Status === 'Complete';
+            } else {
+                matchStatus = item.Status !== 'Complete';
+            }
+
+            return matchDivision && matchDocNo && matchProcess && matchFac && matchItemNo && matchReturnDate && matchStatus;
         });
         this.currentPage = 1;
         this.updatePagination();
     }
 
     clearFilters() {
-        this.Division_ = null;
+        // this.Division_ = null; // Keep Division as requested
         this.Status_ = null;
         this.dateFilter = null;
 
@@ -139,6 +160,12 @@ export class ReturnlistComponent implements OnInit {
         this.FacFilter_ = null;
         this.ItemNoFilter_ = null;
         this.ReturnDateFilter_ = null;
+
+        // Optional: Reset showCompleted? 
+        // User said "filters in table". showCompleted is a toggle. 
+        // Let's reset it to default (false) to be safe, or keep it?
+        // Usually 'Clear' resets to default state.
+        this.showCompleted = false;
 
         this.onFilter();
     }
@@ -199,24 +226,126 @@ export class ReturnlistComponent implements OnInit {
         }
     }
 
+    toggleAllCheckboxes() {
+        this.filteredReturns.forEach(item => item.Selection = this.selectAllChecked);
+    }
+
+    fileName = "ReturnList_Export.xlsx";
+
     exportToExcel() {
-        console.log('Export to Excel clicked');
-        // Implement export logic here
+        if (!isPlatformBrowser(this.platformId)) {
+            return;
+        }
+
+        // 1. Get filtered items (if any selection, prioritize selected?) 
+        // Logic: If items are selected, export only selected. Else export all filtered.
+        const selectedItems = this.filteredReturns.filter(item => item.Selection);
+        const dataSource = selectedItems.length > 0 ? selectedItems : this.filteredReturns;
+
+        if (dataSource.length === 0) {
+            Swal.fire({ icon: 'warning', title: 'No Data', text: 'No items to export.', timer: 1500, showConfirmButton: false });
+            return;
+        }
+
+        // 2. Map data
+        const dataToExport = dataSource.map((item, index) => ({
+            'Document No': item.Doc_No || '',
+            'Return Date': item.Return_Date ? new Date(item.Return_Date).toLocaleDateString('en-GB') : '',
+            'Division': item.Division || '',
+            'Process': item.Process || '',
+            'Facility': item.Facility || '',
+            'Item No.': item.ItemNo || '',
+            'Item Name': item.ItemName || '',
+            'Spec': item.Spec || '',
+            'QTY': item.QTY || 0,
+            'Phone No': item.Phone_No || ''
+        }));
+
+        // 3. Generate Worksheet
+        const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
+
+        // 4. Create Workbook
+        const wb: XLSX.WorkBook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'ReturnList');
+
+        // 5. Save
+        XLSX.writeFile(wb, this.fileName);
     }
 
     onClear() {
-        console.log('Clear clicked');
+        // console.log('Clear clicked'); // Removed excessive logging
         this.clearFilters();
     }
 
     onComplete() {
-        console.log('Complete clicked');
-        // Placeholder for complete action
+        const selectedItems = this.filteredReturns.filter(item => item.Selection);
+
+        if (selectedItems.length === 0) {
+            Swal.fire({ icon: 'warning', title: 'Start Select Item', text: 'Please select at least one item.', timer: 1500, showConfirmButton: false });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `You are about to complete ${selectedItems.length} items.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, complete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Bulk Update using forkJoin
+                const updateObservables = selectedItems.map(item =>
+                    this.returnService.updateReturnStatus({
+                        id: item.Return_ID,
+                        status: 'Complete',
+                        updateBy: 'User' // Replace with actual user if available
+                    })
+                );
+
+                forkJoin(updateObservables).subscribe({
+                    next: () => {
+                        this.loadReturns(); // Reload data
+                        Swal.fire({ icon: 'success', title: 'Completed!', text: 'Selected items have been completed.', timer: 1500, showConfirmButton: false });
+                    },
+                    error: (err) => {
+                        console.error('Bulk update error:', err);
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to update some items.' });
+                    }
+                });
+            }
+        });
     }
 
     confirmReturn(item: any) {
-        console.log('Confirm return for item:', item);
-        // Implement confirm logic
-        item.status = 'Confirmed';
+        if (item.Status === 'Complete') return;
+
+        Swal.fire({
+            title: 'Confirm Return?',
+            text: `Item: ${item.ItemNo}`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Confirm',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.returnService.updateReturnStatus({
+                    id: item.Return_ID,
+                    status: 'Complete',
+                    updateBy: 'User' // Replace with actual user
+                }).subscribe({
+                    next: () => {
+                        item.Status = 'Complete'; // Optimistic update
+                        Swal.fire({ icon: 'success', title: 'Success', text: 'Item confirmed successfully', timer: 1500, showConfirmButton: false });
+                        this.loadReturns(); // Refresh to be sure
+                    },
+                    error: (err) => {
+                        console.error('Update status error:', err);
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to confirm item.' });
+                    }
+                });
+            }
+        });
     }
 }

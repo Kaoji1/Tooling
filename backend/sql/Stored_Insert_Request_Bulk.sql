@@ -8,26 +8,25 @@ GO
 -- =============================================
 -- Author:      Antigravity
 -- Create date: 2026-02-12
--- Description: Bulk Insert for Tool Requests (Refactored)
---   Routes to 2 tables based on ToolType (regardless of CASE):
---     1) ToolType = 'CuttingTool' → tb_IssueCuttingTool_Request_Document (ToolingType = 'CuttingTool')
---     2) ToolType = 'SetupTool'   → tb_IssueSetupTool_Request_Document   (ToolingType = 'SetupTool')
---     * CASE 'SET' logic is merged into these two tables.
+-- Description: บันทึกข้อมูล Request แบบหลายรายการ (Bulk Insert) พร้อมสร้างเลข DocNo/MFGOrder อัตโนมัติ
+--              แยกตารางตาม ToolType:
+--              1) CuttingTool -> tb_IssueCuttingTool_Request_Document
+--              2) SetupTool   -> tb_IssueSetupTool_Request_Document
 -- =============================================
 CREATE OR ALTER PROCEDURE [trans].[Stored_Insert_Request_Bulk]
-    @ItemsJson NVARCHAR(MAX)
+    @ItemsJson NVARCHAR(MAX) -- รับข้อมูลเข้ามาเป็น JSON String
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- 1. Parse JSON → Temp Table
+        -- 1. แปลง JSON เป็นตารางชั่วคราว (Temp Table)
+        --    ดึงข้อมูลดิบ (Raw Data) ออกมาก่อน
         SELECT *
-        INTO #AllItems
+        INTO #RawItems
         FROM OPENJSON(@ItemsJson)
         WITH (
-            DocNo       NVARCHAR(50),
             Division    NVARCHAR(50),
             Status      NVARCHAR(50),
             Requester   NVARCHAR(50),
@@ -46,17 +45,24 @@ BEGIN
             PhoneNo     NVARCHAR(50),
             PathDwg     NVARCHAR(255),
             ItemName    NVARCHAR(200),
-            ToolType    NVARCHAR(50),   -- 'CuttingTool' or 'SetupTool'
-            MFGOrderNo  NVARCHAR(50),   
-            MR_No       NVARCHAR(50)
+            ToolType    NVARCHAR(50)   -- รับค่าว่าเป็น 'CuttingTool' หรือ 'SetupTool'
         );
+
+        -- 2. คำนวณเลขต่างๆ และนำไปใส่ในตาราง #AllItems
+        --    เรียกใช้ Function ที่สร้างขึ้นมา เพื่อ Gen เลข DocNo และ MFGOrderNo โดยอัตโนมัติ
+        SELECT 
+            *,
+            [trans].[fn_Generate_Request_DocNo](Division, [CASE], Process, Fac, GETDATE()) AS DocNo,
+            [trans].[fn_Generate_Request_MFGOrderNo](Division, PartNo, MCType, [CASE], Process, Fac, GETDATE()) AS MFGOrderNo,
+            FORMAT(GETDATE(), 'yyMMdd') AS MR_No -- สร้าง MR_No จากวันที่ปัจจุบัน (YYMMDD)
+        INTO #AllItems
+        FROM #RawItems;
 
         DECLARE @InsertedCutting INT = 0;
         DECLARE @InsertedSetup INT = 0;
 
         -- =============================================
-        -- 2. ToolType = 'CuttingTool' → tb_IssueCuttingTool_Request_Document
-        --    (Include CASE = 'SET' if ToolType is Cutting)
+        -- 3. บันทึกลงตาราง Cutting Tool (ถ้า type เป็น CuttingTool)
         -- =============================================
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document]
             (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No, ToolingType)
@@ -68,8 +74,7 @@ BEGIN
         SET @InsertedCutting = @@ROWCOUNT;
 
         -- =============================================
-        -- 3. ToolType = 'SetupTool' → tb_IssueSetupTool_Request_Document
-        --    (Include CASE = 'SET' if ToolType is Setup)
+        -- 4. บันทึกลงตาราง Setup Tool (ถ้า type เป็น SetupTool)
         -- =============================================
         INSERT INTO [dbo].[tb_IssueSetupTool_Request_Document]
             (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No, ToolingType)
@@ -80,18 +85,21 @@ BEGIN
 
         SET @InsertedSetup = @@ROWCOUNT;
 
-        -- 4. Return Summary
+        -- 5. ส่งผลลัพธ์กลับไปบอกหน้าบ้าน
         SELECT 
             (@InsertedCutting + @InsertedSetup) AS InsertedCount,
-            0 AS CaseSetupCount, -- Deprecated
+            0 AS CaseSetupCount, 
             @InsertedCutting AS CuttingCount,
             @InsertedSetup AS SetupCount;
-
+        
+        -- ลบตารางชั่วคราวทิ้ง
+        DROP TABLE #RawItems;
         DROP TABLE #AllItems;
 
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
+        -- ถ้ามี Error ให้ยกเลิก Transaction ทั้งหมด
         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         THROW;
     END CATCH

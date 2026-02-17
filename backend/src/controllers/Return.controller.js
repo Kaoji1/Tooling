@@ -220,3 +220,22 @@ exports.getNextDocNo = async (req, res) => {
         res.status(500).send(err.message);
     }
 };
+
+// 9. Update Return Status
+exports.updateReturnStatus = async (req, res) => {
+    try {
+        const { id, status } = req.body; // Expects { id, status }
+
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('Return_ID', sql.Int, id)
+            .input('Status', sql.NVarChar, status)
+            .execute('trans.Stored_Update_Return_Status');
+
+        res.status(200).json({ message: 'Update status success' });
+
+    } catch (err) {
+        console.error('updateReturnStatus Error:', err);
+        res.status(500).send(err.message);
+    }
+};
