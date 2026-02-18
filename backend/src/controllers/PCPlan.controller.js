@@ -228,6 +228,100 @@ exports.insertPCPlan = async (req, res) => {
         res.status(500).send({ message: err.message });
     }
 };
+// 3.5 Update an existing PC Plan IN-PLACE (No new revision)
+exports.updatePCPlan = async (req, res) => {
+    try {
+        const { id, date, division, mcType, fac, partBefore, process, mcNo, partNo, qty, time, comment, pathDwg, pathLayout, iiqc } = req.body;
+
+        if (!id) {
+            return res.status(400).send({ message: "Plan ID is required." });
+        }
+
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('Plan_ID', sql.Int, id)
+            .input('PlanDate', sql.Date, date ? new Date(date) : new Date())
+            .input('Division', sql.NVarChar(50), division || '')
+            .input('MC_Type', sql.NVarChar(50), mcType || '')
+            .input('Facility', sql.NVarChar(50), fac || '')
+            .input('Before_Part', sql.NVarChar(100), partBefore || '')
+            .input('Process', sql.NVarChar(50), process || '')
+            .input('MC_No', sql.NVarChar(50), mcNo || '')
+            .input('PartNo', sql.NVarChar(100), partNo || '')
+            .input('QTY', sql.Int, parseInt(qty) || 0)
+            .input('Time', sql.Int, parseInt(time) || 0)
+            .input('Comment', sql.NVarChar(sql.MAX), comment || '')
+            .input('Path_Dwg', sql.NVarChar(500), (pathDwg && pathDwg !== '-') ? pathDwg : null)
+            .input('Path_Layout', sql.NVarChar(500), (pathLayout && pathLayout !== '-') ? pathLayout : null)
+            .input('Path_IIQC', sql.NVarChar(500), (iiqc && iiqc !== '-') ? iiqc : null)
+            .execute('trans.Stored_PCPlan_Update');
+
+        const affectedRows = result.recordset[0]?.AffectedRows || 0;
+        console.log(`[updatePCPlan] Plan_ID: ${id}, Affected: ${affectedRows}`);
+
+        if (affectedRows === 0) {
+            return res.status(404).send({ message: "No plan found with the given ID." });
+        }
+
+        res.status(200).json({ message: "Plan updated successfully", id, affectedRows });
+    } catch (err) {
+        console.error('Error updatePCPlan:', err);
+        res.status(500).send({ message: err.message });
+    }
+};
+
+// 3.6 Cancel an existing PC Plan IN-PLACE (Just change status)
+exports.cancelPCPlan = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        if (!id) {
+            return res.status(400).send({ message: "Plan ID is required." });
+        }
+
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('Plan_ID', sql.Int, id)
+            .execute('trans.Stored_PCPlan_Cancel');
+
+        const affectedRows = result.recordset[0]?.AffectedRows || 0;
+        console.log(`[cancelPCPlan] Plan_ID: ${id}, Affected: ${affectedRows}`);
+
+        if (affectedRows === 0) {
+            return res.status(404).send({ message: "No plan found with the given ID." });
+        }
+
+        // === Notification Trigger ===
+        try {
+            const io = req.app.get('socketio');
+            const notifyMsg = `Plan Cancelled: ID ${id}`;
+
+            const notifyResult = await pool.request()
+                .input('Event_Type', sql.NVarChar, 'CANCEL_PLAN')
+                .input('Message', sql.NVarChar, notifyMsg)
+                .input('Doc_No', sql.NVarChar, String(id))
+                .input('Action_By', sql.NVarChar, 'PC')
+                .execute('trans.Stored_Insert_Notification_Log');
+
+            const notificationId = notifyResult.recordset[0]?.Notification_ID;
+
+            if (io) {
+                io.emit('notification', {
+                    id: notificationId,
+                    type: 'CANCEL_PLAN',
+                    message: notifyMsg,
+                    docNo: String(id),
+                    timestamp: new Date()
+                });
+            }
+        } catch (e) { console.error('Notify Error:', e); }
+
+        res.status(200).json({ message: "Plan cancelled successfully", id, affectedRows });
+    } catch (err) {
+        console.error('Error cancelPCPlan:', err);
+        res.status(500).send({ message: err.message });
+    }
+};
 
 // 4. ฟังก์ชันดึงรายการ PC Plan ทั้งหมด (Get List)
 exports.getPlanList = async (req, res) => {

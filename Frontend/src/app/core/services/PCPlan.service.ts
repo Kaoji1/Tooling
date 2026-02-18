@@ -83,6 +83,17 @@ export class PCPlanService {
     return this.http.post<any>(`${this.baseUrl}/update-paths`, data);
   }
 
+  // 5.1 อัปเดตข้อมูล Plan แบบ In-Place (ไม่สร้าง Revision ใหม่)
+  updatePlan(data: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/update`, data);
+  }
+
+  // 5.2 Cancel Plan แบบ In-Place (เปลี่ยนสถานะเป็น Cancelled)
+  cancelPlan(id: number): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/cancel/${id}`, {});
+  }
+
+
   // 6. ลบข้อมูล (Delete)
   deletePlan(id: number): Observable<any> {
     return this.http.delete<any>(`${this.baseUrl}/delete/${id}`);

@@ -1,12 +1,10 @@
 <div class="content-area">
 
-  <div>
-    <div class="header">
+  <div class="main-header">
+    <div class="header-left">
       <h4>PC Plan</h4>
-      <!-- Note: Notification is now in app shell, but keeping local if needed for page context. 
-           Actually, let's remove it to avoid duplicates. -->
+      <span class="breadcrumb-label">Planning List</span>
     </div>
-    <p>PC Planning</p>
   </div>
 
   <div class="top-controls">
@@ -54,17 +52,17 @@
               style="width: 18px; height: 18px; cursor: pointer; vertical-align: middle;">
           </th>
           <th class="col-no">NO.</th>
-          <th style="width: 130px;">Date <span style="color: red">*</span></th>
+          <th class="col-date">Date <span style="color: red">*</span></th>
           <th class="col-machine">Machine Type <span style="color: red">*</span></th>
-          <th style="width: 100px;">Fac <span style="color: red">*</span></th>
-          <th style="width: 100px;">MC No. <span style="color: red">*</span></th>
+          <th class="col-fac">Fac <span style="color: red">*</span></th>
+          <th class="col-mc">MC No. <span style="color: red">*</span></th>
           <th class="col-process">Process <span style="color: red">*</span></th>
           <th class="col-part">Part Before</th>
           <th class="col-part">Part No. <span style="color: red">*</span></th>
           <th class="col-qty">QTY</th>
-          <th style="width: 100px;">Time</th>
-          <th>Comment</th>
-          <th style="width: 50px;">Action</th>
+          <th class="col-time">Time</th>
+          <th class="col-comment">Comment</th>
+          <th class="col-action">Action</th>
         </tr>
       </thead>
       <tbody>
@@ -88,13 +86,13 @@
 
           <td>
             <ng-select [(ngModel)]="item.machineType" [items]="machineTypes" appendTo="body" placeholder="Select"
-              [clearable]="true" style="width: 100%; min-width: 120px;" (change)="saveCurrentState()">
+              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()">
             </ng-select>
           </td>
 
           <td>
             <ng-select [(ngModel)]="item.fac" [items]="facs" appendTo="body" placeholder="Select" [clearable]="true"
-              style="width: 100%; min-width: 100px;" (change)="saveCurrentState()">
+              style="width: 100%;" (change)="saveCurrentState()">
             </ng-select>
           </td>
 
@@ -105,23 +103,24 @@
 
           <td>
             <ng-select [(ngModel)]="item.process" [items]="processes" appendTo="body" placeholder="Select"
-              [clearable]="true" style="width: 100%; min-width: 100px;" (change)="saveCurrentState()">
+              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()">
             </ng-select>
           </td>
 
           <td>
             <ng-select [(ngModel)]="item.partBef" [items]="partBef" appendTo="body" placeholder="Select"
-              [clearable]="true" style="width: 100%; min-width: 120px;" (change)="saveCurrentState()">
+              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()">
             </ng-select>
           </td>
 
           <td>
             <ng-select [(ngModel)]="item.partNo" [items]="partNos" appendTo="body" placeholder="Select"
-              [clearable]="true" style="width: 100%; min-width: 120px;" (change)="saveCurrentState()">
+              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()">
             </ng-select>
           </td>
 
-          <td><input type="number" [(ngModel)]="item.qty" (focus)="selectAllText($event)" (change)="saveCurrentState()">
+          <td class="col-qty-cell"><input type="number" step="any" [(ngModel)]="item.qty"
+              (focus)="selectAllText($event)" (change)="saveCurrentState()">
           </td>
           <td><input type="text" [(ngModel)]="item.time" (focus)="selectAllText($event)" (change)="saveCurrentState()">
           </td>

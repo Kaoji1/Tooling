@@ -34,4 +34,12 @@ router.get('/history/:groupId', controller.getPlanHistory);
 // URL: /api/pc-plan/update-paths
 router.post('/update-paths', controller.updatePaths);
 
+// 8. Route สำหรับอัปเดตข้อมูล Plan แบบ In-Place (ไม่สร้าง Rev ใหม่)
+// URL: /api/pc-plan/update
+router.put('/update', controller.updatePCPlan);
+
+// 9. Route สำหรับ Cancel Plan แบบ In-Place (เปลี่ยนสถานะเป็น Cancelled)
+// URL: /api/pc-plan/cancel/:id
+router.put('/cancel/:id', controller.cancelPCPlan);
+
 module.exports = router;

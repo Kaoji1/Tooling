@@ -2,6 +2,7 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import * as ExcelJS from 'exceljs'; // Import for Styled Excel Export
 import { AuthService } from '../../../core/services/auth.service'; // Start Import
 
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
@@ -12,6 +13,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import Swal from 'sweetalert2';
 import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { CustomDateAdapter } from '../../../core/utils/custom-date-adapter';
@@ -40,6 +42,7 @@ export const MY_DATE_FORMATS = {
     SidebarComponent,
     MatDatepickerModule,
     MatInputModule,
+    MatFormFieldModule,
     MatNativeDateModule,
     MatButtonModule,
 
@@ -211,19 +214,41 @@ export class PlanListComponent implements OnInit {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Pre-calculate Latest Revision and Max PlanID for each GroupId to use in sorting/filtering
+    // 1. Bridged Identity Mapping
+    // This links legacy items (groupId: '-') to their new revisions (UUID) by matching metadata
+    // during the transition. Once linked, future revisions are tracked by UUID.
+    const itemIdentities = new Map<number, string>();
+    const hKeyToUuid = new Map<string, string>();
     const latestMap = new Map<string, number>();
     const groupMaxIdMap = new Map<string, number>();
 
+    // Pass 1: Collect UUIDs for all known metadata patterns
     this.planList.forEach(item => {
-      // Fallback to item.id if groupId is missing to treat it as a unique single-revision plan
-      const key = item.groupId && item.groupId !== '-' ? item.groupId : `temp_${item.id}`;
+      if (item.groupId && item.groupId !== '-') {
+        const hKey = `${(item.date || '').trim()}|${(item.partNo || '').trim()}|${(item.mcNo || '').trim()}|${(item.process || '').trim()}`;
+        hKeyToUuid.set(hKey, item.groupId);
+      }
+    });
 
-      // 1. Find Max Revision
+    // Pass 2: Assign identities
+    this.planList.forEach(item => {
+      if (item.groupId && item.groupId !== '-') {
+        itemIdentities.set(item.id, item.groupId);
+      } else {
+        const hKey = `${(item.date || '').trim()}|${(item.partNo || '').trim()}|${(item.mcNo || '').trim()}|${(item.process || '').trim()}`;
+        const uuidPartner = hKeyToUuid.get(hKey);
+        itemIdentities.set(item.id, uuidPartner ? uuidPartner : `legacy_${hKey}`);
+      }
+    });
+
+    this.planList.forEach(item => {
+      const key = itemIdentities.get(item.id)!;
+
+      // 2. Find Max Revision in this group
       const currentMaxRev = latestMap.get(key) || -1;
       if (item.revision > currentMaxRev) latestMap.set(key, item.revision);
 
-      // 2. Find Max ID in group (for Recency sorting)
+      // 3. Find Max ID in group (for Recency sorting)
       const currentMaxId = groupMaxIdMap.get(key) || -1;
       if (item.id > currentMaxId) groupMaxIdMap.set(key, item.id);
     });
@@ -243,25 +268,18 @@ export class PlanListComponent implements OnInit {
       const normalizedYear = year > 2400 ? year - 543 : year;
       const itemDate = new Date(normalizedYear, month - 1, day);
 
-      const key = item.groupId && item.groupId !== '-' ? item.groupId : `temp_${item.id}`;
+      const key = itemIdentities.get(item.id)!;
+
       const isLatest = item.revision === latestMap.get(key);
       item.isLatest = isLatest; // Store for UI
 
       // Add groupMaxId to item for sorting later
       item.groupMaxId = groupMaxIdMap.get(key);
+      item.groupKey = key; // Keep key for post-processing
 
-      // --- Division Filtering Logic per Department ---
-      // PC department should default to PMC division
+      // --- Division Filtering Logic ---
+      // All departments see ALL divisions by default. Users filter via the dropdown.
       let matchDivision = this.filterDivision ? item.division === this.filterDivision : true;
-      if (!this.filterDivision) {
-        if (this.selectedDepartment === 'PC') {
-          matchDivision = item.division === 'PMC';
-        } else if (this.selectedDepartment === 'En' || this.selectedDepartment === 'QC') {
-          // Engineer/QC usually work on PMC plans or both? 
-          // Based on user feedback, they might be looking for PMC plans.
-          // Let's keep it 'All' for others unless specified.
-        }
-      }
 
       const matchMachine = this.filterMachineType ? item.mcType === this.filterMachineType : true;
       const isActiveLatest = (item.planStatus === 'Active' || item.planStatus === 'Incomplete') && isLatest;
@@ -276,13 +294,16 @@ export class PlanListComponent implements OnInit {
         }
 
         // Count for 'Action Required' (Department-specific logic)
-        if (this.selectedDepartment === 'En') {
-          const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
-          const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
-          if (!hasDwg || !hasLayout) this.subTabCounts['Action Required'] = (this.subTabCounts['Action Required'] || 0) + 1;
-        } else if (this.selectedDepartment === 'QC') {
-          const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
-          if (!hasIIQC) this.subTabCounts['Action Required'] = (this.subTabCounts['Action Required'] || 0) + 1;
+        // User requested: Don't show Cancelled items in Action Required for En/QC
+        if (item.planStatus !== 'Cancelled') {
+          if (this.selectedDepartment === 'En') {
+            const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
+            const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
+            if (!hasDwg || !hasLayout) this.subTabCounts['Action Required'] = (this.subTabCounts['Action Required'] || 0) + 1;
+          } else if (this.selectedDepartment === 'QC') {
+            const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
+            if (!hasIIQC) this.subTabCounts['Action Required'] = (this.subTabCounts['Action Required'] || 0) + 1;
+          }
         }
       }
 
@@ -296,21 +317,30 @@ export class PlanListComponent implements OnInit {
       let endDate = new Date(todayCopy);
       if (this.selectedDateRange === '7 DAY') endDate.setDate(todayCopy.getDate() + 7);
       else if (this.selectedDateRange === '30 DAY') endDate.setDate(todayCopy.getDate() + 30);
-      else endDate.setMonth(todayCopy.getMonth() + 2); // Default 'ALL' = 2 months
+      // 'ALL' = no date limit at all
 
       const isInRange = (this.selectedDateRange === 'ALL') ? true : (itemDate >= today && itemDate <= endDate);
 
       if (this.selectedSubTab === 'Upcoming') {
-        matchSubTab = itemDate >= today && itemDate <= endDate;
+        // 'ALL' shows everything from today onwards (no upper limit)
+        // User requested: Cancelled shows up in Upcoming
+        if (this.selectedDateRange === 'ALL') {
+          matchSubTab = itemDate >= today;
+        } else {
+          matchSubTab = itemDate >= today && itemDate <= endDate;
+        }
       } else if (isActionRequiredTab) {
         let actionNeeded = false;
-        if (this.selectedDepartment === 'En') {
-          const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
-          const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
-          actionNeeded = !hasDwg || !hasLayout;
-        } else if (this.selectedDepartment === 'QC') {
-          const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
-          actionNeeded = !hasIIQC;
+        // User requested: No Cancelled in Action Required
+        if (item.planStatus !== 'Cancelled') {
+          if (this.selectedDepartment === 'En') {
+            const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
+            const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
+            actionNeeded = !hasDwg || !hasLayout;
+          } else if (this.selectedDepartment === 'QC') {
+            const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
+            actionNeeded = !hasIIQC;
+          }
         }
         matchSubTab = actionNeeded && isInRange;
       }
@@ -324,7 +354,8 @@ export class PlanListComponent implements OnInit {
       // If Show History is ON, show all versions that passed the date/sub-tab filters
       if (this.showHistory) return true;
 
-      // Normal Mode: Show only the Latest version that passed the filters
+      // Normal Mode: Show the Latest version.
+      // If the latest version is 'Cancelled', we still show it (as per user request: "เพื่อเปรียบเทียบหรือให้คนอื่นรู้")
       return isLatest;
     });
 
@@ -353,7 +384,7 @@ export class PlanListComponent implements OnInit {
     let lastGroupIdSection = '';
 
     this.filteredPlanList.forEach((item, index) => {
-      const key = (item.groupId && item.groupId !== '-') ? item.groupId : `temp_${item.id}`;
+      const key = item.groupKey;
 
       // 1. Check isLatest (First time seeing this GroupId key in the sorted list = Latest)
       if (!seenGroups.has(key)) {
@@ -364,12 +395,12 @@ export class PlanListComponent implements OnInit {
       }
 
       // 2. Check isGroupStart (For UI separators)
-      // If groupId is '-', every item is its own group start
-      if (item.groupId === '-') {
+      // Use GroupId for separator if possible, otherwise use the identity key
+      const sepKey = (item.groupId && item.groupId !== '-') ? item.groupId : key;
+
+      if (sepKey !== lastGroupIdSection) {
         item.isGroupStart = true;
-      } else if (item.groupId !== lastGroupIdSection) {
-        item.isGroupStart = true;
-        lastGroupIdSection = item.groupId;
+        lastGroupIdSection = sepKey;
       } else {
         item.isGroupStart = false;
       }
@@ -426,22 +457,17 @@ export class PlanListComponent implements OnInit {
     // Prepare Query Params
     const queryParams = {
       case: 'SET', // Force SET case
-      division: item.division, // Use mapped name (GM/PMC) or code? Need to check Request logic. 
-      // Request expects 'Division' (Profit_Center like 7122/71DZ) OR 'GM'/'PMC' if mapped?
-      // Request.ts uses: this.Div_?.Division || this.Div_
-      // PlanList item.division is mapped name (GM/PMC).
-      // Let's send what we have, Request should handle it or we might need to send Code.
-      // Wait, mapDivisionName converts code to name. PlanList displays Name.
-      // But Request might need the Code (7122) to query DB.
-      // Let's try sending the mapped name first, as Request probably allows selecting 'GM' in dropdown.
+      division: item.division,
+      fac: item.fac,
       partNo: item.partNo,
       process: item.process,
       mc: item.mcType,
+      mcNo: item.mcNo,
       qty: item.qty,
       fromPlan: 'true'
     };
 
-    this.router.navigate(['/request'], { queryParams: queryParams });
+    this.router.navigate(['/production/request'], { queryParams: queryParams });
   }
 
   onAdd() {
@@ -523,9 +549,6 @@ export class PlanListComponent implements OnInit {
           date: dateObj,
           employeeId: item.empId || this.currentUser.Employee_ID,
           division: item.divisionCode || item.division,
-          // NOTE: Insert logic usually requires valid Data. 
-          // Let's assume item has enough info or we might need to adjust backend to accept just ID for status update?
-          // Existing backend 'insertPCPlan' creates NEW row.
 
           mcType: item.mcType,
           fac: item.fac,
@@ -599,11 +622,10 @@ export class PlanListComponent implements OnInit {
   }
 
   saveEdit() {
-    // Check if ONLY Paths have changed (and nothing else)
+    // 1. Check if ANY changes occurred
     const original = this.editData.originalItem || {};
 
     // Compare Plan Fields
-    // Note: We need to match the type (string/number) for accurate comparison
     const isPlanChanged =
       this.editData.date !== original.date ||
       this.editData.mcType !== original.mcType ||
@@ -612,38 +634,61 @@ export class PlanListComponent implements OnInit {
       this.editData.partBefore !== original.partBefore ||
       this.editData.mcNo !== original.mcNo ||
       this.editData.partNo !== original.partNo ||
-      this.editData.qty != original.qty || // Use != for loose comparison (string vs number)
+      this.editData.qty != original.qty ||
       this.editData.time != original.time ||
-      this.editData.comment !== original.comment; // User said Comment cancel changes status, so it's a Plan change
+      this.editData.comment !== original.comment;
 
-    // Compare Path Fields
     // Compare Path Fields
     const isPathChanged =
       this.editData.pathDwg !== original.pathDwg ||
       this.editData.pathLayout !== original.pathLayout ||
       this.editData.iiqc !== original.iiqc;
 
-    console.log('Plan Changed:', isPlanChanged, 'Path Changed:', isPathChanged);
+    console.log('Changes Detected -> Plan:', isPlanChanged, 'Path:', isPathChanged);
 
+    if (!isPlanChanged && !isPathChanged) {
+      Swal.fire({
+        title: 'No Changes',
+        text: 'You haven\'t modified anything.',
+        icon: 'info',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      this.isEditModalOpen = false;
+      return;
+    }
+
+    // 2. Show Confirmation Dialog
+    Swal.fire({
+      title: 'Confirm Save',
+      text: "Do you want to save these changes?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#0f172a',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, save changes!',
+      cancelButtonText: 'Cancel',
+      customClass: {
+        popup: 'swal-premium-popup',
+        title: 'swal-premium-title',
+        confirmButton: 'swal-premium-confirm',
+        cancelButton: 'swal-premium-cancel'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.executeSave(isPlanChanged, isPathChanged);
+      }
+    });
+  }
+
+  private executeSave(isPlanChanged: boolean, isPathChanged: boolean) {
     Swal.fire({
       title: 'Saving...',
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading()
     });
 
-    // --- EXECUTION LOGIC ---
-    console.log('Final Save Payload:', {
-      dept: this.selectedDepartment,
-      groupId: this.editData.groupId,
-      isPathChanged,
-      isPlanChanged
-    });
-
-    // 0. Remove the restrictive GroupId '-' check. The backend Procedure 'Stored_PCPlan_Insert_PMC_Snapshot' 
-    // now handles '-' by generating a NEWID() automatically. 
-    // This allows legacy items to be upgraded to the new revision system seamlessly.
-
-    // 1. If it's En or QC, they only update paths.
+    // 0. PC Logic: Prefer updatePaths if ONLY paths changed, otherwise savePlan (New Revision)
     if (this.selectedDepartment === 'En' || this.selectedDepartment === 'QC') {
       if (isPathChanged) {
         const pathPayload = {
@@ -655,11 +700,7 @@ export class PlanListComponent implements OnInit {
 
         this.pcPlanService.updatePaths(pathPayload).subscribe({
           next: (res) => {
-            if (res.affectedRows === 0) {
-              Swal.fire('Warning', 'No records were updated. This might happen if the GroupId is invalid or the item is inactive.', 'warning');
-            } else {
-              Swal.fire('Success', 'Attachments updated!', 'success');
-            }
+            Swal.fire('Success', 'Attachments updated!', 'success');
             this.isEditModalOpen = false;
             this.loadPlanList();
           },
@@ -669,16 +710,13 @@ export class PlanListComponent implements OnInit {
           }
         });
       } else {
-        Swal.fire('Info', 'No changes detected in attachments.', 'info');
         this.isEditModalOpen = false;
       }
       return;
     }
 
-    // 2. PC Logic: Prefer updatePaths if ONLY paths changed, otherwise savePlan (New Revision)
     if (this.selectedDepartment === 'PC') {
       if (isPathChanged && !isPlanChanged) {
-        // Efficiency: Just update paths if nothing else changed
         const pathPayload = {
           groupId: this.editData.groupId,
           pathDwg: this.editData.pathDwg,
@@ -688,11 +726,7 @@ export class PlanListComponent implements OnInit {
 
         this.pcPlanService.updatePaths(pathPayload).subscribe({
           next: (res) => {
-            if (res.affectedRows === 0) {
-              Swal.fire('Warning', 'No records were updated.', 'warning');
-            } else {
-              Swal.fire('Success', 'Paths updated!', 'success');
-            }
+            Swal.fire('Success', 'Paths updated!', 'success');
             this.isEditModalOpen = false;
             this.loadPlanList();
           },
@@ -702,15 +736,12 @@ export class PlanListComponent implements OnInit {
           }
         });
       } else if (isPlanChanged) {
-        // Create a New Revision
-
-        // Final Date string for backend (yyyy-MM-dd)
         let finalDate = '';
         if (this.editData.dateObj instanceof Date) {
           const d = this.editData.dateObj;
           finalDate = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
         } else if (typeof this.editData.dateObj === 'string') {
-          finalDate = this.editData.dateObj; // Already yyyy-MM-dd if user didn't change it via calendar
+          finalDate = this.editData.dateObj;
         }
 
         const payload = [{
@@ -745,9 +776,6 @@ export class PlanListComponent implements OnInit {
             Swal.fire('Error', 'Failed to update plan.', 'error');
           }
         });
-      } else {
-        Swal.fire('Info', 'No changes detected.', 'info');
-        this.isEditModalOpen = false;
       }
     }
   }
@@ -1170,4 +1198,96 @@ export class PlanListComponent implements OnInit {
       error: e => console.error("Error fetching print counts:", e)
     });
   }
+  // --- Export to Excel (Styled with ExcelJS) ---
+  onExport() {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('PlanList');
+
+    // 1. Define Columns & Widths
+    worksheet.columns = [
+      { header: 'Date', key: 'Date', width: 15 },
+      { header: 'Div', key: 'Div', width: 10 },
+      { header: 'Machine Type', key: 'MachineType', width: 15 },
+      { header: 'Fac', key: 'Fac', width: 15 },
+      { header: 'MC No', key: 'MCNo', width: 10 },
+      { header: 'Process', key: 'Process', width: 15 },
+      { header: 'Part Before', key: 'PartBefore', width: 25 },
+      { header: 'Part No.', key: 'PartNo', width: 25 },
+      { header: 'QTY', key: 'QTY', width: 15 },
+      { header: 'Time', key: 'Time', width: 10 },
+      { header: 'Comment', key: 'Comment', width: 20 },
+    ];
+
+    // 2. Add Data (with Custom Mapping)
+    this.filteredPlanList.forEach(item => {
+      // Map Division: GM -> 7122, PMC -> 71DZ
+      let displayDiv = item.division;
+      if (item.division === 'GM') displayDiv = '7122';
+      else if (item.division === 'PMC') displayDiv = '71DZ';
+
+      worksheet.addRow({
+        Date: item.date,
+        Div: displayDiv,
+        MachineType: item.mcType,
+        Fac: item.fac,
+        MCNo: item.mcNo,
+        Process: item.process,
+        PartBefore: item.partBefore,
+        PartNo: item.partNo,
+        QTY: item.qty,
+        Time: item.time,
+        Comment: item.comment
+      });
+    });
+
+    // 3. Style Header (Row 1) - Green Background, White Text
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF1B5E20' } // Green 900
+      };
+      cell.font = {
+        color: { argb: 'FFFFFFFF' }, // White
+        bold: true,
+        size: 11
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = {
+        top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
+      };
+    });
+
+    // 4. Style Data Rows (Borders & Alignment)
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) { // Skip Header
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.border = {
+            top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
+          };
+        });
+      }
+    });
+
+    // 5. AutoFilter
+    worksheet.autoFilter = { from: 'A1', to: 'K1' };
+
+    // 6. Generate Filename & Export
+    const now = new Date();
+    const datePart = now.toISOString().split('T')[0].replace(/-/g, ''); // YYYYMMDD
+    const fileName = `PlanList_Export_${datePart}.xlsx`;
+
+    workbook.xlsx.writeBuffer().then((buffer: ArrayBuffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+  }
 }
+
