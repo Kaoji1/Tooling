@@ -163,18 +163,45 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
     }
 
     populateDropdowns() {
-        const getUnique = (key: string) => Array.from(new Set(this.allRequests.map(item => item[key]))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+        // Optimize: Iterate once to build all sets
+        const sets = {
+            Requester: new Set<string>(),
+            Fac: new Set<string>(),
+            CASE: new Set<string>(),
+            Model: new Set<string>(),
+            Process: new Set<string>(),
+            MCType: new Set<string>(),
+            DocNo: new Set<string>(),
+            PartNo: new Set<string>(),
+            ItemNo: new Set<string>(),
+            MR_No: new Set<string>()
+        };
 
-        this.RequesterList = getUnique('Requester');
-        this.FacList = getUnique('Fac');
-        this.CaseList = getUnique('CASE');
-        this.ModelList = getUnique('Model');
-        this.ProcessList = getUnique('Process');
-        this.MCTypeList = getUnique('MCType');
-        this.DocNoList = getUnique('DocNo');
-        this.PartNoList = getUnique('PartNo');
-        this.ItemNoList = getUnique('ItemNo');
-        this.MRNoList = getUnique('MR_No');
+        this.allRequests.forEach(item => {
+            if (item.Requester) sets.Requester.add(item.Requester);
+            if (item.Fac) sets.Fac.add(item.Fac);
+            if (item.CASE) sets.CASE.add(item.CASE);
+            if (item.Model) sets.Model.add(item.Model);
+            if (item.Process) sets.Process.add(item.Process);
+            if (item.MCType) sets.MCType.add(item.MCType);
+            if (item.DocNo) sets.DocNo.add(item.DocNo);
+            if (item.PartNo) sets.PartNo.add(item.PartNo);
+            if (item.ItemNo) sets.ItemNo.add(item.ItemNo);
+            if (item.MR_No) sets.MR_No.add(item.MR_No);
+        });
+
+        const toSortedOptions = (set: Set<string>) => Array.from(set).sort().map(x => ({ label: x, value: x }));
+
+        this.RequesterList = toSortedOptions(sets.Requester);
+        this.FacList = toSortedOptions(sets.Fac);
+        this.CaseList = toSortedOptions(sets.CASE);
+        this.ModelList = toSortedOptions(sets.Model);
+        this.ProcessList = toSortedOptions(sets.Process);
+        this.MCTypeList = toSortedOptions(sets.MCType);
+        this.DocNoList = toSortedOptions(sets.DocNo);
+        this.PartNoList = toSortedOptions(sets.PartNo);
+        this.ItemNoList = toSortedOptions(sets.ItemNo);
+        this.MRNoList = toSortedOptions(sets.MR_No);
 
         // Hardcoded Division List
         this.divisionList = [
@@ -184,12 +211,6 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
     }
 
     onFilter() {
-        if (!this.Division_) {
-            this.displayedRequests = [];
-            this.updatePagination();
-            return;
-        }
-
         this.displayedRequests = this.allRequests.filter(req => {
             const matchDiv = !this.Division_ || req.Division === this.Division_;
             const matchStatus = !this.Status_ || (req.Status && req.Status.toLowerCase().includes(this.Status_.toLowerCase()));

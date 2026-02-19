@@ -1,8 +1,10 @@
 <div class="page-layout">
 
     <div class="header">
-        <h1>Case Setup Request List</h1>
-        <p>The case setup withdrawal request is here.</p>
+        <div>
+            <h1>Case Setup Request List</h1>
+            <p>The case setup withdrawal request is here.</p>
+        </div>
     </div>
 
 
@@ -59,43 +61,147 @@
         <ng-container *ngIf="Tooling_ === 'Setup Tool'">
             <table id="table-data" class="table table-bordered text-center">
                 <thead>
-                    <tr class="header-cols">
-                        <th class="col-checkbox"><input type="checkbox" [(ngModel)]="selectAllChecked"
-                                (change)="toggleAllCheckboxes()" [disabled]="isViewer()" /></th>
-                        <th class="col-no">NO</th>
-                        <th style="min-width: 120px;">M/R No.</th>
-                        <th style="min-width: 120px;">Mfg Order</th>
-                        <th style="min-width: 150px;">Doc No.</th>
-                        <th style="min-width: 100px;">Record Date</th>
-                        <th style="min-width: 100px;">Due Date</th>
-                        <th style="min-width: 120px;">Requester</th>
-                        <th style="min-width: 80px;">Div</th>
-                        <th style="min-width: 120px;">Part No.</th>
-                        <th style="min-width: 120px;">Process</th>
-                        <th style="min-width: 60px;">Fac</th>
-                        <th style="min-width: 100px;">Machine</th>
-                        <th style="min-width: 60px;">MC Qty</th>
-                        <th style="width: 70px;">Case</th>
-                        <th style="min-width: 120px;">Req Item NO.</th>
+                    <!-- Filter Row -->
+                    <tr class="filter-row">
+                        <td></td> <!-- Checkbox -->
+                        <td></td> <!-- NO -->
+                        <td>
+                            <ng-select [items]="MRNoList" bindLabel="label" bindValue="value" [(ngModel)]="MRNo_"
+                                (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
+                                class="no-expand" style="min-width: 90px;">
+                            </ng-select>
+                        </td>
+                        <td></td> <!-- Mfg Order -->
+                        <td></td> <!-- Doc No -->
+                        <td>
+                            <input type="date" [(ngModel)]="reqDateFrom" (change)="onFilter()" class="form-control"
+                                placeholder="Req Date" style="min-width: 90px;">
+                        </td>
+                        <td>
+                            <input type="date" [(ngModel)]="DueDateFilter_" (change)="onFilter()" class="form-control"
+                                placeholder="Due Date" style="min-width: 90px;">
+                        </td>
+                        <td></td> <!-- Requester -->
+                        <td></td> <!-- Div -->
+                        <td>
+                            <ng-select [items]="PartNoList" bindLabel="label" bindValue="value" [(ngModel)]="PartNo_"
+                                (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
+                                class="no-expand" style="min-width: 80px;">
+                            </ng-select>
+                        </td>
+                        <td>
+                            <ng-select [items]="ProcessList" bindLabel="label" bindValue="value" [(ngModel)]="Process_"
+                                (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
+                                class="no-expand" style="min-width: 80px;">
+                            </ng-select>
+                        </td>
+                        <td>
+                            <ng-select [items]="FacList" bindLabel="label" bindValue="value" [(ngModel)]="Fac_"
+                                (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
+                                class="no-expand" style="min-width: 60px;">
+                            </ng-select>
+                        </td>
+                        <td>
+                            <ng-select [items]="MCTypeList" bindLabel="label" bindValue="value" [(ngModel)]="MCType_"
+                                (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
+                                class="no-expand" style="min-width: 70px;">
+                            </ng-select>
+                        </td>
+                        <td></td> <!-- MC Qty -->
+                        <td>
+                            <ng-select [items]="CaseList" bindLabel="label" bindValue="value" [(ngModel)]="Case_"
+                                (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
+                                class="no-expand" style="min-width: 60px;">
+                            </ng-select>
+                        </td>
+                        <td>
+                            <ng-select [items]="ItemNoList" bindLabel="label" bindValue="value"
+                                [(ngModel)]="ItemNoFilter_" (change)="onFilter()" placeholder="Select"
+                                [clearable]="true" appendTo="body" class="no-expand" style="min-width: 80px;">
+                            </ng-select>
+                        </td>
+                        <td></td> <!-- Req Item Name -->
+                        <td></td> <!-- Req Spec -->
+                        <td></td> <!-- QTY -->
+                        <td></td> <!-- Total -->
+                        <td></td> <!-- On Hand -->
+                        <td>
+                            <ng-select [items]="StatusList" bindLabel="label" bindValue="value" [(ngModel)]="Status_"
+                                (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
+                                class="no-expand" style="min-width: 90px;">
+                            </ng-select>
+                        </td>
+                        <td></td> <!-- Phone -->
+
+                        <!-- Purchase Columns -->
+                        <td colspan="10"></td>
+                    </tr>
+
+                    <!-- Group Headers -->
+                    <tr class="header-group-row">
+                        <th class="header-production" colspan="23">For Production (Setup Tool)</th>
+                        <th class="header-purchase" colspan="10">For Purchase</th>
+                    </tr>
+
+                    <!-- Column Headers -->
+                    <tr>
+                        <th style="width: 40px;">
+                            <input type="checkbox" [(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()"
+                                [disabled]="isViewer()" />
+                        </th>
+                        <th style="width: 50px;">NO</th>
+                        <th (click)="onSort('MR_No')" style="min-width: 120px;">M/R No. <span
+                                *ngIf="sortKey === 'MR_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('MFGOrderNo')" style="min-width: 120px;">Mfg Order <span
+                                *ngIf="sortKey === 'MFGOrderNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('DocNo')" style="min-width: 150px;">Doc No. <span
+                                *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('DateTime_Record')" style="min-width: 100px;">Record Date <span
+                                *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('DueDate')" style="min-width: 100px;">Due Date <span
+                                *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('Requester')" style="min-width: 120px;">Requester <span
+                                *ngIf="sortKey === 'Requester'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('Division')" style="min-width: 80px;">Div <span
+                                *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('PartNo')" style="min-width: 120px;">Part No. <span
+                                *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('Process')" style="min-width: 120px;">Process <span
+                                *ngIf="sortKey === 'Process'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('Fac')" style="min-width: 60px;">Fac <span *ngIf="sortKey === 'Fac'">{{
+                                sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('MCType')" style="min-width: 100px;">Machine <span
+                                *ngIf="sortKey === 'MCType'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('MCNo')" style="min-width: 60px;">MC No <span *ngIf="sortKey === 'MCNo'">{{
+                                sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('CASE')" style="width: 70px;">Case <span *ngIf="sortKey === 'CASE'">{{
+                                sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('Req_ItemNo')" style="min-width: 120px;">Req Item NO. <span
+                                *ngIf="sortKey === 'Req_ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
                         <th style="min-width: 150px;">Req Item Name</th>
-                        <th style="min-width: 150px;">Req Spec</th>
-                        <th style="width: 60px;">QTY</th>
+                        <th (click)="onSort('Req_SPEC')" style="min-width: 150px;">Req Spec <span
+                                *ngIf="sortKey === 'Req_SPEC'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('QTY')" style="width: 60px;">QTY <span *ngIf="sortKey === 'QTY'">{{ sortAsc
+                                ? '↑' : '↓' }}</span></th>
                         <th style="width: 60px;">Total</th>
-                        <th style="width: 80px;">On Hand</th>
-                        <th style="min-width: 100px;">Status</th>
+                        <th (click)="onSort('STOCK_ON_HAND')" style="width: 80px;">On Hand <span
+                                *ngIf="sortKey === 'STOCK_ON_HAND'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                        <th (click)="onSort('Status')" style="min-width: 100px;">Status <span
+                                *ngIf="sortKey === 'Status'">{{ sortAsc ? '↑' : '↓' }}</span></th>
                         <th style="min-width: 120px;">Phone</th>
 
                         <!-- Purchase Columns -->
-                        <th style="min-width: 120px; background-color: #f0f0d0;">PH: Item NO.</th>
-                        <th style="min-width: 120px; background-color: #f0f0d0;">PH: Item Name</th>
-                        <th style="min-width: 150_px; background-color: #f0f0d0;">PH: Spec</th>
-                        <th style="width: 60px; background-color: #f0f0d0;">PH: QTY</th>
-                        <th style="min-width: 100px; background-color: #f0f0d0;">Mat Lot</th>
-                        <th style="min-width: 100px; background-color: #f0f0d0;">PH Stock Loc</th>
-                        <th style="min-width: 80px; background-color: #f0f0d0;">Stock PD</th>
-                        <th style="min-width: 80px; background-color: #f0f0d0;">PH Stock</th>
-                        <th style="width: 70px; background-color: #f0f0d0;">Confirm</th>
-                        <th style="min-width: 120px; background-color: #f0f0d0;">Remark</th>
+                        <th style="min-width: 120px;">Item NO.</th>
+                        <th style="min-width: 120px;">Item Name</th>
+                        <th style="min-width: 150px;">Spec</th>
+                        <th (click)="onSort('QTY')" style="width: 60px;">QTY <span *ngIf="sortKey === 'QTY'">{{ sortAsc
+                                ? '↑' : '↓' }}</span></th>
+                        <th style="min-width: 100px;">Mat Lot</th>
+                        <th style="min-width: 100px;">PH Stock Loc</th>
+                        <th style="min-width: 80px;">Stock PD</th>
+                        <th style="min-width: 80px;">PH Stock</th>
+                        <th style="width: 70px;">Confirm</th>
+                        <th style="min-width: 120px;">Remark</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -120,14 +226,14 @@
                         <td>{{ item.Process }}</td>
                         <td>{{ item.Fac }}</td>
                         <td>{{ item.MCType }}</td>
-                        <td>{{ item.MCQTY }}</td>
+                        <td>{{ item.MCNo }}</td>
                         <td>{{ item.CASE }}</td>
                         <td>{{ item.Req_ItemNo }}</td>
                         <td>{{ item.Req_ItemName }}</td>
                         <td class="spec-column">{{ item.Req_SPEC }}</td>
                         <td>{{ item.QTY }}</td>
                         <td> - </td>
-                        <td>{{ item.ON_HAND }}</td>
+                        <td>{{ item.STOCK_ON_HAND }}</td>
                         <td>{{ item.Status }}</td>
                         <td>{{ item.PhoneNo }}</td>
 
