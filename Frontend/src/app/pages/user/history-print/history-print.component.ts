@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { RouterOutlet } from '@angular/router';
 import { DropdownSearchComponent } from '../../../components/dropdown-search/dropdown-search.component';
 import { NotificationComponent } from '../../../components/notification/notification.component';
@@ -13,7 +12,6 @@ import { HistoryPrint } from '../../../core/services/HistoryPrint.service';
   selector: 'app-history-print',
   standalone: true,
   imports: [RouterOutlet,
-    SidebarComponent,
     DropdownSearchComponent,
     NotificationComponent,
     NgForOf,
@@ -51,21 +49,21 @@ export class HistoryPrintComponent implements OnInit {
   }
 
   onFilter() {
-  if (!this.selectedDocNo) {
-    this.filteredRequests = [...this.requests]; // แสดงทั้งหมด
-  } else {
-    this.filteredRequests = this.requests.filter(
-      item => item.DocNo === this.selectedDocNo
-    );
+    if (!this.selectedDocNo) {
+      this.filteredRequests = [...this.requests]; // แสดงทั้งหมด
+    } else {
+      this.filteredRequests = this.requests.filter(
+        item => item.DocNo === this.selectedDocNo
+      );
+    }
   }
-}
-onSort() {
-  if (this.filteredRequests && this.filteredRequests.length > 0) {
-    this.filteredRequests.sort((a, b) =>
-      new Date(a.Date_Record).getTime() - new Date(b.Date_Record).getTime()
-    );
+  onSort() {
+    if (this.filteredRequests && this.filteredRequests.length > 0) {
+      this.filteredRequests.sort((a, b) =>
+        new Date(a.Date_Record).getTime() - new Date(b.Date_Record).getTime()
+      );
+    }
   }
-}
 
 
 }

@@ -1,12 +1,14 @@
 <div class="content-area">
 
-  <div>
-    <div class="header">
-      <h4 *ngIf="Tooling_ === 'Setup tool'"> Request Setup Tool </h4>
-      <h4 *ngIf="Tooling_ !== 'Setup tool'"> Request Tooling</h4>
+
+
+  <div class="main-header">
+    <div class="header-left">
+      <h4>{{ Tooling_ === 'Setup tool' ? 'Request Setup Tool' : 'Request Tooling' }}</h4>
+      <span class="breadcrumb-label">Product Requisition</span>
     </div>
-    <p>Product Requisition</p>
   </div>
+
 
   <div class="group-req">
 
@@ -38,6 +40,21 @@
         </ng-select>
       </div>
 
+      <!-- Selected Mode Moved to First Row -->
+      <div class="group-select mode-indicator-inline" *ngIf="Tooling_">
+        <label> Selected Mode </label>
+        <div class="mode-badge-wrapper">
+          <span class="mode-badge cutting" *ngIf="Case_ !== 'SET' && Tooling_ === 'Cutting tool'">
+            <i class="bi bi-scissors"></i> Cutting Tool
+          </span>
+          <span class="mode-badge setup" *ngIf="Case_ !== 'SET' && Tooling_ === 'Setup tool'">
+            <i class="bi bi-tools"></i> Setup Tool
+          </span>
+          <span class="mode-badge combined" *ngIf="Case_ === 'SET'">
+            <i class="bi bi-grid-fill"></i> Cutting & Setup
+          </span>
+        </div>
+      </div>
 
     </div>
 
@@ -73,313 +90,302 @@
     </div>
 
     <div *ngIf="Tooling_">
-      <!-- Premium Mode Indicator -->
-      <div class="mode-indicator" *ngIf="Tooling_">
-        <span class="mode-label">Selected Mode:</span>
-        <span class="mode-badge cutting" *ngIf="Case_ !== 'SET' && Tooling_ === 'Cutting tool'">
-          <i class="bi bi-scissors"></i> Cutting Tool
-        </span>
-        <span class="mode-badge setup" *ngIf="Case_ !== 'SET' && Tooling_ === 'Setup tool'">
-          <i class="bi bi-tools"></i> Setup Tool
-        </span>
-        <span class="mode-badge combined" *ngIf="Case_ === 'SET'">
-          <i class="bi bi-grid-fill"></i> Cutting & Setup Tools
-        </span>
-      </div>
+      <div *ngIf="Tooling_">
 
-      <div class="req-row2" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
-        <div class="group-select" style="flex: 1; min-width: 150px;">
-          <label> Part No. </label>
-          <ng-select [items]="PartNo" bindLabel="PartNo" [(ngModel)]="PartNo_" [virtualScroll]="true"
-            (ngModelChange)="get_Process($event)" (change)="onPartNoChange(); saveState()" placeholder="Part No.">
-          </ng-select>
-        </div>
-
-        <div class="group-select" style="flex: 1; min-width: 150px;">
-          <label> Process </label>
-          <ng-select [items]="Process" bindLabel="Process" [(ngModel)]="Process_" (change)="get_MC($event)"
-            placeholder="Process">
-          </ng-select>
-        </div>
-
-        <div class="group-select" style="flex: 1; min-width: 150px;">
-          <label> Machine Type </label>
-          <ng-select [items]="MachineType" bindLabel="MC" [(ngModel)]="MachineType_" placeholder="Machine Type">
-          </ng-select>
-        </div>
-
-        <div class="group-select" style="flex: 1; min-width: 150px;">
-          <label for="MCQTY">MC No</label>
-          <div class="tag-input-container" (click)="tagInput.focus()">
-            <div class="tag-chip" *ngFor="let tag of mcTags; let i = index" [ngClass]="getTagClass(i)">
-              {{ tag }}
-              <span class="remove-tag" (click)="removeMCTag(i)">&times;</span>
-            </div>
-            <input type="text" #tagInput class="tag-input" placeholder="Type & Enter..." (keydown)="addMCTag($event)" />
+        <div class="req-row2" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+          <div class="group-select" style="flex: 1; min-width: 150px;">
+            <label> Part No. </label>
+            <ng-select [items]="PartNo" bindLabel="PartNo" [(ngModel)]="PartNo_" [virtualScroll]="true"
+              (ngModelChange)="get_Process($event)" (change)="onPartNoChange(); saveState()" placeholder="Part No.">
+            </ng-select>
           </div>
-          <div class="helper-text">Ex : 32 (Space), 43</div>
-        </div>
 
-        <div class="group-select" *ngIf="Case_ && Case_ !== 'SET'" style="flex: 1; min-width: 150px;">
-          <label> Item No. <span style="font-size: 0.75rem; color: #94a3b8;">(Optional)</span></label>
-          <ng-select [items]="ItemNoList" bindLabel="ItemNo" bindValue="ItemNo" [(ngModel)]="ItemNo_" [addTag]="true"
-            (change)="onItemNoChange($event)" placeholder="Scan or Select Item No." [virtualScroll]="true"
-            [searchable]="true" [clearable]="true">
-          </ng-select>
-        </div>
+          <div class="group-select" style="flex: 1; min-width: 150px;">
+            <label> Process </label>
+            <ng-select [items]="Process" bindLabel="Process" [(ngModel)]="Process_" (change)="get_MC($event)"
+              placeholder="Process">
+            </ng-select>
+          </div>
 
-        <div class="group-select" *ngIf="Case_ === 'SET'" style="flex: 1; min-width: 150px;">
-          <label for="date"> DueDate </label>
-          <mat-form-field appearance="outline" style="width: 100%; display: block;">
-            <input matInput [matDatepicker]="picker" [(ngModel)]="DueDate_" placeholder="DD/MM/YYYY" [min]="today_"
-              (dateChange)="saveState()" readonly (click)="picker.open()">
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
+          <div class="group-select" style="flex: 1; min-width: 150px;">
+            <label> Machine Type </label>
+            <ng-select [items]="MachineType" bindLabel="MC" [(ngModel)]="MachineType_" placeholder="Machine Type">
+            </ng-select>
+          </div>
+
+          <div class="group-select" style="flex: 1; min-width: 150px;">
+            <label for="MCQTY">MC No</label>
+            <div class="tag-input-container" (click)="tagInput.focus()">
+              <div class="tag-chip" *ngFor="let tag of mcTags; let i = index" [ngClass]="getTagClass(i)">
+                {{ tag }}
+                <span class="remove-tag" (click)="removeMCTag(i)">&times;</span>
+              </div>
+              <input type="text" #tagInput class="tag-input" placeholder="Type & Enter..." (keydown)="addMCTag($event)"
+                (blur)="addMCTag($event)" />
+            </div>
+            <div class="helper-text">Ex : 32 (Space), 43</div>
+          </div>
+
+          <div class="group-select" *ngIf="Case_ && Case_ !== 'SET'" style="flex: 1; min-width: 150px;">
+            <label> Item No. <span style="font-size: 0.75rem; color: #94a3b8;">(Optional)</span></label>
+            <ng-select [items]="ItemNoList" bindLabel="ItemNo" bindValue="ItemNo" [(ngModel)]="ItemNo_" [addTag]="true"
+              (change)="onItemNoChange($event)" placeholder="Scan or Select Item No." [virtualScroll]="true"
+              [searchable]="true" [clearable]="true">
+            </ng-select>
+          </div>
+
+          <div class="group-select" *ngIf="Case_ === 'SET'" style="flex: 1; min-width: 150px;">
+            <label for="date"> DueDate </label>
+            <mat-form-field appearance="outline" style="width: 100%; display: block;">
+              <input matInput [matDatepicker]="picker" [(ngModel)]="DueDate_" placeholder="DD/MM/YYYY" [min]="today_"
+                (dateChange)="saveState()" readonly (click)="picker.open()">
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="btn-group-req">
-      <button class="btn-viewall" type="button" (click)="Clearall()"> CLEARALL <i class="bi bi-trash3"
-          style="margin-right: 3px;"></i></button>
-      <button class="btn-view" type="button" (click)="Setview()" [disabled]="loading">
-        <ng-container *ngIf="!loading; else loadingTpl">
-          VIEW <i class="bi bi-eye-fill"></i>
-        </ng-container>
-        <ng-template #loadingTpl>
-          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          Loading...
-        </ng-template>
-      </button>
-    </div>
-
-  </div>
-
-  <!-- Cutting Tool Header -->
-  <div class="table-header-premium" *ngIf="Case_ === 'SET' && items.length > 0">
-    <div class="header-content">
-      <div class="header-icon cutting">
-        <i class="bi bi-scissors"></i>
+      <div class="btn-group-req">
+        <button class="btn-viewall" type="button" (click)="Clearall()"> CLEARALL <i class="bi bi-trash3"
+            style="margin-right: 3px;"></i></button>
+        <button class="btn-view" type="button" (click)="Setview()" [disabled]="loading">
+          <ng-container *ngIf="!loading; else loadingTpl">
+            VIEW <i class="bi bi-eye-fill"></i>
+          </ng-container>
+          <ng-template #loadingTpl>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Loading...
+          </ng-template>
+        </button>
       </div>
-      <div class="header-text">
-        <h3>Cutting Tool</h3>
-      </div>
+
     </div>
-  </div>
 
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover align-middle text-center">
-      <thead class="table-light">
-        <tr>
-          <th><input type="checkbox" style="transform: scale(1.5);" [(ngModel)]="selectAllChecked"
-              (change)="toggleAllCheckboxes()" /></th>
-          <th>No.</th>
-          <th>Part No.</th>
-          <th>Item No.</th>
-
-          <th>Item Name</th>
-
-          <th>Spec</th>
-          <th>Process</th>
-          <th>Machine</th>
-          <th *ngIf="Tooling_ === 'Cutting tool'">Fresh_Qty</th>
-          <th *ngIf="Tooling_ === 'Cutting tool'">Reuse_Qty</th>
-
-          <th>QTY</th>
-          <th>Case</th>
-          <th>Position</th>
-          <th *ngIf="Tooling_ === 'Cutting tool'">Detail</th>
-        </tr>
-      </thead>
-
-      <tbody *ngIf="!Case_ || items.length === 0">
-        <tr>
-          <td [attr.colspan]="Tooling_ === 'Setup tool' ? 10 : 11" class="text-center text-muted">
-            <i class="bi bi-exclamation-circle-fill"></i> Please select item to view.
-          </td>
-        </tr>
-      </tbody>
-
-      <tbody *ngIf="items.length > 0">
-        <tr *ngFor="let item of items; let i = index">
-          <td [ngClass]="getRowClass(item)"><input type="checkbox" style="transform: scale(1.5);"
-              [(ngModel)]="item.checked" (change)="saveState()" /></td>
-          <td [ngClass]="getRowClass(item)">{{ i + 1 }}</td>
-          <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-          <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
-
-          <td [ngClass]="getRowClass(item)">
-            {{ item.ItemName || '-' }}
-          </td>
-
-          <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
-
-          <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-          <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
-          <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-          <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
-
-          <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="1"
-              (change)="saveState()" style="text-align: center; border: 0.5px solid; " /></td>
-          <td [ngClass]="getRowClass(item)"> {{ Case_ }} </td>
-          <td [ngClass]="getRowClass(item)"> {{ item.Position }} </td>
-          <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)">
-            <button class="btn-detail" (click)="openDetailModal(item)" title="View Box/Shelf Detail">
-              <i class="bi bi-eye-fill"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div *ngIf="Tooling_ === 'Cutting tool' && Case_ === 'SET' && relatedSetupItems.length > 0">
-
-    <!-- Setup Tool Header -->
-    <div class="table-header-premium setup-margin">
+    <!-- Cutting Tool Header -->
+    <div class="table-header-premium" *ngIf="Case_ === 'SET' && items.length > 0">
       <div class="header-content">
-        <div class="header-icon setup">
-          <i class="bi bi-tools"></i>
+        <div class="header-icon cutting">
+          <i class="bi bi-scissors"></i>
         </div>
         <div class="header-text">
-          <h3>Setup Tool</h3>
+          <h3>Cutting Tool</h3>
         </div>
       </div>
     </div>
 
     <div class="table-responsive">
       <table class="table table-bordered table-hover align-middle text-center">
-        <thead class="table-light" style="background-color: #ffeeba;">
+        <thead class="table-light">
           <tr>
-            <th><input type="checkbox" style="transform: scale(1.5);" [(ngModel)]="selectAllSetupChecked"
-                (change)="toggleAllSetupCheckboxes()" /></th>
+            <th><input type="checkbox" style="transform: scale(1.5);" [(ngModel)]="selectAllChecked"
+                (change)="toggleAllCheckboxes()" /></th>
             <th>No.</th>
             <th>Part No.</th>
             <th>Item No.</th>
+
             <th>Item Name</th>
+
             <th>Spec</th>
             <th>Process</th>
             <th>Machine</th>
+            <th *ngIf="Tooling_ === 'Cutting tool'">Fresh_Qty</th>
+            <th *ngIf="Tooling_ === 'Cutting tool'">Reuse_Qty</th>
 
             <th>QTY</th>
             <th>Case</th>
             <th>Position</th>
+            <th *ngIf="Tooling_ === 'Cutting tool'">Detail</th>
           </tr>
         </thead>
-        <tbody>
-          <tr *ngFor="let setup of relatedSetupItems; let i = index">
-            <td><input type="checkbox" style="transform: scale(1.5);" [(ngModel)]="setup.checked"
-                (change)="saveState()" /></td>
-            <td>{{ i + 1 }}</td>
-            <td>{{ setup.PartNo || '-' }}</td>
-            <td>{{ setup.ItemNo || '-' }}</td>
-            <td>{{ setup.ItemName || '-' }}</td>
-            <td>{{ setup.SPEC || '-' }}</td>
-            <td>{{ setup.Process || '-' }}</td>
-            <td>{{ setup.MC || '-' }}</td>
 
-            <td>
-              <input type="number" class="yoyu" [(ngModel)]="setup.QTY" min="1" (change)="saveState()"
-                style="text-align: center; border: 0.5px solid; width: 60px;" />
+        <tbody *ngIf="!Case_ || items.length === 0">
+          <tr>
+            <td [attr.colspan]="Tooling_ === 'Setup tool' ? 11 : 14" class="text-center text-muted">
+              <i class="bi bi-exclamation-circle-fill"></i> Please select item to view.
             </td>
-            <td>{{ Case_ }}</td>
-            <td>{{ setup.Position || '-' }}</td>
+          </tr>
+        </tbody>
+
+        <tbody *ngIf="items.length > 0">
+          <tr *ngFor="let item of items; let i = index">
+            <td [ngClass]="getRowClass(item)"><input type="checkbox" style="transform: scale(1.5);"
+                [(ngModel)]="item.checked" (change)="saveState()" /></td>
+            <td [ngClass]="getRowClass(item)">{{ i + 1 }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+
+            <td [ngClass]="getRowClass(item)">
+              {{ item.ItemName || '-' }}
+            </td>
+
+            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+
+            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
+            <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
+            <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+
+            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="1"
+                (change)="saveState()" style="text-align: center; border: 0.5px solid; " /></td>
+            <td [ngClass]="getRowClass(item)"> {{ Case_ }} </td>
+            <td [ngClass]="getRowClass(item)"> {{ item.Position }} </td>
+            <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)">
+              <button class="btn-detail" (click)="openDetailModal(item)" title="View Box/Shelf Detail">
+                <i class="bi bi-eye-fill"></i>
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
-  </div>
-  <!-- Premium Action Section -->
-  <div class="submit-section-container" *ngIf="items.length > 0">
-    <div class="submit-glass-card">
-      <div class="submit-info">
-        <div class="info-item">
-          <span class="label">Total Items</span>
-          <span class="value">{{ getSelectedItemsCount }}</span>
-        </div>
-        <div class="divider"></div>
-        <p class="submit-hint">Please review all items before final submission.</p>
-      </div>
 
-      <button class="btn-submit-premium" type="button" (click)="AddToCart()" [disabled]="loading">
-        <span class="btn-content">
-          <i class="bi" [ngClass]="Tooling_ === 'Setup tool' ? 'bi-send-check-fill' : 'bi-shield-check'"></i>
-          {{ Tooling_ === 'Setup tool' ? 'Send Request' : 'Submit Final Request' }}
-        </span>
-        <div class="btn-glow"></div>
-      </button>
-    </div>
-  </div>
-</div>
+    <div *ngIf="Tooling_ === 'Cutting tool' && Case_ === 'SET' && relatedSetupItems.length > 0">
 
-<!-- Modal สำหรับแสดงรายละเอียด Box/Shelf/Rack (Premium Design) -->
-<div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
-  <div class="modal-content glass-effect" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <div class="modal-title-group">
-        <h5><i class="bi bi-box-seam-fill"></i> Storage Detail</h5>
-        <span class="item-subtitle">{{ selectedItem?.ItemNo }}</span>
-      </div>
-      <button class="btn-close-modal" (click)="closeDetailModal()">
-        <i class="bi bi-x-lg"></i>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <!-- Item Info Card -->
-      <div class="info-card">
-        <div class="info-row">
-          <span class="label">Item No:</span>
-          <span class="value">{{ selectedItem?.ItemNo || '-' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="label">Spec:</span>
-          <span class="value">{{ selectedItem?.SPEC || '-' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="label">Facility:</span>
-          <span class="value">{{ Fac_?.FacilityShort || Fac_?.FacilityName || '-' }}</span>
+      <!-- Setup Tool Header -->
+      <div class="table-header-premium setup-margin">
+        <div class="header-content">
+          <div class="header-icon setup">
+            <i class="bi bi-tools"></i>
+          </div>
+          <div class="header-text">
+            <h3>Setup Tool</h3>
+          </div>
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div *ngIf="loadingDetail" class="loading-container">
-        <div class="spinner-border text-primary" role="status"></div>
-        <span>Loading stock details...</span>
-      </div>
-
-      <!-- Data Table -->
-      <div class="table-container" *ngIf="!loadingDetail && detailItems.length > 0">
-        <table class="premium-table">
-          <thead>
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center">
+          <thead class="table-light" style="background-color: #ffeeba;">
             <tr>
-              <th>Box</th>
-              <th>Shelf</th>
-              <th>Rack</th>
-              <th class="text-center">Fresh</th>
-              <th class="text-center">Reuse</th>
-              <th class="text-center">Total</th>
+              <th><input type="checkbox" style="transform: scale(1.5);" [(ngModel)]="selectAllSetupChecked"
+                  (change)="toggleAllSetupCheckboxes()" /></th>
+              <th>No.</th>
+              <th>Part No.</th>
+              <th>Item No.</th>
+              <th>Item Name</th>
+              <th>Spec</th>
+              <th>Process</th>
+              <th>Machine</th>
+
+              <th>QTY</th>
+              <th>Case</th>
+              <th>Position</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let d of detailItems">
-              <td><span class="badge-loc box">{{ d.BoxName || '-' }}</span></td>
-              <td><span class="badge-loc shelf">{{ d.ShelfName || '-' }}</span></td>
-              <td><span class="badge-loc rack">{{ d.RackName || '-' }}</span></td>
-              <td class="text-center"><span class="qty-badge fresh">{{ d.FreshQty }}</span></td>
-              <td class="text-center"><span class="qty-badge reuse">{{ d.ReuseQty }}</span></td>
-              <td class="text-center fw-bold">{{ d.TotalQty }}</td>
+            <tr *ngFor="let setup of relatedSetupItems; let i = index">
+              <td><input type="checkbox" style="transform: scale(1.5);" [(ngModel)]="setup.checked"
+                  (change)="saveState()" /></td>
+              <td>{{ i + 1 }}</td>
+              <td>{{ setup.PartNo || '-' }}</td>
+              <td>{{ setup.ItemNo || '-' }}</td>
+              <td>{{ setup.ItemName || '-' }}</td>
+              <td>{{ setup.SPEC || '-' }}</td>
+              <td>{{ setup.Process || '-' }}</td>
+              <td>{{ setup.MC || '-' }}</td>
+
+              <td>
+                <input type="number" class="yoyu" [(ngModel)]="setup.QTY" min="1" (change)="saveState()"
+                  style="text-align: center; border: 0.5px solid; width: 60px;" />
+              </td>
+              <td>{{ Case_ }}</td>
+              <td>{{ setup.Position || '-' }}</td>
             </tr>
           </tbody>
         </table>
       </div>
+    </div>
+    <!-- Premium Action Section -->
+    <div class="submit-section-container" *ngIf="items.length > 0">
+      <div class="submit-glass-card">
+        <div class="submit-info">
+          <div class="info-item">
+            <span class="label">Total Items</span>
+            <span class="value">{{ getSelectedItemsCount }}</span>
+          </div>
+          <div class="divider"></div>
+          <p class="submit-hint">Please review all items before final submission.</p>
+        </div>
 
-      <!-- No Data State -->
-      <div *ngIf="!loadingDetail && detailItems.length === 0" class="empty-state">
-        <i class="bi bi-inbox"></i>
-        <p>No stock found in this facility.</p>
+        <button class="btn-submit-premium" type="button" (click)="AddToCart()" [disabled]="loading">
+          <span class="btn-content">
+            <i class="bi" [ngClass]="Tooling_ === 'Setup tool' ? 'bi-send-check-fill' : 'bi-shield-check'"></i>
+            {{ Tooling_ === 'Setup tool' ? 'Send Request' : 'Submit Final Request' }}
+          </span>
+          <div class="btn-glow"></div>
+        </button>
       </div>
     </div>
   </div>
-</div>
+
+  <!-- Modal สำหรับแสดงรายละเอียด Box/Shelf/Rack (Premium Design) -->
+  <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+    <div class="modal-content glass-effect" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h5><i class="bi bi-box-seam-fill"></i> Storage Detail</h5>
+          <span class="item-subtitle">{{ selectedItem?.ItemNo }}</span>
+        </div>
+        <button class="btn-close-modal" (click)="closeDetailModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Item Info Card -->
+        <div class="info-card">
+          <div class="info-row">
+            <span class="label">Item No:</span>
+            <span class="value">{{ selectedItem?.ItemNo || '-' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Spec:</span>
+            <span class="value">{{ selectedItem?.SPEC || '-' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Facility:</span>
+            <span class="value">{{ Fac_?.FacilityShort || Fac_?.FacilityName || '-' }}</span>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="loadingDetail" class="loading-container">
+          <div class="spinner-border text-primary" role="status"></div>
+          <span>Loading stock details...</span>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-container" *ngIf="!loadingDetail && detailItems.length > 0">
+          <table class="premium-table">
+            <thead>
+              <tr>
+                <th>Box</th>
+                <th>Shelf</th>
+                <th>Rack</th>
+                <th class="text-center">Fresh</th>
+                <th class="text-center">Reuse</th>
+                <th class="text-center">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let d of detailItems">
+                <td><span class="badge-loc box">{{ d.BoxName || '-' }}</span></td>
+                <td><span class="badge-loc shelf">{{ d.ShelfName || '-' }}</span></td>
+                <td><span class="badge-loc rack">{{ d.RackName || '-' }}</span></td>
+                <td class="text-center"><span class="qty-badge fresh">{{ d.FreshQty }}</span></td>
+                <td class="text-center"><span class="qty-badge reuse">{{ d.ReuseQty }}</span></td>
+                <td class="text-center fw-bold">{{ d.TotalQty }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- No Data State -->
+        <div *ngIf="!loadingDetail && detailItems.length === 0" class="empty-state">
+          <i class="bi bi-inbox"></i>
+          <p>No stock found in this facility.</p>
+        </div>
+      </div>
+    </div>
+  </div>

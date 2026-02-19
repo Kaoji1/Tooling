@@ -151,6 +151,7 @@ export class PCPlanComponent implements OnInit {
 
   // --- ส่วนที่ 1: Download Format (ดาวน์โหลดฟอร์ม Excel) ---
   // --- ส่วนที่ 1: Download Format (ดาวน์โหลดฟอร์ม Excel แบบสวยงาม) ---
+  // --- ส่วนที่ 1: Download Format (ดาวน์โหลดฟอร์ม Excel แบบสวยงาม พร้อมคำอธิบาย) ---
   downloadFormat() {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Format PC Plan');
@@ -161,81 +162,95 @@ export class PCPlanComponent implements OnInit {
       { header: 'Div', key: 'Div', width: 10 },
       { header: 'Machine Type', key: 'MachineType', width: 15 },
       { header: 'Fac', key: 'Fac', width: 15 },
-      { header: 'MC No.', key: 'MCNo', width: 10 },
+      { header: 'MC No', key: 'MCNo', width: 10 },
       { header: 'Process', key: 'Process', width: 15 },
-      { header: 'Part Before', key: 'PartBefore', width: 20 },
-      { header: 'Part No.', key: 'PartNo', width: 20 },
-      { header: 'QTY', key: 'QTY', width: 20 },
-      { header: 'Time', key: 'Time', width: 20 },
+      { header: 'Part Before', key: 'PartBefore', width: 25 },
+      { header: 'Part No.', key: 'PartNo', width: 25 },
+      { header: 'QTY', key: 'QTY', width: 15 },
+      { header: 'Time', key: 'Time', width: 10 },
       { header: 'Comment', key: 'Comment', width: 20 },
     ];
 
-    // 2. ใส่ข้อมูลตัวอย่าง
-    const row = worksheet.addRow({
+    // 2. ใส่ข้อมูลตัวอย่าง (Row 2 & 3)
+    // Row 2: Full Example
+    worksheet.addRow({
       Date: 'DD/MM/YYYY',
-      Div: '7122',
+      Div: '71DZ',
       MachineType: 'BM165',
-      Fac: 'F.3',
+      Fac: 'F.4',
       MCNo: '1',
       Process: 'TURNING',
-      PartBefore: 'D30292AAP2S3',
-      PartNo: 'D30175ACDP5S1',
-      QTY: 1,
-      Time: '8',
-      Comment: 'EX.'
+      PartBefore: 'A5B68-2-M1A',
+      PartNo: 'A5B34-4AM1A',
+      QTY: 0.5,
+      Time: '4',
+      Comment: 'EX.2'
     });
 
-    // 3. จัดรูปแบบ Header (แถวที่ 1)
+    // Row 3: Div Example Only
+    worksheet.addRow({
+      Div: '7122'
+    });
+
+    // Row 4: คำอธิบาย (Instructions)
+    const instructionRow = worksheet.addRow({
+      Fac: 'ต้องเป็น F.ตามด้วยเลข Facility',
+      QTY: 'กรอกไม่กรอกก็ได้',
+      Time: 'กรอกไม่กรอกก็ได้',
+      Comment: 'กรอกไม่กรอกก็ได้'
+    });
+
+    // 3. จัดรูปแบบ Header (Row 1) - เขียวเข้ม ตัวขาว
     const headerRow = worksheet.getRow(1);
     headerRow.eachCell((cell) => {
-      // สีพื้นหลังเขียวเข้ม
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
         fgColor: { argb: 'FF1B5E20' } // Green 900
       };
-      // ตัวหนังสือสีขาว + ตัวหนา
       cell.font = {
-        color: { argb: 'FFFFFFFF' },
+        color: { argb: 'FFFFFFFF' }, // White
         bold: true,
         size: 11
       };
-      // จัดกึ่งกลาง
-      cell.alignment = {
-        vertical: 'middle',
-        horizontal: 'center'
-      };
-      // เส้นขอบ
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
       cell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' }
+        top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
       };
     });
 
-    // 4. จัดรูปแบบข้อมูล (แถวอื่นๆ)
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber > 1) {
-        row.eachCell((cell) => {
-          cell.alignment = { vertical: 'middle', horizontal: 'center' };
-          cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-          };
-        });
-      }
+    // 4. จัดรูปแบบ Row 2-3 (ข้อมูลตัวอย่าง)
+    [2, 3].forEach(rIdx => {
+      const r = worksheet.getRow(rIdx);
+      r.eachCell({ includeEmpty: true }, (cell) => {
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = {
+          top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
+        };
+      });
     });
 
-    // 5. เปิด AutoFilter
-    worksheet.autoFilter = {
-      from: 'A1',
-      to: 'K1',
-    };
+    // 5. จัดรูปแบบ Row 4 (คำอธิบาย) - พื้นหลังสีเหลือง/ส้มอ่อน
+    instructionRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFFD54F' } // Amber 200 / Yellowish
+      };
+      cell.font = {
+        color: { argb: 'FF000000' }, // Black
+        size: 10
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = {
+        top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
+      };
+    });
 
-    // 6. Export ไฟล์
+    // 6. เปิด AutoFilter
+    worksheet.autoFilter = { from: 'A1', to: 'K1' };
+
+    // 7. Export ไฟล์
     workbook.xlsx.writeBuffer().then((buffer: ArrayBuffer) => {
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
@@ -348,34 +363,50 @@ export class PCPlanComponent implements OnInit {
     this.saveCurrentState();
   }
 
-  // ฟังก์ชันช่วยแปลงวันที่จาก Excel (ที่เป็นตัวเลข) เป็น string YYYY-MM-DD
+  // ฟังก์ชันช่วยแปลงวันที่จาก Excel (ที่เป็นตัวเลขหรือ String) เป็น string YYYY-MM-DD
   excelDateToJSDate(serial: any) {
     if (!serial) return '';
 
-    // ถ้า Excel ส่งมาเป็น String
+    let jsDate: Date | null = null;
+
+    // A. ถ้า Excel ส่งมาเป็น String (เช่น '20/02/2569' หรือ '1/2/2026')
     if (typeof serial === 'string') {
-      // Case 1: Already yyyy-MM-dd (e.g. 2025-12-19) -> Return as is
-      if (serial.match(/^\d{4}-\d{2}-\d{2}$/)) return serial;
+      const s = serial.trim();
 
-      // Case 2: mm/dd/yyyy (e.g. 01/22/2026) -> Convert to yyyy-MM-dd
-      const mmddyyyy = serial.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-      if (mmddyyyy) {
-        const m = mmddyyyy[1].padStart(2, '0');
-        const d = mmddyyyy[2].padStart(2, '0');
-        const y = mmddyyyy[3];
-        return `${y}-${m}-${d}`;
+      // Case 1: Already yyyy-MM-dd (e.g., 2026-02-20) -> Valid
+      if (s.match(/^\d{4}-\d{2}-\d{2}$/)) return s;
+
+      // Case 2: Flexible DD/MM/YYYY or D/M/YYYY (AD or BE)
+      // Regex accepts: 1-2 digits for day/month, 4 digits for year, separated by / or -
+      const match = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+
+      if (match) {
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10); // 1-12
+        let year = parseInt(match[3], 10);
+
+        // BE Check: If Year > 2400, assumes Buddhist Era -> Convert to AD
+        if (year > 2400) year -= 543;
+
+        jsDate = new Date(year, month - 1, day);
       }
-
-      return serial;
+    }
+    // B. ถ้าเป็น Serial Number ของ Excel (เช่น 45678)
+    else if (typeof serial === 'number') {
+      const utc_days = Math.floor(serial - 25569);
+      const utc_value = utc_days * 86400;
+      jsDate = new Date(utc_value * 1000);
     }
 
-    // ถ้าเป็น Serial Number ของ Excel
-    const utc_days = Math.floor(serial - 25569);
-    const utc_value = utc_days * 86400;
-    const date_info = new Date(utc_value * 1000);
+    // C. Format output to 'YYYY-MM-DD' for HTML Date Input / Angular Material
+    if (jsDate && !isNaN(jsDate.getTime())) {
+      const y = jsDate.getFullYear();
+      const m = String(jsDate.getMonth() + 1).padStart(2, '0');
+      const d = String(jsDate.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
 
-    // แปลงเป็น format yyyy-mm-dd เพื่อใส่ใน input type="date"
-    return date_info.toISOString().split('T')[0];
+    return ''; // Invalid date
   }
 
 

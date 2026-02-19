@@ -184,6 +184,9 @@ export class requestComponent implements OnInit {
 
     // 1. Set Case & Tooling
     this.Case_ = params['case'] || 'SET';
+
+    // Default to Cutting tool, but check if MC suggests Setup
+    // (Logic could be refined if there's a specific pattern for Setup MCs)
     this.Tooling_ = 'Cutting tool';
 
     // 2. Match Division
@@ -197,7 +200,33 @@ export class requestComponent implements OnInit {
 
       // 3. Load PartNo (Cascade)
       const divisionCode = foundDiv.Division || foundDiv;
-      this.get_Facility(foundDiv); // Fire and forget
+
+      // Load Facility and Match
+      this.api.get_Setup_Facility({ Division: divisionCode }).subscribe((facs: any[]) => {
+        const seen = new Set<string>();
+        this.Fac = facs.map((f: any) => {
+          const name = f.FacilityName || f.FacilityShort || '';
+          const match = name.match(/F\.\d+/);
+          const shortName = match ? match[0] : name;
+          return { FacilityName: name, FacilityShort: shortName };
+        }).filter((f: any) => {
+          if (seen.has(f.FacilityShort)) return false;
+          seen.add(f.FacilityShort);
+          return true;
+        });
+
+        // Match Fac
+        const facParam = params['fac']; // e.g., "F.1" or "F.4"
+        const foundFac = this.Fac.find((f: any) => f.FacilityShort === facParam || f.FacilityName === facParam);
+        if (foundFac) this.Fac_ = foundFac;
+      });
+
+      // Handle MC No (Tags)
+      const mcNoParam = params['mcNo'];
+      if (mcNoParam && mcNoParam !== '-') {
+        // Split by comma if multiple, or just take as is
+        this.mcTags = mcNoParam.split(',').map((s: string) => s.trim()).filter((s: string) => s !== '');
+      }
 
       this.api.get_CaseSET_Dropdown_PartNo({ Division: divisionCode, ItemNo: null }).subscribe((parts: any[]) => {
         this.PartNo = parts.map((p: any) => ({ PartNo: p.PartNo }));
@@ -230,7 +259,7 @@ export class requestComponent implements OnInit {
                 const foundMC = this.MachineType.find((m: any) => m.MC === params['mc']);
                 if (foundMC) this.MachineType_ = foundMC;
 
-                // 9. Trigger View
+                // 9. Trigger View (Search)
                 setTimeout(() => this.Setview(), 100);
               });
             }
@@ -403,11 +432,20 @@ export class requestComponent implements OnInit {
   // เมื่อเลือก ItemNo
   onItemNoChange(event: any) {
     console.log('🟡 ItemNo changed:', this.ItemNo_);
-    // เมื่อเลือก/กรอก ItemNo ให้โหลด PartNo ใหม่ (แต่ไม่ต้องเคลียร์ PartNo_ เดิมทิ้ง เพื่อให้ใช้กรองคู่กันได้)
-    // this.PartNo_ = null; 
-    this.Process_ = null;
-    this.MachineType_ = null;
+    // ✅ BUG FIX: Don't clear fields, just refresh lists
+    // this.Process_ = null;
+    // this.MachineType_ = null;
+
     this.get_PartNo(this.Div_);
+
+    // Refresh dependent lists to ensure data consistency
+    if (this.PartNo_) {
+      this.get_Process(this.PartNo_);
+    }
+    if (this.Process_) {
+      this.get_MC(this.Process_);
+    }
+
     this.saveState();
   }
 
@@ -906,14 +944,21 @@ export class requestComponent implements OnInit {
     const input = event.target;
     const value = input.value.trim();
 
-    // Check if Enter or Space was pressed
-    if ((event.key === 'Enter' || event.key === ' ') && value) {
-      event.preventDefault(); // Prevent form submission or extra space
+    // Check if Enter or Space was pressed, OR if it's a 'blur' event
+    const isTriggerKey = event.key === 'Enter' || event.key === ' ';
+    const isBlurEvent = event.type === 'blur';
 
-      if (value) {
+    if ((isTriggerKey || isBlurEvent) && value) {
+      if (isTriggerKey) event.preventDefault(); // Prevent form submission or extra space
+
+      // Check for duplicates before pushing
+      if (!this.mcTags.includes(value)) {
         this.mcTags.push(value);
         input.value = ''; // Clear input
         this.saveState();
+      } else {
+        // Just clear if duplicate
+        input.value = '';
       }
     } else if (event.key === 'Backspace' && !value && this.mcTags.length > 0) {
       // Remove last tag if backspace pressed on empty input

@@ -82,10 +82,14 @@ BEGIN
         New.PlanDate, New.Employee_ID, @Division, New.MC_Type, New.Facility, 
         New.Before_Part, New.Process, New.MC_No, New.PartNo, New.QTY, New.[Time], 
         New.Comment, 
-        0,                 -- Always Rev 0 for Bulk Import
-        NEWID(),           -- Always Fresh GroupId for Bulk Import
-        1,                 -- IsActive
-        'Active',          -- Default Status
+        ISNULL(New.Revision, 0),    -- Use Revision from payload (0 for bulk import, N+1 for edit/cancel)
+        CASE 
+            WHEN New.GroupId IS NULL OR New.GroupId = '' OR New.GroupId = '-' 
+            THEN CONVERT(NVARCHAR(50), NEWID())  -- Fresh GroupId for new/bulk items
+            ELSE New.GroupId                      -- Preserve existing GroupId for edit/cancel revisions
+        END,
+        1,                                       -- IsActive
+        ISNULL(New.PlanStatus, 'Active'),         -- Use PlanStatus from payload (e.g. 'Cancelled'), default 'Active'
         New.Path_Dwg, New.Path_Layout, New.Path_IIQC
     FROM #IncomingData New;
 
