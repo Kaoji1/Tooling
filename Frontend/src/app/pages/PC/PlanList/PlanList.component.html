@@ -140,7 +140,7 @@
               <ng-container *ngIf="selectedDepartment === 'PH'">
                 <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
               </ng-container>
-              <ng-container *ngIf="selectedDepartment === 'En'">
+              <ng-container *ngIf="selectedDepartment === 'EN'">
                 <button class="btn-edit-pill me-1" (click)="onEdit(item)" title="Add Path">ADD PATH</button>
                 <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
               </ng-container>
@@ -219,9 +219,8 @@
         <!-- 17. Path Dwg -->
         <div class="grid-cell text-center">
           <ng-container *ngIf="item.pathDwg && item.pathDwg.trim() !== '-'; else noDwg">
-            <a [href]="item.pathDwg" target="_blank" title="Open Drawing">
-              <i class="bi bi-file-earmark-text-fill" style="font-size: 1.2rem; color: #3b82f6; cursor: pointer;"></i>
-            </a>
+            <i class="bi bi-file-earmark-text-fill" style="font-size: 1.2rem; color: #3b82f6; cursor: pointer;"
+              (click)="openFile(item.pathDwg)" title="Open Drawing"></i>
           </ng-container>
           <ng-template #noDwg>
             <i class="bi bi-dash-lg" style="color: #cbd5e1;"></i>
@@ -231,10 +230,8 @@
         <!-- 18. Path Layout -->
         <div class="grid-cell text-center">
           <ng-container *ngIf="item.pathLayout && item.pathLayout.trim() !== '-'; else noLayout">
-            <a [href]="item.pathLayout" target="_blank" title="Open Layout">
-              <i class="bi bi-file-earmark-spreadsheet-fill"
-                style="font-size: 1.2rem; color: #3b82f6; cursor: pointer;"></i>
-            </a>
+            <i class="bi bi-file-earmark-spreadsheet-fill" style="font-size: 1.2rem; color: #3b82f6; cursor: pointer;"
+              (click)="openFile(item.pathLayout)" title="Open Layout"></i>
           </ng-container>
           <ng-template #noLayout>
             <i class="bi bi-dash-lg" style="color: #cbd5e1;"></i>
@@ -244,9 +241,8 @@
         <!-- 19. IIQC -->
         <div class="grid-cell text-center">
           <ng-container *ngIf="item.iiqc && item.iiqc.trim() !== '-'; else noIiqc">
-            <a [href]="item.iiqc" target="_blank" title="Open IIQC">
-              <i class="bi bi-file-earmark-check-fill" style="font-size: 1.2rem; color: #22c55e; cursor: pointer;"></i>
-            </a>
+            <i class="bi bi-file-earmark-check-fill" style="font-size: 1.2rem; color: #22c55e; cursor: pointer;"
+              (click)="openFile(item.iiqc)" title="Open IIQC"></i>
           </ng-container>
           <ng-template #noIiqc>
             <i class="bi bi-dash-lg" style="color: #cbd5e1;"></i>
@@ -269,7 +265,7 @@
   <div class="modal-content">
     <div class="modal-header">
       <h3 *ngIf="selectedDepartment === 'PC'">Edit Plan (Rev {{editData.revision}})</h3>
-      <h3 *ngIf="selectedDepartment === 'En' || selectedDepartment === 'QC'">Add Attachments (Rev {{editData.revision}})
+      <h3 *ngIf="selectedDepartment === 'EN' || selectedDepartment === 'QC'">Add Attachments (Rev {{editData.revision}})
       </h3>
       <button class="btn-close" (click)="closeEditModal()"><i class="bi bi-x-lg"></i></button>
     </div>
@@ -331,7 +327,7 @@
         </ng-container>
 
         <!-- Attachments Header (Engineer only) -->
-        <ng-container *ngIf="selectedDepartment === 'En'">
+        <ng-container *ngIf="selectedDepartment === 'EN'">
           <div class="form-group full-width">
             <h4 class="premium-modal-section-title">
               <i class="bi bi-paperclip"></i> Attachments (Engineer)
@@ -339,7 +335,7 @@
           </div>
         </ng-container>
         <!-- Engineer Fields (Path) -->
-        <ng-container *ngIf="selectedDepartment === 'En'">
+        <ng-container *ngIf="selectedDepartment === 'EN'">
           <div class="form-group">
             <label>Path Drawing</label>
             <input type="text" [(ngModel)]="editData.pathDwg" name="pathDwg" placeholder="P:\Drawing\...">
@@ -393,11 +389,12 @@
               <th>Part No</th>
               <th>QTY</th>
               <th>Comment</th>
-              <th>Status</th>
+              <!-- Status Column Removed -->
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let h of historyList" [ngClass]="{'bg-light': h.Revision === selectedHistoryItem.revision}">
+            <tr *ngFor="let h of historyList; let i = index" [class.history-latest]="i === 0"
+              [class.history-old]="i > 0">
               <td class="text-center"><strong>{{ h.Revision }}</strong></td>
               <td>{{ h.date }}</td>
               <td>{{ h.MC_Type }}</td>
@@ -407,12 +404,7 @@
               <td>{{ h.PartNo }}</td>
               <td>{{ h.QTY }}</td>
               <td>{{ h.Comment }}</td>
-              <td>
-                <span class="badge" [ngClass]="{
-                                'bg-success': h.PlanStatus !== 'Cancelled',
-                                'bg-danger': h.PlanStatus === 'Cancelled'
-                            }">{{ h.PlanStatus }}</span>
-              </td>
+              <!-- Status Content Removed -->
             </tr>
           </tbody>
         </table>

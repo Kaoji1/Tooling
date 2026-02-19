@@ -1,0 +1,133 @@
+// ===== Missing Tab Styles =====
+
+// Department Tabs (PC, PD, PH, etc.)
+.dept-tabs {
+    display: flex;
+    background-color: #e2e8f0; // Slate 200
+    padding: 4px;
+    border-radius: 12px;
+    gap: 4px;
+
+    .dept-tab {
+        padding: 6px 16px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: #64748b; // Slate 500
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+            color: #1e293b;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        &.active {
+            background-color: white;
+            color: #2563eb; // Blue 600
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+    }
+}
+
+// Sub Tabs (Upcoming, Action Required)
+.btn-upcoming-premium {
+    background-color: white;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:hover {
+        border-color: #cbd5e1;
+        background-color: #f8fafc;
+    }
+
+    &.active {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); // Dark navy
+        color: white;
+        border: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+        .action-count {
+            background-color: #ef4444; // Red badge on active dark bg
+            color: white;
+        }
+    }
+
+    .action-count {
+        background-color: #f1f5f9;
+        color: #ef4444;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+    }
+}
+
+// Export Button
+.btn-export-premium {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); // Green
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(22, 163, 74, 0.3);
+    }
+
+    i {
+        font-size: 1rem;
+    }
+}
+
+// Range Tabs (7 DAY, 30 DAY, ALL)
+.range-tabs {
+    display: flex;
+    background-color: #f1f5f9;
+    padding: 3px;
+    border-radius: 8px;
+    gap: 2px;
+    border: 1px solid #e2e8f0;
+
+    .range-tab {
+        padding: 4px 12px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            color: #1e293b;
+        }
+
+        &.active {
+            background-color: white;
+            color: #2563eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            font-weight: 700;
+        }
+    }
+}

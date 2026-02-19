@@ -1053,6 +1053,8 @@ $grid-cols: $grid-cols-pc;
             box-shadow: none !important;
 
             table {
+                width: 100%;
+
                 thead th {
                     background: #f8fafc;
                     font-weight: 600;
@@ -1068,6 +1070,32 @@ $grid-cols: $grid-cols-pc;
                     border-bottom: 1px solid #f1f5f9;
                     padding: 12px 16px;
                     color: #334155;
+                }
+
+                // --- History Row Styles ---
+                tbody tr {
+                    &.history-latest {
+                        background-color: #dcfce7 !important; // Green 100
+
+                        td {
+                            color: #15803d !important; // Green 700
+                            font-weight: 600;
+                            border-bottom: 1px solid #bbf7d0; // Green 200
+                        }
+                    }
+
+                    &.history-old {
+                        background-color: #f8fafc; // Slate 50
+
+                        td {
+                            color: #94a3b8 !important; // Slate 400 (Faint Gray)
+                            font-style: italic;
+                        }
+
+                        &:hover {
+                            background-color: #f1f5f9; // Slight darken on hover
+                        }
+                    }
                 }
             }
         }

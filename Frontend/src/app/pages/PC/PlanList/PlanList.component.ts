@@ -66,7 +66,7 @@ export class PlanListComponent implements OnInit {
   showHistory: boolean = false; // Toggle for Global History
 
   // New Tab Structure
-  departments: string[] = ['PC', 'PD', 'PH', 'En', 'QC', 'Gage', 'View'];
+  departments: string[] = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gage', 'View'];
   selectedDepartment: string = 'PC';
 
   subTabs: string[] = ['Upcoming'];
@@ -296,7 +296,7 @@ export class PlanListComponent implements OnInit {
         // Count for 'Action Required' (Department-specific logic)
         // User requested: Don't show Cancelled items in Action Required for En/QC
         if (item.planStatus !== 'Cancelled') {
-          if (this.selectedDepartment === 'En') {
+          if (this.selectedDepartment === 'EN') {
             const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
             const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
             if (!hasDwg || !hasLayout) this.subTabCounts['Action Required'] = (this.subTabCounts['Action Required'] || 0) + 1;
@@ -333,7 +333,7 @@ export class PlanListComponent implements OnInit {
         let actionNeeded = false;
         // User requested: No Cancelled in Action Required
         if (item.planStatus !== 'Cancelled') {
-          if (this.selectedDepartment === 'En') {
+          if (this.selectedDepartment === 'EN') {
             const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
             const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
             actionNeeded = !hasDwg || !hasLayout;
@@ -464,7 +464,8 @@ export class PlanListComponent implements OnInit {
       mc: item.mcType,
       mcNo: item.mcNo,
       qty: item.qty,
-      fromPlan: 'true'
+      fromPlan: 'true',
+      date: item.date // Pass date to Request
     };
 
     this.router.navigate(['/production/request'], { queryParams: queryParams });
@@ -591,7 +592,7 @@ export class PlanListComponent implements OnInit {
     this.selectedDepartment = dept;
 
     // Dynamically update sub-tabs based on department
-    if (dept === 'En' || dept === 'QC') {
+    if (dept === 'EN' || dept === 'QC') {
       // Reorder: Action Required first, then Upcoming
       this.subTabs = ['Action Required', 'Upcoming'];
       this.selectedSubTab = 'Action Required'; // Auto-select Action Required
@@ -689,7 +690,7 @@ export class PlanListComponent implements OnInit {
     });
 
     // 0. PC Logic: Prefer updatePaths if ONLY paths changed, otherwise savePlan (New Revision)
-    if (this.selectedDepartment === 'En' || this.selectedDepartment === 'QC') {
+    if (this.selectedDepartment === 'EN' || this.selectedDepartment === 'QC') {
       if (isPathChanged) {
         const pathPayload = {
           groupId: this.editData.groupId,
@@ -858,7 +859,7 @@ export class PlanListComponent implements OnInit {
         this.historyList = res.map((h: any) => ({
           ...h,
           date: h.PlanDate ? new Date(h.PlanDate).toLocaleDateString('en-US') : '',
-        }));
+        })).sort((a: any, b: any) => b.Revision - a.Revision);
       },
       error: (err) => {
         console.error('Error fetching history:', err);
