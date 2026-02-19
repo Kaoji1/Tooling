@@ -150,18 +150,22 @@ export class HistoryRequestComponent implements OnInit {
           QTY: item.QTY ?? 0,
           MCType: item.MCType ?? '',
           MC_Code: item.MC_Code ?? '',
-          MC_No: item.MC_No ?? '',
+          MC_No: item.MCNo ?? item.MC_No ?? '',
           DueDate: item.DueDate ?? '',
           DateTime_Record: item.DateTime_Record ?? ''
         }));
 
 
-        // กรองเฉพาะ Status = 'Complete'
-        this.filteredRequests = this.requests.filter(r => r.Status === 'Complete' || r.Status === 'CompleteToExcel');
-        console.log('Filtered requests after Status=Complete:', this.filteredRequests);
+        // กรองเฉพาะ Status = 'Complete' -> แต่ยังไม่โชว์ ต้องรอเลือก Division
+        this.filteredRequests = []; // เริ่มต้นเป็นว่าง
+        console.log('Requests loaded:', this.requests.length);
 
-        const uniqueDivisions = [...new Set(this.requests.map(r => r.Division).filter(c => c))];
-        this.divisionList = uniqueDivisions.map(d => ({ label: d, value: d }));
+        // const uniqueDivisions = [...new Set(this.requests.map(r => r.Division).filter(c => c))];
+        // this.divisionList = uniqueDivisions.map(d => ({ label: d, value: d }));
+        this.divisionList = [
+          { label: 'GM', value: '7122' },
+          { label: 'PMC', value: '71DZ' }
+        ];
 
 
 
@@ -308,13 +312,20 @@ export class HistoryRequestComponent implements OnInit {
   // }
 
   onFilter() {
+    if (!this.Division_) {
+      this.filteredRequests = [];
+      return;
+    }
+
     this.filteredRequests = this.requests.filter(item => {
       //  กรอง Status
       const status = (item.Status ?? '').toLowerCase().trim();
       const matchStatus = status === 'complete' || status === 'completetoexcel';
 
-      //  กรอง Division / PartNo / ItemNo
-      const matchDivision = !this.Division_?.length || this.Division_.includes(item.Division);
+      //  กรอง Division (Strict)
+      const matchDivision = item.Division === this.Division_;
+
+      // กรองอื่นๆ
       const matchItemNo = !this.ItemNo_?.length || this.ItemNo_.includes(item.ItemNo);
       const matchPartNo = !this.PartNo_?.length || this.PartNo_.includes(item.PartNo);
       const matchDocumentNo = !this.DocumentNo_?.length || this.DocumentNo_.includes(item.DocNo);
@@ -508,8 +519,8 @@ export class HistoryRequestComponent implements OnInit {
       { header: 'Stock Location', key: 'Stock_Location', width: 18 },
       { header: 'MATL LOT', key: 'MATL_LOT', width: 15 },
       { header: 'TRANSACTION(DMY)', key: 'TRANSACTION', width: 18 },
-      { header: 'QTY', key: 'QTY', width: 10 },
-      { header: 'MC No.', key: 'MC_No', width: 15 },
+      { header: 'ISSUE QTY', key: 'QTY', width: 10 },
+      { header: 'M/O NO.', key: 'MC_No', width: 15 },
       { header: 'DECLATION NO', key: 'DECLATION_NO', width: 20 },
     ];
 
@@ -550,7 +561,7 @@ export class HistoryRequestComponent implements OnInit {
       MATL_LOT: req.MatLot || '',
       TRANSACTION: cDateFormat(req.DateComplete),
       QTY: req.QTY || 0,
-      MC_No: this.formatMC(req),
+      MC_No: req.MC_No || '',
       DECLATION_NO: ''
     }));
 

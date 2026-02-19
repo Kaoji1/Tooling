@@ -341,7 +341,7 @@ exports.Detail_Purchase = async (req, res) => {
       .request()
       .query(`
         SELECT T1.*, T2.MCT_MachineTypeCode
-        FROM [dbo].[View_CuttingTool_RequestList] T1
+        FROM [db_Tooling].[viewer].[View_IssueCuttingTool_Request_Document] T1
         LEFT JOIN [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType] T2 
         ON T1.MCType = T2.MCT_MachineTypeName COLLATE Thai_CI_AS 
         WHERE T1.Status IN ('Waiting','In Progress')
@@ -365,7 +365,7 @@ exports.Detail_Purchase_Setup = async (req, res) => {
       .request()
       .query(`
         SELECT *
-        FROM [db_Tooling].[viewer].[View_SetupTool_RequestList]
+        FROM [db_Tooling].[viewer].[View_IssueSetupTool_Request_Document]
         WHERE Status IN ('Waiting','In Progress')
         AND ([CASE] IS NULL OR [CASE] != 'SET')
         ORDER BY DateTime_Record ASC

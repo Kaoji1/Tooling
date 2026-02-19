@@ -118,7 +118,7 @@ export class RequestlistComponent implements OnInit {
           response.forEach(item => {
             // ไม่ต้องเช็ค Status ที่นี่แล้วเพราะ Backend กรองมาให้
             const itemNo = item.ItemNo;
-            const category = item.Category || '';
+            const category = item.CASE || '';
             const idRequest = item.ID_Request;
             const key = `${itemNo}_${category}`;
 
@@ -159,7 +159,7 @@ export class RequestlistComponent implements OnInit {
           this.itemList = uniqueItems.map(it => ({ label: it, value: it }));
 
           const uniqueCategories = Array.from(
-            new Set(this.request.map(r => r.Category).filter(Boolean))
+            new Set(this.request.map(r => r.CASE).filter(Boolean))
           );
           this.categoryList = uniqueCategories.map(cat => ({ label: cat, value: cat }));
 
@@ -179,7 +179,7 @@ export class RequestlistComponent implements OnInit {
   onFilter() {
     this.filteredRequests = this.request.filter(item => {
       const matchDivision = !this.Division_?.length || this.Division_.includes(item.Division);
-      const matchCategory = !this.Catagory_?.length || this.Catagory_.includes(item.Category);
+      const matchCategory = !this.Catagory_?.length || this.Catagory_.includes(item.CASE);
       const matchItemNo = !this.Item_?.length || this.Item_.includes(item.ItemNo);
       const matchProcess = !this.Process_?.length || this.Process_.includes(item.Process);
 

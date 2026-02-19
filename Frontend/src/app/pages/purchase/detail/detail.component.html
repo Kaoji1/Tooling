@@ -1,8 +1,10 @@
 <div class="page-layout">
 
   <div class="header">
-    <h1>Request List</h1>
-    <p>The loan withdrawal request is here.</p>
+    <div>
+      <h1>Request List</h1>
+      <p>The loan withdrawal request is here.</p>
+    </div>
   </div>
 
 
@@ -227,13 +229,13 @@
                 ?
                 '↑' : '↓' }}</span></th>
             <th style="width: 60px;">Total</th>
-            <th (click)="onSort('ON_HAND')" style="width: 70px;">On Hand <span *ngIf="sortKey === 'ON_HAND'">{{
+            <th (click)="onSort('STOCK_ON_HAND')" style="width: 70px;">On Hand <span
+                *ngIf="sortKey === 'STOCK_ON_HAND'">{{
                 sortAsc
                 ? '↑' : '↓' }}</span></th>
             <th (click)="onSort('Status')" style="min-width: 90px;">Status <span *ngIf="sortKey === 'Status'">{{
                 sortAsc
                 ? '↑' : '↓' }}</span></th>
-
             <th style="min-width: 90px;">Phone</th>
 
             <!-- For Purchase Columns (Widths Adjusted) -->
@@ -318,7 +320,7 @@
             <td> - </td>
 
             <!-- On Hand -->
-            <td>{{ item.ON_HAND }}</td>
+            <td>{{ item.STOCK_ON_HAND }}</td>
 
             <!-- Status -->
             <td>{{ item.Status }}</td>
