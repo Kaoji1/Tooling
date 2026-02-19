@@ -59,25 +59,10 @@ exports.DeleteEmployee = async (req, res) => {
       .input('Employee_ID', sql.VarChar, empId)
       .query(`DELETE FROM tb_CuttingTool_Employee WHERE Employee_ID = @Employee_ID`);
 
-    res.json({ success: true, message: 'ลบสำเร็จ' });
+    res.json({ success: true, message: 'Deleted successfully' });
   } catch (err) {
     console.error('Error deleting employee:', err);
-    res.status(500).json({ error: 'ลบไม่สำเร็จ' });
-  }
-};
-// controller
-exports.DeleteEmployee = async (req, res) => {
-  try {
-    const empId = req.params.id;
-    const pool = await poolPromise;
-    const result = await pool.request()
-      .input('Employee_ID', sql.VarChar, empId)
-      .query(`DELETE FROM tb_CuttingTool_Employee WHERE Employee_ID = @Employee_ID`);
-
-    res.json({ success: true, message: 'ลบสำเร็จ' });
-  } catch (err) {
-    console.error('Error deleting employee:', err);
-    res.status(500).json({ error: 'ลบไม่สำเร็จ' });
+    res.status(500).json({ error: err.message || 'Delete failed' });
   }
 };
 // employees.controller.js

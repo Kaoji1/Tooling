@@ -51,7 +51,6 @@ exports.UpdateRequestStatusLoop = async (req, res) => {
           WHERE Public_Id = @Public_Id
         `);
     }
-
     res.json({ message: 'Status updated successfully for all IDs.' });
   } catch (err) {
     console.error("Error updating statuses:", err);

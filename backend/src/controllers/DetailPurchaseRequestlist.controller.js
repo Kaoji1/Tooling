@@ -905,7 +905,6 @@ exports.Update_Request = async (req, res) => {
             WHERE ${idCol} = @ID_Val
         `);
     };
-
     let result;
     const isPublic = typeof ID_Request === 'string';
 

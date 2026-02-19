@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { SidebarPurchaseComponent } from "../../../components/sidebar/sidebarPurchase.component";
 import { CommonModule, NgFor } from '@angular/common';
@@ -7,6 +8,8 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AuthService } from '../../../core/services/auth.service';
 import Swal from 'sweetalert2';
+import { Subscription, interval } from 'rxjs'; // For polling
+
 declare var bootstrap: any;
 
 @Component({
@@ -16,7 +19,7 @@ declare var bootstrap: any;
   templateUrl: './add-user.component.html',
   styleUrl: './add-user.component.scss'
 })
-export class AddUserComponent {
+export class AddUserComponent implements OnInit, OnDestroy {
   userRole: string = 'view';
   // users: any[] = [];
   Employee: any[] = [];// ข้อมูลพนักงานทั้งหมด
@@ -51,9 +54,12 @@ export class AddUserComponent {
     Email: ''
   };
 
+  private refreshSubscription: Subscription = new Subscription();
+
   constructor(private EmployeeService: EmployeeService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   isViewer(): boolean {
@@ -63,10 +69,32 @@ export class AddUserComponent {
 
   ngOnInit() {
     this.Get_Employee();
+
+    // Auto-refresh every 30 seconds to keep session alive and update data
+    if (isPlatformBrowser(this.platformId)) {
+      this.refreshSubscription = interval(30000).subscribe(() => {
+        // Refresh silently (or check for unsaved edits if needed)
+        // If user is editing, we might skip full reload or merge carefully.
+        // For now, simple reload is better than session timeout.
+        // But if user is editing, reload might wipe their edit state?
+        // Let's check: Get_Employee updates `this.Employee` and `this.groupedEmployees`.
+        // It DOES NOT clear `editingId` or `editForm`.
+        // So if `editingId` matches an ID in the new list, the UI will still show edit mode.
+        // However, if the row is removed, it might break. But risk is low.
+        if (!this.editingId) {
+          this.Get_Employee();
+        }
+      });
+    }
   }
-  goPermission() {
-    this.router.navigate(['/purchase/permission']);
+
+  ngOnDestroy() {
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
   }
+
+
 
   //  ดึงข้อมูลพนักงานและจัดกลุ่มตาม Role
   Get_Employee() {
@@ -148,7 +176,8 @@ export class AddUserComponent {
           },
           error: (err) => {
             console.error('Unable to delete data:', err);
-            Swal.fire('Error', 'Unable to delete data', 'error');
+            // Show the actual error message from backend
+            Swal.fire('Error', err?.error?.error || 'Unable to delete data', 'error');
           }
         });
       }

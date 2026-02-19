@@ -47,7 +47,7 @@ export class CartComponent implements OnInit {
   ngOnInit(): void {
     this.loadCartFromDB();
     if (isPlatformBrowser(this.platformId)) {
-      const userJson = sessionStorage.getItem('user'); // ดึง object ทั้งก้อน
+      const userJson = localStorage.getItem('user'); // ดึง object ทั้งก้อน
       if (userJson) {
         try {
           const user = JSON.parse(userJson); // แปลง string เป็น object

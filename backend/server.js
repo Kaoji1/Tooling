@@ -22,9 +22,9 @@ const Analyze = require('./src/routes/analyze.route.js');
 const AnalyzeSmartRack = require('./src/routes/analyzeSmartRack.route.js');
 // const Update_Request = require('./src/routes/DetailPurchaseRequestlist.route.js');
 const PurchaseHistory = require('./src/routes/PurchaseHistory.route.js');
-const Employee = require('./src/routes/Employee.route.js')
-const Permission = require('./src/routes/Permission.route.js');
-const HistoryPrint = require('./src/routes/HistoryPrint.route.js')
+const Employee = require('./src/routes/Employee.route.js');
+const HistoryPrint = require('./src/routes/HistoryPrint.route.js');
+
 const MasterPH = require('./src/routes/MasterPH.route.js');
 const Return = require('./src/routes/Return.route.js');
 
@@ -58,8 +58,8 @@ app.use('/api', Analyze);
 app.use('/api', AnalyzeSmartRack);
 app.use('/api', PurchaseHistory);
 app.use('/api', Employee);
-app.use('/api', Permission);
 app.use('/api', HistoryPrint);
+
 app.use('/api', MasterPH);
 app.use('/api', Return);
 

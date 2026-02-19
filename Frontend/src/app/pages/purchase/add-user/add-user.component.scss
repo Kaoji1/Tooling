@@ -1,160 +1,116 @@
 .content-area {
-  display: block;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-  padding: 20px;
-  background-color: white;
+  padding: 2rem;
+  background-color: #f8f9fa; // Soft gray background
 
-  .row {
-    justify-content: space-around;
+  .header {
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+      color: #2c3e50;
+    }
   }
 
-  .header-group {
+  // Card styling for table container
+  .card {
+    border-radius: 0.75rem;
+    overflow: hidden; // Ensures rounded corners clip content
+    flex: 1; // Take remaining height
     display: flex;
-    width: 100%;
-    justify-content: space-between;
+    flex-direction: column;
 
-    .header {
-      display: block;
-
-      .h1 {
-        font-size: 22px;
-        margin-bottom: 5px;
-      }
-
-      .p {
-        font-size: 15px;
-        margin-bottom: 5px;
-        color: rgb(16, 3, 114);
-      }
-    }
-
-    .button-per {
-      display: block;
-      background-color: #4db6b6;
-      margin: 10px;
-      margin-top: 70px;
-      margin-left: 900px;
-      border: none;
-      /* ปรับให้เป็น none ดีกว่า */
-      border-radius: 10px;
-      height: 45px;
-      width: 200px;
-      font-size: 20px;
-      color: #fff;
-      /* ให้ตัวหนังสือสีขาว */
-      cursor: pointer;
-      transition: 0.2s;
-      /* transition นุ่มขึ้น */
-    }
-
-    /* hover effect */
-    .button-per:hover {
-      background-color: #3a9999;
-      /* เปลี่ยนสีเข้มขึ้น */
-      color: black;
-      /* ใส่เงา */
-    }
-
-    .button {
-      display: block;
-      background-color: #4db6b6;
-      margin: 30px;
-      border: none;
-      /* ปรับ border ให้เป็น none */
-      border-radius: 10px;
-      height: 45px;
-      width: 200px;
-      font-size: 20px;
-      margin-top: 70px;
-      color: #fff;
-      /* สีตัวอักษรเริ่มต้น */
-      cursor: pointer;
-      transition: 0.2s;
-      /* transition นุ่มขึ้น */
-
-    }
-
-    /* hover effect */
-    .button:hover {
-      background-color: #3a9999;
-      /* เปลี่ยนสีเข้มขึ้น */
-      color: black;
-      /* ตัวอักษรเปลี่ยนเป็นสีดำ */
+    .card-body {
+      overflow: hidden; // Contain the table responsive div
+      display: flex;
+      flex-direction: column;
     }
   }
 
-
-  //       .button {
-  //         display: block;
-  //         background-color: #4db6b6;
-  //         margin: 30px;
-  //         border: 10px;
-  //         border-radius: 10px;
-  //         height: 45px;
-  //         width: 200px;
-  //         font-size: 20px;
-  //         margin-top: 70px;
-  //   cursor: pointer;
-  //   transition: 0.2s; /* transition นุ่มขึ้น */
-
-  //       }
-
-  //       .button-per:hover {
-  //   background-color: #3a9999;  /* เปลี่ยนสีเข้มขึ้น */
-  //   color: black; /* ใส่เงา */
-  // }
-  //     }
   .table-responsive {
-    max-height: 70vh; // ตารางสูงไม่เกิน 70% ของจอ
-    width: 100%; // กว้างเต็ม 100% ของจอ
-    overflow: auto;
+    overflow-y: auto;
+    flex: 1;
 
+    // Custom scrollbar styling (optional but nice)
+    &::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      color: #4a4949;
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
 
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
 
-      th,
-      td {
-        padding: 6px;
-        text-align: center;
-        border: 1px solid #D2D2D2;
-      }
+    &::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  }
+
+  table {
+    margin-bottom: 0;
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #f8f9fa;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
       th {
-        background-color: #b0b0b0;
-        padding: 15px;
-        font-size: 16px;
-        font-weight: 100;
-      }
-
-      thead th {
-        background-color: #E3E3E3;
-        padding: 15px;
-        font-size: 16px;
-        font-weight: 100;
-      }
-
-      td {
-        padding: 12px;
-        text-align: center;
-        border: 1px solid #d2d2d2;
-        color: black;
-
+        font-weight: 600;
+        color: #555;
+        border-bottom: 2px solid #e9ecef;
+        white-space: nowrap;
       }
     }
 
+    tbody {
+      td {
+        border-color: #f1f3f5;
+        vertical-align: middle;
+      }
+
+      tr:hover {
+        background-color: #f8f9fa;
+      }
+    }
+  }
+}
+
+// Modal adjustments if needed
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+// Button hover enhancements
+.btn {
+  transition: all 0.2s ease-in-out;
+  border-radius: 0.5rem;
+
+  &:hover {
+    transform: translateY(-1px);
   }
 
-  i {
-    color: #0066B3;
+  &.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+
+    &:hover {
+      background-color: #138496;
+      border-color: #117a8b;
+    }
   }
+}
 
-  //สีน้ำเงิน
-
-
-
+// Specific overrides
+.custom-ng-select-sm {
+  font-size: 0.875rem;
+  min-width: 120px;
 }

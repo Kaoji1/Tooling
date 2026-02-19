@@ -106,11 +106,7 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/purchase/add-user/add-user.component').then(m => m.AddUserComponent),
         data: { roles: ['purchase', 'admin'] }
       },
-      {
-        path: 'permission',
-        loadComponent: () => import('./pages/purchase/permission/permission.component').then(m => m.PermissionComponent),
-        data: { roles: ['purchase', 'view', 'admin'] }
-      },
+
       {
         path: 'analyze',
         loadComponent: () => import('./pages/purchase/analyze/analyze.component').then(m => m.AnalyzeComponent),
