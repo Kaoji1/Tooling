@@ -16,6 +16,7 @@ export class SidebarPurchaseComponent implements OnInit {
   Employee_Name: any = 'Guest';
   imagePath = 'assets/images/1.png';
   cartCount: number = 0;
+  role: any; // Add role property
 
   // 1. เพิ่ม @Inject(PLATFORM_ID) ใน constructor
   constructor(
@@ -31,6 +32,8 @@ export class SidebarPurchaseComponent implements OnInit {
         try {
           const user = JSON.parse(userData);
           this.Employee_Name = user.Employee_Name || 'Guest';
+          // Retrieve role
+          this.role = user.role || user.Role || sessionStorage.getItem('role');
         } catch (e) {
           console.error('Error parsing user data:', e);
         }
@@ -72,9 +75,18 @@ export class SidebarPurchaseComponent implements OnInit {
       if (result.isConfirmed) {
         // 4. การจัดการลบ session ก็ต้องทำเฉพาะบน Browser
         if (isPlatformBrowser(this.platformId)) {
+          // Trigger logout event for other tabs
+          localStorage.setItem('logout-event', Date.now().toString());
+
           sessionStorage.clear();
+          localStorage.clear();
+
+          // Try to close the tab if it's a secondary one (popup)
+          if (window.opener) {
+            window.close();
+          }
         }
-        this.router.navigate(['/login']);
+        this.router.navigate(['/login'], { replaceUrl: true });
       }
     });
   }

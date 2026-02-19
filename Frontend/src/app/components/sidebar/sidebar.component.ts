@@ -58,6 +58,19 @@ export class SidebarComponent implements OnInit {
     }
   }
 
+  // Handle clicks on restricted menus (e.g., for PC role)
+  handleRestrictedClick(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Access Denied',
+      text: 'You do not have permission to access this page.',
+      confirmButtonColor: '#d33'
+    });
+  }
+
 
   // ฟังก์ชันสำหรับดึงข้อมูลตะกร้าจาก Storage มานับจำนวน
   updateCartCount() {
@@ -100,12 +113,21 @@ export class SidebarComponent implements OnInit {
 
         //  ตรวจสอบก่อนล้างข้อมูล
         if (isPlatformBrowser(this.platformId)) {
+          // Trigger logout event for other tabs
+          localStorage.setItem('logout-event', Date.now().toString());
+
           // ล้างข้อมูลทั้งหมดใน Session Storage (Token, User Info, Cart)
           sessionStorage.clear();
+          localStorage.clear(); // Clear local storage too just in case
+
+          // Try to close the tab if it's a secondary one (popup)
+          if (window.opener) {
+            window.close();
+          }
         }
 
-        // Redirect ผู้ใช้กลับไปยังหน้า Login
-        this.router.navigate(['/login']);
+        // Redirect ผู้ใช้กลับไปยังหน้า Login และป้องกันการกด Back กลับมา
+        this.router.navigate(['/login'], { replaceUrl: true });
       }
     });
   }

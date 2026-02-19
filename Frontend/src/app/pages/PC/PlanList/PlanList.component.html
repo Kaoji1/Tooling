@@ -11,7 +11,7 @@
       <div class="dept-tabs-container">
         <div class="dept-tabs">
           <button *ngFor="let dept of departments" class="dept-tab" [class.active]="selectedDepartment === dept"
-            (click)="selectDepartment(dept)">
+            [class.disabled]="!isDeptAllowed(dept)" (click)="selectDepartment(dept)">
             {{ dept }}
           </button>
         </div>

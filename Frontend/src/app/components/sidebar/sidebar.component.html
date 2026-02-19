@@ -1,11 +1,38 @@
 <nav class="sidebar">
   <div class="top">
 
+    <!-- MinebeaMitsumi Logo (Pure CSS/HTML) -->
+    <div class="sidebar-logo-container">
+      <div class="logo-wrapper">
+        <div class="minebea-logo">
+          <span class="brand-text">
+            <span>M</span><span>i</span><span>n</span><span>e</span><span>b</span><span>e</span><span>a</span><span>M</span><span>i</span><span>t</span><span>s</span><span>u</span><span>m</span><span>i</span>
+          </span>
+        </div>
+        <div class="logo-slogan">
+          <span class="text-red italic">Passion</span>
+          <span class="text-blue italic">to</span>
+          <span class="text-blue italic">Create</span>
+          <span class="text-blue italic">Value</span>
+          <span class="text-blue italic">through</span>
+          <span class="text-red italic">Difference</span>
+        </div>
+      </div>
+    </div>
+
     <ul class="nav-links">
-      <li routerLinkActive="active" *ngIf="role === 'PC' || role === 'view' || role === 'admin'">
+      <!-- Main Menu (Allowed Items) -->
+      <li routerLinkActive="active" *ngIf="role === 'PC' || role === 'admin'">
         <a routerLink="/production/PCPlan">
           <i class="bi bi-clipboard-data"></i>
           <span class="link-text">PC Plan</span>
+        </a>
+      </li>
+
+      <li routerLinkActive="active" *ngIf="role === 'production' || role === 'admin'">
+        <a routerLink="/production/request">
+          <i class="bi bi-newspaper"></i>
+          <span class="link-text">Request</span>
         </a>
       </li>
 
@@ -16,22 +43,9 @@
         </a>
       </li>
 
-      <li routerLinkActive="active">
-        <a routerLink="/production/request">
-          <i class="bi bi-newspaper"></i>
-          <span class="link-text">Request</span>
-        </a>
-      </li>
 
-      <!-- <li routerLinkActive="active">
-        <a routerLink="/production/cart">
-          <i class="bi bi-cart"></i>
-          <span class="link-text">Cart</span>
-          <span class="cart-count" *ngIf="cartCount > 0">{{ cartCount }}</span>
-        </a>
-      </li> -->
 
-      <li routerLinkActive="active">
+      <li routerLinkActive="active" *ngIf="role === 'production' || role === 'admin'">
         <a routerLink="/production/return">
           <i class="bi bi-arrow-counterclockwise"></i>
           <span class="link-text">Return</span>
@@ -58,6 +72,41 @@
           <span class="link-text">History Print</span>
         </a>
       </li>
+
+      <!-- Restricted Menu (Locked Items for PC) -->
+      <div *ngIf="role === 'PC'" class="mt-4 border-top pt-2">
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-newspaper"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Request <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Return <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+      </div>
+
+      <!-- Restricted Menu (Locked Items for Production) -->
+      <div *ngIf="role === 'production'" class="mt-4 border-top pt-2">
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-clipboard-data"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              PC Plan <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+      </div>
     </ul>
   </div>
 

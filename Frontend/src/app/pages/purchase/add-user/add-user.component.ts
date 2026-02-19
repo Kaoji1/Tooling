@@ -26,13 +26,15 @@ export class AddUserComponent implements OnInit, OnDestroy {
   groupedEmployees: { [key: string]: any[] } = {}; // ข้อมูลพนักงานที่จัดกลุ่มตาม Role
 
   Role: any = [ // ตัวเลือก Role
-    { label: 'production', value: 'production' },
-    { label: 'purchase', value: 'purchase' },
-    { label: 'view', value: 'view' },
-    { label: 'admin', value: 'admin' },
-    { label: 'engineer', value: 'engineer' },
-    { label: 'production control', value: 'production control' },
-    { label: 'quality control', value: 'quality control' }
+    { label: 'Admin', value: 'admin' },
+    { label: 'PC', value: 'PC' },
+    { label: 'Production', value: 'production' },
+    { label: 'Purchase', value: 'purchase' },
+    { label: 'Engineer', value: 'engineer' },
+    { label: 'QC', value: 'QC' },
+    { label: 'Gage', value: 'Gage' },
+    { label: 'Cost', value: 'Cost' },
+    { label: 'View', value: 'view' }
   ];
 
   // รับค่าจากแบบฟอร์ม (เพิ่มใหม่)

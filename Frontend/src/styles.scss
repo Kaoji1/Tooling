@@ -477,8 +477,11 @@ body {
   }
 
   .sidebar .user-info,
-  .sidebar .logout-text {
+  .sidebar .logout-text,
+  .sidebar .sidebar-logo-container .minebea-logo,
+  .sidebar .sidebar-logo-container .logo-slogan {
     opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
   // 🎯 Sidebar inner <nav> expansion on hover (Global — applies to both production & purchase)
@@ -492,7 +495,9 @@ body {
     }
 
     .user-info,
-    .logout-text {
+    .logout-text,
+    .sidebar-logo-container .minebea-logo,
+    .sidebar-logo-container .logo-slogan {
       opacity: 1;
     }
   }

@@ -40,19 +40,32 @@ export class LoginComponent {
           // Redirect ตาม role
           switch (res.user.Role) {
             case 'view':
-              this.router.navigate(['/production/cart']); // view เข้าได้เฉพาะหน้านี้
-              window.open('/purchase/detail', '_blank');
+              // Existing logic for 'view' role (Cost is handled below as specific role if needed, or mapped here)
+              this.router.navigate(['/production/PlanList']);
+              break;
+
+            case 'Cost': // Explicit Cost role
+              this.router.navigate(['/production/PlanList']);
               break;
 
             case 'production':
               this.router.navigate(['/production/request']);
               break;
             case 'engineer':
-              this.router.navigate(['/production/request']);
+              this.router.navigate(['/production/PlanList']);
               break;
 
             case 'purchase':
               this.router.navigate(['/purchase/detail']);
+              break;
+
+            case 'PC':
+              this.router.navigate(['/production/PCPlan']);
+              break;
+
+            case 'QC':
+            case 'Gage':
+              this.router.navigate(['/production/PlanList']);
               break;
 
             case 'admin':
@@ -60,7 +73,8 @@ export class LoginComponent {
               window.open('/production/request', '_blank');   // ตัวอย่างเปิดหน้าอื่นพร้อมกัน
               break;
             default:
-              this.errorMessage = 'User access denied';
+              this.errorMessage = 'User access denied'; // Or redirect to a generic page like PlanList?
+            // this.router.navigate(['/production/PlanList']); 
           }
         } else {
           this.errorMessage = 'Invalid login response';

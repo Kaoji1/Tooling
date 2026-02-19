@@ -19,10 +19,180 @@
   overflow: hidden;
 
 
+
+
+  // --- Global Animation Trigger 1: Sidebar Hover ---
+  &:hover .sidebar-logo-container {
+    .brand-text span {
+      animation: waveJump 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .logo-slogan span {
+      animation: waveJumpDown 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+  }
+
+  // --- Global Animation Trigger 2: Specific Logo Hover (Forces Replay) ---
+  // Using a DIFFERENT animation name (even if keyframes are identical) forces the browser to restart the animation
+  .sidebar-logo-container:hover {
+    .brand-text span {
+      animation: waveJump2 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .logo-slogan span {
+      animation: waveJumpDown2 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+  }
+
   .top {
     display: flex;
     flex-direction: column;
     padding-top: 24px;
+
+    // Logo Styles
+    .sidebar-logo-container {
+      padding: 0 12px 20px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      cursor: pointer; // Interactive
+      user-select: none; // Prevent text selection
+      -webkit-user-select: none; // Safari/Chrome support
+
+      // Inner wrapper to constrain widths relative to each other
+      .logo-wrapper {
+        display: flex;
+        flex-direction: column;
+        width: fit-content;
+        gap: 2px; // Add a small physical gap between lines
+      }
+
+      // --- Animation Triggers moved to .sidebar:hover (above) ---
+
+      .minebea-logo {
+        margin-bottom: 0; // Removed negative margin to prevent collision
+        white-space: nowrap;
+        text-align: center;
+        line-height: 1;
+
+        .brand-text {
+          font-family: 'Arial', 'Helvetica', sans-serif;
+          font-size: 1.55rem;
+          font-weight: 900;
+          font-style: italic;
+          color: #005bb2;
+          letter-spacing: -1px;
+          display: block;
+
+          // Each letter wrapper
+          span {
+            display: inline-block;
+            transition: transform 0.3s ease;
+            transform-origin: bottom center;
+          }
+        }
+
+        // Sequential Delays for 14 letters (MinebeaMitsumi)
+        @for $i from 1 through 14 {
+          .brand-text span:nth-child(#{$i}) {
+            animation-delay: #{$i * 0.03}s; // Fixed: Used animation-delay for ripples
+          }
+        }
+      }
+
+      .logo-slogan {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        gap: 0;
+        font-family: 'Arial', 'Helvetica', sans-serif;
+        line-height: 1.2;
+
+        span {
+          font-size: 0.65rem;
+          font-weight: 700;
+          white-space: nowrap;
+          display: inline-block; // For transform
+          transition: transform 0.3s ease;
+        }
+
+        .text-red {
+          color: #E60012;
+        }
+
+        .text-blue {
+          color: #005bb2;
+        }
+
+        .italic {
+          font-style: italic;
+        }
+
+        // Sequential Delays for 6 words (Passion to Create Value through Difference)
+        @for $j from 1 through 6 {
+          span:nth-child(#{$j}) {
+            animation-delay: #{($j * 0.08) + 0.1}s; // Start after logo
+          }
+        }
+      }
+    }
+
+    // Keyframes 1: Sidebar Hover
+    @keyframes waveJump {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(-8px) scale(1.1);
+        text-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    @keyframes waveJumpDown {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(5px) scale(1.1);
+        text-shadow: 0 -3px 5px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    // Keyframes 2: Logo Hover (Identical copy to force restart)
+    @keyframes waveJump2 {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(-8px) scale(1.1);
+        text-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    @keyframes waveJumpDown2 {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(5px) scale(1.1);
+        text-shadow: 0 -3px 5px rgba(0, 0, 0, 0.15);
+      }
+    }
+
 
     // Navigation Links
     .nav-links {

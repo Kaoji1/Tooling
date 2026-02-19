@@ -122,7 +122,75 @@ export class PlanListComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
       this.checkPrintPermission();
+
+      // --- RBAC: Filter Departments based on Role ---
+      // Mapping: Role -> Visible Departments
+      const role = this.currentUser.Role;
+
+      // 1. Show ALL Viewtabs for everyone
+      this.departments = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gage', 'View'];
+
+      // 2. Determine which tabs are ACCESSIBLE (Clickable)
+      let allowed: string[] = [];
+
+      if (role) {
+        switch (role) {
+          case 'admin':
+            allowed = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gage', 'View'];
+            break;
+          case 'PC':
+            allowed = ['PC'];
+            break;
+          case 'production':
+            allowed = ['PD'];
+            break;
+          case 'purchase':
+            allowed = ['PH'];
+            break;
+          case 'engineer':
+            allowed = ['EN'];
+            break;
+          case 'QC':
+            allowed = ['QC'];
+            break;
+          case 'Gage':
+            allowed = ['Gage'];
+            break;
+          case 'Cost':
+          case 'view': // Assuming view role also sees View tab
+            allowed = ['View'];
+            break;
+          default:
+            allowed = []; // Or 'View' as safe default?
+            break;
+        }
+      }
+      this.allowedDepartments = allowed;
+
+      // 3. Set initial selected department
+      // If the previously selected dept (or default) is not allowed, switch to the first allowed one
+      if (!this.allowedDepartments.includes(this.selectedDepartment)) {
+        if (this.allowedDepartments.length > 0) {
+          // Select the first allowed department
+          this.selectDepartment(this.allowedDepartments[0]);
+        } else {
+          // Fallback if no specific allowed dept (shouldn't happen for valid roles)
+          this.selectedDepartment = '';
+        }
+      } else {
+        // Refresh call if needed or just keep current
+        this.selectDepartment(this.selectedDepartment);
+      }
+      if (this.departments.length > 0) {
+        this.selectedDepartment = this.departments[0];
+      } else {
+        this.selectedDepartment = ''; // Access blocked
+      }
+
+      // Initialize sub-tabs for the selected dept
+      this.selectDepartment(this.selectedDepartment);
     }
+
     this.loadPlanList();
     // this.loadMachineMasterData(); // Removed
   }
@@ -587,8 +655,19 @@ export class PlanListComponent implements OnInit {
     this.isEditModalOpen = false;
   }
 
+  allowedDepartments: string[] = []; // Stores departments the user can actually access
+
+  isDeptAllowed(dept: string): boolean {
+    return this.allowedDepartments.includes(dept);
+  }
+
   // --- Tab Selection ---
   selectDepartment(dept: string) {
+    // Prevent selection if not allowed
+    if (!this.isDeptAllowed(dept)) {
+      return;
+    }
+
     this.selectedDepartment = dept;
 
     // Dynamically update sub-tabs based on department

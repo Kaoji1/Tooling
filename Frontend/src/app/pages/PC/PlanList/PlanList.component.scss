@@ -1336,6 +1336,20 @@ $grid-cols: $grid-cols-pc;
                 font-weight: 700; // font-bold
                 box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); // shadow-sm
             }
+
+            &.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background-color: #e2e8f0; // Gray-200
+                color: #94a3b8; // Slate-400
+                pointer-events: none; // Prevent clicks
+                box-shadow: none;
+
+                &:hover {
+                    background-color: #e2e8f0;
+                    color: #94a3b8;
+                }
+            }
         }
     }
 }

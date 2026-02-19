@@ -19,52 +19,52 @@ export const routes: Routes = [
     path: 'production',
     canActivate: [AuthGuard],
     canActivateChild: [AuthGuard],
-    data: { roles: ['production', 'view', 'admin', 'engineer', 'PC'] },
+    data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gage', 'Cost'] },
     children: [
       {
         path: 'PCPlan',
         loadComponent: () => import('./pages/PC/PCPlan/PCPlan.component').then(m => m.PCPlanComponent),
-        data: { roles: ['PC', 'view', 'admin',] }
+        data: { roles: ['PC', 'admin'] }
       },
       {
         path: 'PlanList',
         loadComponent: () => import('./pages/PC/PlanList/PlanList.component').then(m => m.PlanListComponent),
-        data: { roles: ['production', 'PC', 'view', 'admin', 'engineer'] }
+        data: { roles: ['production', 'PC', 'view', 'admin', 'engineer', 'QC', 'Gage', 'Cost'] }
       },
       {
         path: 'request',
         loadComponent: () => import('./pages/user/request/request.component').then(m => m.requestComponent),
-        data: { roles: ['production', 'PC', 'admin', 'engineer'] }
+        data: { roles: ['production', 'admin'] }
       },
       {
         path: 'cart',
         loadComponent: () => import('./pages/user/cart/cart.component').then(m => m.CartComponent),
-        data: { roles: ['production', 'view', 'admin', 'engineer'] }
+        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gage', 'Cost'] }
       },
       {
         path: 'return',
         loadComponent: () => import('./pages/user/return/return.component').then(m => m.ReturnComponent),
-        data: { roles: ['production', 'view', 'admin', 'engineer'] }
+        data: { roles: ['production', 'admin'] }
       },
       {
         path: 'history',
         loadComponent: () => import('./pages/user/history/history.component').then(m => m.HistoryComponent),
-        data: { roles: ['production', 'view', 'admin', 'engineer'] }
+        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gage', 'Cost'] }
       },
       {
         path: 'about-us',
         loadComponent: () => import('./pages/user/about-us/about-us.component').then(m => m.AboutUsComponent),
-        data: { roles: ['production', 'admin', 'engineer'] }
+        data: { roles: ['production', 'admin', 'engineer', 'view'] }
       },
       {
         path: 'historyprint',
         loadComponent: () => import('./pages/user/history-print/history-print.component').then(m => m.HistoryPrintComponent),
-        data: { roles: ['production', 'view', 'admin', 'engineer'] }
+        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gage', 'Cost'] }
       },
       {
         path: 'return-history',
         loadComponent: () => import('./pages/user/return-history/return-history.component').then(m => m.ReturnHistoryComponent),
-        data: { roles: ['production', 'view', 'admin', 'engineer'] }
+        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gage', 'Cost'] }
       }
     ]
   },

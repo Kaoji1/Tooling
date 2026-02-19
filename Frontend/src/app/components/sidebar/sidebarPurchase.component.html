@@ -1,43 +1,63 @@
 <nav class="sidebar">
   <div class="top">
 
+    <!-- MinebeaMitsumi Logo (Pure CSS/HTML) -->
+    <div class="sidebar-logo-container">
+      <div class="logo-wrapper">
+        <div class="minebea-logo">
+          <span class="brand-text">
+            <span>M</span><span>i</span><span>n</span><span>e</span><span>b</span><span>e</span><span>a</span><span>M</span><span>i</span><span>t</span><span>s</span><span>u</span><span>m</span><span>i</span>
+          </span>
+        </div>
+        <div class="logo-slogan">
+          <span class="text-red italic">Passion</span>
+          <span class="text-blue italic">to</span>
+          <span class="text-blue italic">Create</span>
+          <span class="text-blue italic">Value</span>
+          <span class="text-blue italic">through</span>
+          <span class="text-red italic">Difference</span>
+        </div>
+      </div>
+    </div>
+
     <ul class="nav-links">
-      <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+        *ngIf="role === 'admin' || role === 'purchase'">
         <a routerLink="/purchase/detail">
           <i class="bi bi-newspaper"></i>
           <span class="link-text">Request List</span>
         </a>
       </li>
 
-      <li routerLinkActive="active">
+      <li routerLinkActive="active" *ngIf="role === 'admin' || role === 'purchase'">
         <a routerLink="/purchase/detailcasesetup">
           <i class="bi bi-tools"></i>
           <span class="link-text">Case SETUP</span>
         </a>
       </li>
 
-      <li routerLinkActive="active">
+      <li routerLinkActive="active" *ngIf="role === 'admin' || role === 'purchase'">
         <a routerLink="/purchase/requestlist">
           <i class="bi bi-card-checklist"></i>
           <span class="link-text">Total Item</span>
         </a>
       </li>
 
-      <li routerLinkActive="active">
+      <li routerLinkActive="active" *ngIf="role === 'admin' || role === 'purchase'">
         <a routerLink="/purchase/returnlist">
           <i class="bi bi-arrow-return-left"></i>
           <span class="link-text">Return List</span>
         </a>
       </li>
 
-      <li routerLinkActive="active">
+      <li routerLinkActive="active" *ngIf="role === 'admin' || role === 'purchase'">
         <a routerLink="/purchase/history-request">
           <i class="bi bi-clock-history"></i>
           <span class="link-text">History</span>
         </a>
       </li>
 
-      <li routerLinkActive="active">
+      <li routerLinkActive="active" *ngIf="role === 'admin' || role === 'purchase'">
         <a routerLink="/purchase/analyze">
           <i class="bi bi-clipboard-data"></i>
           <span class="link-text">Dashboard</span>
@@ -51,7 +71,7 @@
         </a>
       </li>
 
-      <li routerLinkActive="active">
+      <li routerLinkActive="active" *ngIf="role === 'admin'">
         <a routerLink="/purchase/add-user">
           <i class="bi bi-person-fill-add"></i>
           <span class="link-text">Add User</span>
