@@ -228,6 +228,20 @@ export class requestComponent implements OnInit {
         this.mcTags = mcNoParam.split(',').map((s: string) => s.trim()).filter((s: string) => s !== '');
       }
 
+      // Handle Date (DueDate)
+      const dateParam = params['date'];
+      if (dateParam) {
+        // Expected format from PlanList: dd/mm/yyyy
+        const parts = dateParam.split('/');
+        if (parts.length === 3) {
+          // new Date(year, monthIndex, day)
+          this.DueDate_ = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        } else {
+          // Try standard parsing
+          this.DueDate_ = new Date(dateParam);
+        }
+      }
+
       this.api.get_CaseSET_Dropdown_PartNo({ Division: divisionCode, ItemNo: null }).subscribe((parts: any[]) => {
         this.PartNo = parts.map((p: any) => ({ PartNo: p.PartNo }));
 
