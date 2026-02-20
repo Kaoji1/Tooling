@@ -154,31 +154,22 @@
               </ng-select>
             </td>
 
-            <!-- Spacers: PartNo, Spec, Qty, Total, OnHand -->
+            <!-- Spacers: ItemName, Spec, Qty, Total -->
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-
-            <!-- Status (Col 21) -->
-            <td>
-              <ng-select [items]="StatusList" bindLabel="label" bindValue="value" [(ngModel)]="Status_"
-                (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body" class="no-expand"
-                style="min-width: 90px;">
-              </ng-select>
-            </td>
 
             <!-- Remainder spacers -->
             <td></td> <!-- Phone -->
 
-            <!-- Purchase Columns (10 cols) -->
-            <td colspan="10"></td>
+            <!-- Purchase Columns (9 cols) -->
+            <td colspan="9"></td>
 
           </tr>
           <tr class="header-group-row">
-            <th class="header-production" colspan="22">For Production</th>
-            <th class="header-purchase" colspan="10">For Purchase</th>
+            <th class="header-production" colspan="20">For Production</th>
+            <th class="header-purchase" colspan="9">For Purchase</th>
           </tr>
           <tr>
             <!-- For Production Columns -->
@@ -229,13 +220,6 @@
                 ?
                 '↑' : '↓' }}</span></th>
             <th style="width: 60px;">Total</th>
-            <th (click)="onSort('STOCK_ON_HAND')" style="width: 70px;">On Hand <span
-                *ngIf="sortKey === 'STOCK_ON_HAND'">{{
-                sortAsc
-                ? '↑' : '↓' }}</span></th>
-            <th (click)="onSort('Status')" style="min-width: 90px;">Status <span *ngIf="sortKey === 'Status'">{{
-                sortAsc
-                ? '↑' : '↓' }}</span></th>
             <th style="min-width: 90px;">Phone</th>
 
             <!-- For Purchase Columns (Widths Adjusted) -->
@@ -247,8 +231,8 @@
                 }}</span></th>
             <th style="min-width: 100px;">Mat Lot</th>
             <th style="min-width: 100px;">PH Stock Loc</th>
-            <th style="min-width: 80px;">Stock PD</th>
-            <th style="min-width: 80px;">PH Stock</th>
+            <th (click)="onSort('STOCK_ON_HAND')" style="min-width: 80px;">On Hand <span
+                *ngIf="sortKey === 'STOCK_ON_HAND'">{{ sortAsc ? '↑' : '↓' }}</span></th>
             <th style="width: 70px;">Confirm</th>
             <th style="min-width: 120px;">Remark</th>
           </tr>
@@ -319,12 +303,6 @@
             <!-- Total (New) - Placeholder or calculation -->
             <td> - </td>
 
-            <!-- On Hand -->
-            <td>{{ item.STOCK_ON_HAND }}</td>
-
-            <!-- Status -->
-            <td>{{ item.Status }}</td>
-
 
 
             <!-- Phone -->
@@ -378,14 +356,11 @@
               </ng-template>
             </td>
 
-            <!-- PH Stock Location (Placeholder) -->
-            <td></td>
+            <!-- PH Stock Location -->
+            <td>{{ item.MAIN_LOCATION }}</td>
 
-            <!-- Stock PD Qty (Placeholder) -->
-            <td></td>
-
-            <!-- PH Stock Qty (Placeholder) -->
-            <td></td>
+            <!-- On Hand -->
+            <td>{{ item.STOCK_ON_HAND }}</td>
 
             <!-- PH Confirm (Button to Save or Status Change) -->
             <td>
@@ -475,18 +450,11 @@
             <td></td>
             <td></td>
             <td></td>
-            <td>
-              <ng-select [items]="StatusList" bindLabel="label" bindValue="value" [(ngModel)]="Status_"
-                (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body" class="no-expand"
-                style="min-width: 90px;">
-              </ng-select>
-            </td>
-            <td></td>
-            <td colspan="10"></td>
+            <td colspan="9"></td>
           </tr>
           <tr class="header-group-row">
-            <th class="header-production" colspan="22">For Production (Setup Tool)</th>
-            <th class="header-purchase" colspan="10">For Purchase</th>
+            <th class="header-production" colspan="20">For Production (Setup Tool)</th>
+            <th class="header-purchase" colspan="9">For Purchase</th>
           </tr>
           <tr>
             <!-- Production Columns (Matched to Cutting Tool) -->
@@ -513,8 +481,6 @@
             <th style="min-width: 150px;">Spec</th>
             <th style="width: 60px;">QTY</th>
             <th style="width: 60px;">Total</th>
-            <th style="width: 70px;">On Hand</th>
-            <th style="min-width: 90px;">Status</th>
             <th style="min-width: 90px;">Phone</th>
 
             <!-- Purchase Columns (Matched to Cutting Tool) -->
@@ -524,8 +490,7 @@
             <th style="width: 60px;">QTY</th>
             <th style="min-width: 100px;">Mat Lot</th>
             <th style="min-width: 100px;">PH Stock Loc</th>
-            <th style="min-width: 80px;">Stock PD</th>
-            <th style="min-width: 80px;">PH Stock</th>
+            <th style="min-width: 80px;">On Hand</th>
             <th style="width: 70px;">Confirm</th>
             <th style="min-width: 120px;">Remark</th>
           </tr>
@@ -575,12 +540,6 @@
 
             <!-- Total -->
             <td> - </td>
-
-            <!-- On Hand -->
-            <td>{{ item.ON_HAND }}</td>
-
-            <!-- Status -->
-            <td>{{ item.Status }}</td>
 
             <!-- Phone -->
             <td>{{ item.PhoneNo }}</td>
@@ -634,9 +593,8 @@
               </ng-template>
             </td>
 
-            <td></td> <!-- Stock Loc -->
-            <td></td> <!-- Stock PD -->
-            <td></td> <!-- PH Stock -->
+            <td>{{ item.MAIN_LOCATION }}</td> <!-- Stock Loc -->
+            <td>{{ item.ON_HAND }}</td> <!-- On Hand -->
 
             <!-- Confirm -->
             <td>
