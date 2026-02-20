@@ -114,6 +114,69 @@
           </a>
         </li>
       </div>
+
+      <!-- Restricted Menu (Locked Items for Engineer) -->
+      <div *ngIf="role === 'engineer'" class="mt-4 border-top pt-2">
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-clipboard-data"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              PC Plan <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-newspaper"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Request <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Return <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+      </div>
+
+      <!-- Restricted Menu (Locked Items for QC, Gage, Cost, View) -->
+      <div *ngIf="role === 'QC' || role === 'Gage' || role === 'Cost' || role === 'View' || role === 'view'"
+        class="mt-4 border-top pt-2">
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-clipboard-data"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              PC Plan <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-newspaper"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Request <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Return <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+      </div>
     </ul>
   </div>
 

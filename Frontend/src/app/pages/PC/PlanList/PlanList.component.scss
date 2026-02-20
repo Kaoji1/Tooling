@@ -79,7 +79,7 @@
     }
 
     .header-right {
-        flex: 1;
+        flex: 2; // Increased to fit more buttons (EN tabs + Export)
         display: flex;
         justify-content: flex-end;
         gap: 12px;
@@ -98,7 +98,7 @@
             gap: 8px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
 
             i {
                 font-size: 1.1rem;
@@ -106,7 +106,7 @@
 
             &:hover {
                 transform: translateY(-2px) scale(1.02);
-                box-shadow: 0 8px 16px rgba(16, 185, 129, 0.4);
+                box-shadow: 0 6px 10px rgba(16, 185, 129, 0.3);
                 background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
             }
 
@@ -274,8 +274,8 @@
 // 1. PC (3 buttons) -> Action 240px
 $grid-cols-pc: 50px 240px 80px 120px 60px 140px 100px 100px 60px 100px 120px 120px 180px 80px 80px 200px 80px 80px 80px;
 
-// 2. PD, En, QC (2 buttons) -> Action 170px
-$grid-cols-medium: 50px 170px 80px 120px 60px 140px 100px 100px 60px 100px 120px 120px 180px 80px 80px 200px 80px 80px 80px;
+// 2. PD, En, QC (2-3 buttons) -> Action 220px (Increased from 170px to fit ADD PATH + VIEW)
+$grid-cols-medium: 50px 220px 80px 120px 60px 140px 100px 100px 60px 100px 120px 120px 180px 80px 80px 200px 80px 80px 80px;
 
 // 3. PH, Gage, View (1 button) -> Action 100px
 $grid-cols-small: 50px 100px 80px 120px 60px 140px 100px 100px 60px 100px 120px 120px 180px 80px 80px 200px 80px 80px 80px;
@@ -312,7 +312,7 @@ $grid-cols: $grid-cols-pc;
 
         // Adjust Print Column Sticky Left
         .grid-cell.sticky-col.col-print {
-            left: 220px !important; // 50 + 170
+            left: 270px !important; // 50 + 220
         }
     }
 
@@ -339,6 +339,7 @@ $grid-cols: $grid-cols-pc;
     position: sticky;
     top: 0;
     z-index: 10;
+    min-width: max-content; // Ensure header background spans full scroll width
 
     .grid-cell {
         background-color: #ffffff;
@@ -398,6 +399,7 @@ $grid-cols: $grid-cols-pc;
     grid-template-columns: $grid-cols;
     border-bottom: 1px solid var(--color-border);
     transition: background-color 0.15s;
+    min-width: max-content; // Ensure row background spans full scroll width
 
     // Default Row Background Variable
     --row-bg: #ffffff;
@@ -642,7 +644,7 @@ $grid-cols: $grid-cols-pc;
     border: none;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
     letter-spacing: 0.05em;
     display: inline-flex;
     align-items: center;
@@ -652,7 +654,7 @@ $grid-cols: $grid-cols-pc;
     &:hover {
         background: linear-gradient(135deg, #059669 0%, #047857 100%); // Darker Green
         transform: translateY(-2px);
-        box-shadow: 0 6px 12px -2px rgba(5, 150, 105, 0.4);
+        box-shadow: 0 4px 6px rgba(5, 150, 105, 0.3);
     }
 
     &:active {
@@ -671,7 +673,7 @@ $grid-cols: $grid-cols-pc;
     border: none;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
     letter-spacing: 0.05em;
     display: inline-flex; // Ensure consistent alignment
     align-items: center;
@@ -683,7 +685,7 @@ $grid-cols: $grid-cols-pc;
     &:hover {
         background-color: #2563eb; // Blue 600
         transform: translateY(-2px);
-        box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.4);
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
     }
 
     &:active {
@@ -732,7 +734,7 @@ $grid-cols: $grid-cols-pc;
     border: none;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
     letter-spacing: 0.05em;
     display: inline-flex;
     align-items: center;
@@ -742,7 +744,7 @@ $grid-cols: $grid-cols-pc;
     &:hover {
         background-color: #dc2626; // Red 600
         transform: translateY(-2px);
-        box-shadow: 0 6px 12px -2px rgba(220, 38, 38, 0.4);
+        box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
     }
 
     &:active {
@@ -761,7 +763,7 @@ $grid-cols: $grid-cols-pc;
     border: none;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
     letter-spacing: 0.05em;
     display: inline-flex;
     align-items: center;
@@ -771,7 +773,7 @@ $grid-cols: $grid-cols-pc;
     &:hover {
         background-color: #059669; // Emerald 600
         transform: translateY(-2px);
-        box-shadow: 0 6px 12px -2px rgba(5, 150, 105, 0.4);
+        box-shadow: 0 4px 6px rgba(5, 150, 105, 0.3);
     }
 
     &:active {
@@ -790,7 +792,7 @@ $grid-cols: $grid-cols-pc;
     border: none;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
     letter-spacing: 0.05em;
     display: inline-flex;
     align-items: center;
