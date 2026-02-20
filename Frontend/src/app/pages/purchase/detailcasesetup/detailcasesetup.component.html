@@ -124,23 +124,16 @@
                         <td></td> <!-- Req Spec -->
                         <td></td> <!-- QTY -->
                         <td></td> <!-- Total -->
-                        <td></td> <!-- On Hand -->
-                        <td>
-                            <ng-select [items]="StatusList" bindLabel="label" bindValue="value" [(ngModel)]="Status_"
-                                (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body"
-                                class="no-expand" style="min-width: 90px;">
-                            </ng-select>
-                        </td>
                         <td></td> <!-- Phone -->
 
                         <!-- Purchase Columns -->
-                        <td colspan="10"></td>
+                        <td colspan="9"></td>
                     </tr>
 
                     <!-- Group Headers -->
                     <tr class="header-group-row">
-                        <th class="header-production" colspan="23">For Production (Setup Tool)</th>
-                        <th class="header-purchase" colspan="10">For Purchase</th>
+                        <th class="header-production" colspan="21">For Production (Setup Tool)</th>
+                        <th class="header-purchase" colspan="9">For Purchase</th>
                     </tr>
 
                     <!-- Column Headers -->
@@ -184,10 +177,6 @@
                         <th (click)="onSort('QTY')" style="width: 60px;">QTY <span *ngIf="sortKey === 'QTY'">{{ sortAsc
                                 ? '↑' : '↓' }}</span></th>
                         <th style="width: 60px;">Total</th>
-                        <th (click)="onSort('STOCK_ON_HAND')" style="width: 80px;">On Hand <span
-                                *ngIf="sortKey === 'STOCK_ON_HAND'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                        <th (click)="onSort('Status')" style="min-width: 100px;">Status <span
-                                *ngIf="sortKey === 'Status'">{{ sortAsc ? '↑' : '↓' }}</span></th>
                         <th style="min-width: 120px;">Phone</th>
 
                         <!-- Purchase Columns -->
@@ -198,8 +187,8 @@
                                 ? '↑' : '↓' }}</span></th>
                         <th style="min-width: 100px;">Mat Lot</th>
                         <th style="min-width: 100px;">PH Stock Loc</th>
-                        <th style="min-width: 80px;">Stock PD</th>
-                        <th style="min-width: 80px;">PH Stock</th>
+                        <th (click)="onSort('STOCK_ON_HAND')" style="min-width: 80px;">On Hand <span
+                                *ngIf="sortKey === 'STOCK_ON_HAND'">{{ sortAsc ? '↑' : '↓' }}</span></th>
                         <th style="width: 70px;">Confirm</th>
                         <th style="min-width: 120px;">Remark</th>
                     </tr>
@@ -233,8 +222,6 @@
                         <td class="spec-column">{{ item.Req_SPEC }}</td>
                         <td>{{ item.QTY }}</td>
                         <td> - </td>
-                        <td>{{ item.STOCK_ON_HAND }}</td>
-                        <td>{{ item.Status }}</td>
                         <td>{{ item.PhoneNo }}</td>
 
                         <!-- Purchase Input Cols -->
@@ -272,9 +259,8 @@
                                     item.MatLot || '&nbsp;' }}</span>
                             </ng-template>
                         </td>
-                        <td></td> <!-- Stock Loc -->
-                        <td></td> <!-- Stock PD -->
-                        <td></td> <!-- PH Stock -->
+                        <td>{{ item.MAIN_LOCATION }}</td> <!-- Stock Loc -->
+                        <td>{{ item.STOCK_ON_HAND }}</td> <!-- On Hand -->
                         <td><button class="btn btn-success btn-sm btn-ok" (click)="confirmItem(item)">OK</button>
                         </td>
                         <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()" style="cursor: pointer;">

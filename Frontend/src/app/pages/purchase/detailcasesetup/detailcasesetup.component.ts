@@ -250,7 +250,6 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
     }
 
     clearFilters() {
-        this.Division_ = null;
         this.Status_ = null;
         this.Requester_ = null;
         this.Fac_ = null;
@@ -581,6 +580,8 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
     private updateRowWithFound(row: any, found: any) {
         const spec = found.SPEC || found.Specification || found.Spec;
         const itemName = found.ItemName || found.EnglishName || found.Name;
+        const onHand = found.ON_HAND || found.STOCK_ON_HAND || found.OnHand || 0;
+        const mainLocation = found.MAIN_LOCATION || found.MainLocation || '';
 
         if (typeof spec !== 'undefined' && spec !== null) {
             row.SPEC = String(spec).trim();
@@ -588,6 +589,10 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
         if (typeof itemName !== 'undefined' && itemName !== null) {
             row.ItemName = String(itemName).trim();
         }
+
+        row.STOCK_ON_HAND = onHand;
+        row.MAIN_LOCATION = mainLocation;
+
         this.cdRef.detectChanges();
     }
 
