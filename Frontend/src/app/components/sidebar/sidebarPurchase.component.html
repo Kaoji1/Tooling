@@ -21,6 +21,12 @@
     </div>
 
     <ul class="nav-links">
+      <li routerLinkActive="active" *ngIf="role === 'admin' || role === 'purchase'">
+        <a routerLink="/purchase/PlanList">
+          <i class="bi bi-list-check"></i>
+          <span class="link-text">Plan List</span>
+        </a>
+      </li>
       <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
         *ngIf="role === 'admin' || role === 'purchase'">
         <a routerLink="/purchase/detail">

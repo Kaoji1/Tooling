@@ -77,6 +77,11 @@ export const routes: Routes = [
     data: { roles: ['purchase', 'view', 'admin'] },
     children: [
       {
+        path: 'PlanList',
+        loadComponent: () => import('./pages/PC/PlanList/PlanList.component').then(m => m.PlanListComponent),
+        data: { roles: ['purchase', 'view', 'admin'] }
+      },
+      {
         path: 'detail',
         loadComponent: () => import('./pages/purchase/detail/detail.component').then(m => m.DetailComponent),
         data: { roles: ['purchase', 'view', 'admin'] }

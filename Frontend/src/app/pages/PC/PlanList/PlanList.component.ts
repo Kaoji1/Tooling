@@ -181,11 +181,7 @@ export class PlanListComponent implements OnInit {
         // Refresh call if needed or just keep current
         this.selectDepartment(this.selectedDepartment);
       }
-      if (this.departments.length > 0) {
-        this.selectedDepartment = this.departments[0];
-      } else {
-        this.selectedDepartment = ''; // Access blocked
-      }
+
 
       // Initialize sub-tabs for the selected dept
       this.selectDepartment(this.selectedDepartment);

@@ -56,7 +56,7 @@ export class LoginComponent {
               break;
 
             case 'purchase':
-              this.router.navigate(['/purchase/detail']);
+              this.router.navigate(['/purchase/PlanList']);
               break;
 
             case 'PC':

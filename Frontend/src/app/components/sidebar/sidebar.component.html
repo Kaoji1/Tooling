@@ -21,6 +21,13 @@
     </div>
 
     <ul class="nav-links">
+      <!-- Purchase Role: Plan List at Top -->
+      <li routerLinkActive="active" *ngIf="role === 'purchase'">
+        <a routerLink="/purchase/PlanList">
+          <i class="bi bi-list-check"></i>
+          <span class="link-text">Plan List</span>
+        </a>
+      </li>
       <!-- Main Menu (Allowed Items) -->
       <li routerLinkActive="active" *ngIf="role === 'PC' || role === 'admin'">
         <a routerLink="/production/PCPlan">
