@@ -14,13 +14,28 @@ exports.getdataall = async (req, res) => {
   try {
     const pool = await poolPromise;
     const result = await pool
-    .request()
-    .query("SELECT * FROM [dbo].[View_CuttingTool_Price_Exchange]");
+      .request()
+      .query("SELECT * FROM [db_Tooling].[viewer].[View_Cost_Analyze_Complete]");
 
     res.json(result.recordset);
-  } 
+  }
   catch (error) {
     console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+//เรียกข้อมูลสำหรับหน้า Cost Analyze
+exports.getcostanalyze = async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .query("SELECT * FROM [db_Tooling].[viewer].[View_Cost_Analyze_Complete]");
+
+    res.json(result.recordset);
+  }
+  catch (error) {
+    console.error("Error executing Cost Analyze query:", error.stack);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };

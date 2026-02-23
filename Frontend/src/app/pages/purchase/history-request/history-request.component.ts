@@ -24,7 +24,6 @@ export class HistoryRequestComponent implements OnInit {
   userRole: string = 'view';
   requests: any[] = [];
   filteredRequests: any[] = [];
-  editingIndex: { [key: string]: number } = {};
   statussList: { label: string, value: string }[] = [];
   divisionList = [
     { label: '7122', value: '7122' },
@@ -150,7 +149,7 @@ export class HistoryRequestComponent implements OnInit {
           QTY: item.QTY ?? 0,
           MCType: item.MCType ?? '',
           MC_Code: item.MC_Code ?? '',
-          MC_No: item.MCNo ?? item.MC_No ?? '',
+          MC_No: (item.MCNo ?? item.MC_No ?? '').toString().split(',')[0].trim(),
           DueDate: item.DueDate ?? '',
           DateTime_Record: item.DateTime_Record ?? ''
         }));
@@ -359,8 +358,7 @@ export class HistoryRequestComponent implements OnInit {
   }
 
   clearFilters() {
-    // เคลียร์ dropdown
-    this.Division_ = '';
+    // เคลียร์เฉพาะ filter ในตาราง (ไม่เคลียร์ Division)
     this.PartNo_ = '';
     this.ItemNo_ = '';
     this.Spec_ = '';
@@ -368,11 +366,7 @@ export class HistoryRequestComponent implements OnInit {
     this.Case_ = '';
     this.DocumentNo_ = '';
 
-    // เคลียร์วันที่
-    this.fromDate = '';
-    this.toDate = '';
-
-    // ถ้าอยากรีเฟรชตารางหลังเคลียร์
+    // รีเฟรชตารางหลังเคลียร์
     this.onFilter();
   }
 
@@ -392,44 +386,6 @@ export class HistoryRequestComponent implements OnInit {
   //   });
   // }
 
-  // เริ่มแก้ไขแถว
-  startEdit(id: string, index: number) {
-    this.editingIndex[id] = index;
-  }
-
-  saveEdit(item: any) {
-    const publicId = item.Public_Id || item.ID_Request;
-    const index = this.editingIndex[publicId];
-    if (index !== undefined) {
-      // อัปเดต filteredRequests
-      this.filteredRequests[index].QTY = item.QTY;
-
-      // อัปเดต requests ตาม ID ให้ตรงกับ filteredRequests
-      const reqIndex = this.requests.findIndex(r => (r.Public_Id || r.ID_Request) === publicId);
-      if (reqIndex !== -1) {
-        this.requests[reqIndex].QTY = item.QTY;
-      }
-
-      // บันทึกกลับ localStorage (หรือเรียก API)
-      if (isPlatformBrowser(this.platformId)) {
-        localStorage.setItem('purchaseRequest', JSON.stringify(this.requests));
-      }
-
-      // ลบค่า editingIndex
-      delete this.editingIndex[publicId];
-
-      Swal.fire({ icon: 'success', title: 'Updated!', text: 'QTY updated successfully.' });
-    }
-  }
-
-  cancelEdit(item: any) {
-    const publicId = item.Public_Id || item.ID_Request;
-    const req = this.requests.find(r => (r.Public_Id || r.ID_Request) === publicId);
-    if (req && this.editingIndex[publicId] !== undefined) {
-      this.filteredRequests[this.editingIndex[publicId]].QTY = req.QTY;
-    }
-    delete this.editingIndex[publicId];
-  }
 
 
   fileName = "ExcelSheet.xlsx";

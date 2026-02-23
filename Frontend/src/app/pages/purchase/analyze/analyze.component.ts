@@ -2,6 +2,7 @@ import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Inject, PLATFO
 import { NgSelectModule } from '@ng-select/ng-select';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AnalyzeService } from '../../../core/services/analyze.service';
@@ -20,11 +21,10 @@ import html2canvas from 'html2canvas';
   imports: [
     NgSelectModule,
     FormsModule,
-    RouterOutlet,
     CommonModule,
     SidebarPurchaseComponent,
-
   ],
+
   templateUrl: './analyze.component.html',
   styleUrls: ['./analyze.component.scss']
 })
@@ -34,6 +34,9 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
   public loading: boolean = false;
   public error: string = '';
   public dataFromDB: any[] = [];
+
+  // Filter สำหรับ Cost Analyze
+  selectedCostDivision: string = 'ALL';
 
   // ตัวเลือก dropdown
   divisions = [
@@ -61,8 +64,6 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
 
   selectedDivision: string = 'ALL';
   selectedDivisionStacked: string = 'ALL';
-  selectDatestart: string | null = null;
-  selectDateend: string | null = null;
   selectedCase: string = 'ALL';
   uniqueCases: string[] = [];
   selectedCaseall: string = 'ALL';
@@ -73,6 +74,27 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
   public pieChart: Chart | null = null;
   public horizontalBarChart: Chart | null = null;
   public stackedBarChart: Chart | null = null; // ถ้ามี stacked bar
+  public comboChart: Chart | null = null; // ✅ เพิ่ม Combo Chart
+
+  public costData: any[] = []; // ข้อมูลจาก getcostanalyze
+  public comboSortBy: 'qty' | 'price' = 'qty'; // Default เรียงตามจำนวน
+  public comboTopN: number = 10; // Default Top N สำหรับ Combo Chart
+  public costDateStart: string | null = null;
+  public costDateEnd: string | null = null;
+
+  // Overview Charts Date Filter
+  public overviewDateStart: string | null = null;
+  public overviewDateEnd: string | null = null;
+
+  // Summary Cards
+  public totalCostTHB: number = 0;
+  public mostExpensiveTool: { name: string; cost: number } = { name: '-', cost: 0 };
+  public mostUsedCase: { name: string; count: number } = { name: '-', count: 0 };
+
+  // Cost Stacked Bar
+  public costStackedBarChart: Chart | null = null;
+  public costStackedGroupBy: 'Division' | 'CASE' | 'Process' = 'Division';
+  public costStackedValueType: 'qty' | 'price' = 'price';
 
   constructor(
     private analyzeService: AnalyzeService,
@@ -109,6 +131,7 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     // DOM พร้อมแล้ว เรียก API
     this.fetchAnalyzeData();
+    this.fetchCostAnalyzeData(); // ✅ โหลดข้อมูล Combo Chart
   }
 
   fetchAnalyzeData() {
@@ -155,19 +178,428 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
     });
   }
 
+  fetchCostAnalyzeData() {
+    this.loading = true;
+    this.analyzeService.getcostanalyze().subscribe({
+      next: (response: any[]) => {
+        this.costData = response;
+        this.loading = false;
+        this.calculateSummaryCards(); // คำนวณข้อมูลสำหรับ Summary Cards
+        this.renderComboChart(); // วาด Combo Chart
+        this.renderCostStackedBar(); // วาด Stacked Bar Chart
+      },
+      error: (err) => {
+        console.error("Error fetching cost analyze data:", err);
+        this.loading = false;
+      }
+    });
+  }
 
+  applyCostFilters() {
+    this.calculateSummaryCards();
+    this.renderComboChart();
+    this.renderCostStackedBar();
+  }
 
+  clearCostDate() {
+    this.costDateStart = null;
+    this.costDateEnd = null;
+    this.applyCostFilters();
+  }
 
+  applyOverviewFilters() {
+    this.renderStackedBarChart();
+    this.renderHorizontalBarChart();
+    this.renderStatusChart();
+  }
 
+  clearOverviewDate() {
+    this.overviewDateStart = null;
+    this.overviewDateEnd = null;
+    this.applyOverviewFilters();
+  }
 
+  getFilteredOverviewData(): any[] {
+    let filteredData = this.data || [];
+
+    if (this.overviewDateStart) {
+      const startDate = new Date(this.overviewDateStart);
+      filteredData = filteredData.filter(item => new Date(item.DateComplete) >= startDate);
+    }
+    if (this.overviewDateEnd) {
+      const endDate = new Date(this.overviewDateEnd);
+      endDate.setHours(23, 59, 59, 999);
+      filteredData = filteredData.filter(item => new Date(item.DateComplete) <= endDate);
+    }
+
+    return filteredData;
+  }
+
+  getFilteredCostData(): any[] {
+    let filteredData = this.selectedCostDivision === 'ALL'
+      ? this.costData
+      : this.costData.filter(d => d.Division === this.selectedCostDivision);
+
+    if (this.costDateStart) {
+      const startDate = new Date(this.costDateStart);
+      filteredData = filteredData.filter(item => new Date(item.DateComplete) >= startDate);
+    }
+    if (this.costDateEnd) {
+      const endDate = new Date(this.costDateEnd);
+      endDate.setHours(23, 59, 59, 999);
+      filteredData = filteredData.filter(item => new Date(item.DateComplete) <= endDate);
+    }
+
+    return filteredData;
+  }
+
+  calculateSummaryCards() {
+    if (!this.costData || this.costData.length === 0) return;
+
+    const filteredData = this.getFilteredCostData();
+
+    // 1. คำนวณยอดรวมต้นทุนทั้งหมด
+    this.totalCostTHB = filteredData.reduce((sum, item) => sum + (Number(item.Total_Price_THB) || 0), 0);
+
+    // 2. หา Tooling ที่แพงที่สุด (นับตาม SPEC หรือ ItemNo แล้วรวมราคา)
+    const toolCostMap: { [spec: string]: number } = {};
+    const caseCountMap: { [c: string]: number } = {};
+
+    filteredData.forEach(item => {
+      // สำหรับ Most Expensive Tool (รวมมูลค่า THB)
+      const spec = item.SPEC || 'ไม่ระบุ';
+      toolCostMap[spec] = (toolCostMap[spec] || 0) + (Number(item.Total_Price_THB) || 0);
+
+      // สำหรับ Most Used Case (นับจำนวนครั้งหรือเบิกใช้ QTY, ในที่นี้สมมติเป็นยอด QTY รวม)
+      const c = item.CASE || 'ไม่ระบุ';
+      caseCountMap[c] = (caseCountMap[c] || 0) + (Number(item.QTY) || 0);
+    });
+
+    // หา Tool ที่ยอดรวมแพงสุด
+    let maxCost = 0;
+    let maxTool = '-';
+    for (const [spec, cost] of Object.entries(toolCostMap)) {
+      if (cost > maxCost) {
+        maxCost = cost;
+        maxTool = spec;
+      }
+    }
+    this.mostExpensiveTool = { name: maxTool, cost: maxCost };
+
+    // หา Case ที่ถูกใช้เยอะที่สุด (QTY)
+    let maxQty = 0;
+    let maxCase = '-';
+    for (const [c, qty] of Object.entries(caseCountMap)) {
+      if (qty > maxQty) {
+        maxQty = qty;
+        maxCase = c;
+      }
+    }
+    this.mostUsedCase = { name: maxCase, count: maxQty };
+  }
+
+  renderComboChart() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const canvas = document.getElementById('comboChart') as HTMLCanvasElement;
+    if (!canvas || !this.costData?.length) return;
+
+    // 1. จัดกลุ่มข้อมูลตาม SPEC (หรือ ItemNo) เพื่อรวม QTY และ Total_Price_THB
+    const aggregatedData: { [spec: string]: { qty: number, totalPrice: number } } = {};
+
+    const filteredData = this.getFilteredCostData();
+
+    filteredData.forEach(item => {
+      const spec = item.SPEC || 'ไม่ระบุ';
+      const qty = Number(item.QTY) || 0;
+      const price = Number(item.Total_Price_THB) || 0;
+
+      if (!aggregatedData[spec]) {
+        aggregatedData[spec] = { qty: 0, totalPrice: 0 };
+      }
+      aggregatedData[spec].qty += qty;
+      aggregatedData[spec].totalPrice += price;
+    });
+
+    // 2. แปลงเป็น Array แล้วเรียงลำดับตามที่ User เลือก
+    let sortedData = Object.entries(aggregatedData);
+
+    if (this.comboSortBy === 'qty') {
+      sortedData.sort((a, b) => b[1].qty - a[1].qty); // เรียงจาก QTY มากไปน้อย
+    } else {
+      sortedData.sort((a, b) => b[1].totalPrice - a[1].totalPrice); // เรียงจาก Price มากไปน้อย
+    }
+
+    // ตัดเอาเฉพาะ Top N
+    sortedData = sortedData.slice(0, this.comboTopN);
+
+    const labels = sortedData.map(d => d[0]); // ชื่อ SPEC
+    const dataQty = sortedData.map(d => d[1].qty); // จำนวน
+    const dataPrice = sortedData.map(d => d[1].totalPrice); // ราคา
+
+    if (this.comboChart) this.comboChart.destroy();
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // 3. สร้าง UI สวยๆ (Gradient) สำหรับ Bar Chart
+    const gradientBar = ctx.createLinearGradient(0, 0, 0, 400);
+    gradientBar.addColorStop(0, 'rgba(54, 162, 235, 0.8)'); // สีน้ำเงินเข้มด้านบน
+    gradientBar.addColorStop(1, 'rgba(54, 162, 235, 0.2)'); // สีน้ำเงินอ่อนด้านล่าง
+
+    // 4. สร้าง Combo Chart
+    this.comboChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            type: 'bar',
+            label: 'จำนวนเบิกใช้ (QTY)',
+            data: dataQty,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1,
+            order: 2, // 🌟 วาดแท่งให้อยู่ด้านหลัง (Layer ต่ำกว่า)
+            yAxisID: 'y'
+          },
+          {
+            type: 'line',
+            label: 'มูลค่ารวม (THB)',
+            data: dataPrice,
+            borderColor: '#ff6384',
+            backgroundColor: '#ff6384',
+            borderWidth: 2,
+            tension: 0, // ทำให้เส้นตรง ไม่โค้ง
+            pointBackgroundColor: '#ff6384',
+            pointBorderColor: '#ff6384',
+            pointBorderWidth: 1,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            fill: false,
+            order: 1, // 🌟 วาดเส้นให้อยู่ด้านหน้า (Layer สูงกว่า ทับแท่ง)
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Top Tooling Usage vs Cost'
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.parsed.y !== null) {
+                  // ถ้าเป็นเส้นราคา ให้ใส่ลูกน้ำ
+                  if (context.dataset.type === 'line') {
+                    label += context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ฿';
+                  } else {
+                    label += context.parsed.y + ' ชิ้น';
+                  }
+                }
+                return label;
+              }
+            }
+          },
+          datalabels: {
+            display: false // ปิด Datalabel ไว้ก่อนเพราะ 2 แกนซ้อนกันอาจจะรก
+          }
+        },
+        scales: {
+          y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            title: {
+              display: true,
+              text: 'จำนวน (QTY)',
+              font: {
+                family: "'Inter', 'Segoe UI', sans-serif",
+                weight: 'bold'
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            title: {
+              display: true,
+              text: 'ราคารวม (THB)',
+              font: {
+                family: "'Inter', 'Segoe UI', sans-serif",
+                weight: 'bold'
+              }
+            },
+            grid: {
+              drawOnChartArea: false,
+            },
+          },
+          x: {
+            grid: {
+              display: false // ซ่อนเส้นตารางแนวตั้งให้ดูสะอาดตา
+            },
+            ticks: {
+              font: {
+                family: "'Inter', 'Segoe UI', sans-serif"
+              }
+            }
+          }
+        }
+      },
+      // ต้องลบปลั๊กอิน Datalabels ออกเฉพาะกราฟนี้ถ้ามันรก
+      // หรือไม่ต้องใส่ plugins: [ChartDataLabels] ท้ายสุดก็ได้
+    });
+  }
+
+  // ============== กราฟใหม่ Stacked Bar (ล่างสุด) ==============
+  renderCostStackedBar() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const canvas = document.getElementById('costStackedBarChart') as HTMLCanvasElement;
+    if (!canvas || !this.costData?.length) return;
+
+    // หาหมวดหมู่หลัก (X-axis) ก็คือ SPEC (หรือ ItemNo) ตามที่เคยทำ
+    // หากลุ่มแกน X: (Top 15 Items by selected ValueType)
+    const itemTotalMap: { [spec: string]: number } = {};
+    const groupSet = new Set<string>();
+
+    const filteredData = this.getFilteredCostData();
+
+    filteredData.forEach(item => {
+      const spec = item.SPEC || 'ไม่ระบุ';
+      const val = this.costStackedValueType === 'qty' ? (Number(item.QTY) || 0) : (Number(item.Total_Price_THB) || 0);
+
+      itemTotalMap[spec] = (itemTotalMap[spec] || 0) + val;
+
+      const groupVal = item[this.costStackedGroupBy] || 'ไม่ระบุ';
+      groupSet.add(groupVal);
+    });
+
+    // เรียงหา Top N Item
+    const topItems = Object.entries(itemTotalMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15) // เอาแค่ Top 15 ให้แสดงสวยๆ
+      .map(d => d[0]);
+
+    if (topItems.length === 0) return;
+
+    // เตรียม Datasets ตามกลุ่ม (Division, Case, Process)
+    const groups = Array.from(groupSet);
+
+    // สร้างสีสุ่มแบบสวยๆ
+    const colors = [
+      'rgba(54, 162, 235, 0.7)', 'rgba(255, 99, 132, 0.7)', 'rgba(255, 206, 86, 0.7)',
+      'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)',
+      'rgba(199, 199, 199, 0.7)', 'rgba(83, 102, 255, 0.7)', 'rgba(78, 205, 196, 0.7)', 'rgba(255, 107, 107, 0.7)'
+    ];
+
+    const datasets = groups.map((group, index) => {
+      const data = topItems.map(spec => {
+        return filteredData
+          .filter(row => (row.SPEC || 'ไม่ระบุ') === spec && (row[this.costStackedGroupBy] || 'ไม่ระบุ') === group)
+          .reduce((sum, row) => sum + (this.costStackedValueType === 'qty' ? (Number(row.QTY) || 0) : (Number(row.Total_Price_THB) || 0)), 0);
+      });
+
+      return {
+        label: group,
+        data: data,
+        backgroundColor: colors[index % colors.length],
+        borderWidth: 1,
+        borderColor: '#fff'
+      };
+    });
+
+    if (this.costStackedBarChart) this.costStackedBarChart.destroy();
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    this.costStackedBarChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: topItems,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          title: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                const val = context.parsed.y;
+                if (this.costStackedValueType === 'price') {
+                  label += (val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' THB';
+                } else {
+                  label += (val || 0).toLocaleString() + ' ชิ้น';
+                }
+                return label;
+              }
+            }
+          },
+          datalabels: {
+            display: false
+          }
+        },
+        scales: {
+          x: {
+            stacked: true, // ทำให้กราฟซ้อนกัน
+            ticks: {
+              font: {
+                family: "'Inter', 'Segoe UI', sans-serif"
+              }
+            }
+          },
+          y: {
+            stacked: true, // ทำให้กราฟซ้อนกัน
+            title: {
+              display: true,
+              text: this.costStackedValueType === 'qty' ? 'จำนวน (QTY)' : 'มูลค่ารวม (THB)',
+              font: { weight: 'bold' }
+            },
+            ticks: {
+              callback: function (value) {
+                return value.toLocaleString();
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // ============== กราฟอันเก่า (Overview) ==============
   renderStatusChart() {
     if (!isPlatformBrowser(this.platformId)) return;
     const canvas = document.getElementById('dailySalesChart') as HTMLCanvasElement;
-    if (!canvas || !this.data.length) return;
+    if (!canvas || !this.data?.length) return;
 
+    const overviewData = this.getFilteredOverviewData();
     const filteredData = this.selectedDivisions?.length
-      ? this.data.filter(item => this.selectedDivisions.includes(item.Division))
-      : this.data;
+      ? overviewData.filter(item => this.selectedDivisions.includes(item.Division))
+      : overviewData;
 
     const divisionStatusCounts: { [division: string]: { [status: string]: number } } = {};
     filteredData.forEach(item => {
@@ -302,9 +734,9 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-  selectedLevel: 'day' | 'month' | 'year' = 'day';
+  selectedLevel: 'summary' | 'day' | 'month' | 'year' = 'summary';
 
-  setLevel(level: 'day' | 'month' | 'year') {
+  setLevel(level: 'summary' | 'day' | 'month' | 'year') {
     this.selectedLevel = level;
     this.renderStackedBarChart();
   }
@@ -314,22 +746,12 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
     const canvas = document.getElementById('stackedSalesChart') as HTMLCanvasElement;
     if (!canvas || !this.data?.length) return;
 
-    const specs = Array.from(new Set(this.data.map(d => d.SPEC || 'อื่นๆ')));
+    const overviewData = this.getFilteredOverviewData();
 
-    // กรองตาม Division
+    // กรองตาม Division, Case, Process เท่านั้น (ไม่มีวันที่)
     let filteredData = this.selectedDivisionStacked === 'ALL'
-      ? this.data
-      : this.data.filter(d => d.Division === this.selectedDivisionStacked);
-
-    // กรองตามช่วงวันที่จาก input
-    if (this.selectDatestart) {
-      const startDate = new Date(this.selectDatestart);
-      filteredData = filteredData.filter(item => new Date(item.DateComplete) >= startDate);
-    }
-    if (this.selectDateend) {
-      const endDate = new Date(this.selectDateend);
-      filteredData = filteredData.filter(item => new Date(item.DateComplete) <= endDate);
-    }
+      ? overviewData
+      : overviewData.filter(d => d.Division === this.selectedDivisionStacked);
 
     if (this.selectedCaseall && this.selectedCaseall !== 'ALL') {
       filteredData = filteredData.filter(
@@ -342,170 +764,109 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
       );
     }
 
-    // Group ข้อมูลตาม level
-    const groupedData = filteredData.reduce((acc, item) => {
-      const dateObj = new Date(item.DateComplete);
-      let key = '';
-      if (this.selectedLevel === 'day') key = dateObj.toISOString().split('T')[0];
-      else if (this.selectedLevel === 'month') key = `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}`;
-      else key = `${dateObj.getFullYear()}`;
-      const qty = Number(item.QTY) || 0;
-      acc[key] = (acc[key] || 0) + qty;
+    // โหมด Summary: แสดงตาม PartNo รวมยอดเงินทั้งหมด
+    const partNoTotalMap = filteredData.reduce((acc, item) => {
+      const key = item.PartNo || item.SPEC || 'อื่นๆ';
+      acc[key] = (acc[key] || 0) + (Number(item.Total_Price_THB) || 0);
       return acc;
     }, {} as { [key: string]: number });
 
-    const topKeys = (Object.entries(groupedData) as [string, number][])
+    const topPartNos = (Object.entries(partNoTotalMap) as [string, number][])
       .sort((a, b) => b[1] - a[1])
       .slice(0, this.topN1)
       .map(e => e[0]);
 
-    const dates = topKeys.map(k => {
-      if (this.selectedLevel === 'day') return { key: k, obj: new Date(k) };
-      if (this.selectedLevel === 'month') return { key: k, obj: new Date(k + '-01') };
-      return { key: k, obj: new Date(k + '-01-01') };
-    }).sort((a, b) => a.obj.getTime() - b.obj.getTime());
+    const labels = topPartNos;
 
-    const labels = dates.map(d => {
-      const dateObj = d.obj;
-      if (this.selectedLevel === 'day') return `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
-      if (this.selectedLevel === 'month') return `${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
-      return `${dateObj.getFullYear()}`;
-    });
+    // แบ่ง Dataset ตาม Case เพื่อความสวยงามและข้อมูลที่ครบถ้วน
+    const cases = Array.from(new Set(filteredData.map(d => d.CASE || 'อื่นๆ')));
+    const colors = [
+      'rgba(54, 162, 235, 0.8)', 'rgba(255, 99, 132, 0.8)', 'rgba(255, 206, 86, 0.8)',
+      'rgba(75, 192, 192, 0.8)', 'rgba(153, 102, 255, 0.8)', 'rgba(255, 159, 64, 0.8)',
+      'rgba(199, 199, 199, 0.8)', 'rgba(0, 150, 136, 0.8)', 'rgba(233, 30, 99, 0.8)'
+    ];
 
-    // สร้าง datasets เริ่มต้น
-    const datasetsUnsorted = specs.map(spec => ({
-      label: spec,
-      data: dates.map(d => {
-        const sum = filteredData
-          .filter(item => (item.SPEC || 'อื่นๆ') === spec)
-          .filter(item => {
-            const dateObj = new Date(item.DateComplete);
-            if (this.selectedLevel === 'day') return dateObj.toISOString().split('T')[0] === d.key;
-            if (this.selectedLevel === 'month') return `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}` === d.key;
-            return `${dateObj.getFullYear()}` === d.key;
-          })
-          .reduce((sum, item) => sum + ((Number(item.QTY) || 0) * (Number(item.UnitPrice_Bath) || 0)), 0);
-        return sum;
+    const datasets: any[] = cases.map((c, i) => ({
+      label: c,
+      data: topPartNos.map(pn => {
+        return filteredData
+          .filter(item => (item.PartNo || item.SPEC || 'อื่นๆ') === pn && (item.CASE || 'อื่นๆ') === c)
+          .reduce((sum, item) => sum + (Number(item.Total_Price_THB) || 0), 0);
       }),
-      backgroundColor: `hsl(${Math.floor(Math.random() * 360)},60%,70%)`,
+      backgroundColor: colors[i % colors.length],
       borderColor: '#fff',
       borderWidth: 1
     }));
 
-    // เรียง datasets สำหรับแต่ละ label จากมาก -> น้อย
-    const datasetsSorted: any[] = [];
-
-    dates.forEach((d, idx) => {
-      // เก็บค่าเงินแต่ละ spec สำหรับวันนั้น
-      const valueArr = datasetsUnsorted
-        .map((ds, dsIdx) => ({ value: ds.data[idx], dsIdx }))
-        // .filter(v => v.value > 0)   //  ลบค่า 0
-        .sort((a, b) => b.value - a.value); // มาก->น้อย
-
-      valueArr.forEach((v, orderIdx) => {
-        if (!datasetsSorted[orderIdx]) {
-          datasetsSorted[orderIdx] = {
-            label: datasetsUnsorted[v.dsIdx].label,
-            data: Array(dates.length).fill(null),
-            backgroundColor: datasetsUnsorted[v.dsIdx].backgroundColor,
-            borderColor: '#fff',
-            borderWidth: 1
-          };
-        }
-        datasetsSorted[orderIdx].data[idx] = v.value;
-      });
-    });
-
-    // ลบ chart เก่า
     if (this.stackedBarChart) this.stackedBarChart.destroy();
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    this.stackedBarChart = new Chart(ctx!, {
+    this.stackedBarChart = new Chart(ctx, {
       type: 'bar',
-      data: { labels, datasets: datasetsSorted },
+      data: { labels, datasets },
       options: {
-        indexAxis: 'x',
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: {
-            display: false
-          },
-          //  legend:{
-          //   position:'right',
-          //   align:'start',
-          //   labels:{
-          //     boxWidth:0,
-          //     boxHeight:20,
-          //     padding:15,
-          //     usePointStyle:true,
-          //     pointStyle:'rectRounded',
-          //     font:{size:10}
-          //   }
-          // },
+          legend: { display: true, position: 'top' },
           tooltip: {
             callbacks: {
               label: (context) => {
-                const value = context.raw as number | null;
-                if (!value) return ''; // ไม่แสดง tooltip สำหรับค่า null หรือ 0
-
-                const spec = context.dataset.label;
-                return `${spec}: ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Baht`;
+                const val = context.parsed.y;
+                if (!val) return '';
+                return `${context.dataset.label}: ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} THB`;
               },
               footer: (tooltipItems) => {
                 const context = tooltipItems[0];
-                const value = context.raw as number | null;
-                if (!value) return ''; //  ไม่แสดงถ้าค่า null หรือ 0
+                const val = context.parsed.y;
+                if (!val) return '';
 
-                const spec = context.dataset.label;
-                const dateKey = dates[context.dataIndex].key;
+                const specName = labels[context.dataIndex];
+                const caseName = context.dataset.label;
                 const matchingItems = filteredData.filter(item => {
-                  const itemSpec = item.SPEC || 'อื่นๆ';
-                  const dateObj = new Date(item.DateComplete);
-                  let itemKey = '';
-                  if (this.selectedLevel === 'day') itemKey = dateObj.toISOString().split('T')[0];
-                  else if (this.selectedLevel === 'month') itemKey = `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}`;
-                  else itemKey = `${dateObj.getFullYear()}`;
-
-                  return itemSpec === spec && itemKey === dateKey
-                    && (Number(item.QTY) || 0) * (Number(item.UnitPrice_Bath) || 0) > 0;
+                  const itemSpec = item.PartNo || item.SPEC || 'อื่นๆ';
+                  const itemCase = item.CASE || 'อื่นๆ';
+                  return itemSpec === specName && itemCase === caseName && (Number(item.Total_Price_THB) || 0) > 0;
                 });
 
-                const partNos = matchingItems.map(i => i.PartNo).join(', ');
-                return partNos ? `PartNo: ${partNos}` : '';
+                const totalQty = matchingItems.reduce((acc, curr) => acc + (Number(curr.QTY) || 0), 0);
+                const avgPriceParts = Array.from(new Set(matchingItems.map(m => Number(m.UnitPrice_Bath) || 0)));
+                const avgPrice = avgPriceParts.length > 0 ? avgPriceParts[0] : 0;
+
+                return `จำนวนที่เบิก: ${totalQty} ชิ้น\nราคาเฉลี่ยต่อชิ้น: ${avgPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} THB`;
               }
             }
           },
           datalabels: {
             color: '#000',
-            font: { size: 14 },
-            anchor: 'center',
-            align: 'center',
-            formatter: (value, ctx) => {
-              const datasetLabel = ctx.dataset.label;
-
-              if (ctx.datasetIndex === ctx.chart.data.datasets.length - 1) {
-                const total = ctx.chart.data.datasets.reduce((sum, ds) => {
-                  const v = (ds.data as number[])[ctx.dataIndex];
-                  return sum + (typeof v === 'number' ? v : 0);
-                }, 0);
-                return total !== 0 ? total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+            font: { weight: 'bold', size: 12 },
+            anchor: 'end',
+            align: 'top',
+            formatter: (value, context) => {
+              const total = context.chart.data.datasets.reduce((sum, ds) => {
+                const v = (ds.data as number[])[context.dataIndex];
+                return sum + (v || 0);
+              }, 0);
+              if (context.datasetIndex === context.chart.data.datasets.length - 1) {
+                return total > 0 ? total.toLocaleString() : '';
               }
-              // ถ้า dataset เป็น spec → แสดงชื่อ spec ในแท่งสีของตัวเอง (value > 4000)
-              if (value > 4000) return datasetLabel;
-
-              return ''; // ค่าเล็กกว่า 4000 → ไม่แสดงชื่อ
+              return '';
             }
           }
         },
-        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
-      },
-      plugins: [ChartDataLabels]
+        scales: {
+          x: { stacked: true },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            ticks: { callback: (v) => v.toLocaleString() }
+          }
+        }
+      }
     });
-    this.initZoomPanStacked()
+    this.initZoomPanStacked();
   }
-  // renderStackedBarChart() {
 
   @ViewChild('stackedWrapper') stackedWrapper!: ElementRef<HTMLDivElement>;
 
@@ -610,13 +971,15 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
     const canvas = document.getElementById('horizontalBarChart') as HTMLCanvasElement;
     if (!canvas || !this.data?.length) return;
 
+    const overviewData = this.getFilteredOverviewData();
+
     // ปรับโครงสร้างให้เก็บ PartNo ด้วย
     // { SPEC: { case1: { qty: number, partNos: string[] } } }
     const itemCaseMap: { [spec: string]: { [caseName: string]: { qty: number, partNos: string[] } } } = {};
     const itemDivisionMap: { [key: string]: string } = {};
 
 
-    this.data.forEach(item => {
+    overviewData.forEach(item => {
       const SPEC = item.SPEC;
       const qty = Number(item.QTY) || 0;
       const division = item.Division || 'อื่นๆ';
@@ -861,8 +1224,8 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
       canvas.style.cursor = 'grab';
     });
 
-    // ปิด wheel zoom เดิม
-    canvas.addEventListener('wheel', e => e.preventDefault());
+    // wheel zoom ปิดแล้ว → ไม่ต้อง preventDefault เพื่อให้เลื่อนหน้าได้ปกติ
+    // canvas.addEventListener('wheel', e => e.preventDefault());
   }
 
   // ------------------ ปุ่ม Zoom ------------------
