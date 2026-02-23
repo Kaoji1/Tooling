@@ -28,6 +28,20 @@
           <span class="link-text">Plan List</span>
         </a>
       </li>
+      <!-- Cost Role: Dashboard & Master PH at Top -->
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/analyze">
+          <i class="bi bi-clipboard-data"></i>
+          <span class="link-text">Dashboard</span>
+        </a>
+      </li>
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/master-ph">
+          <i class="bi bi-database"></i>
+          <span class="link-text">Master PH</span>
+        </a>
+      </li>
+
       <!-- Main Menu (Allowed Items) -->
       <li routerLinkActive="active" *ngIf="role === 'PC' || role === 'admin'">
         <a routerLink="/production/PCPlan">
@@ -60,9 +74,9 @@
       </li>
 
       <li routerLinkActive="active">
-        <a routerLink="/production/history">
+        <a routerLink="/production/request-history">
           <i class="bi bi-clock-history"></i>
-          <span class="link-text">History</span>
+          <span class="link-text">Request History</span>
         </a>
       </li>
 

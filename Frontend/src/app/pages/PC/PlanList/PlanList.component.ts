@@ -39,7 +39,6 @@ export const MY_DATE_FORMATS = {
   imports: [
     CommonModule,
     FormsModule,
-    SidebarComponent,
     MatDatepickerModule,
     MatInputModule,
     MatFormFieldModule,
@@ -809,7 +808,65 @@ export class PlanListComponent implements OnInit {
       this.selectedSubTab = 'Upcoming';
     }
 
-    this.applyFilter();
+    // --- Division Filter Modal Logic ---
+    const targetTabs = ['PC', 'PD', 'EN', 'QC'];
+    if (targetTabs.includes(dept)) {
+      const storedDivision = sessionStorage.getItem('planlist_preferred_division');
+      if (storedDivision) {
+        // อัปเดตตัวแปรที่เป็น Model ของ Dropdown
+        this.filterDivision = storedDivision;
+        this.applyFilter();
+      } else {
+        // Show forced-choice modal if no preference exists
+        this.promptDivisionSelection();
+      }
+    } else {
+      this.applyFilter();
+    }
+  }
+
+  // Helper method for Division Selection Modal
+  promptDivisionSelection() {
+    Swal.fire({
+      iconHtml: '<i class="bi bi-person-badge"></i>',
+      title: '<span style="font-family: Inter, Kanit; font-weight: 800; color: #1e293b; font-size: 1.65rem;">Select Division</span>',
+      html: `
+        <div style="font-family: Inter, Kanit; color: #475569; font-size: 0.95rem; margin-top: 5px; line-height: 1.5;">
+          กรุณาเลือก Division เพื่อเข้าดูข้อมูลแผนงาน<br>
+          ระบบจะ<strong style="color: #0f172a;">จดจำตัวเลือกของคุณ</strong>สำหรับการเข้าใช้งานครั้งนี้
+        </div>
+        <div style="font-family: Inter, Kanit; color: #64748b; font-size: 0.9rem; margin-top: 15px; font-weight: 500;">
+          คุณต้องการดำเนินการต่อด้วย Division ใด?
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'PMC',
+      cancelButtonText: 'GM',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      buttonsStyling: false,
+      customClass: {
+        popup: 'swal-premium-popup-minimal',
+        confirmButton: 'swal-btn-pmc',
+        cancelButton: 'swal-btn-gm',
+        icon: 'swal-custom-icon-borderless',
+        actions: 'swal-actions-split'
+      }
+    }).then((result) => {
+      let selectedDiv = '';
+      if (result.isConfirmed) {
+        selectedDiv = 'PMC';
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        selectedDiv = 'GM';
+      }
+
+      if (selectedDiv) {
+        sessionStorage.setItem('planlist_preferred_division', selectedDiv);
+        this.filterDivision = selectedDiv;
+        this.applyFilter();
+      }
+    });
   }
 
   getActionRequiredCount(dept: string): number {

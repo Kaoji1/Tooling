@@ -109,13 +109,13 @@
 
           <td>
             <ng-select [(ngModel)]="item.partBef" [items]="partBef" appendTo="body" placeholder="Select"
-              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()">
+              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()" [searchFn]="customSearchFn">
             </ng-select>
           </td>
 
           <td>
             <ng-select [(ngModel)]="item.partNo" [items]="partNos" appendTo="body" placeholder="Select"
-              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()">
+              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()" [searchFn]="customSearchFn">
             </ng-select>
           </td>
 

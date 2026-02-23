@@ -376,6 +376,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 1.5rem;
   padding-bottom: 2rem;
 
   .btn-add {
@@ -713,4 +714,110 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+// --- Turtle Custom SweetAlert Styles ---
+::ng-deep .swal-turtle-popup-success {
+  border-radius: 20px !important;
+  background-color: #eafce3 !important;
+  padding: 2rem 1.5rem 1rem 1.5rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  border: 4px solid #fff !important;
+}
+
+::ng-deep .swal-turtle-popup-error {
+  border-radius: 20px !important;
+  background-color: #fcebdc !important;
+  padding: 2rem 1.5rem 1rem 1.5rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  border: 4px solid #fff !important;
+}
+
+::ng-deep .swal-turtle-btn-success {
+  background: #2e7d32 !important;
+  color: white !important;
+  border-radius: 50px !important;
+  padding: 12px 35px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  font-family: 'Kanit', sans-serif !important;
+  box-shadow: 0 4px 6px -1px rgba(46, 125, 50, 0.3) !important;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #1b5e20 !important;
+    transform: translateY(-2px);
+  }
+}
+
+::ng-deep .swal-turtle-btn-error {
+  background: #c62828 !important;
+  color: white !important;
+  border-radius: 50px !important;
+  padding: 12px 35px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  font-family: 'Kanit', sans-serif !important;
+  box-shadow: 0 4px 6px -1px rgba(198, 40, 40, 0.3) !important;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #b71c1c !important;
+    transform: translateY(-2px);
+  }
+}
+
+::ng-deep .swal-turtle-actions {
+  margin-top: 20px !important;
+}
+
+// --- Turtle Animations ---
+@keyframes turtle-walk-forward {
+  0% {
+    transform: translateX(20px) translateY(5px) rotate(-1deg);
+  }
+
+  25% {
+    transform: translateX(5px) translateY(0px) rotate(1deg);
+  }
+
+  50% {
+    transform: translateX(-10px) translateY(5px) rotate(-1deg);
+  }
+
+  75% {
+    transform: translateX(-25px) translateY(0px) rotate(1deg);
+  }
+
+  100% {
+    transform: translateX(-40px) translateY(5px) rotate(-1deg);
+  }
+}
+
+@keyframes turtle-leg-swing {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px) rotate(10deg);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+::ng-deep .walking-turtle-group {
+  animation: turtle-walk-forward 6s linear infinite alternate;
+}
+
+::ng-deep .turtle-leg-back {
+  animation: turtle-leg-swing 1s ease-in-out infinite alternate;
+  transform-origin: center top;
+}
+
+::ng-deep .turtle-leg-front {
+  animation: turtle-leg-swing 1s ease-in-out infinite alternate-reverse;
+  transform-origin: center top;
 }

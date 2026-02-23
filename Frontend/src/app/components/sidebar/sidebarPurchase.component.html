@@ -21,6 +21,77 @@
     </div>
 
     <ul class="nav-links">
+      <!-- Cost Role: Dashboard & Master PH at Top -->
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/analyze">
+          <i class="bi bi-clipboard-data"></i>
+          <span class="link-text">Dashboard</span>
+        </a>
+      </li>
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/master-ph">
+          <i class="bi bi-database"></i>
+          <span class="link-text">Master PH</span>
+        </a>
+      </li>
+
+      <!-- Missing Production Menus for Cost Role (Now mapped to /purchase) -->
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/PlanList">
+          <i class="bi bi-list-check"></i>
+          <span class="link-text">Plan List</span>
+        </a>
+      </li>
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/request-history">
+          <i class="bi bi-clock-history"></i>
+          <span class="link-text">Request History</span>
+        </a>
+      </li>
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/return-history">
+          <i class="bi bi-clock-history"></i>
+          <span class="link-text">Return History</span>
+        </a>
+      </li>
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/historyprint">
+          <i class="bi bi-printer-fill"></i>
+          <span class="link-text">History Print</span>
+        </a>
+      </li>
+
+      <!-- Restricted items for Cost -->
+      <div *ngIf="role === 'Cost'" class="mt-4 border-top pt-2">
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-clipboard-data"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              PC Plan <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-newspaper"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Request <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Return <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+      </div>
+
       <li routerLinkActive="active" *ngIf="role === 'admin' || role === 'purchase'">
         <a routerLink="/purchase/PlanList">
           <i class="bi bi-list-check"></i>
@@ -59,7 +130,7 @@
       <li routerLinkActive="active" *ngIf="role === 'admin' || role === 'purchase'">
         <a routerLink="/purchase/history-request">
           <i class="bi bi-clock-history"></i>
-          <span class="link-text">History</span>
+          <span class="link-text">ISSUE AS400</span>
         </a>
       </li>
 
@@ -70,7 +141,7 @@
         </a>
       </li>
 
-      <li routerLinkActive="active">
+      <li routerLinkActive="active" *ngIf="role === 'admin' || role === 'purchase'">
         <a routerLink="/purchase/master-ph">
           <i class="bi bi-database"></i>
           <span class="link-text">Master PH</span>
@@ -95,7 +166,7 @@
       </div>
       <div class="user-info">
         <span class="user-name" title="{{ Employee_Name }}">{{ Employee_Name }}</span>
-        <span class="user-role">PURCHASE</span>
+        <span class="user-role">{{ role || 'PURCHASE' }}</span>
       </div>
     </div>
 

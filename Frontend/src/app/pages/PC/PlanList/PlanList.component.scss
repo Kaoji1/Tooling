@@ -1614,7 +1614,7 @@ $grid-cols: $grid-cols-pc;
 :host ::ng-deep .mat-mdc-form-field-flex {
     height: 46px !important;
     align-items: center !important;
-    padding: 0 !important;
+    padding: 0.10 !important;
 }
 
 /* Adjust outline color to match standard inputs */
@@ -1675,4 +1675,143 @@ $grid-cols: $grid-cols-pc;
     &:active {
         transform: translateY(0);
     }
+}
+
+// --- Premium Division Modal Styling ---
+::ng-deep .swal-premium-popup-minimal {
+    border-radius: 20px !important;
+    padding: 2rem 1.5rem !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    border: 1px solid rgba(226, 232, 240, 0.6) !important;
+    background: #ffffff !important;
+}
+
+::ng-deep .swal-actions-split {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 16px !important;
+    width: 100% !important;
+    padding: 0 20px 20px 20px !important;
+    margin-top: 2rem !important;
+    justify-content: center !important;
+
+    .swal2-confirm,
+    .swal2-cancel {
+        margin: 0 !important;
+        flex: 1 !important;
+        width: auto !important;
+    }
+}
+
+::ng-deep .swal-custom-icon-borderless {
+    border: none !important;
+    margin: 0 auto 30px auto !important;
+    width: 90px !important;
+    height: 90px !important;
+    background: #ffffff !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    z-index: 1;
+
+    // Outer spinning ring effect
+    &::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        left: -6px;
+        right: -6px;
+        bottom: -6px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #3b82f6, #0ea5e9, #38bdf8, transparent 60%);
+        z-index: -1;
+        animation: spin-glow 3s linear infinite;
+        opacity: 0.6;
+    }
+
+    // Inner soft blue background
+    &::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        bottom: 2px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%) !important;
+        z-index: -1;
+        box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.8) !important;
+    }
+
+    i {
+        font-size: 3.5rem !important;
+        color: #0ea5e9 !important;
+        filter: drop-shadow(0 4px 6px rgba(14, 165, 233, 0.4)) !important;
+        z-index: 2;
+        animation: float-icon 4s ease-in-out infinite;
+    }
+}
+
+@keyframes spin-glow {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes float-icon {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+// Base style for white box buttons that turn blue on hover
+%premium-white-box-btn {
+    background: #ffffff !important;
+    color: #475569 !important; // Slate-600
+    border-radius: 12px !important;
+    padding: 18px 24px !important;
+    font-weight: 800 !important;
+    font-size: 1.15rem !important;
+    border: 2px solid #e2e8f0 !important; // Slate-200
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    &:hover {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important; // Blue-50 to Blue-100
+        color: #2563eb !important; // Blue-600
+        border-color: #3b82f6 !important; // Blue-500
+        transform: translateY(-4px) !important;
+        box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2), 0 4px 6px -2px rgba(37, 99, 235, 0.1) !important;
+    }
+
+    &:active {
+        transform: translateY(1px) scale(0.98) !important;
+        background: #bfdbfe !important; // Blue-200
+        border-color: #2563eb !important;
+        box-shadow: none !important;
+    }
+}
+
+::ng-deep .swal-btn-pmc {
+    @extend %premium-white-box-btn;
+}
+
+::ng-deep .swal-btn-gm {
+    @extend %premium-white-box-btn;
 }

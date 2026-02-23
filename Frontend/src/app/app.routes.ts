@@ -47,8 +47,8 @@ export const routes: Routes = [
         data: { roles: ['production', 'admin'] }
       },
       {
-        path: 'history',
-        loadComponent: () => import('./pages/user/history/history.component').then(m => m.HistoryComponent),
+        path: 'request-history',
+        loadComponent: () => import('./pages/user/request-history/request-history.component').then(m => m.RequestHistoryComponent),
         data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gage', 'Cost'] }
       },
       {
@@ -74,12 +74,12 @@ export const routes: Routes = [
     path: 'purchase',
     canActivate: [AuthGuard],
     canActivateChild: [AuthGuard],
-    data: { roles: ['purchase', 'view', 'admin'] },
+    data: { roles: ['purchase', 'view', 'admin', 'Cost'] },
     children: [
       {
         path: 'PlanList',
         loadComponent: () => import('./pages/PC/PlanList/PlanList.component').then(m => m.PlanListComponent),
-        data: { roles: ['purchase', 'view', 'admin'] }
+        data: { roles: ['purchase', 'view', 'admin', 'Cost'] }
       },
       {
         path: 'detail',
@@ -102,9 +102,24 @@ export const routes: Routes = [
         data: { roles: ['purchase', 'view', 'admin'] }
       },
       {
+        path: 'request-history',
+        loadComponent: () => import('./pages/user/request-history/request-history.component').then(m => m.RequestHistoryComponent),
+        data: { roles: ['purchase', 'view', 'admin', 'Cost'] }
+      },
+      {
         path: 'history-request',
         loadComponent: () => import('./pages/purchase/history-request/history-request.component').then(m => m.HistoryRequestComponent),
         data: { roles: ['purchase', 'view', 'admin'] }
+      },
+      {
+        path: 'return-history',
+        loadComponent: () => import('./pages/user/return-history/return-history.component').then(m => m.ReturnHistoryComponent),
+        data: { roles: ['purchase', 'view', 'admin', 'Cost'] }
+      },
+      {
+        path: 'historyprint',
+        loadComponent: () => import('./pages/user/history-print/history-print.component').then(m => m.HistoryPrintComponent),
+        data: { roles: ['purchase', 'view', 'admin', 'Cost'] }
       },
       {
         path: 'add-user',
@@ -115,7 +130,7 @@ export const routes: Routes = [
       {
         path: 'analyze',
         loadComponent: () => import('./pages/purchase/analyze/analyze.component').then(m => m.AnalyzeComponent),
-        data: { roles: ['purchase', 'view', 'admin'] }
+        data: { roles: ['purchase', 'view', 'admin', 'Cost'] }
       },
       {
         path: 'analyzeSmartRack',
@@ -125,7 +140,7 @@ export const routes: Routes = [
       {
         path: 'master-ph',
         loadComponent: () => import('./pages/purchase/MasterPH/MasterPH.component').then(m => m.MasterPHComponent),
-        data: { roles: ['purchase', 'view', 'admin'] }
+        data: { roles: ['purchase', 'view', 'admin', 'Cost'] }
       }
     ],
   },
