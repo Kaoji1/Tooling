@@ -1,5 +1,10 @@
 @import '../../../../styles.scss';
 
+:host {
+  display: block;
+  height: 100%;
+}
+
 .page-layout {
   display: flex;
   flex-direction: column;
@@ -7,6 +12,7 @@
   padding: 20px;
   background-color: #f8f9fa;
   gap: 20px;
+  box-sizing: border-box;
 
   header {
     h1 {
@@ -157,6 +163,8 @@
 
   .table-container {
     flex: 1;
+    min-height: 0;
+    /* Add min-height: 0 to flex child to allow inner overflow */
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
@@ -306,6 +314,8 @@
 /* Custom Scrollbar for Table Container */
 .table-container {
   overflow-y: auto;
+  overflow-x: auto;
+  /* Fix horizontal scroll */
 
   &::-webkit-scrollbar {
     width: 8px;
