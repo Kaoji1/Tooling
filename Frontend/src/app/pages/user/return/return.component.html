@@ -10,21 +10,22 @@
   <div class="header-filters">
     <div class="form-group">
       <label>Division <span class="text-danger">*</span></label>
-      <ng-select [items]="divisions" bindLabel="Division_Name" bindValue="Division_Id" placeholder="-- Select --"
+      <ng-select [items]="divisions" bindLabel="Division_Name" bindValue="Division_Id" placeholder="Select Division
+"
         [(ngModel)]="selectedDivisionId" (change)="onDivisionChange()">
       </ng-select>
     </div>
 
     <div class="form-group">
       <label>Facility <span class="text-danger">*</span></label>
-      <ng-select [items]="facilities" bindLabel="label" bindValue="value" placeholder="-- Select --"
+      <ng-select [items]="facilities" bindLabel="label" bindValue="value" placeholder="Select Facility"
         [(ngModel)]="selectedFacility">
       </ng-select>
     </div>
 
     <div class="form-group">
       <label>Process <span class="text-danger">*</span></label>
-      <ng-select [items]="processes" bindLabel="Process" bindValue="Process" placeholder="-- Select --"
+      <ng-select [items]="processes" bindLabel="Process" bindValue="Process" placeholder="Select Process"
         [(ngModel)]="selectedProcess">
       </ng-select>
     </div>

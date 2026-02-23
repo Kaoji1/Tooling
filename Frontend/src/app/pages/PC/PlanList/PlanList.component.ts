@@ -39,7 +39,6 @@ export const MY_DATE_FORMATS = {
   imports: [
     CommonModule,
     FormsModule,
-    SidebarComponent,
     MatDatepickerModule,
     MatInputModule,
     MatFormFieldModule,
@@ -67,7 +66,7 @@ export class PlanListComponent implements OnInit {
 
   // New Tab Structure
   departments: string[] = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gage', 'View'];
-  selectedDepartment: string = 'PC';
+  selectedDepartment: string = ''; // Initialize empty to prevent "Flash of PC Content" before role check
 
   subTabs: string[] = ['Upcoming'];
   selectedSubTab: string = 'Upcoming';
@@ -120,7 +119,20 @@ export class PlanListComponent implements OnInit {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+      try {
+        const userSession = sessionStorage.getItem('user');
+        if (userSession) {
+          this.currentUser = JSON.parse(userSession);
+        } else {
+          // Handle no user session (e.g., redirect to login or show empty state)
+          console.warn('No user session found on refresh.');
+          this.currentUser = {};
+        }
+      } catch (e) {
+        console.error('Error parsing user session:', e);
+        this.currentUser = {};
+      }
+
       this.checkPrintPermission();
 
       // --- RBAC: Filter Departments based on Role ---
@@ -200,7 +212,7 @@ export class PlanListComponent implements OnInit {
       currentData = currentData.filter(item => item.division === this.filterDivision);
     }
 
-    // Extract Unique MC Types
+    // 3. Extract Unique MC Types (Sort alphabetically)
     const uniqueMCs = new Set(currentData.map(item => item.mcType).filter(mc => mc));
     this.machineTypes = Array.from(uniqueMCs).sort();
   }
@@ -318,8 +330,9 @@ export class PlanListComponent implements OnInit {
     });
 
     // Reset counts for the current department
-    this.subTabCounts = {};
-    const isActionRequiredTab = (this.selectedSubTab === 'Action Required');
+    this.subTabCounts = { 'Upcoming': 0, 'Required': 0, 'Completed': 0 };
+    const isActionRequiredTab = (this.selectedSubTab === 'Required');
+    const isCompletedTab = (this.selectedSubTab === 'Completed');
 
     this.filteredPlanList = this.planList.filter(item => {
       // Parse Item Date (Robustly)
@@ -363,10 +376,15 @@ export class PlanListComponent implements OnInit {
           if (this.selectedDepartment === 'EN') {
             const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
             const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
-            if (!hasDwg || !hasLayout) this.subTabCounts['Action Required'] = (this.subTabCounts['Action Required'] || 0) + 1;
+            if (!hasDwg || !hasLayout) {
+              this.subTabCounts['Required'] = (this.subTabCounts['Required'] || 0) + 1;
+            } else {
+              // If has both, it's Completed
+              this.subTabCounts['Completed'] = (this.subTabCounts['Completed'] || 0) + 1;
+            }
           } else if (this.selectedDepartment === 'QC') {
             const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
-            if (!hasIIQC) this.subTabCounts['Action Required'] = (this.subTabCounts['Action Required'] || 0) + 1;
+            if (!hasIIQC) this.subTabCounts['Required'] = (this.subTabCounts['Required'] || 0) + 1;
           }
         }
       }
@@ -407,10 +425,22 @@ export class PlanListComponent implements OnInit {
           }
         }
         matchSubTab = actionNeeded && isInRange;
+      } else if (isCompletedTab) {
+        let isCompleted = false;
+        if (this.selectedDepartment === 'EN') {
+          const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
+          const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
+          isCompleted = hasDwg && hasLayout;
+        } else if (this.selectedDepartment === 'QC') {
+          const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
+          isCompleted = hasIIQC;
+        }
+        matchSubTab = isCompleted && isInRange;
       }
 
-      // 2. Filter Date (Ignore calendar filter if in Action Required mode)
-      const matchDate = (this.filterDate && !isActionRequiredTab) ? this.isDateMatch(item.date, this.filterDate) : true;
+
+      // 2. Filter Date (Ignore calendar filter if in Action Required or Completed mode)
+      const matchDate = (this.filterDate && !isActionRequiredTab && !isCompletedTab) ? this.isDateMatch(item.date, this.filterDate) : true;
 
       if (!matchSubTab || !matchDate) return false;
 
@@ -469,6 +499,102 @@ export class PlanListComponent implements OnInit {
         item.isGroupStart = false;
       }
     });
+
+    // --- Dynamic Filter Logic: Update MC Type Dropdown based on Visible Data (Before MC Filter) ---
+    // User Request: "MC Type list should show only items available in current view"
+    // At this point, filteredPlanList is already filtered by Date, Tab, Division, etc.
+    // BUT we need to know what MC Types are available *ignoring* the current MC Type selection itself
+    // to populate the dropdown correctly.
+
+    // Re-run filter logic *without* MC Type filter to get base list for dropdown
+    const baseListForDropdown = this.planList.filter(item => {
+      // Logic copied from above (simplified) - Must match all conditions EXCEPT mcType
+      // Note: This is computationally expensive but necessary for the requested feature.
+      // Optimization: We can do it in one pass if we refactor, but for now duplicate logic is safer to avoid breaking existing flow.
+
+      const parts = item.date.split('/');
+      if (parts.length !== 3) return false;
+      const [day, month, year] = parts.map(Number);
+      const normalizedYear = year > 2400 ? year - 543 : year;
+      const itemDate = new Date(normalizedYear, month - 1, day);
+      const key = item.groupKey; // Already calculated
+      const isLatest = item.isLatest; // Already calculated
+      const isActiveLatest = (item.planStatus === 'Active' || item.planStatus === 'Incomplete') && isLatest;
+
+      let matchDivision = this.filterDivision ? item.division === this.filterDivision : true;
+      // SKIP matchMachine
+
+      if (!matchDivision) return false;
+
+      let matchSubTab = true;
+      // ... (Re-use subtab logic logic is complex due to dependence on item properties)
+      // To strictly follow "current view", we must replicate the exact subtab logic.
+
+      // Date Range Logic
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayCopy = new Date(today);
+      let endDate = new Date(todayCopy);
+      if (this.selectedDateRange === '7 DAY') endDate.setDate(todayCopy.getDate() + 7);
+      else if (this.selectedDateRange === '30 DAY') endDate.setDate(todayCopy.getDate() + 30);
+      const isInRange = (this.selectedDateRange === 'ALL') ? true : (itemDate >= today && itemDate <= endDate);
+
+      const isActionRequiredTab = (this.selectedSubTab === 'Required');
+      const isCompletedTab = (this.selectedSubTab === 'Completed');
+
+      // SubTab Logic
+      if (this.selectedSubTab === 'Upcoming') {
+        if (this.selectedDateRange === 'ALL') matchSubTab = itemDate >= today;
+        else matchSubTab = itemDate >= today && itemDate <= endDate;
+      } else if (isActionRequiredTab) {
+        let actionNeeded = false;
+        if (item.planStatus !== 'Cancelled') {
+          if (this.selectedDepartment === 'EN') {
+            const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
+            const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
+            actionNeeded = !hasDwg || !hasLayout;
+          } else if (this.selectedDepartment === 'QC') {
+            const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
+            actionNeeded = !hasIIQC;
+          }
+        }
+        matchSubTab = actionNeeded && isInRange;
+      } else if (isCompletedTab) {
+        let isCompleted = false;
+        if (this.selectedDepartment === 'EN') {
+          const hasDwg = item.pathDwg && item.pathDwg !== '-' && item.pathDwg.trim() !== '';
+          const hasLayout = item.pathLayout && item.pathLayout !== '-' && item.pathLayout.trim() !== '';
+          isCompleted = hasDwg && hasLayout;
+        } else if (this.selectedDepartment === 'QC') {
+          const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
+          isCompleted = hasIIQC;
+        }
+        matchSubTab = isCompleted && isInRange;
+      }
+
+      // Date Filter
+      const matchDate = (this.filterDate && !isActionRequiredTab && !isCompletedTab) ? this.isDateMatch(item.date, this.filterDate) : true;
+
+      if (!matchSubTab || !matchDate) return false;
+
+      // History Logic
+      if (this.showHistory) return true;
+      return isLatest;
+    });
+
+    // Update Dropdown Options
+    const seenMCs = new Set(baseListForDropdown.map(i => i.mcType).filter(m => m));
+    this.machineTypes = Array.from(seenMCs).sort();
+
+    // Fix: If the currently selected MC Type is no longer available in the new list,
+    // reset it to '' (All) to avoid showing an empty table unexpectedly.
+    if (this.filterMachineType && !seenMCs.has(this.filterMachineType)) {
+      this.filterMachineType = '';
+      // We need to re-run the final filter logic because filterMachineType changed to ''
+      // Recursive call is safe here because next time filterMachineType will be '' and won't trigger this block.
+      this.applyFilter();
+      return; // Exit current run
+    }
   }
 
   // Helper สำหรับเช็ควันที่
@@ -668,19 +794,83 @@ export class PlanListComponent implements OnInit {
 
     // Dynamically update sub-tabs based on department
     if (dept === 'EN' || dept === 'QC') {
-      // Reorder: Action Required first, then Upcoming
-      this.subTabs = ['Action Required', 'Upcoming'];
-      this.selectedSubTab = 'Action Required'; // Auto-select Action Required
+      // Reorder: Required first, then Completed, then Upcoming (Requested Order)
+      if (dept === 'EN') {
+        this.subTabs = ['Required', 'Completed', 'Upcoming'];
+      } else if (dept === 'QC') {
+        this.subTabs = ['Required', 'Completed', 'Upcoming'];
+      } else {
+        this.subTabs = ['Required', 'Upcoming'];
+      }
+      this.selectedSubTab = 'Required'; // Auto-select Required
     } else {
       this.subTabs = ['Upcoming'];
       this.selectedSubTab = 'Upcoming';
     }
 
-    this.applyFilter();
+    // --- Division Filter Modal Logic ---
+    const targetTabs = ['PC', 'PD', 'EN', 'QC'];
+    if (targetTabs.includes(dept)) {
+      const storedDivision = sessionStorage.getItem('planlist_preferred_division');
+      if (storedDivision) {
+        // อัปเดตตัวแปรที่เป็น Model ของ Dropdown
+        this.filterDivision = storedDivision;
+        this.applyFilter();
+      } else {
+        // Show forced-choice modal if no preference exists
+        this.promptDivisionSelection();
+      }
+    } else {
+      this.applyFilter();
+    }
+  }
+
+  // Helper method for Division Selection Modal
+  promptDivisionSelection() {
+    Swal.fire({
+      iconHtml: '<i class="bi bi-person-badge"></i>',
+      title: '<span style="font-family: Inter, Kanit; font-weight: 800; color: #1e293b; font-size: 1.65rem;">Select Division</span>',
+      html: `
+        <div style="font-family: Inter, Kanit; color: #475569; font-size: 0.95rem; margin-top: 5px; line-height: 1.5;">
+          กรุณาเลือก Division เพื่อเข้าดูข้อมูลแผนงาน<br>
+          ระบบจะ<strong style="color: #0f172a;">จดจำตัวเลือกของคุณ</strong>สำหรับการเข้าใช้งานครั้งนี้
+        </div>
+        <div style="font-family: Inter, Kanit; color: #64748b; font-size: 0.9rem; margin-top: 15px; font-weight: 500;">
+          คุณต้องการดำเนินการต่อด้วย Division ใด?
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'PMC',
+      cancelButtonText: 'GM',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      buttonsStyling: false,
+      customClass: {
+        popup: 'swal-premium-popup-minimal',
+        confirmButton: 'swal-btn-pmc',
+        cancelButton: 'swal-btn-gm',
+        icon: 'swal-custom-icon-borderless',
+        actions: 'swal-actions-split'
+      }
+    }).then((result) => {
+      let selectedDiv = '';
+      if (result.isConfirmed) {
+        selectedDiv = 'PMC';
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        selectedDiv = 'GM';
+      }
+
+      if (selectedDiv) {
+        sessionStorage.setItem('planlist_preferred_division', selectedDiv);
+        this.filterDivision = selectedDiv;
+        this.applyFilter();
+      }
+    });
   }
 
   getActionRequiredCount(dept: string): number {
-    return this.subTabCounts['Action Required'] || 0;
+    return this.subTabCounts['Required'] || 0;
   }
 
   selectSubTab(tab: string) {

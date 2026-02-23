@@ -45,7 +45,7 @@ export class LoginComponent {
               break;
 
             case 'Cost': // Explicit Cost role
-              this.router.navigate(['/production/PlanList']);
+              this.router.navigate(['/purchase/analyze']);
               break;
 
             case 'production':

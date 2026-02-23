@@ -22,7 +22,7 @@
 
       <div class="group-select">
         <label> Fac </label>
-        <ng-select [items]="Fac" bindLabel="FacilityShort" [(ngModel)]="Fac_" placeholder="Select a Fac"
+        <ng-select [items]="Fac" bindLabel="FacilityShort" [(ngModel)]="Fac_" placeholder="Select a Facility"
           [virtualScroll]="true" (change)="saveState()">
         </ng-select>
       </div>
@@ -180,29 +180,29 @@
           <tr>
             <th><input type="checkbox" style="transform: scale(1.5);" [(ngModel)]="selectAllChecked"
                 (change)="toggleAllCheckboxes()" /></th>
-            <th>No.</th>
-            <th>Part No.</th>
-            <th>Item No.</th>
+            <th style="width: 40px;">No.</th>
+            <th style="width: 120px;">Part No.</th>
+            <th style="width: 120px;">Item No.</th>
 
-            <th>Item Name</th>
+            <th style="width: 150px;">Name</th>
 
-            <th>Spec</th>
-            <th>Process</th>
-            <th>Machine</th>
-            <th *ngIf="Tooling_ === 'Cutting tool'">Fresh_Qty</th>
-            <th *ngIf="Tooling_ === 'Cutting tool'">Reuse_Qty</th>
+            <th style="width: 250px;">Spec</th>
+            <th style="width: 100px;">Process</th>
+            <th style="width: 70px;">MC</th>
+            <th *ngIf="Tooling_ === 'Cutting tool'" style="width: 70px;">F.QTY</th>
+            <th *ngIf="Tooling_ === 'Cutting tool'" style="width: 70px;">R.QTY</th>
 
-            <th>QTY</th>
-            <th>Case</th>
-            <th>Position</th>
-            <th *ngIf="Tooling_ === 'Cutting tool'">Detail</th>
+            <th style="width: 65px;">QTY</th>
+            <th style="width: 60px;">Case</th>
+            <th style="width: 80px;">Position</th>
+            <th *ngIf="Tooling_ === 'Cutting tool'" style="width: 60px;">Detail</th>
           </tr>
         </thead>
 
         <tbody *ngIf="!Case_ || items.length === 0">
           <tr>
             <td [attr.colspan]="Tooling_ === 'Setup tool' ? 11 : 14" class="text-center text-muted">
-              <i class="bi bi-exclamation-circle-fill"></i> Please select item to view.
+              <i class="bi bi-exclamation-circle-fill"></i> กรุณาเลือกรายการเพื่อดูรายละเอียด
             </td>
           </tr>
         </tbody>
@@ -211,26 +211,30 @@
           <tr *ngFor="let item of items; let i = index">
             <td [ngClass]="getRowClass(item)"><input type="checkbox" style="transform: scale(1.5);"
                 [(ngModel)]="item.checked" (change)="saveState()" /></td>
-            <td [ngClass]="getRowClass(item)">{{ i + 1 }}</td>
-            <td [ngClass]="getRowClass(item)">{{ item.PartNo }}</td>
-            <td [ngClass]="getRowClass(item)">{{ item.ItemNo }}</td>
+            <td [ngClass]="getRowClass(item)" style="width: 40px;">{{ i + 1 }}</td>
+            <td [ngClass]="getRowClass(item)" style="width: 120px;">{{ item.PartNo }}</td>
+            <td [ngClass]="getRowClass(item)" style="width: 120px;">{{ item.ItemNo }}</td>
 
-            <td [ngClass]="getRowClass(item)">
-              {{ item.ItemName || '-' }}
+            <td [ngClass]="getRowClass(item)" style="width: 150px;">
+              <div class="text-wrap-fix">{{ item.ItemName || '-' }}</div>
             </td>
 
-            <td [ngClass]="getRowClass(item)">{{ item.SPEC }}</td>
+            <td [ngClass]="getRowClass(item)" style="width: 250px;">
+              <div class="text-wrap-fix">{{ item.SPEC }}</div>
+            </td>
 
-            <td [ngClass]="getRowClass(item)">{{ item.Process }}</td>
-            <td [ngClass]="getRowClass(item)">{{ item.MC }}</td>
-            <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)">{{ item.FreshQty }}</td>
-            <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)">{{ item.ReuseQty }}</td>
+            <td [ngClass]="getRowClass(item)" style="width: 100px;">{{ item.Process }}</td>
+            <td [ngClass]="getRowClass(item)" style="width: 70px;">{{ item.MC }}</td>
+            <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)" style="width: 70px;">{{ item.FreshQty
+              }}</td>
+            <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)" style="width: 70px;">{{ item.ReuseQty
+              }}</td>
 
-            <td [ngClass]="getRowClass(item)"><input type="number" class="yoyu" [(ngModel)]="item.QTY" min="1"
-                (change)="saveState()" style="text-align: center; border: 0.5px solid; " /></td>
-            <td [ngClass]="getRowClass(item)"> {{ Case_ }} </td>
-            <td [ngClass]="getRowClass(item)"> {{ item.Position }} </td>
-            <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)">
+            <td [ngClass]="getRowClass(item)" style="width: 65px;"><input type="number" class="yoyu"
+                [(ngModel)]="item.QTY" min="1" (change)="saveState()" /></td>
+            <td [ngClass]="getRowClass(item)" style="width: 60px;"> {{ Case_ }} </td>
+            <td [ngClass]="getRowClass(item)" style="width: 80px;"> {{ item.Position }} </td>
+            <td *ngIf="Tooling_ === 'Cutting tool'" [ngClass]="getRowClass(item)" style="width: 60px;">
               <button class="btn-detail" (click)="openDetailModal(item)" title="View Box/Shelf Detail">
                 <i class="bi bi-eye-fill"></i>
               </button>
@@ -260,37 +264,40 @@
             <tr>
               <th><input type="checkbox" style="transform: scale(1.5);" [(ngModel)]="selectAllSetupChecked"
                   (change)="toggleAllSetupCheckboxes()" /></th>
-              <th>No.</th>
-              <th>Part No.</th>
-              <th>Item No.</th>
-              <th>Item Name</th>
-              <th>Spec</th>
-              <th>Process</th>
-              <th>Machine</th>
+              <th style="width: 40px;">No.</th>
+              <th style="width: 120px;">Part No.</th>
+              <th style="width: 120px;">Item No.</th>
+              <th style="width: 150px;">Name</th>
+              <th style="width: 250px;">Spec</th>
+              <th style="width: 100px;">Process</th>
+              <th style="width: 70px;">MC</th>
 
-              <th>QTY</th>
-              <th>Case</th>
-              <th>Position</th>
+              <th style="width: 65px;">QTY</th>
+              <th style="width: 60px;">Case</th>
+              <th style="width: 80px;">Position</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let setup of relatedSetupItems; let i = index">
               <td><input type="checkbox" style="transform: scale(1.5);" [(ngModel)]="setup.checked"
                   (change)="saveState()" /></td>
-              <td>{{ i + 1 }}</td>
-              <td>{{ setup.PartNo || '-' }}</td>
-              <td>{{ setup.ItemNo || '-' }}</td>
-              <td>{{ setup.ItemName || '-' }}</td>
-              <td>{{ setup.SPEC || '-' }}</td>
-              <td>{{ setup.Process || '-' }}</td>
-              <td>{{ setup.MC || '-' }}</td>
-
-              <td>
-                <input type="number" class="yoyu" [(ngModel)]="setup.QTY" min="1" (change)="saveState()"
-                  style="text-align: center; border: 0.5px solid; width: 60px;" />
+              <td style="width: 40px;">{{ i + 1 }}</td>
+              <td style="width: 120px;">{{ setup.PartNo || '-' }}</td>
+              <td style="width: 120px;">{{ setup.ItemNo || '-' }}</td>
+              <td style="width: 150px;">
+                <div class="text-wrap-fix">{{ setup.ItemName || '-' }}</div>
               </td>
-              <td>{{ Case_ }}</td>
-              <td>{{ setup.Position || '-' }}</td>
+              <td style="width: 250px;">
+                <div class="text-wrap-fix">{{ setup.SPEC || '-' }}</div>
+              </td>
+              <td style="width: 100px;">{{ setup.Process || '-' }}</td>
+              <td style="width: 70px;">{{ setup.MC || '-' }}</td>
+
+              <td style="width: 65px;">
+                <input type="number" class="yoyu" [(ngModel)]="setup.QTY" min="1" (change)="saveState()" />
+              </td>
+              <td style="width: 60px;">{{ Case_ }}</td>
+              <td style="width: 80px;">{{ setup.Position || '-' }}</td>
             </tr>
           </tbody>
         </table>

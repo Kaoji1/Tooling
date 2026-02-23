@@ -254,7 +254,7 @@ body {
   align-items: center !important;
   height: 38px !important;
   min-height: 38px !important;
-  padding: 0 4px 0 0 !important;
+  padding: 0 10px 0 0 !important;
   border-radius: 8px !important;
   background-color: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
@@ -468,7 +468,6 @@ body {
   // 🔄 CSS-only: sidebar hover → overlay active (sibling combinator)
   .sidebar-container:hover~.glass-overlay {
     opacity: 1;
-    pointer-events: auto;
   }
 
   // 🎯 Sidebar text visibility (Global — same specificity for default & hover)
@@ -486,7 +485,6 @@ body {
 
   // 🎯 Sidebar inner <nav> expansion on hover (Global — applies to both production & purchase)
   .sidebar-container:hover .sidebar {
-    width: 260px;
     background: rgba(255, 255, 255, 0.92);
 
     .link-text {

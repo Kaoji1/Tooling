@@ -22,15 +22,19 @@
       <button *ngFor="let sub of subTabs" class="btn-upcoming-premium" [class.active]="selectedSubTab === sub"
         (click)="selectSubTab(sub)">
         {{ sub }}
-        <span *ngIf="sub === 'Action Required'" class="action-count">
+        <span *ngIf="sub === 'Required'" class="action-count">
           ({{ getActionRequiredCount(selectedDepartment) }})
+        </span>
+        <span *ngIf="sub === 'Completed'" class="action-count" style="display: none;">
+          <!-- Hidden as requested: no count for completed -->
         </span>
       </button>
 
       <!-- New Export Button (Only for PC) -->
+      <!-- Export Button (PC & EN) -->
       <button *ngIf="selectedDepartment === 'PC'" class="btn-export-premium" (click)="onExport()">
         <i class="bi bi-file-earmark-excel-fill"></i>
-        <span>Export Plan</span>
+        <span>Export</span>
       </button>
     </div>
   </div>
@@ -38,7 +42,8 @@
   <!-- ===== ROW 2: Filter Toolbar (Range Tabs + Inline Filters) ===== -->
   <div class="filter-toolbar">
     <div class="toolbar-left">
-      <div class="range-tabs-container" *ngIf="selectedSubTab === 'Upcoming' || selectedSubTab === 'Action Required'">
+      <div class="range-tabs-container"
+        *ngIf="selectedSubTab === 'Upcoming' || selectedSubTab === 'Required' || selectedSubTab === 'Completed'">
         <div class="range-tabs">
           <button *ngFor="let range of dateRanges" class="range-tab" [class.active]="selectedDateRange === range"
             (click)="selectDateRange(range)">
@@ -141,11 +146,23 @@
                 <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
               </ng-container>
               <ng-container *ngIf="selectedDepartment === 'EN'">
-                <button class="btn-edit-pill me-1" (click)="onEdit(item)" title="Add Path">ADD PATH</button>
+                <!-- Show ADD PATH if NOT Completed -->
+                <button *ngIf="selectedSubTab !== 'Completed'" class="btn-edit-pill me-1" (click)="onEdit(item)"
+                  title="Add Path">ADD PATH</button>
+                <!-- Show Standard Blue EDIT if Completed -->
+                <button *ngIf="selectedSubTab === 'Completed'" class="btn-edit-pill me-1" (click)="onEdit(item)"
+                  title="Edit Attachments">EDIT</button>
+
                 <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
               </ng-container>
               <ng-container *ngIf="selectedDepartment === 'QC'">
-                <button class="btn-edit-pill me-1" (click)="onEdit(item)" title="Add IIQC">ADD PATH</button>
+                <!-- Show ADD PATH if NOT Completed -->
+                <button *ngIf="selectedSubTab !== 'Completed'" class="btn-edit-pill me-1" (click)="onEdit(item)"
+                  title="Add IIQC">ADD PATH</button>
+                <!-- Show Standard Blue EDIT if Completed -->
+                <button *ngIf="selectedSubTab === 'Completed'" class="btn-edit-pill me-1" (click)="onEdit(item)"
+                  title="Edit IIQC">EDIT</button>
+
                 <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
               </ng-container>
               <ng-container *ngIf="selectedDepartment === 'Gage'">
@@ -182,17 +199,22 @@
         <!-- 6. Status -->
         <div class="grid-cell text-center col-status">
           <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
-            <ng-container *ngIf="item.planStatus === 'Cancelled'">
+
+            <!-- Default Case: If Cancelled, show ONLY Cancelled Badge -->
+            <ng-container *ngIf="item.planStatus === 'Cancelled'; else activeStatus">
               <span class="badge-cancelled-solid">CANCELLED</span>
             </ng-container>
-            <ng-container *ngIf="item.planStatus !== 'Cancelled'">
+
+            <!-- Else Case: Show Calculated Status (Wait/Ready) -->
+            <ng-template #activeStatus>
               <ng-container *ngIf="getProcessStatus(item) as status">
                 <span class="badge" [className]="'badge ' + status.color"
                   style="font-size: 0.75rem; padding: 3px 8px; border: 1px solid;">
                   {{ status.label }}
                 </span>
               </ng-container>
-            </ng-container>
+            </ng-template>
+
           </div>
         </div>
 

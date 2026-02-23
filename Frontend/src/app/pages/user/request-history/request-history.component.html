@@ -1,0 +1,146 @@
+<div class="content-area">
+
+    <div class="main-header">
+        <div class="header-left">
+            <h4>Request History</h4>
+            <span class="breadcrumb-label">History Log</span>
+        </div>
+    </div>
+
+    <!-- Toolbar: Clear, Filter, Export -->
+    <div class="box-input">
+        <div class="form-input">
+            <div class="button-clear">
+                <button class="btn btn-clear" type="button" (click)="clearFilters()">
+                    <i class="bi bi-x-circle-fill text-white"></i> Clear
+                </button>
+            </div>
+            <div class="button-filter">
+                <button class="btn btn-filter" type="button" (click)="onFilter()">
+                    <i class="bi bi-funnel-fill text-white"></i> Filter
+                </button>
+            </div>
+            <div class="button-group">
+                <button class="excel-button btn btn-success" type="button" (click)="exportExcel()">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle text-center" id="table-data">
+
+            <!-- Filter Options Row (Placeholder for Ng-Selects) -->
+            <thead>
+                <tr class="filter-row">
+                    <td></td> <!-- No -->
+                    <td></td> <!-- M/R No. -->
+                    <td></td> <!-- MFG Order No -->
+                    <td></td> <!-- Document -->
+                    <td><input type="date" class="premium-input" [(ngModel)]="reqDate" placeholder="Req Date"></td>
+                    <!-- Req Date -->
+                    <td></td> <!-- Req By -->
+                    <td>
+                        <ng-select class="premium-select" [items]="divisionList" bindLabel="label" bindValue="value"
+                            [(ngModel)]="selectedDivisions" [multiple]="true" [closeOnSelect]="false"
+                            placeholder="Division">
+                        </ng-select>
+                    </td> <!-- Div -->
+                    <td>
+                        <ng-select class="premium-select" [items]="partNoList" bindLabel="label" bindValue="value"
+                            [(ngModel)]="selectedPartNos" [multiple]="true" [closeOnSelect]="false"
+                            placeholder="Part No">
+                        </ng-select>
+                    </td> <!-- Part NO. -->
+                    <td>
+                        <ng-select class="premium-select" [items]="processList" bindLabel="label" bindValue="value"
+                            [(ngModel)]="selectedProcesses" [multiple]="true" [closeOnSelect]="false"
+                            placeholder="Process">
+                        </ng-select>
+                    </td> <!-- Process -->
+                    <td></td> <!-- Fac -->
+                    <td></td> <!-- MC Type -->
+                    <td></td> <!-- MC No -->
+                    <td></td> <!-- Case -->
+                    <td>
+                        <ng-select class="premium-select" [items]="itemNoList" bindLabel="label" bindValue="value"
+                            [(ngModel)]="selectedItemNos" [multiple]="true" [closeOnSelect]="false"
+                            placeholder="Item No">
+                        </ng-select>
+                    </td> <!-- Item NO. -->
+                    <td></td> <!-- Item Name -->
+                    <td></td> <!-- Spec -->
+                    <td></td> <!-- QTY -->
+                    <td></td> <!-- Total -->
+                    <td></td> <!-- Phone -->
+                </tr>
+            </thead>
+
+            <!-- Table Headers based on user requirements -->
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 50px;">NO.</th>
+                    <th (click)="onSort('MR_No')" class="sortable">M/R NO. <span *ngIf="sortKey === 'MR_No'">{{ sortAsc
+                            ? '↑' : '↓' }}</span></th>
+                    <th (click)="onSort('MFG_Order_No')" class="sortable">MFG ORDER NO. <span
+                            *ngIf="sortKey === 'MFG_Order_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+                    <th (click)="onSort('Document')" class="sortable">DOCUMENT <span *ngIf="sortKey === 'Document'">{{
+                            sortAsc ? '↑' : '↓' }}</span></th>
+                    <th (click)="onSort('Req_Date')" class="sortable">REQ DATE <span *ngIf="sortKey === 'Req_Date'">{{
+                            sortAsc ? '↑' : '↓' }}</span></th>
+                    <th>REQ BY</th>
+                    <th (click)="onSort('Div')" class="sortable">DIV <span *ngIf="sortKey === 'Div'">{{ sortAsc ? '↑' :
+                            '↓' }}</span></th>
+                    <th (click)="onSort('Part_No')" class="sortable">PART NO. <span *ngIf="sortKey === 'Part_No'">{{
+                            sortAsc ? '↑' : '↓' }}</span></th>
+                    <th>PROCESS</th>
+                    <th>FAC</th>
+                    <th>MC TYPE</th>
+                    <th>MC NO</th>
+                    <th>CASE</th>
+                    <th (click)="onSort('Item_No')" class="sortable">ITEM NO. <span *ngIf="sortKey === 'Item_No'">{{
+                            sortAsc ? '↑' : '↓' }}</span></th>
+                    <th>ITEM NAME</th>
+                    <th>SPEC</th>
+                    <th>QTY</th>
+                    <th>TOTAL</th>
+                    <th>PHONE</th>
+                </tr>
+            </thead>
+
+            <!-- Table Body -->
+            <tbody>
+                <tr *ngIf="filteredList.length === 0">
+                    <td colspan="19" class="text-center text-muted py-4">
+                        <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
+                        <p class="mt-2">No Request History Found</p>
+                    </td>
+                </tr>
+
+                <tr *ngFor="let item of filteredList; let i = index">
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ item.MR_No }}</td>
+                    <td>{{ item.MFG_Order_No }}</td>
+                    <td><span class="fw-medium">{{ item.Document }}</span></td>
+                    <td>{{ item.Req_Date | date:'dd/MM/yy' }}</td>
+                    <td>{{ item.Req_By }}</td>
+                    <td>{{ item.Div }}</td>
+                    <td class="text-start">{{ item.Part_No }}</td>
+                    <td>{{ item.Process }}</td>
+                    <td>{{ item.Fac }}</td>
+                    <td>{{ item.MC_Type }}</td>
+                    <td>{{ item.MC_No }}</td>
+                    <td>{{ item.Case }}</td>
+                    <td>{{ item.Item_No }}</td>
+                    <td class="text-start">{{ item.Item_Name }}</td>
+                    <td class="text-start text-muted">{{ item.Spec }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ item.QTY }}</span></td>
+                    <td><span class="badge bg-primary text-white border">{{ item.Total }}</span></td>
+                    <td>{{ item.Phone }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>

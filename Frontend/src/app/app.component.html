@@ -2,8 +2,8 @@
 
     <!-- Sidebar Container (peer: CSS-only hover source) -->
     <aside class="sidebar-container" *ngIf="!isLoginPage">
-        <app-sidebar *ngIf="isProductionRoute"></app-sidebar>
-        <app-sidebarpurchase *ngIf="isPurchaseRoute"></app-sidebarpurchase>
+        <app-sidebar [style.display]="isProductionRoute ? 'block' : 'none'"></app-sidebar>
+        <app-sidebarpurchase [style.display]="isPurchaseRoute ? 'block' : 'none'"></app-sidebarpurchase>
     </aside>
 
     <!-- Content Blur Overlay (Activated by CSS sibling hover) -->

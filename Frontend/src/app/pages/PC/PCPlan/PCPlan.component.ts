@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { PCPlanService } from '../../../core/services/PCPlan.service';
@@ -14,6 +14,7 @@ import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } f
 import { CustomDateAdapter } from '../../../core/utils/custom-date-adapter';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { NotificationService } from '../../../core/services/notification.service';
+import { forkJoin, of, timer } from 'rxjs';
 
 export interface PlanItem {
   date: string | Date | null;
@@ -86,7 +87,8 @@ export class PCPlanComponent implements OnInit {
 
   constructor(
     private pcPlanService: PCPlanService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   ngOnInit(): void {
@@ -103,9 +105,15 @@ export class PCPlanComponent implements OnInit {
         this.divisionOptions = data
           .map(item => {
             const pc = (item.Profit_Center || '').toString().trim();
+            let displayLabel = pc;
+            if (pc === '7122') {
+              displayLabel = 'GM';
+            } else if (pc === '71DZ') {
+              displayLabel = 'PMC';
+            }
             return {
               code: pc,
-              label: pc,
+              label: displayLabel,
               profitCenter: pc
             };
           })
@@ -336,14 +344,20 @@ export class PCPlanComponent implements OnInit {
       // Find Fac even if header is Facility or FAC
       const rawFac = row['Fac'] || row['Facility'] || row['FAC'];
 
+      let pBef = row['Part Before'] ? row['Part Before'].toString().trim() : null;
+      let pNo = row['Part No.'] ? row['Part No.'].toString().trim() : null;
+
+      pBef = this.findMatchIgnoringSymbols(pBef, this.partBef);
+      pNo = this.findMatchIgnoringSymbols(pNo, this.partNos);
+
       this.planItems.push({
         date: this.excelDateToJSDate(row['Date']),
         machineType: row['Machine Type'] ? row['Machine Type'].toString().trim() : null,
         fac: rawFac ? rawFac.toString().trim() : null,
         mcNo: row['MC No.'] ? row['MC No.'].toString().trim() : '',
         process: row['Process'] ? row['Process'].toString().trim() : null,
-        partBef: row['Part Before'] ? row['Part Before'].toString().trim() : null,
-        partNo: row['Part No.'] ? row['Part No.'].toString().trim() : null,
+        partBef: pBef,
+        partNo: pNo,
         qty: row['QTY'] || null,
         time: row['Time'] ? row['Time'].toString().trim() : '',
         comment: row['Comment'] ? row['Comment'].toString().trim() : ''
@@ -463,6 +477,12 @@ export class PCPlanComponent implements OnInit {
             this.partNos = resSlow.partNos.map((x: any) => x.PartNo);
             this.partBef = resSlow.partNos.map((x: any) => x.PartNo);
 
+            // Re-normalize existing plan items if any were added from Excel
+            this.planItems.forEach(item => {
+              item.partBef = this.findMatchIgnoringSymbols(item.partBef, this.partBef);
+              item.partNo = this.findMatchIgnoringSymbols(item.partNo, this.partNos);
+            });
+
             this.isLoadingParts = false; // Hide Parts Spinner
           },
           error: (err) => {
@@ -512,7 +532,7 @@ export class PCPlanComponent implements OnInit {
   clearAll() {
     Swal.fire({
       title: 'Are you sure?',
-      text: "This will clear all items in the table!",
+      text: "ระบบจะทำการล้างรายการทั้งหมดในตาราง",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
@@ -601,6 +621,33 @@ export class PCPlanComponent implements OnInit {
     event.target.select();
   }
 
+  // --- Helper to clean and match Excel items with Master List ---
+  findMatchIgnoringSymbols(rawText: string | null, masterList: string[]): string | null {
+    if (!rawText || !masterList || masterList.length === 0) return rawText;
+
+    const cleanRaw = rawText.toString().toLowerCase().replace(/[^a-z0-9]/gi, '');
+    if (!cleanRaw) return rawText;
+
+    const matched = masterList.find(part => {
+      if (!part) return false;
+      const cleanPart = part.toString().toLowerCase().replace(/[^a-z0-9]/gi, '');
+      return cleanPart === cleanRaw;
+    });
+
+    return matched || rawText;
+  }
+
+  // --- Custom Search for ng-select ---
+  // Ignore special characters like dashes, spaces, etc. when searching
+  customSearchFn(term: string, item: any): boolean {
+    if (!term) return true;
+    const cleanTerm = term.toLowerCase().replace(/[^a-z0-9]/gi, '');
+    // ng-select wraps primitive items. item.label usually contains the display value.
+    const itemValue = item.label || item;
+    const cleanItem = itemValue ? itemValue.toString().toLowerCase().replace(/[^a-z0-9]/gi, '') : '';
+    return cleanItem.includes(cleanTerm);
+  }
+
   // ฟังก์ชันบันทึกข้อมูลเมือกดปุ่ม Send
   onSubmit() {
     // 1. ตรวจสอบว่ามีข้อมูลในตารางไหม
@@ -611,7 +658,7 @@ export class PCPlanComponent implements OnInit {
 
     // 2. ตรวจสอบว่าเลือก Division หรือยัง
     if (!this.selectedDivisionCode) {
-      Swal.fire('Warning', 'Please select Division', 'warning');
+      Swal.fire('Warning', 'กรุณาเลือก Division ก่อนทำรายการ', 'warning');
       return;
     }
 
@@ -647,61 +694,60 @@ export class PCPlanComponent implements OnInit {
     }
 
     // 4. ถ้าผ่าน Validation ทั้งหมดค่อยส่ง
-    // 4. ถ้าผ่าน Validation ทั้งหมด ให้ยืนยันก่อนส่ง (Premium Bill Style - Aggregated)
+    // 4. ถ้าผ่าน Validation ทั้งหมด ให้ยืนยันก่อนส่ง (Premium Bill Style - Detailed List)
 
-    // Aggregate Data by PartNo + Machine + Fac
-    const summaryMap = new Map<string, { qty: number, count: number, part: string, mc: string, fac: string }>();
-    let grandTotalQty = 0;
+    // Determine Division display name
+    let displayDivision = this.selectedDivisionCode;
+    if (this.selectedDivisionCode === '7122') {
+      displayDivision = 'GM';
+    } else if (this.selectedDivisionCode === '71DZ') {
+      displayDivision = 'PMC';
+    }
 
-    this.planItems.forEach(item => {
-      const part = item.partNo || '-';
-      const mc = item.machineType || '-';
-      const fac = item.fac || '-';
-      const key = `${part}|${mc}|${fac}`;
-      const qty = Number(item.qty) || 0;
-
-      if (!summaryMap.has(key)) {
-        summaryMap.set(key, { qty: 0, count: 0, part, mc, fac });
-      }
-
-      const current = summaryMap.get(key)!;
-      current.qty += qty;
-      current.count++;
-      grandTotalQty += qty;
-    });
-
-    const totalGroups = summaryMap.size;
+    const totalParts = this.planItems.length;
 
     let summaryHtml = `
       <div style="text-align: left; font-family: 'Kanit', sans-serif; color: #334155;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem;">
-          <span><strong>Division:</strong> ${this.selectedDivisionCode}</span>
-          <span style="font-size: 0.8rem; color: #64748b;">(Grouped by Part + MC + Fac)</span>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem;">
+          <span><strong>Division:</strong> <span style="color: #1d4ed8; font-weight: 600;">${displayDivision}</span></span>
+          <span style="font-size: 0.85rem; color: #64748b;">(รายการที่ต้องการบันทึก)</span>
         </div>
         
-        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; max-height: 400px; overflow-y: auto;">
-          <table style="width: 100%; font-size: 0.8rem; border-collapse: collapse;">
+        <div style="background: #f8fafc; border-radius: 8px; padding: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; max-height: 350px; overflow-y: auto;">
+          <table style="width: 100%; font-size: 0.8rem; border-collapse: collapse; text-align: left;">
             <thead>
-              <tr style="border-bottom: 1px solid #cbd5e1; color: #64748b; position: sticky; top: 0; background: #f8fafc; z-index: 1;">
-                <th style="text-align: left; padding-bottom: 5px;">Part No.</th>
-                <th style="text-align: left; padding-bottom: 5px;">MC Type</th>
-                <th style="text-align: center; padding-bottom: 5px;">Fac</th>
-                <th style="text-align: center; padding-bottom: 5px; width: 40px;">Freq.</th>
-                <th style="text-align: right; padding-bottom: 5px;">Total</th>
+              <tr style="border-bottom: 2px solid #cbd5e1; color: #475569; position: sticky; top: 0; background: #f8fafc; z-index: 1;">
+                <th style="padding: 6px 4px; white-space: nowrap;">Part No.</th>
+                <th style="padding: 6px 4px; white-space: nowrap;">MC Type</th>
+                <th style="padding: 6px 4px; white-space: nowrap;">MC No.</th>
+                <th style="padding: 6px 4px; white-space: nowrap;">Process</th>
+                <th style="padding: 6px 4px; text-align: center; white-space: nowrap;">Fac</th>
+                <th style="padding: 6px 4px; text-align: right; white-space: nowrap;">QTY</th>
+                <th style="padding: 6px 4px; text-align: right; white-space: nowrap;">Time</th>
               </tr>
             </thead>
             <tbody>
     `;
 
-    // Add Aggregated Items
-    summaryMap.forEach((data) => {
+    // Add All Items
+    this.planItems.forEach((item) => {
+      const part = item.partNo || '-';
+      const mcType = item.machineType || '-';
+      const mcNo = item.mcNo || '-';
+      const process = item.process || '-';
+      const fac = item.fac || '-';
+      const qty = item.qty || '0';
+      const time = item.time || '-';
+
       summaryHtml += `
         <tr style="border-bottom: 1px dashed #e2e8f0;">
-          <td style="padding: 6px 0; font-weight: 500;">${data.part}</td>
-          <td style="padding: 6px 0; color: #64748b;">${data.mc}</td>
-          <td style="padding: 6px 0; text-align: center; color: #64748b;">${data.fac}</td>
-          <td style="padding: 6px 0; text-align: center; color: #64748b;">${data.count}</td>
-          <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #1d4ed8;">${data.qty}</td>
+          <td style="padding: 8px 4px; font-weight: 500;">${part}</td>
+          <td style="padding: 8px 4px; color: #64748b;">${mcType}</td>
+          <td style="padding: 8px 4px; color: #64748b;">${mcNo}</td>
+          <td style="padding: 8px 4px; color: #64748b;">${process}</td>
+          <td style="padding: 8px 4px; text-align: center; color: #64748b;">${fac}</td>
+          <td style="padding: 8px 4px; text-align: right; font-weight: 600; color: #0f172a;">${qty}</td>
+          <td style="padding: 8px 4px; text-align: right; font-weight: 600; color: #1d4ed8;">${time}</td>
         </tr>
       `;
     });
@@ -711,27 +757,25 @@ export class PCPlanComponent implements OnInit {
           </table>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #e2e8f0; padding-top: 10px;">
-          <div style="font-size: 0.9rem; color: #64748b;">
-            <span>Total Groups: <strong style="color: #475569;">${totalGroups}</strong></span>
-          </div>
+        <div style="display: flex; justify-content: flex-end; align-items: center; border-top: 2px solid #e2e8f0; padding-top: 12px;">
           <div style="text-align: right;">
-            <span style="font-size: 0.9rem; color: #64748b; margin-right: 10px;">Grand Total Qty</span>
-            <span style="font-size: 1.25rem; font-weight: 800; color: #1d4ed8;">${grandTotalQty}</span>
+            <span style="font-size: 1rem; color: #475569; margin-right: 12px; font-weight: 600;">รวมจำนวนรายการทั้งหมด (Total)</span>
+            <span style="font-size: 1.5rem; font-weight: 800; color: #10b981;">${totalParts}</span>
+            <span style="font-size: 0.9rem; color: #64748b; margin-left: 4px;">รายการ</span>
           </div>
         </div>
       </div>
     `;
 
     Swal.fire({
-      title: '<span style="font-family: Kanit; font-weight: 700; color: #1e293b; font-size: 1.5rem;">Confirm Submission</span>',
+      title: '<span style="font-family: Kanit; font-weight: 800; color: #1e293b; font-size: 1.6rem;">Confirm Submission</span>',
       html: summaryHtml,
       showCancelButton: true,
-      confirmButtonText: 'Yes, Submit',
+      confirmButtonText: 'Submit',
       cancelButtonText: 'Cancel',
       confirmButtonColor: '#3b82f6',
       cancelButtonColor: '#94a3b8',
-      width: 650,
+      width: 800,
       customClass: {
         popup: 'swal-premium-popup-minimal',
         confirmButton: 'swal-premium-btn-primary',
@@ -740,16 +784,39 @@ export class PCPlanComponent implements OnInit {
       backdrop: `rgba(15, 23, 42, 0.6)`
     }).then((result) => {
       if (result.isConfirmed) {
-        // Show Loading (Clean)
+        // Double Confirmation
         Swal.fire({
-          title: '',
-          html: '<div style="font-family: Kanit; margin-top: 10px;">Saving your plan...</div>',
-          allowOutsideClick: false,
-          didOpen: () => Swal.showLoading(),
-          customClass: { popup: 'swal-premium-popup-minimal' }
-        });
+          title: '<span style="font-family: Kanit; font-weight: 800; color: #1e293b; font-size: 1.4rem;">Are you sure?</span>',
+          html: '<span style="font-family: Kanit; color: #334155;">คุณต้องการบันทึกแผนงานทั้งหมดนี้ใช่หรือไม่?</span>',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, Submit!',
+          cancelButtonText: 'Go back',
+          confirmButtonColor: '#10b981',
+          cancelButtonColor: '#94a3b8',
+          width: 450,
+          customClass: {
+            popup: 'swal-premium-popup-minimal',
+            confirmButton: 'swal-premium-btn-primary',
+            cancelButton: 'swal-premium-btn-secondary'
+          },
+          backdrop: `rgba(15, 23, 42, 0.6)`
+        }).then((res2) => {
+          if (res2.isConfirmed) {
+            // Show Loading (Clean)
+            Swal.fire({
+              title: '',
+              html: '<div style="font-family: Kanit; margin-top: 10px;">Saving your plan...</div>',
+              allowOutsideClick: false,
+              didOpen: () => Swal.showLoading(),
+              customClass: { popup: 'swal-premium-popup-minimal' }
+            });
 
-        this.performSave();
+            this.performSave();
+          } else if (res2.dismiss === Swal.DismissReason.cancel) {
+            this.onSubmit(); // Reopen the first modal
+          }
+        });
       }
     });
   }
@@ -757,13 +824,15 @@ export class PCPlanComponent implements OnInit {
   performSave() {
     // 5. เตรียมข้อมูล (ใส่ Division และ EmployeeID ให้ครบทุกแถว)
     let empId = 'Unknown';
-    const userStr = sessionStorage.getItem('user');
-    if (userStr) {
-      try {
-        const userObj = JSON.parse(userStr);
-        empId = userObj.Username || userObj.Employee_ID || 'Unknown';
-      } catch (e) {
-        console.error('Error parsing user data:', e);
+    if (isPlatformBrowser(this.platformId)) {
+      const userStr = sessionStorage.getItem('user');
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          empId = userObj.Username || userObj.Employee_ID || 'Unknown';
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+        }
       }
     }
 
@@ -798,9 +867,42 @@ export class PCPlanComponent implements OnInit {
       };
     });
 
-    // 6. ส่งไป Backend
-    this.pcPlanService.savePlan(payload).subscribe({
-      next: (res) => {
+    // 6. Show Premium Loading
+    Swal.fire({
+      title: '',
+      html: `
+        <div style="padding: 20px;">
+          <svg width="80" height="80" viewBox="0 0 50 50" style="margin: 0 auto; display: block;">
+            <circle cx="25" cy="25" r="20" fill="none" stroke="#e2e8f0" stroke-width="4" />
+            <circle cx="25" cy="25" r="20" fill="none" stroke="#3b82f6" stroke-width="4" stroke-linecap="round">
+              <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite" />
+              <animate attributeName="stroke-dasharray" values="1,150;90,150;1,150" dur="1.5s" repeatCount="indefinite" />
+            </circle>
+            <path d="M25 15 L25 25 L32 25" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" fill="none">
+               <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="4s" repeatCount="indefinite" />
+            </path>
+          </svg>
+          <div style="font-family: 'Kanit', sans-serif; margin-top: 20px; color: #1e293b; font-weight: 600; font-size: 1.1rem;">
+            Saving your plans...
+          </div>
+          <div style="font-family: 'Kanit', sans-serif; margin-top: 5px; color: #64748b; font-size: 0.85rem;">
+            Please wait a moment while we process your data.
+          </div>
+        </div>
+      `,
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      customClass: {
+        popup: 'swal-premium-popup-minimal'
+      }
+    });
+
+    // 7. ส่งไป Backend with delay
+    forkJoin([
+      timer(1500), // Artificial delay for "เอ้ะๆ" factor
+      this.pcPlanService.savePlan(payload)
+    ]).subscribe({
+      next: ([_, res]) => {
         if (res.fail > 0) {
           // Error case (keep existing logic or slightly refine?)
           // For now, keeping error logic but matching style if possible.
@@ -813,49 +915,93 @@ export class PCPlanComponent implements OnInit {
           errorHtml += '</div>';
 
           Swal.fire({
-            title: '<span style="color:#ef4444; font-weight:800;">Completed with Errors</span>',
-            html: `<div style="background:#fff1f2; border-radius:8px; padding:15px; border:1px solid #fecaca; color:#991b1b; text-align: left;">
-              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                <span>Success: <b>${res.count}</b></span>
-                <span>Failed: <b>${res.fail}</b></span>
+            html: `
+              <svg width="200" height="120" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" style="margin: 0 auto; display: block;">
+                  <path d="M 10 100 Q 100 98 190 100" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <path d="M 35 95 C 30 90 40 85 35 80" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <path d="M 28 85 C 23 80 33 75 28 70" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <g transform="translate(45, 10)">
+                    <path d="M 45 40 C 40 10 65 10 60 30" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 20 50 C 25 100 120 100 128 50" fill="#fbc3a1" stroke="#1d1d1f" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M 46 50 L 56 80 L 90 80 L 100 50" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 56 80 L 73 100 L 90 80" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 24 65 L 50 65 L 56 80 M 90 80 L 96 65 L 123 65" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 18 50 L 130 50" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 18 50 C 50 40 90 40 130 50" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 65 45 C 60 15 85 15 80 35" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <circle cx="70" cy="28" r="1.5" fill="#1d1d1f"/><circle cx="75" cy="32" r="1.5" fill="#1d1d1f"/><circle cx="78" cy="25" r="1.5" fill="#1d1d1f"/>
+                    <path d="M 105 45 C 100 15 125 15 120 35" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <circle cx="110" cy="28" r="1.5" fill="#1d1d1f"/><circle cx="115" cy="32" r="1.5" fill="#1d1d1f"/><circle cx="118" cy="25" r="1.5" fill="#1d1d1f"/>
+                    <path d="M 20 45 C -20 55 -30 90 -5 90 C 15 90 10 60 10 60" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M -8 72 L -2 78 M -2 72 L -8 78" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <path d="M 2 82 C -2 88 12 85 14 80" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  </g>
+              </svg>
+              <h2 style="color: #c62828; font-family: Kanit, sans-serif; font-size: 2.2rem; font-weight: 800; margin: 15px 0 5px 0;">Ops!</h2>
+              <p style="color: #8c5b5b; font-family: Kanit, sans-serif; font-size: 1.1rem; margin: 0 0 15px 0; font-weight: 500;">Something went wrong</p>
+              
+              <div style="background:rgba(255,255,255,0.6); border-radius:12px; padding:15px; border:1px solid #fecaca; color:#991b1b; text-align: left; font-family: Kanit, sans-serif; font-size: 0.9rem; max-height: 200px; overflow-y: auto;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                  <span>Success: <b>${res.count}</b></span>
+                  <span>Failed: <b>${res.fail}</b></span>
+                </div>
+                <hr style="border:0.5px solid #fca5a5; margin:10px 0;">
+                ${errorHtml}
               </div>
-              <hr style="border:0.5px solid #fca5a5; margin:10px 0;">${errorHtml}
-              </div>`,
-            icon: 'warning',
+            `,
+            showConfirmButton: true,
+            confirmButtonText: 'Try again',
+            showCloseButton: true,
             customClass: {
-              popup: 'swal-premium-popup-minimal',
-              confirmButton: 'swal-premium-btn-primary'
-            }
+              popup: 'swal-turtle-popup-error',
+              confirmButton: 'swal-turtle-btn-error',
+              actions: 'swal-turtle-actions'
+            },
+            backdrop: `rgba(15, 23, 42, 0.5)`
           });
         } else {
           // SUCCESS (Premium Bill Style - No Icon)
           Swal.fire({
-            title: '<span style="color:#059669; font-family: Kanit; font-weight: 700; font-size: 1.8rem;">Plan Saved!</span>',
             html: `
-              <div style="font-family: Kanit; color: #475569; margin-top: 10px;">
-                <p style="font-size: 1.1rem;">Successfully recorded <strong>${res.successCount}</strong> items.</p>
-                <div style="margin-top: 15px; padding: 8px 15px; background: #f0fdf4; color: #15803d; border-radius: 50px; display: inline-block; font-weight: 500; font-size: 0.9rem;">
-                   Check "Plan List" for details
-                </div>
-              </div>
+              <svg width="200" height="120" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" style="margin: 0 auto; display: block; overflow: visible;">
+                  <path d="M 0 100 Q 100 98 200 100" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <g class="walking-turtle-group" transform="translate(10, 5)">
+                    <path class="turtle-leg-back" d="M 125 95 C 120 75 145 75 140 95" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <path class="turtle-leg-back" d="M 85 95 C 80 75 105 75 100 95" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 68 85 C 100 95 140 95 162 85" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 62 85 C 65 30 160 30 168 85" fill="#c4ebc8" stroke="#1d1d1f" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M 88 85 L 98 55 L 132 55 L 142 85" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 98 55 L 115 35 L 132 55" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 66 70 L 92 70 L 98 55 M 132 55 L 138 70 L 165 70" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                    <path class="turtle-leg-front" d="M 110 85 C 105 105 130 105 125 85" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <g class="turtle-leg-front">
+                      <circle cx="115" cy="92" r="1.5" fill="#1d1d1f"/><circle cx="120" cy="95" r="1.5" fill="#1d1d1f"/><circle cx="122" cy="88" r="1.5" fill="#1d1d1f"/>
+                    </g>
+                    <path class="turtle-leg-front" d="M 70 85 C 65 105 90 105 85 85" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <g class="turtle-leg-front">
+                      <circle cx="75" cy="92" r="1.5" fill="#1d1d1f"/><circle cx="80" cy="95" r="1.5" fill="#1d1d1f"/><circle cx="82" cy="88" r="1.5" fill="#1d1d1f"/>
+                    </g>
+                    <path d="M 64 78 C 30 80 40 40 60 40 C 75 40 70 60 70 60" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="2.5" fill="#1d1d1f"/>
+                    <path d="M 58 55 C 60 62 48 65 46 60" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-linecap="round"/>
+                  </g>
+              </svg>
+              <h2 style="color: #2e7d32; font-family: Kanit, sans-serif; font-size: 2.2rem; font-weight: 800; margin: 15px 0 5px 0;">Success!</h2>
+              <p style="color: #5c6e58; font-family: Kanit, sans-serif; font-size: 1.1rem; margin: 0; font-weight: 500;">บันทึกข้อมูลแผนงานสำเร็จแล้ว</p>
+              <p style="color: #8da488; font-family: Kanit, sans-serif; font-size: 0.95rem; margin-top: 5px;">(บันทึกทั้งหมด ${res.successCount} รายการ)</p>
             `,
             showConfirmButton: true,
-            confirmButtonText: 'Great!',
-            confirmButtonColor: '#10b981',
+            confirmButtonText: 'Continue',
+            showCloseButton: true,
+            timer: 5000,
+            timerProgressBar: true,
             customClass: {
-              popup: 'swal-premium-popup-minimal',
-              confirmButton: 'swal-premium-btn-success'
+              popup: 'swal-turtle-popup-success',
+              confirmButton: 'swal-turtle-btn-success',
+              actions: 'swal-turtle-actions'
             },
-            backdrop: `rgba(15, 23, 42, 0.4)`
+            backdrop: `rgba(15, 23, 42, 0.5)`
           });
-
-          // Manual Notification Trigger (Removed to avoid duplication with backend socket events)
-          /*
-          this.notificationService.addManualNotification(
-            `New Plan saved: ${this.selectedDivisionCode} (${res.successCount} items)`,
-            'NEW_PLAN'
-          );
-          */
 
           // Clear form
           this.planItems = [];
@@ -865,12 +1011,44 @@ export class PCPlanComponent implements OnInit {
       error: (err) => {
         console.error('Save error:', err);
         Swal.fire({
-          title: 'Error',
-          text: err.message || 'Failed to save plan',
-          icon: 'error',
+          html: `
+              <svg width="200" height="120" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" style="margin: 0 auto; display: block;">
+                  <path d="M 10 100 Q 100 98 190 100" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <path d="M 35 95 C 30 90 40 85 35 80" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <path d="M 28 85 C 23 80 33 75 28 70" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <g transform="translate(45, 10)">
+                    <path d="M 45 40 C 40 10 65 10 60 30" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 20 50 C 25 100 120 100 128 50" fill="#fbc3a1" stroke="#1d1d1f" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M 46 50 L 56 80 L 90 80 L 100 50" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 56 80 L 73 100 L 90 80" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 24 65 L 50 65 L 56 80 M 90 80 L 96 65 L 123 65" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 18 50 L 130 50" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 18 50 C 50 40 90 40 130 50" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M 65 45 C 60 15 85 15 80 35" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <circle cx="70" cy="28" r="1.5" fill="#1d1d1f"/><circle cx="75" cy="32" r="1.5" fill="#1d1d1f"/><circle cx="78" cy="25" r="1.5" fill="#1d1d1f"/>
+                    <path d="M 105 45 C 100 15 125 15 120 35" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <circle cx="110" cy="28" r="1.5" fill="#1d1d1f"/><circle cx="115" cy="32" r="1.5" fill="#1d1d1f"/><circle cx="118" cy="25" r="1.5" fill="#1d1d1f"/>
+                    <path d="M 20 45 C -20 55 -30 90 -5 90 C 15 90 10 60 10 60" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                    <path d="M -8 72 L -2 78 M -2 72 L -8 78" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <path d="M 2 82 C -2 88 12 85 14 80" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  </g>
+              </svg>
+              <h2 style="color: #c62828; font-family: Kanit, sans-serif; font-size: 2.2rem; font-weight: 800; margin: 15px 0 5px 0;">Ops!</h2>
+              <p style="color: #8c5b5b; font-family: Kanit, sans-serif; font-size: 1.1rem; margin: 0 0 15px 0; font-weight: 500;">Failed to save plan</p>
+              
+              <div style="background:rgba(255,255,255,0.6); border-radius:12px; padding:15px; border:1px solid #fecaca; color:#991b1b; text-align: center; font-family: Kanit, sans-serif; font-size: 0.9rem;">
+                ${err.message || 'Unknown server error'}
+              </div>
+            `,
+          showConfirmButton: true,
+          confirmButtonText: 'Try again',
+          showCloseButton: true,
           customClass: {
-            popup: 'swal-premium-popup-minimal'
-          }
+            popup: 'swal-turtle-popup-error',
+            confirmButton: 'swal-turtle-btn-error',
+            actions: 'swal-turtle-actions'
+          },
+          backdrop: `rgba(15, 23, 42, 0.5)`
         });
       }
     });

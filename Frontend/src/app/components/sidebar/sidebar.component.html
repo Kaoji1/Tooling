@@ -28,6 +28,20 @@
           <span class="link-text">Plan List</span>
         </a>
       </li>
+      <!-- Cost Role: Dashboard & Master PH at Top -->
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/analyze">
+          <i class="bi bi-clipboard-data"></i>
+          <span class="link-text">Dashboard</span>
+        </a>
+      </li>
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/master-ph">
+          <i class="bi bi-database"></i>
+          <span class="link-text">Master PH</span>
+        </a>
+      </li>
+
       <!-- Main Menu (Allowed Items) -->
       <li routerLinkActive="active" *ngIf="role === 'PC' || role === 'admin'">
         <a routerLink="/production/PCPlan">
@@ -60,9 +74,9 @@
       </li>
 
       <li routerLinkActive="active">
-        <a routerLink="/production/history">
+        <a routerLink="/production/request-history">
           <i class="bi bi-clock-history"></i>
-          <span class="link-text">History</span>
+          <span class="link-text">Request History</span>
         </a>
       </li>
 
@@ -110,6 +124,69 @@
             <i class="bi bi-clipboard-data"></i>
             <span class="link-text d-flex justify-content-between align-items-center w-100">
               PC Plan <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+      </div>
+
+      <!-- Restricted Menu (Locked Items for Engineer) -->
+      <div *ngIf="role === 'engineer'" class="mt-4 border-top pt-2">
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-clipboard-data"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              PC Plan <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-newspaper"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Request <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Return <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+      </div>
+
+      <!-- Restricted Menu (Locked Items for QC, Gage, Cost, View) -->
+      <div *ngIf="role === 'QC' || role === 'Gage' || role === 'Cost' || role === 'View' || role === 'view'"
+        class="mt-4 border-top pt-2">
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-clipboard-data"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              PC Plan <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-newspaper"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Request <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Return <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
             </span>
           </a>
         </li>

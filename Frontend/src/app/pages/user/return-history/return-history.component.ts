@@ -11,7 +11,7 @@ import * as XLSX from 'xlsx';
 @Component({
     selector: 'app-return-history',
     standalone: true,
-    imports: [CommonModule, SidebarComponent, HttpClientModule, FormsModule, NgSelectModule],
+    imports: [CommonModule, HttpClientModule, FormsModule, NgSelectModule],
     templateUrl: './return-history.component.html',
     styleUrls: ['./return-history.component.scss']
 })
