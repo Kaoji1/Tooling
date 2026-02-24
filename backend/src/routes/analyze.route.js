@@ -5,5 +5,6 @@ const analyze = require('../controllers/analyze.controller'); // 👈 แก้ 
 
 // กำหนด endpoint
 router.get('/getdataall', analyze.getdataall);
+router.get('/getcostanalyze', analyze.getcostanalyze);
 
 module.exports = router;

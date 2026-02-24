@@ -1,469 +1,216 @@
-// const { poolPromise } = require("../config/database");
-// const Type = require("mssql").TYPES;
-// const sql = require("mssql");
-// const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
-
-
-
-// // exports.Detail_Purchase = async (req, res) => {
-// //   console.log('data:',req.body)
-// //   try {
-// //     const pool = await poolPromise; 
-// //     const result = await pool
-// //   .request()
-// //     // .query("SELECT * FROM [dbo].[Stored_View_CuttingTool_RequestList_Query] WHERE Status IN ('Waiting','In Progress')ORDER BY ItemNo ASC, ID_Request ASC ");
-// //     .query("EXEC Stored_View_CuttingTool_RequestList_Query");
-
-
-// //     res.json(result.recordset);
-// //   } 
-// //   catch (error) {
-// //     console.error("Error executing query:", error.stack);
-// //     res.status(500).json({ error: "Internal Server Error", details: error.message });
-// //   }
-
-// // };
-
-// exports.Detail_Purchase = async (req, res) => {
-//   console.log('data:', req.body);
-//   try {
-//     const pool = await poolPromise;
-//     const result = await pool
-//       .request()
-//       .query("EXEC Stored_View_CuttingTool_RequestList_Query");
-
-//     // ฟิลเตอร์ข้อมูลเฉพาะ Waiting
-//     const filtered = result.recordset.filter(row => row.Status === "Waiting");
-
-//     res.json(filtered);
-//   } catch (error) {
-//     console.error("Error executing query:", error.stack);
-//     res.status(500).json({ error: "Internal Server Error", details: error.message });
-//   }
-// };
-// // exports.Detail_Purchase = async (req, res) => {
-// //   console.log('data:', req.body);
-// //   try {
-// //     const pool = await poolPromise;
-// //     const request = pool.request();
-// //     request.stream = true; // เปิด streaming
-
-// //     request.query("EXEC Stored_View_CuttingTool_RequestList_Query");
-
-// //     res.setHeader("Content-Type", "application/json");
-// //     res.write("["); // เริ่ม JSON array
-// //     let first = true;
-
-// //     request.on("row", row => {
-// //       const data = JSON.stringify(row);
-// //       if (!first) res.write(",");
-// //       res.write(data);
-// //       first = false;
-// //     });
-
-// //     request.on("done", () => {
-// //       res.write("]"); // ปิด JSON array
-// //       res.end();
-// //     });
-
-// //     request.on("error", err => {
-// //       console.error("Error executing query:", err.stack);
-// //       res.status(500).send(err.message);
-// //     });
-
-// //   } catch (error) {
-// //     console.error("Internal server error:", error.stack);
-// //     res.status(500).json({ error: "Internal Server Error", details: error.message });
-// //   }
-// // };
-
-
-// exports.Get_ItemNo = async (req, res) => {
-//   console.log(req.body)
-//   try {
-//     const pool = await poolPromise;
-//     const result = await pool
-//     .request()
-//     .query("EXEC Stored_View_CuttingTool_FindItem_Purchase");
-
-//     res.json(result.recordset);
-//   } 
-//   catch (error) {
-//     console.error("Error executing query:", error.stack);
-//     res.status(500).json({ error: "Internal Server Error", details: error.message });
-//   }
-// };
-
-// // exports.get_ItemNo = async (req, res) => {
-// //   console.log(req.body)
-// //   try {
-// //     const pool = await poolPromise;
-// //     const result = await pool
-// //     .request()
-// //     .query("EXEC Stored_View_CuttingTool_FindItem_Purchase");
-
-// //     res.json(result.recordset);
-// //   } 
-// //   catch (error) {
-// //     console.error("Error executing query:", error.stack);
-// //     res.status(500).json({ error: "Internal Server Error", details: error.message });
-// //   }
-// // };
-
-
-
-// exports.Update_Request = async (req, res) => {
-//   try {
-//     const pool = await poolPromise;
-//     const inputParams = [
-//       "ID_Request","DocNo","Status","Requester","Fac","CASE","PartNo","ItemNo",
-//       "Process","MCType","Req_QTY","Remark","ON_HAND","DueDate","PathDwg","PathLayout","SPEC","QTY","PhoneNo"
-//     ];
-//     const rq = pool.request();
-//     inputParams.forEach(p => {
-//       if (req.body[p] !== undefined) {
-//         const val = req.body[p];
-//         const type = (["Fac","ON_HAND","Req_QTY","QTY","PhoneNo"].includes(p)) ? sql.Int
-//                   : (p === "DueDate") ? sql.DateTime : sql.NVarChar;
-//         rq.input(p, type, type === sql.DateTime && val ? new Date(val) : val);
-//       }
-//     });
-//     const result = await rq.query("EXEC Stored_View_CuttingTool_RequestList_Update"); // SP อัปเดต Request
-
-//     res.json({ success: true, message: "Request updated successfully" });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-// exports.Update_Request = async (req, res) => {
-//   try {
-//     const { 
-//       ID_Request,
-//       DocNo, 
-//       Status, 
-//       Requester, 
-//       Fac,
-//       CASE, 
-//       PartNo, 
-//       ItemNo, 
-//       Process, 
-//       MCType,  
-//       Req_QTY, 
-//       Remark, 
-//       ON_HAND, 
-//       DueDate, 
-//       PathDwg, 
-//       PathLayout,
-//       SPEC,
-//       QTY,
-//       PhoneNo
-//     } = req.body;
-
-//     const pool = await poolPromise;
-//     const result = await pool.request()
-//       .input("ID_Request", sql.Int, ID_Request)
-//       .input("DocNo", sql.NVarChar, DocNo)
-//       .input("Requester", sql.NVarChar, Requester)
-//       .input("PartNo", sql.NVarChar, PartNo)
-//       .input("ItemNo", sql.NVarChar, ItemNo)
-//       .input("SPEC", sql.NVarChar, SPEC)
-//       .input("Process", sql.NVarChar, Process)
-//       .input("MCType", sql.NVarChar, MCType)
-//       .input("Fac", sql.Int, Fac)
-//       .input("PathDwg", sql.NVarChar, PathDwg)
-//       .input("ON_HAND", sql.Int, ON_HAND)
-//       .input("Req_QTY", sql.Int, Req_QTY)
-//       .input("QTY", sql.Int, QTY)
-//       .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
-//       .input("CASE", sql.NVarChar, CASE)
-//       .input("Status", sql.NVarChar, Status)
-//       .input("PathLayout", sql.NVarChar, PathLayout)
-//       .input("Remark", sql.NVarChar, Remark)
-//       .input("PhoneNo", sql.Int, PhoneNo)
-//       .query(`
-//         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
-//         SET DocNo = @DocNo,
-//             Requester = @Requester,
-//             PartNo = @PartNo,
-//             ItemNo = @ItemNo,
-//             SPEC = @SPEC,
-//             Process = @Process,
-//             MCType = @MCType,
-//             Fac = @Fac,
-//             PathDwg = @PathDwg,
-//             ON_HAND = @ON_HAND,
-//             Req_QTY = @Req_QTY,
-//             QTY = @QTY,
-//             DueDate = @DueDate,
-//             [CASE] = @CASE,
-//             Status = @Status,
-//             PathLayout = @PathLayout,
-//             Remark = @Remark,
-//             PhoneNo = @PhoneNo
-//         WHERE ID_Request = @ID_Request
-//       `);
-
-//     if (result.rowsAffected[0] > 0) {
-//       res.json({ success: true, message: "Request detail updated successfully" });
-//     } else {
-//       res.status(404).json({ success: false, message: "Request not found or no changes made" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-
-// exports.Add_New_Request = async (req, res) => {
-//   try {
-//     console.log(req.body);
-
-//     let { 
-//       DocNo,
-//       Division, 
-//       Status, 
-//       Requester, 
-//       Fac,
-//       SPEC,
-//       QTY,
-//       CASE, 
-//       PartNo, 
-//       ItemNo, 
-//       Process, 
-//       MCType,  
-//       Req_QTY, 
-//       Remark, 
-//       ON_HAND, 
-//       DueDate, 
-//       PathDwg, 
-//       PathLayout,
-//       PhoneNo
-//     } = req.body;
-
-//     if (!ItemNo && !SPEC) {
-//       return res.status(400).json({ message: "ItemNo or SPEC must be specified." });
-//     }
-
-//     const pool = await poolPromise;
-
-//     if (!ItemNo) {
-//       const itemResult = await pool.request()
-//         .input("SPEC", sql.NVarChar, SPEC)
-//         .query(`
-//           SELECT TOP 1 ItemNo
-//           FROM tb_IssueCuttingTool_Request_Document
-//           WHERE SPEC = @SPEC
-//         `);
-
-//       if (itemResult.recordset.length === 0) {
-//         return res.status(400).json({ message: "ItemNo not found in database." });
-//       }
-
-//       ItemNo = itemResult.recordset[0].ItemNo;
-//     }
-
-//  const result = await pool.request()
-
-//       .input("DocNo", sql.NVarChar, DocNo)
-//       .input("Division",sql.NVarChar,Division)
-//       .input("Requester", sql.NVarChar, Requester)
-//       .input("PartNo", sql.NVarChar, PartNo)
-//       .input("ItemNo", sql.NVarChar, ItemNo)
-//       .input("SPEC", sql.NVarChar, SPEC)
-//       .input("Process", sql.NVarChar, Process)
-//       .input("MCType", sql.NVarChar, MCType)
-//       .input("Fac", sql.Int, parseInt(Fac, 10))
-//       .input("PathDwg", sql.NVarChar, PathDwg)
-//       .input("ON_HAND", sql.Int, parseInt(ON_HAND, 10))
-//       .input("Req_QTY", sql.Int, parseInt(Req_QTY, 10))
-//       .input("QTY", sql.Int, parseInt(QTY, 10) || 0)
-//       .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
-//       .input("CASE", sql.NVarChar, CASE)
-//       .input("Status", sql.NVarChar, Status)
-//       .input("PathLayout", sql.NVarChar, PathLayout)
-//       .input("Remark", sql.NVarChar, Remark)
-//       .input("PhoneNo", sql.Int, PhoneNo)
-//       .query(`
-//         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] 
-//         (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo)
-//         OUTPUT INSERTED.ID_Request
-//         VALUES 
-//         (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo);
-//       `);
-
-//     const ID_Request = result.recordset[0]?.ID_Request || null;
-
-//     if (!ID_Request) {
-//       return res.status(500).json({ message: "Unable to create a new ID" });
-//     }
-
-//     res.status(201).json({ message: 'Successfully added information', ID_Request });
-
-//   } catch (error) {
-//     console.error('Error in Add_New_Request:', error);
-//     res.status(500).json({ message: 'Server error', error: error.message });
-//   }
-// };
-
-// exports.DeleteItem = async (req, res) => {
-//   const { id } = req.params;
-//   try {
-//     const pool = await poolPromise;
-//     await pool.request()
-//       .input('ID', sql.Int, id)
-//       .query('DELETE FROM [dbo].[tb_IssueCuttingTool_Request_Document]  WHERE ID_Request = @ID');
-
-//     res.status(200).json({ message: 'Successfully deleted' });
-//   } catch (error) {
-//     console.error('Error deleting item:', error);
-//     res.status(500).json({ message: 'Failed to delete', error: error.message });
-//   }
-// };
-
-
 const { poolPromise } = require("../config/database");
-const Type = require("mssql").TYPES;
 const sql = require("mssql");
-const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
+const nodemailer = require('nodemailer');
 
 const frontendLink = process.env.FRONTEND_URL || 'http://localhost:4200';
 
-
-
+/**
+ * API: ดึงข้อมูลรายการเบิกเครื่องมือตัด (Cutting Tool)
+ * หน้าที่: ดึงรายการสั่งซื้อ Cutting Tool ที่พนักงานเบิกค้างอยู่ (รอจัดเรียง) มาแสดงให้ฝ่ายจัดซื้อดู
+ */
 exports.Detail_Purchase = async (req, res) => {
-  console.log('data:', req.body)
   try {
     const pool = await poolPromise;
-    const result = await pool
-      .request()
-      .query(`
-        SELECT T1.*, T2.MCT_MachineTypeCode
-        FROM [db_Tooling].[viewer].[View_IssueCuttingTool_Request_Document] T1
-        LEFT JOIN [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType] T2 
-        ON T1.MCType = T2.MCT_MachineTypeName COLLATE Thai_CI_AS 
-        WHERE T1.Status IN ('Waiting','In Progress')
-        ORDER BY T1.DateTime_Record ASC
-      `);
-
+    const result = await pool.request().query(`
+      SELECT T1.*, T2.MCT_MachineTypeCode
+      FROM [db_Tooling].[viewer].[View_IssueCuttingTool_Request_Document] T1
+      LEFT JOIN [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType] T2 
+      ON T1.MCType = T2.MCT_MachineTypeName COLLATE Thai_CI_AS 
+      WHERE T1.Status IN ('Waiting','In Progress')
+      ORDER BY T1.DateTime_Record ASC
+    `);
     res.json(result.recordset);
-  }
-  catch (error) {
+  } catch (error) {
     console.error("Error executing query:", error.stack);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
-
 };
 
+/**
+ * API: ดึงข้อมูลรายการเบิกเครื่องมือติดตั้ง (Setup Tool)
+ * หน้าที่: ดึงรายการสั่งซื้อ Setup Tool ที่ค้างอยู่ (รอจัดเรียง) เพื่อแยกเป็นอีกตารางหนึ่งให้ฝ่ายจัดซื้อทำงาน
+ */
 exports.Detail_Purchase_Setup = async (req, res) => {
-  console.log('Fetching Setup Tool Data');
   try {
     const pool = await poolPromise;
-    const result = await pool
-      .request()
-      .query(`
-        SELECT *
-        FROM [db_Tooling].[viewer].[View_IssueSetupTool_Request_Document]
-        WHERE Status IN ('Waiting','In Progress')
-        AND ([CASE] IS NULL OR [CASE] != 'SET')
-        ORDER BY DateTime_Record ASC
-      `);
-
+    const result = await pool.request().query(`
+      SELECT *
+      FROM [db_Tooling].[viewer].[View_IssueSetupTool_Request_Document]
+      WHERE Status IN ('Waiting','In Progress')
+      AND ([CASE] IS NULL OR [CASE] != 'SET')
+      ORDER BY DateTime_Record ASC
+    `);
     res.json(result.recordset);
-  }
-  catch (error) {
+  } catch (error) {
     console.error("Error executing query:", error.stack);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };
 
+/**
+ * API: ดึงข้อมูลรายการ Case Setup (จัดเตรียมเครื่องมือแบบเป็นเซ็ต)
+ * หน้าที่: ดึงรายการขอจัดเซ็ตเครื่องมือที่ค้างอยู่ มาแสดงโดยเรียงตามวันที่ที่ต้องใช้ของ (DueDate) เพื่อให้รู้ว่างานไหนรีบ
+ */
 exports.Detail_CaseSetup = async (req, res) => {
-  console.log('Fetching Case Setup Data');
   try {
     const pool = await poolPromise;
-    const result = await pool
-      .request()
-      .query(`
-        SELECT *
-        FROM [db_Tooling].[viewer].[View_CaseSetup_Request]
-        WHERE Status IN ('Waiting','In Progress')
-        ORDER BY DueDate ASC
-      `);
+    const result = await pool.request().query(`
+      SELECT *
+      FROM [db_Tooling].[viewer].[View_CaseSetup_Request]
+      WHERE Status IN ('Waiting','In Progress')
+      ORDER BY DueDate ASC
+    `);
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
 
-    if (result.recordset.length > 0) {
-      console.log('Case Setup Columns:', Object.keys(result.recordset[0]));
+/**
+ * API: ค้นหารายการเครื่องมือทั้งหมดในคลัง (Item Master)
+ * หน้าที่: เอาไว้ใช้ในระบบค้นหา (Search) คลังสินค้าบนหน้าเว็บแบบพิมพ์แล้วแสดงรายชื่อเครื่องมือที่ตรงกันขึ้นมาให้ User เลือก
+ */
+const getItemsQuery = async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().query("SELECT * FROM [db_Tooling].[viewer].[View_tb_Master_Purchase_SUM_ALL]");
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("Error executing query:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};
+
+exports.Get_ItemNo = getItemsQuery;
+exports.get_ItemNo = getItemsQuery;
+
+/**
+ * (ฟังก์ชันหลังบ้าน) สำหรับส่งอีเมลแจ้งเตือน
+ * หน้าที่: ฟังก์ชันนี้จะคอยส่งอีเมล์ไปบอกคนเบิกหรือแผนก Production ว่า "รายการรอเบิกนี้เตรียมของเสร็จแล้วนะ มารับได้เลย"
+ */
+const sendCompletionEmail = async (pool, idList, finalTableType, isPublicId) => {
+  try {
+    const targetTable = finalTableType === 'Setup'
+      ? 'dbo.tb_IssueSetupTool_Request_Document'
+      : 'dbo.tb_IssueCuttingTool_Request_Document';
+
+    let idColumn = isPublicId ? 'Public_Id' : (finalTableType === 'Setup' ? 'ID_RequestSetupTool' : 'ID_Request');
+
+    const rq = pool.request();
+    let whereClause = "";
+
+    if (isPublicId) {
+      const placeholders = idList.map((_, i) => `@id${i}`).join(", ");
+      idList.forEach((id, i) => rq.input(`id${i}`, sql.NVarChar, id));
+      whereClause = `${idColumn} IN (${placeholders})`;
+    } else {
+      const numericIds = idList.map(Number);
+      const placeholders = numericIds.map((_, i) => `@id${i}`).join(", ");
+      numericIds.forEach((id, i) => rq.input(`id${i}`, sql.Int, id));
+      whereClause = `${idColumn} IN (${placeholders})`;
     }
 
-    res.json(result.recordset);
-  }
-  catch (error) {
-    console.error("Error executing query:", error.stack);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    const rows = await rq.query(`
+      SELECT Division, PartNo, ItemNo, SPEC, [CASE], MCType, MCNo, Fac, QTY, DueDate, Requester, Remark
+      FROM ${targetTable}
+      WHERE ${whereClause};
+    `);
+
+    if (!rows.recordset.length) return;
+
+    const emailRes = await pool.request().query(
+      `SELECT Email FROM tb_CuttingTool_Employee WHERE Role IN ('production','admin')`
+    );
+    const emailList = emailRes.recordset.map(r => r.Email).filter(Boolean);
+
+    if (!emailList.length) {
+      console.warn("Email not sent. No recipients found.");
+      return;
+    }
+
+    const fmtDate = d => (d ? new Date(d).toLocaleDateString() : "-");
+    const rowsHtml = rows.recordset.map(it => `
+      <tr>
+        <td>${it.Division ?? '-'}</td>
+        <td>${it.PartNo ?? '-'}</td>
+        <td>${it.ItemNo ?? '-'}</td>
+        <td>${it.SPEC ?? '-'}</td>
+        <td>${it.CASE ?? '-'}</td>
+        <td>${it.MCType ?? '-'}</td>
+        <td>${it.MCNo ?? '-'}</td>
+        <td>${it.Fac ?? '-'}</td>
+        <td>${it.QTY ?? '-'}</td>
+        <td>${fmtDate(it.DueDate)}</td>
+        <td>${it.Requester ?? '-'}</td>
+        <td>${it.Remark ?? '-'}</td>
+      </tr>
+    `).join("");
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER || 'testsystem1508@gmail.com',
+        pass: process.env.EMAIL_PASS || 'amdo inzi npqq asnd'
+      }
+    });
+
+    await transporter.sendMail({
+      from: `"Indirect expense" <${process.env.EMAIL_USER || 'testsystem1508@gmail.com'}>`,
+      to: emailList,
+      subject: `รายการเสร็จสิ้น (${finalTableType}) ${rows.recordset.length} รายการ`,
+      html: `
+        <h1 style="color:black;">✅ Message Notification!! Item has been successfully delivered.</h1>
+        <p>Type: ${finalTableType} Tooling</p>
+        <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
+          <thead>
+            <tr style="background-color: #f2f2f2;">
+              <th>Division</th>
+              <th>Part No</th>
+              <th>Item No</th>
+              <th>Spec</th>
+              <th>Case</th>
+              <th>MCType</th>
+              <th>MCNo</th>
+              <th>Factory</th>
+              <th>QTY</th>
+              <th>DueDate</th>
+              <th>Requester</th>
+              <th>Remark</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <h3>Come in and check 👉 <a href="${frontendLink}/login">Indirect expense</a></h3>
+      `
+    });
+    console.log(`[${finalTableType}] Email sent successfully.`);
+  } catch (emailErr) {
+    console.error(`[${finalTableType}] Error sending email:`, emailErr);
   }
 };
-exports.Get_ItemNo = async (req, res) => {
-  console.log(req.body)
-  try {
-    const pool = await poolPromise;
-    const result = await pool
-      .request()
-      .query("SELECT * FROM [db_Tooling].[viewer].[View_tb_Master_Purchase_SUM_ALL]");
 
-    res.json(result.recordset);
-  }
-  catch (error) {
-    console.error("Error executing query:", error.stack);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
-  }
-};
-
-exports.get_ItemNo = async (req, res) => {
-  console.log(req.body)
-  try {
-    const pool = await poolPromise;
-    const result = await pool
-      .request()
-      .query("SELECT * FROM [db_Tooling].[viewer].[View_tb_Master_Purchase_SUM_ALL]");
-
-    res.json(result.recordset);
-  }
-  catch (error) {
-    console.error("Error executing query:", error.stack);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
-  }
-};
-
-
+/**
+ * API: ย้ายสถานะรายการขอเบิก (เปลี่ยน Status)
+ * หน้าที่: ทำงานเวลากดปุ่มย้ายสถานะตามตาราง เช่น ย้ายจาก "รอจัดเตรียม" ไปเป็น "เสร็จสมบูรณ์ (Complete)" 
+ * รองรับการย้ายทีละหลายๆ แถวพร้อมกันได้เลย
+ */
 exports.Update_Status_Purchase = async (req, res) => {
   try {
     const { ID_Request, Status, TableType } = req.body || {};
 
-    // Normalize → array
-    let idList = [];
-    if (Array.isArray(ID_Request)) idList = ID_Request;
-    else if (ID_Request !== undefined) idList = [ID_Request];
+    let idList = Array.isArray(ID_Request) ? ID_Request : (ID_Request !== undefined ? [ID_Request] : []);
 
-    if (!idList.length) {
-      return res.status(400).json({ success: false, message: "No valid ID_Request" });
-    }
-    if (!Status) {
-      return res.status(400).json({ success: false, message: "Status is required" });
-    }
+    if (!idList.length) return res.status(400).json({ success: false, message: "No valid ID_Request" });
+    if (!Status) return res.status(400).json({ success: false, message: "Status is required" });
 
     const pool = await poolPromise;
+    const usesPublicId = typeof idList[0] === 'string';
 
     const performUpdate = async (type, ids) => {
-      const targetTable = type === 'Setup'
-        ? 'dbo.tb_IssueSetupTool_Request_Document'
-        : 'dbo.tb_IssueCuttingTool_Request_Document';
-
-      // Determine if searching by numeric ID or Public_Id
+      const targetTable = type === 'Setup' ? 'dbo.tb_IssueSetupTool_Request_Document' : 'dbo.tb_IssueCuttingTool_Request_Document';
       const isPublicId = typeof ids[0] === 'string';
-      const idColumn = isPublicId
-        ? 'Public_Id'
-        : (type === 'Setup' ? 'ID_RequestSetupTool' : 'ID_Request');
+      const idColumn = isPublicId ? 'Public_Id' : (type === 'Setup' ? 'ID_RequestSetupTool' : 'ID_Request');
 
       const rq = pool.request();
       rq.input("Status", sql.NVarChar, Status);
@@ -493,133 +240,40 @@ exports.Update_Status_Purchase = async (req, res) => {
     let rowsUpdated = 0;
     let finalTableType = TableType;
 
-    // Detect if idList contains Public_Ids
-    const usesPublicId = typeof idList[0] === 'string';
-
     if (usesPublicId) {
-      // Split by prefix
       const cuttingIds = idList.filter(id => id.startsWith('C'));
       const setupIds = idList.filter(id => id.startsWith('S'));
 
-      if (cuttingIds.length > 0) {
-        rowsUpdated += await performUpdate('Cutting', cuttingIds);
-        if (rowsUpdated > 0) finalTableType = 'Cutting';
+      if (cuttingIds.length) {
+        const rows = await performUpdate('Cutting', cuttingIds);
+        if (rows > 0 && Status === "Complete") await sendCompletionEmail(pool, cuttingIds, 'Cutting', true);
+        rowsUpdated += rows;
+        if (rows > 0) finalTableType = 'Cutting';
       }
-      if (setupIds.length > 0) {
-        const setupRows = await performUpdate('Setup', setupIds);
-        rowsUpdated += setupRows;
-        if (setupRows > 0) finalTableType = 'Setup';
+      if (setupIds.length) {
+        const rows = await performUpdate('Setup', setupIds);
+        if (rows > 0 && Status === "Complete") await sendCompletionEmail(pool, setupIds, 'Setup', true);
+        rowsUpdated += rows;
+        if (rows > 0) finalTableType = 'Setup';
       }
     } else {
-      // Legacy numeric ID logic
-      if (TableType === 'Cutting') {
-        rowsUpdated = await performUpdate('Cutting', idList);
-      } else if (TableType === 'Setup') {
-        rowsUpdated = await performUpdate('Setup', idList);
+      if (['Cutting', 'Setup'].includes(TableType)) {
+        rowsUpdated = await performUpdate(TableType, idList);
+        if (rowsUpdated > 0 && Status === "Complete") await sendCompletionEmail(pool, idList, TableType, false);
       } else {
-        // Fallback: Try Cutting first, then Setup if nothing updated
-        console.log("No TableType provided for status update, trying Cutting Tool fallback...");
-        rowsUpdated = await performUpdate('Cutting', idList);
-        if (rowsUpdated > 0) {
+        const cutRows = await performUpdate('Cutting', idList);
+        if (cutRows > 0) {
           finalTableType = 'Cutting';
+          rowsUpdated += cutRows;
+          if (Status === "Complete") await sendCompletionEmail(pool, idList, 'Cutting', false);
         } else {
-          console.log("Not found in Cutting Tool, trying Setup Tool fallback...");
-          rowsUpdated = await performUpdate('Setup', idList);
-          if (rowsUpdated > 0) finalTableType = 'Setup';
+          const setupRows = await performUpdate('Setup', idList);
+          if (setupRows > 0) {
+            finalTableType = 'Setup';
+            rowsUpdated += setupRows;
+            if (Status === "Complete") await sendCompletionEmail(pool, idList, 'Setup', false);
+          }
         }
-      }
-    }
-
-    // ส่งอีเมลถ้า Status = Complete
-    if (Status === "Complete" && rowsUpdated > 0) {
-      try {
-        console.log(`Attempting to send email for ${finalTableType} Tool, IDs:`, idList);
-
-        const targetTable = finalTableType === 'Setup'
-          ? 'dbo.tb_IssueSetupTool_Request_Document'
-          : 'dbo.tb_IssueCuttingTool_Request_Document';
-        const idColumn = finalTableType === 'Setup' ? 'ID_RequestSetupTool' : 'ID_Request';
-        const safeIds = idList.join(",");
-
-        const rows = await pool.request().query(`
-          SELECT Division, PartNo, ItemNo, SPEC, [CASE], MCType, MCNo, Fac, QTY, DueDate, Requester, Remark
-          FROM ${targetTable}
-          WHERE ${idColumn} IN (${safeIds});
-        `);
-
-        console.log(`Found ${rows.recordset.length} items for email body.`);
-
-        const emailRes = await pool.request().query(
-          `SELECT Email FROM tb_CuttingTool_Employee WHERE Role IN ('production','admin')`
-        );
-        const emailList = emailRes.recordset.map(r => r.Email).filter(Boolean);
-
-        if (emailList.length && rows.recordset.length) {
-          const fmt = d => (d ? new Date(d).toLocaleDateString() : "-");
-          const rowsHtml = rows.recordset.map(it => `
-            <tr>
-              <td>${it.Division ?? '-'}</td>
-              <td>${it.PartNo ?? '-'}</td>
-              <td>${it.ItemNo ?? '-'}</td>
-              <td>${it.SPEC ?? '-'}</td>
-              <td>${it.CASE ?? '-'}</td>
-              <td>${it.MCType ?? '-'}</td>
-              <td>${it.MCNo ?? '-'}</td>
-              <td>${it.Fac ?? '-'}</td>
-              <td>${it.QTY ?? '-'}</td>
-              <td>${fmt(it.DueDate)}</td>
-              <td>${it.Requester ?? '-'}</td>
-              <td>${it.Remark ?? '-'}</td>
-            </tr>
-          `).join("");
-
-          const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-              user: process.env.EMAIL_USER || 'testsystem1508@gmail.com',
-              pass: process.env.EMAIL_PASS || 'amdo inzi npqq asnd'
-            }
-          });
-
-          console.log("Using email user:", process.env.EMAIL_USER || 'testsystem1508@gmail.com');
-
-          await transporter.sendMail({
-            from: `"Indirect expense" <${process.env.EMAIL_USER}>`,
-            to: emailList,
-            subject: `รายการเสร็จสิ้น (${finalTableType}) ${rows.recordset.length} รายการ`,
-            html: `
-              <h1 style="color:black;">✅ Massage Notification!! Item has been successfully delivered.</h1>
-              <p>Type: ${finalTableType} Tooling</p>
-              <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
-                <thead>
-                  <tr style="background-color: #f2f2f2;">
-                    <th>Division</th>
-                    <th>Part No</th>
-                    <th>Item No</th>
-                    <th>Spec</th>
-                    <th>Case</th>
-                    <th>MCType</th>
-                    <th>MCNo</th>
-                    <th>Factory</th>
-                    <th>QTY</th>
-                    <th>DueDate</th>
-                    <th>Requester</th>
-                    <th>Remark</th>
-                  </tr>
-                </thead>
-                <tbody>${rowsHtml}</tbody>
-              </table>
-              <h3>Come in and check 👉 <a href="http://${frontendLink}/login">Indirect expense</a></h3>
-            `
-          });
-          console.log("Email sent successfully.");
-        } else {
-          console.warn("Email not sent. Either no recipients or no items found.");
-        }
-      } catch (emailErr) {
-        console.error("Error sending email:", emailErr);
-        // We do NOT return error here, because the DB update was successful.
-        // We could just log it.
       }
     }
 
@@ -627,179 +281,30 @@ exports.Update_Status_Purchase = async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    return res.status(500).json({
-      success: false,
-      message: "Update failed",
-      error: err.message
-    });
+    return res.status(500).json({ success: false, message: "Update failed", error: err.message });
   }
 };
-// exports.Update_Status_Purchase = async (req, res) => {
-//   console.log(req.body); // ตรวจสอบค่าที่ส่งมา { ID_Request: , Status:  }
 
-// try {
-//     const { 
-//       ID_Request,
-//       DocNo, 
-//       Status, 
-//       Requester, 
-//       Fac,
-//       CASE, 
-//       PartNo, 
-//       ItemNo, 
-//       Process, 
-//       MCType,  
-//       Req_QTY, 
-//       Remark, 
-//       ON_HAND, 
-//       DueDate, 
-//       PathDwg, 
-//       PathLayout,
-//       SPEC,
-//       QTY,
-//       Division
-//     } = req.body;
-
-//     const pool = await poolPromise; 
-//     const result = await pool
-//       .request()
-//       .input("ID_Request", sql.Int, ID_Request)
-//       .input("Status", sql.NVarChar, Status)
-//       // .input("PathLayout", sql.NVarChar, PathLayout)
-
-//       .query(`
-//         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
-//         SET 
-//             Status = @Status,
-
-//             DateComplete = CASE 
-//                              WHEN @Status = N'Complete' THEN SYSDATETIME()
-//                              ELSE DateComplete
-//                            END
-//         WHERE ID_Request = @ID_Request
-//       `);
-//       // =============================
-//     // ✅ ส่งอีเมลอัตโนมัติถ้า Status = Complete
-//     // =============================
-//     // ส่งอีเมลอัตโนมัติถ้า Status = Complete
-//     if (Status === "Complete") {
-//       try {
-//         const emailResult = await pool.request()
-//           .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role = 'production'`);
-
-//         const emailList = emailResult.recordset.map(row => row.Email).filter(Boolean);
-
-//         if (emailList.length > 0) {
-//           const formattedDueDate = DueDate ? new Date(DueDate).toLocaleDateString() : '-';
-
-//           const itemDetailsHtml = `
-//             <tr>
-//               <td>${Division || '-'}</td>
-//               <td>${PartNo || '-'}</td>
-//               <td>${ItemNo || '-'}</td>
-//               <td>${CASE || '-'}</td>
-//               <td>${Fac || '-'}</td>
-//               <td>${QTY || '-'}</td>
-//               <td>${formattedDueDate}</td>
-//               <td>${Requester || '-'}</td>
-//             </tr>
-//           `;
-
-//           const transporter = nodemailer.createTransport({
-//             service: 'gmail',
-//             auth: {
-//               user: process.env.EMAIL_USER,
-//               pass: process.env.EMAIL_PASS // App Password
-//             }
-//           });
-
-//           const mailOptions = {
-//             from: `"Material Disbursement System" <${process.env.EMAIL_USER}>`,
-//             to: emailList,
-//             subject: 'รายการเสร็จสิ้น',
-//             html: `
-//               <h1 style="color:black;">✅ แจ้งเตือน!! รายการถูกส่งสำเร็จ</h1>
-//               <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
-//                 <thead>
-//                   <tr style="background-color: #f2f2f2;">
-//                     <th>Division</th>
-//                     <th>Part No</th>
-//                     <th>Item No</th>
-//                     <th>Case</th>
-//                     <th>Factory</th>
-//                     <th>QTY</th>
-//                     <th>DueDate</th>
-//                     <th>Requester</th>
-//                   </tr>
-//                 </thead>
-//                 <tbody>
-//                   ${itemDetailsHtml}
-//                 </tbody>
-//               </table>
-//             `
-//           };
-
-//           await transporter.sendMail(mailOptions);
-//           console.log("📧 ส่งอีเมลสำเร็จ");
-//         } else {
-//           console.warn("⚠️ ไม่พบอีเมลของ Role = production");
-//         }
-//       } catch (mailError) {
-//         console.error("❌ ส่งอีเมลล้มเหลว:", mailError);
-//       }
-//     }
-
-//     // ตอบกลับ client ว่าสำเร็จ
-//     res.json({ success: true, message: "Updated successfully" });
-
-//   } catch (error) {
-//     console.error("Error executing query:", error.stack);
-//     res.status(500).json({ error: "Internal Server Error", details: error.message });
-//   }
-// };
-
-//     res.json({ success: true, message: "Updated successfully" });
-//   } catch (error) {
-//     console.error("Error executing query:", error.stack);
-//     res.status(500).json({ error: "Internal Server Error", details: error.message });
-//   }
-// };
-
+/**
+ * API: แก้ไขรายละเอียดตัวหนังสือในตาราง
+ * หน้าที่: ทำงานเมื่อจัดซื้อพิมพ์ช่องว่างๆ ในตารางเพื่อแก้ไขรายละเอียด เช่น เปลี่ยนจำนวน (QTY), ใส่คอมเมนต์ (Remark), เลขล็อต แล้วตารางจะเซฟลงฐานข้อมูล
+ */
 exports.Update_Request = async (req, res) => {
   try {
     const {
-      ID_Request,
-      DocNo,
-      Status,
-      Requester,
-      Fac,
-      CASE,
-      PartNo,
-      ItemNo,
-      Process,
-      MCType,
-      Req_QTY,
-      Remark,
-      ON_HAND,
-      DueDate,
-      PathDwg,
-      PathLayout,
-      QTY,
-      PhoneNo,
-      MatLot,
-      MR_No,
-      MFGOrderNo,
-      ItemName,
-      SPEC,
-      TableType
+      ID_Request, DocNo, Status, Requester, Fac, CASE, PartNo, ItemNo, Process, MCType,
+      Req_QTY, Remark, ON_HAND, DueDate, PathDwg, PathLayout, QTY, PhoneNo, MatLot,
+      MR_No, MFGOrderNo, ItemName, SPEC, TableType
     } = req.body;
 
     const pool = await poolPromise;
 
-    // Helper function for Cutting Tool Update
-    const updateCutting = async (idValue, isPublic = false) => {
-      const idCol = isPublic ? "Public_Id" : "ID_Request";
-      return await pool.request()
+    const executeUpdate = async (type, idValue, isPublic = false) => {
+      const isCutting = type === 'Cutting';
+      const targetTable = isCutting ? '[dbo].[tb_IssueCuttingTool_Request_Document]' : '[dbo].[tb_IssueSetupTool_Request_Document]';
+      const idCol = isPublic ? "Public_Id" : (isCutting ? "ID_Request" : "ID_RequestSetupTool");
+
+      const rq = pool.request()
         .input("ID_Val", isPublic ? sql.NVarChar : sql.Int, idValue)
         .input("DocNo", sql.NVarChar, DocNo)
         .input("Requester", sql.NVarChar, Requester)
@@ -809,123 +314,67 @@ exports.Update_Request = async (req, res) => {
         .input("Process", sql.NVarChar, Process)
         .input("MCType", sql.NVarChar, MCType)
         .input("Fac", sql.Int, Fac)
-        .input("PathDwg", sql.NVarChar, PathDwg)
         .input("ON_HAND", sql.Int, ON_HAND)
         .input("Req_QTY", sql.Int, Req_QTY)
         .input("QTY", sql.Int, QTY)
         .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
         .input("CASE", sql.NVarChar, CASE)
         .input("Status", sql.NVarChar, Status)
-        .input("PathLayout", sql.NVarChar, PathLayout)
         .input("Remark", sql.NVarChar, Remark)
         .input("PhoneNo", sql.Int, PhoneNo)
         .input("MatLot", sql.NVarChar, MatLot)
         .input("MR_No", sql.NVarChar, MR_No)
         .input("MFGOrderNo", sql.NVarChar, MFGOrderNo)
         .input("ItemName", sql.NVarChar, (ItemName || '').substring(0, 255) || null)
-        .input("MCNo", sql.NVarChar, req.body.MCNo || req.body.MCQTY)
-        .query(`
-            UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
-            SET DocNo = @DocNo,
-                Requester = @Requester,
-                PartNo = @PartNo,
-                ItemNo = @ItemNo,
-                SPEC = @SPEC,
-                Process = @Process,
-                MCType = @MCType,
-                Fac = @Fac,
-                PathDwg = @PathDwg,
-                ON_HAND = @ON_HAND,
-                Req_QTY = @Req_QTY,
-                QTY = @QTY,
-                DueDate = @DueDate,
-                [CASE] = @CASE,
-                Status = @Status,
-                PathLayout = @PathLayout,
-                Remark = @Remark,
-                PhoneNo = @PhoneNo,
-                MatLot = @MatLot,
-                MR_No = @MR_No,
-                MFGOrderNo = @MFGOrderNo,
-                ItemName = @ItemName,
-                MCNo = @MCNo
-            WHERE ${idCol} = @ID_Val
-        `);
+        .input("MCNo", sql.NVarChar, req.body.MCNo || req.body.MCQTY);
+
+      if (isCutting) {
+        rq.input("PathDwg", sql.NVarChar, PathDwg);
+        rq.input("PathLayout", sql.NVarChar, PathLayout);
+      }
+
+      return await rq.query(`
+          UPDATE ${targetTable}
+          SET DocNo = @DocNo,
+              Requester = @Requester,
+              PartNo = @PartNo,
+              ItemNo = @ItemNo,
+              SPEC = @SPEC,
+              Process = @Process,
+              MCType = @MCType,
+              Fac = @Fac,
+              ${isCutting ? 'PathDwg = @PathDwg, PathLayout = @PathLayout,' : ''}
+              ON_HAND = @ON_HAND,
+              Req_QTY = @Req_QTY,
+              QTY = @QTY,
+              DueDate = @DueDate,
+              [CASE] = @CASE,
+              Status = @Status,
+              Remark = @Remark,
+              PhoneNo = @PhoneNo,
+              MatLot = @MatLot,
+              MR_No = @MR_No,
+              MFGOrderNo = @MFGOrderNo,
+              ItemName = @ItemName,
+              MCNo = @MCNo
+          WHERE ${idCol} = @ID_Val
+      `);
     };
 
-    // Helper function for Setup Tool Update
-    const updateSetup = async (idValue, isPublic = false) => {
-      const idCol = isPublic ? "Public_Id" : "ID_RequestSetupTool";
-      return await pool.request()
-        .input("ID_Val", isPublic ? sql.NVarChar : sql.Int, idValue)
-        .input("DocNo", sql.NVarChar, DocNo)
-        .input("Requester", sql.NVarChar, Requester)
-        .input("PartNo", sql.NVarChar, PartNo)
-        .input("ItemNo", sql.NVarChar, ItemNo)
-        .input("SPEC", sql.NVarChar, SPEC)
-        .input("Process", sql.NVarChar, Process)
-        .input("MCType", sql.NVarChar, MCType)
-        .input("Fac", sql.Int, Fac)
-        .input("ON_HAND", sql.Int, ON_HAND)
-        .input("Req_QTY", sql.Int, Req_QTY)
-        .input("QTY", sql.Int, QTY)
-        .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
-        .input("CASE", sql.NVarChar, CASE)
-        .input("Status", sql.NVarChar, Status)
-        .input("Remark", sql.NVarChar, Remark)
-        .input("PhoneNo", sql.Int, PhoneNo)
-        .input("ItemName", sql.NVarChar, (ItemName || '').substring(0, 255) || null)
-        .input("MatLot", sql.NVarChar, MatLot)
-        .input("MR_No", sql.NVarChar, MR_No)
-        .input("MFGOrderNo", sql.NVarChar, MFGOrderNo)
-        .input("MCNo", sql.NVarChar, req.body.MCNo || req.body.MCQTY)
-        .query(`
-            UPDATE [dbo].[tb_IssueSetupTool_Request_Document]
-            SET DocNo = @DocNo,
-                Requester = @Requester,
-                PartNo = @PartNo,
-                ItemNo = @ItemNo,
-                SPEC = @SPEC,
-                Process = @Process,
-                MCType = @MCType,
-                Fac = @Fac,
-                ON_HAND = @ON_HAND,
-                Req_QTY = @Req_QTY,
-                QTY = @QTY,
-                DueDate = @DueDate,
-                [CASE] = @CASE,
-                Status = @Status,
-                Remark = @Remark,
-                PhoneNo = @PhoneNo,
-                ItemName = @ItemName,
-                MatLot = @MatLot,
-                MR_No = @MR_No,
-                MFGOrderNo = @MFGOrderNo,
-                MCNo = @MCNo
-            WHERE ${idCol} = @ID_Val
-        `);
-    };
     let result;
     const isPublic = typeof ID_Request === 'string';
 
     if (isPublic) {
-      if (ID_Request.startsWith('C')) {
-        result = await updateCutting(ID_Request, true);
-      } else if (ID_Request.startsWith('S')) {
-        result = await updateSetup(ID_Request, true);
-      } else {
-        return res.status(400).json({ success: false, message: "Invalid Public ID format" });
-      }
+      const type = ID_Request.startsWith('C') ? 'Cutting' : (ID_Request.startsWith('S') ? 'Setup' : null);
+      if (!type) return res.status(400).json({ success: false, message: "Invalid Public ID format" });
+      result = await executeUpdate(type, ID_Request, true);
     } else {
-      if (TableType === 'Cutting') {
-        result = await updateCutting(ID_Request, false);
-      } else if (TableType === 'Setup') {
-        result = await updateSetup(ID_Request, false);
+      if (['Cutting', 'Setup'].includes(TableType)) {
+        result = await executeUpdate(TableType, ID_Request, false);
       } else {
-        // Fallback
-        result = await updateCutting(ID_Request, false);
+        result = await executeUpdate('Cutting', ID_Request, false);
         if (!result || result.rowsAffected[0] === 0) {
-          result = await updateSetup(ID_Request, false);
+          result = await executeUpdate('Setup', ID_Request, false);
         }
       }
     }
@@ -942,101 +391,32 @@ exports.Update_Request = async (req, res) => {
   }
 };
 
+/**
+ * API: สร้างรายการขอเบิกใหม่
+ * หน้าที่: รับข้อมูลเครื่องมือจากฟอร์มหน้าเว็บ เพื่อนำมาสร้างออเดอร์เข้าคลัง โดยช่วยสร้างหมายเลขใบสั่งงาน (MFGOrderNo) อัตโนมัติด้วย
+ */
 exports.Add_New_Request = async (req, res) => {
   try {
-    console.log(req.body);
-
     let {
-      DocNo,
-      Division,
-      Status,
-      Requester,
-      Fac,
-      SPEC,
-      QTY,
-      CASE,
-      PartNo,
-      ItemNo,
-      Process,
-      MCType,
-      Req_QTY,
-      Remark,
-      ON_HAND,
-      DueDate,
-      PathDwg,
-      PathLayout,
-      PhoneNo,
-      ItemName
+      DocNo, Division, Status, Requester, Fac, SPEC, QTY, CASE, PartNo, ItemNo, Process, MCType,
+      Req_QTY, Remark, ON_HAND, DueDate, PathDwg, PathLayout, PhoneNo, ItemName
     } = req.body;
 
-    if (!ItemNo && !SPEC) {
-      return res.status(400).json({ message: "ItemNo or SPEC must be specified." });
-    }
+    if (!ItemNo && !SPEC) return res.status(400).json({ message: "ItemNo or SPEC must be specified." });
 
     const pool = await poolPromise;
 
     if (!ItemNo) {
       const itemResult = await pool.request()
         .input("SPEC", sql.NVarChar, SPEC)
-        .query(`
-          SELECT TOP 1 ItemNo
-          FROM tb_IssueCuttingTool_Request_Document
-          WHERE SPEC = @SPEC
-          `);
+        .query(`SELECT TOP 1 ItemNo FROM tb_IssueCuttingTool_Request_Document WHERE SPEC = @SPEC`);
 
-      if (itemResult.recordset.length === 0) {
-        return res.status(400).json({ message: "ItemNo not found in database." });
-      }
-
+      if (itemResult.recordset.length === 0) return res.status(400).json({ message: "ItemNo not found in database." });
       ItemNo = itemResult.recordset[0].ItemNo;
     }
 
-    // Auto-Generate MFGOrderNo
-    let GeneratedMFGOrderNo = '';
-
-    try {
-      let machineCode = '';
-      if (['PMC', '71DZ', 'GM', '7122'].includes(Division)) {
-        // Centralized Lookup
-        const machineResult = await pool.request()
-          .input("MCType", sql.NVarChar, MCType)
-          .query(`
-              SELECT TOP 1 MC_Code 
-              FROM[db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group] 
-              WHERE MC_Group = @MCType
-          `);
-        machineCode = machineResult.recordset[0]?.MC_Code || '';
-      }
-
-      if (['PMC', '71DZ'].includes(Division)) {
-        const partNoPrefix = (PartNo || '').substring(0, 6);
-        GeneratedMFGOrderNo = `M${partNoPrefix}${machineCode}`;
-
-      } else if (['GM', '7122'].includes(Division)) {
-        const partNoPrefix = (PartNo || '').substring(0, 6);
-        GeneratedMFGOrderNo = `P${partNoPrefix}${machineCode}`;
-
-      } else {
-        // Fallback: [Case][Process][Fac][Date:YYYYMMDD]
-        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        GeneratedMFGOrderNo = `${CASE}${Process}F${Fac}${dateStr}`;
-      }
-    } catch (err) {
-      console.error('Error generating MFGOrderNo:', err);
-      // Fallback on error
-      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      GeneratedMFGOrderNo = `${CASE}${Process}F${Fac}${dateStr}`;
-    }
-
-    const MFGOrderNo = GeneratedMFGOrderNo;
-
-    // Generate MR_No (yyMMdd)
-    const MR_No = new Date().toISOString().slice(2, 10).replace(/-/g, '');
-
     const result = await pool.request()
-
       .input("DocNo", sql.NVarChar, DocNo)
-      .input("MFGOrderNo", sql.NVarChar, MFGOrderNo)
       .input("Division", sql.NVarChar, Division)
       .input("Requester", sql.NVarChar, Requester)
       .input("PartNo", sql.NVarChar, PartNo)
@@ -1055,21 +435,20 @@ exports.Add_New_Request = async (req, res) => {
       .input("PathLayout", sql.NVarChar, PathLayout)
       .input("Remark", sql.NVarChar, Remark)
       .input("PhoneNo", sql.Int, PhoneNo)
-      .input("MR_No", sql.NVarChar, MR_No)
       .input("ItemName", sql.NVarChar, (ItemName || '').substring(0, 255) || null)
       .query(`
-        INSERT INTO[dbo].[tb_IssueCuttingTool_Request_Document]
+        INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document]
           (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo, MFGOrderNo, MR_No, ItemName)
         OUTPUT INSERTED.ID_Request
         VALUES
-            (@DocNo, @Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, @MFGOrderNo, @MR_No, @ItemName);
+          (@DocNo, @Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, 
+          [trans].[fn_Generate_Request_MFGOrderNo](@Division, @PartNo, @MCType, @CASE, @Process, @Fac, GETDATE()), 
+          FORMAT(GETDATE(), 'yyMMdd'), 
+          @ItemName);
       `);
 
     const ID_Request = result.recordset[0]?.ID_Request || null;
-
-    if (!ID_Request) {
-      return res.status(500).json({ message: "Unable to create a new ID" });
-    }
+    if (!ID_Request) return res.status(500).json({ message: "Unable to create a new ID" });
 
     res.status(201).json({ message: 'Successfully added information', ID_Request });
 
@@ -1079,13 +458,17 @@ exports.Add_New_Request = async (req, res) => {
   }
 };
 
+/**
+ * API: ลบรายการขอเบิกเครื่องมือ
+ * หน้าที่: เอาไว้ลบรายการที่พนักงานคีย์ผิดทิ้งออกจากระบบ (ปัจจุบันรองรับแค่ลบเครื่องมือตัด)
+ */
 exports.DeleteItem = async (req, res) => {
   const { id } = req.params;
   try {
     const pool = await poolPromise;
     await pool.request()
       .input('ID', sql.Int, id)
-      .query('DELETE FROM [dbo].[tb_IssueCuttingTool_Request_Document]  WHERE ID_Request = @ID');
+      .query('DELETE FROM [dbo].[tb_IssueCuttingTool_Request_Document] WHERE ID_Request = @ID');
 
     res.status(200).json({ message: 'Successfully deleted' });
   } catch (error) {
@@ -1094,449 +477,10 @@ exports.DeleteItem = async (req, res) => {
   }
 };
 
-// exports.Send_Complete_Email = async (req, res) => {
-//   try {
-//     const pool = await poolPromise;
-
-//     // ดึงอีเมลทั้งหมดที่ Role = 'production'
-//     const emailResult = await pool.request()
-//       .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role = 'production'`);
-
-//     const emailList = emailResult.recordset.map(row => row.Email).filter(Boolean);
-
-//     if (emailList.length === 0) {
-//       console.warn("ไม่พบอีเมลของ Role = production ในฐานข้อมูล");
-//       return res.status(404).json({ message: "ไม่พบอีเมลของ Role = production" });
-//     }
-
-//     const { items } = req.body; // รับ items จาก frontend
-
-//     let itemDetailsHtml = items.map(item => `
-//       <tr>
-//         <td>${item.Division}</td>
-//         <td>${item.PartNo}</td>
-//         <td>${item.ItemNo}</td>
-//         <td>${item.Case_}</td>
-//         <td>${item.Factory}</td>
-//         <td>${item.QTY}</td>
-//         <td>${item.DueDate_}</td>
-//         <td>${item.Employee_Name}</td>
-//       </tr>
-//     `).join('');
-
-//     // ======== ส่งอีเมลแจ้งเตือน ========
-//     const transporter = nodemailer.createTransport({
-//       service: 'gmail',
-//       auth: {
-//         user: 'testsystem1508@gmail.com',
-//         pass: 'amdo inzi npqq asnd' // App Password
-//       }
-//     });
-
-//     const mailOptions = {
-//       from: '"Material Disbursement System" <testsystem1508@gmail.com>',
-//       to: emailList,
-//       subject: 'รายการเสร็จสิ้น',
-//       html: `
-//         <h1 style="color:black;">✅ แจ้งเตือน!! รายการถูกส่งสำเร็จ</h1>
-//         <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
-//           <thead>
-//             <tr style="background-color: #f2f2f2;">
-//               <th>Division</th>
-//               <th>Part No</th>
-//               <th>Item No</th>
-//               <th>Case</th>
-//               <th>Factory</th>
-//               <th>QTY</th>
-//               <th>DueDate</th>
-//               <th>Requester</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             ${itemDetailsHtml}
-//           </tbody>
-//         </table>
-//       `
-//     };
-
-//     await transporter.sendMail(mailOptions);
-
-//     console.log("ส่งอีเมลสำเร็จ");
-//     res.json({ success: true, message: "ส่งอีเมลเรียบร้อย" });
-
-//   } catch (error) {
-//     console.error("ส่งอีเมลไม่สำเร็จ:", error);
-//     res.status(500).json({ success: false, message: "ส่งอีเมลไม่สำเร็จ", error: error.message });
-//   }
-// };
-
-
-// exports.Add_New_Request = async (req, res) => {
-//   try {
-//     const pool = await poolPromise;
-//     const rq = pool.request();
-//     const inputParams = [
-//       "DocNo","Division","Status","Requester","Fac","SPEC","QTY","CASE",
-//       "PartNo","ItemNo","Process","MCType","Req_QTY","Remark","ON_HAND","DueDate",
-//       "PathDwg","PathLayout","PhoneNo"
-//     ];
-//     inputParams.forEach(p => {
-//       if (req.body[p] !== undefined) {
-//         const val = req.body[p];
-//         const type = (["Fac","ON_HAND","Req_QTY","QTY","PhoneNo"].includes(p)) ? sql.Int
-//                   : (p === "DueDate") ? sql.DateTime : sql.NVarChar;
-//         rq.input(p, type, type === sql.DateTime && val ? new Date(val) : val);
-//       }
-//     });
-
-//     const result = await rq.query("EXEC Stored_View_CuttingTool_RequestList_Add"); // SP เพิ่ม Request
-//     const ID_Request = result.recordset[0]?.ID_Request || null;
-
-//     if (!ID_Request) return res.status(500).json({ message: "Unable to create a new ID" });
-
-//     res.status(201).json({ message: 'Successfully added information', ID_Request });
-//   } catch (error) {
-//     console.error('Error in Add_New_Request:', error);
-//     res.status(500).json({ message: 'Server error', error: error.message });
-//   }
-// };
-
-// exports.DeleteItem = async (req, res) => {
-//   try {
-//     const pool = await poolPromise;
-//     await pool.request()
-//       .input('ID_Request', sql.Int, req.params.id)
-//       .query('EXEC Stored_View_CuttingTool_RequestList_Delete'); // SP ลบ Request
-//     res.status(200).json({ message: 'Successfully deleted' });
-//   } catch (error) {
-//     console.error('Error deleting item:', error);
-//     res.status(500).json({ message: 'Failed to delete', error: error.message });
-//   }
-// };
-
-
-
-// exports.Update_Request = async (req, res) => {
-//   try {
-//     const { 
-//       ID_Request,
-//       DocNo, 
-//       Status, 
-//       Requester, 
-//       Fac,
-//       CASE, 
-//       PartNo, 
-//       ItemNo, 
-//       Process, 
-//       MCType,  
-//       Req_QTY, 
-//       Remark, 
-//       ON_HAND, 
-//       DueDate, 
-//       PathDwg, 
-//       PathLayout,
-//       SPEC,
-//       QTY,
-//       PhoneNo
-//     } = req.body;
-
-//     const pool = await poolPromise;
-//     const result = await pool.request()
-//   .input("ID_Request", sql.Int, ID_Request)
-//   .input("DocNo", sql.NVarChar, DocNo)
-//   .input("Status", sql.NVarChar, Status)
-//   .input("Requester", sql.NVarChar, Requester)
-//   .input("PartNo", sql.NVarChar, PartNo)
-//   .input("ItemNo", sql.NVarChar, ItemNo)
-//   .input("SPEC", sql.NVarChar, SPEC)
-//   .input("Process", sql.NVarChar, Process)
-//   .input("MCType", sql.NVarChar, MCType)
-//   .input("Fac", sql.Int, Fac)
-//   .input("ON_HAND", sql.Int, ON_HAND)
-//   .input("Req_QTY", sql.Int, Req_QTY)
-//   .input("QTY", sql.Int, QTY)
-//   .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
-//   .input("CASE", sql.NVarChar, CASE)
-//   .input("Remark", sql.NVarChar, Remark)
-//   .input("PathDwg", sql.NVarChar, PathDwg)
-//   .input("PathLayout", sql.NVarChar, PathLayout)
-//   .input("PhoneNo", sql.Int, PhoneNo)
-//       .query("EXEC Stored_View_CuttingTool_RequestList_Update");
-
-//     if (result.recordset[0].RowsAffected > 0) {
-//       res.json({ success: true, message: "Request detail updated successfully" });
-//     } else {
-//       res.status(404).json({ success: false, message: "Request not found or no changes made" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-
-// exports.Update_Request = async (req, res) => {
-//   try {
-//     const { 
-//       ID_Request,
-//       DocNo, 
-//       Status, 
-//       Requester, 
-//       Fac,
-//       CASE, 
-//       PartNo, 
-//       ItemNo, 
-//       Process, 
-//       MCType,  
-//       Req_QTY, 
-//       Remark, 
-//       ON_HAND, 
-//       DueDate, 
-//       PathDwg, 
-//       PathLayout,
-//       SPEC,
-//       QTY,
-//       PhoneNo
-//     } = req.body;
-
-//     const pool = await poolPromise;
-//     const result = await pool.request()
-//       .input("ID_Request", sql.Int, ID_Request)
-//       .input("DocNo", sql.NVarChar, DocNo)
-//       .input("Requester", sql.NVarChar, Requester)
-//       .input("PartNo", sql.NVarChar, PartNo)
-//       .input("ItemNo", sql.NVarChar, ItemNo)
-//       .input("SPEC", sql.NVarChar, SPEC)
-//       .input("Process", sql.NVarChar, Process)
-//       .input("MCType", sql.NVarChar, MCType)
-//       .input("Fac", sql.Int, Fac)
-//       .input("PathDwg", sql.NVarChar, PathDwg)
-//       .input("ON_HAND", sql.Int, ON_HAND)
-//       .input("Req_QTY", sql.Int, Req_QTY)
-//       .input("QTY", sql.Int, QTY)
-//       .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
-//       .input("CASE", sql.NVarChar, CASE)
-//       .input("Status", sql.NVarChar, Status)
-//       .input("PathLayout", sql.NVarChar, PathLayout)
-//       .input("Remark", sql.NVarChar, Remark)
-//       .input("PhoneNo", sql.Int, PhoneNo)
-//       .query(`
-//         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
-//         SET DocNo = @DocNo,
-//             Requester = @Requester,
-//             PartNo = @PartNo,
-//             ItemNo = @ItemNo,
-//             SPEC = @SPEC,
-//             Process = @Process,
-//             MCType = @MCType,
-//             Fac = @Fac,
-//             PathDwg = @PathDwg,
-//             ON_HAND = @ON_HAND,
-//             Req_QTY = @Req_QTY,
-//             QTY = @QTY,
-//             DueDate = @DueDate,
-//             [CASE] = @CASE,
-//             Status = @Status,
-//             PathLayout = @PathLayout,
-//             Remark = @Remark,
-//             PhoneNo = @PhoneNo
-//         WHERE ID_Request = @ID_Request
-//       `);
-
-//     if (result.rowsAffected[0] > 0) {
-//       res.json({ success: true, message: "Request detail updated successfully" });
-//     } else {
-//       res.status(404).json({ success: false, message: "Request not found or no changes made" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-// exports.Add_New_Request = async (req, res) => {
-//   try {
-//     console.log(req.body);
-
-//     let { 
-//       DocNo,
-//       Division, 
-//       Status, 
-//       Requester, 
-//       Fac,
-//       SPEC,
-//       QTY,
-//       CASE, 
-//       PartNo, 
-//       ItemNo, 
-//       Process, 
-//       MCType,  
-//       Req_QTY, 
-//       Remark, 
-//       ON_HAND, 
-//       DueDate, 
-//       PathDwg, 
-//       PathLayout,
-//       PhoneNo
-//     } = req.body;
-
-//     if (!ItemNo && !SPEC) {
-//       return res.status(400).json({ message: "ItemNo or SPEC must be specified." });
-//     }
-
-//     const pool = await poolPromise;
-
-//     if (!ItemNo) {
-//       const itemResult = await pool.request()
-//         .input("SPEC", sql.NVarChar, SPEC)
-//         .query(`
-//           SELECT TOP 1 ItemNo
-//           FROM tb_IssueCuttingTool_Request_Document
-//           WHERE SPEC = @SPEC
-//         `);
-
-//       if (itemResult.recordset.length === 0) {
-//         return res.status(400).json({ message: "ItemNo not found in database." });
-//       }
-
-//       ItemNo = itemResult.recordset[0].ItemNo;
-//     }
-
-//  const result = await pool.request()
-
-//       .input("DocNo", sql.NVarChar, DocNo)
-//       .input("Division",sql.NVarChar,Division)
-//       .input("Requester", sql.NVarChar, Requester)
-//       .input("PartNo", sql.NVarChar, PartNo)
-//       .input("ItemNo", sql.NVarChar, ItemNo)
-//       .input("SPEC", sql.NVarChar, SPEC)
-//       .input("Process", sql.NVarChar, Process)
-//       .input("MCType", sql.NVarChar, MCType)
-//       .input("Fac", sql.Int, parseInt(Fac, 10))
-//       .input("PathDwg", sql.NVarChar, PathDwg)
-//       .input("ON_HAND", sql.Int, parseInt(ON_HAND, 10))
-//       .input("Req_QTY", sql.Int, parseInt(Req_QTY, 10))
-//       .input("QTY", sql.Int, parseInt(QTY, 10) || 0)
-//       .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
-//       .input("CASE", sql.NVarChar, CASE)
-//       .input("Status", sql.NVarChar, Status)
-//       .input("PathLayout", sql.NVarChar, PathLayout)
-//       .input("Remark", sql.NVarChar, Remark)
-//       .input("PhoneNo", sql.Int, PhoneNo)
-//       .query(`
-//         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document] 
-//         (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo)
-//         OUTPUT INSERTED.ID_Request
-//         VALUES 
-//         (@DocNo,@Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo);
-//       `);
-
-//     const ID_Request = result.recordset[0]?.ID_Request || null;
-
-//     if (!ID_Request) {
-//       return res.status(500).json({ message: "Unable to create a new ID" });
-//     }
-
-//     res.status(201).json({ message: 'Successfully added information', ID_Request });
-
-//   } catch (error) {
-//     console.error('Error in Add_New_Request:', error);
-//     res.status(500).json({ message: 'Server error', error: error.message });
-//   }
-// };
-
-
-// exports.DeleteItem = async (req, res) => {
-//   const { id } = req.params;
-//   try {
-//     const pool = await poolPromise;
-//     await pool.request()
-//       .input('ID', sql.Int, id)
-//       .query('DELETE FROM [dbo].[tb_IssueCuttingTool_Request_Document]  WHERE ID_Request = @ID');
-
-//     res.status(200).json({ message: 'Successfully deleted' });
-//   } catch (error) {
-//     console.error('Error deleting item:', error);
-//     res.status(500).json({ message: 'Failed to delete', error: error.message });
-//   }
-// };
-
-// exports.Send_Complete_Email = async (req, res) => {
-//   try {
-//     const pool = await poolPromise;
-
-//     // ดึงอีเมลทั้งหมดที่ Role = 'production'
-//     const emailResult = await pool.request()
-//       .query(`SELECT Email FROM tb_CuttingTool_Employee WHERE Role = 'production'`);
-
-//     const emailList = emailResult.recordset.map(row => row.Email).filter(Boolean);
-
-//     if (emailList.length === 0) {
-//       console.warn("ไม่พบอีเมลของ Role = production ในฐานข้อมูล");
-//       return res.status(404).json({ message: "ไม่พบอีเมลของ Role = production" });
-//     }
-
-//     const { items } = req.body; // รับ items จาก frontend
-
-//     let itemDetailsHtml = items.map(item => `
-//       <tr>
-//         <td>${item.Division}</td>
-//         <td>${item.PartNo}</td>
-//         <td>${item.ItemNo}</td>
-//         <td>${item.Case_}</td>
-//         <td>${item.Factory}</td>
-//         <td>${item.QTY}</td>
-//         <td>${item.DueDate_}</td>
-//         <td>${item.Employee_Name}</td>
-//       </tr>
-//     `).join('');
-
-//     // ======== ส่งอีเมลแจ้งเตือน ========
-//     const transporter = nodemailer.createTransport({
-//       service: 'gmail',
-//       auth: {
-//         user: 'testsystem1508@gmail.com',
-//         pass: 'amdo inzi npqq asnd' // App Password
-//       }
-//     });
-
-//     const mailOptions = {
-//       from: '"Material Disbursement System" <testsystem1508@gmail.com>',
-//       to: emailList,
-//       subject: 'รายการเสร็จสิ้น',
-//       html: `
-//         <h1 style="color:black;">✅ แจ้งเตือน!! รายการถูกส่งสำเร็จ</h1>
-//         <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse;">
-//           <thead>
-//             <tr style="background-color: #f2f2f2;">
-//               <th>Division</th>
-//               <th>Part No</th>
-//               <th>Item No</th>
-//               <th>Case</th>
-//               <th>Factory</th>
-//               <th>QTY</th>
-//               <th>DueDate</th>
-//               <th>Requester</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             ${itemDetailsHtml}
-//           </tbody>
-//         </table>
-//       `
-//     };
-
-//     await transporter.sendMail(mailOptions);
-
-//     console.log("ส่งอีเมลสำเร็จ");
-//     res.json({ success: true, message: "ส่งอีเมลเรียบร้อย" });
-
-//   } catch (error) {
-//     console.error("ส่งอีเมลไม่สำเร็จ:", error);
-//     res.status(500).json({ success: false, message: "ส่งอีเมลไม่สำเร็จ", error: error.message });
-//   }
-// };
-
+/**
+ * API: สร้างรายการขอเบิกใหม่พร้อมกันเยอะๆ (Add ลงตะกร้าแล้วกดรวดเดียว)
+ * หน้าที่: เอาไว้รับตะกร้าที่คนเบิกกดเลือกเครื่องมือหลายๆ ชิ้นมารวดเดียว เพื่อเซฟลงฐานข้อมูลพร้อมกัน ทำให้เซฟได้สะดวกรวดเร็วกว่าคลิกทีละอัน
+ */
 exports.Add_New_Request_Bulk = async (req, res) => {
   try {
     const items = req.body;
@@ -1545,9 +489,6 @@ exports.Add_New_Request_Bulk = async (req, res) => {
     }
 
     const pool = await poolPromise;
-
-    // 🔄 Call Professional Stored Procedure
-    // Note: DocNo and MFGOrderNo are now generated inside the Stored Procedure
     const result = await pool.request()
       .input("ItemsJson", sql.NVarChar(sql.MAX), JSON.stringify(items))
       .execute("trans.Stored_Insert_Request_Bulk");
@@ -1571,5 +512,3 @@ exports.Add_New_Request_Bulk = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
-

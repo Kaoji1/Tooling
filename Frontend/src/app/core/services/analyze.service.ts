@@ -8,15 +8,19 @@ import { environment } from '../../../environments/environment';
 })
 export class AnalyzeService {
 
-    private baseUrl = environment.apiUrl;
+  private baseUrl = environment.apiUrl;
 
-    public user: any;
+  public user: any;
 
   constructor(
     private httpClient: HttpClient
   ) { }
 
-getdataall(): Observable<any> {
+  getdataall(): Observable<any> {
     return this.httpClient.get(`${this.baseUrl}/getdataall`);
-    }
+  }
+
+  getcostanalyze(): Observable<any> {
+    return this.httpClient.get(`${this.baseUrl}/getcostanalyze`);
+  }
 }

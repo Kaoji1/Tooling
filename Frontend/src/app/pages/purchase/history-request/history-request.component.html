@@ -14,18 +14,9 @@
           (change)="onFilter()" placeholder="Select Division" [clearable]="true" style="min-width: 150px;">
         </ng-select>
       </div>
-      <div class="filter-item">
-        <label>From</label>
-        <input type="date" [(ngModel)]="fromDate" (change)="onFilter()" class="form-control">
-      </div>
-      <div class="filter-item">
-        <label>To</label>
-        <input type="date" [(ngModel)]="toDate" (change)="onFilter()" class="form-control">
-      </div>
       <button class="btn-clear" (click)="clearFilters()">
         <i class="bi bi-x-circle-fill"></i> Clear
       </button>
-      <!-- Filter button removed for auto-filtering -->
     </div>
 
     <div class="actions">
@@ -79,12 +70,9 @@
           <th class="filter-cell"></th>
           <th class="filter-cell"></th>
           <th class="filter-cell"></th>
-          <th class="filter-cell"></th>
           <th class="filter-cell">
             <!-- Date inputs moved to Action Bar, but keeping empty cell for alignment if needed or can be removed if strictly following columns -->
           </th>
-          <th class="filter-cell"></th>
-          <th class="filter-cell"></th>
         </tr>
 
         <!-- Headers Row -->
@@ -95,31 +83,26 @@
           <th style="width: 60px;">No.</th>
           <th style="min-width: 120px;" (click)="onSort('Division')" class="sortable">DIVISION <span
               *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-          <th style="min-width: 120px;" (click)="onSort('ItemNo')" class="sortable">ITEM NO.<span
+          <th style="min-width: 120px;" (click)="onSort('ItemNo')" class="sortable highlight-yellow">ITEM NO.<span
               *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
           <th style="min-width: 120px;" (click)="onSort('PartNo')" class="sortable">PART NO.<span
               *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-          <th style="min-width: 120px;" (click)="onSort('MFG_Order_No')" class="sortable">MFG ORDER NO.<span
-              *ngIf="sortKey === 'MFG_Order_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-          <th style="min-width: 120px;" (click)="onSort('DocNo')" class="sortable">DOCUMENT NO.<span
+          <th style="min-width: 120px;" (click)="onSort('MFG_Order_No')" class="sortable highlight-yellow">MFG ORDER
+            NO.<span *ngIf="sortKey === 'MFG_Order_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="min-width: 120px;" (click)="onSort('DocNo')" class="sortable highlight-yellow">DOCUMENT NO.<span
               *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
           <th style="min-width: 120px;">STK LOC.</th>
-          <th style="min-width: 100px;">MATL LOT</th>
-          <th style="min-width: 120px;">TRANSACTION(DMY)</th>
-          <th style="width: 80px;">ISSUE QTY</th>
+          <th style="min-width: 100px;" class="highlight-yellow">MATL LOT</th>
+          <th style="min-width: 120px;" class="highlight-yellow">TRANSACTION(DMY)</th>
+          <th style="width: 80px;" class="highlight-yellow">ISSUE QTY</th>
           <th style="min-width: 100px;">M/C TYPE</th>
-          <th style="min-width: 100px;">M/C NO.</th>
+          <th style="min-width: 100px;" class="highlight-yellow">M/C NO.</th>
           <th style="min-width: 120px;">DECLATION NO.</th>
-          <!-- <th style="min-width: 100px;" (click)="onSort('DueDate')" class="sortable">Due Date <span
-              *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-          <th style="min-width: 100px;" (click)="onSort('DateTime_Record')" class="sortable">Request Date <span
-              *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th> -->
-          <th style="width: 100px;">Edit</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngIf="filteredRequests.length === 0">
-          <td colspan="15" class="text-center text-muted py-4">
+          <td colspan="14" class="text-center text-muted py-4">
             <ng-container *ngIf="!Division_">
               <i class="bi bi-info-circle-fill me-2"></i> Please select Division to view data.
             </ng-container>
@@ -128,8 +111,7 @@
             </ng-container>
           </td>
         </tr>
-        <tr *ngFor="let req of filteredRequests; let i = index" [attr.data-index]="i"
-          [class.editing]="editingIndex[req.Public_Id] === i">
+        <tr *ngFor="let req of filteredRequests; let i = index" [attr.data-index]="i">
           <td>
             <input type="checkbox" [(ngModel)]="req.Selection" (change)="onCheckboxChange(req, i)">
           </td>
@@ -143,31 +125,11 @@
           <td>{{ req.MatLot }}</td>
           <td>{{ req.DateComplete ? (req.DateComplete | date: 'ddMMyyyy') : '' }}</td>
           <td>
-            <span *ngIf="editingIndex[req.Public_Id] !== i">{{ req.QTY }}</span>
-            <input *ngIf="editingIndex[req.Public_Id] === i" type="number" [(ngModel)]="filteredRequests[i].QTY"
-              class="form-control form-control-sm" min="0" style="width: 80px;">
+            <span>{{ req.QTY }}</span>
           </td>
           <td>{{ req.MCType }}</td>
           <td>{{ req.MC_No }}</td>
           <td></td>
-          <!-- <td>{{ req.DueDate ? (req.DueDate | date: 'dd/MM/yyyy') : '' }}</td>
-          <td>{{ req.DateTime_Record ? (req.DateTime_Record | date: 'dd/MM/yyyy') : '' }}</td> -->
-          <td>
-            <div class="btn-group">
-              <button *ngIf="editingIndex[req.Public_Id] !== i" class="btn-icon edit"
-                (click)="startEdit(req.Public_Id, i)" [disabled]="isViewer()" title="Edit">
-                <i class="bi bi-pencil-square"></i>
-              </button>
-              <button *ngIf="editingIndex[req.Public_Id] === i" class="btn-icon save" (click)="saveEdit(req)"
-                [disabled]="isViewer()" title="Save">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <button *ngIf="editingIndex[req.Public_Id] === i" class="btn-icon cancel" (click)="cancelEdit(req)"
-                title="Cancel">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            </div>
-          </td>
         </tr>
       </tbody>
     </table>
