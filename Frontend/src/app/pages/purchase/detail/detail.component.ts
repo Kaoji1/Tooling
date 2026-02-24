@@ -40,8 +40,8 @@ export class DetailComponent implements OnInit, OnDestroy {
   currentPage: number = 1;
   pageSize: number = 20;
   totalPages: number = 1;
-  displayedRequests: any[] = [];
   pages: number[] = [];
+  showCompleted: boolean = false;
 
   private refreshSubscription: Subscription = new Subscription();
 
@@ -193,7 +193,7 @@ export class DetailComponent implements OnInit, OnDestroy {
       this.get_ItemNo();
 
       // Auto-refresh every 10 seconds
-      this.refreshSubscription = interval(10000).subscribe(() => {
+      this.refreshSubscription = interval(30000).subscribe(() => {
         // Only fetch if no unsaved changes (editing, selected, or dirty)
         if (!this.hasUnsavedChanges()) {
           // We need to pass a flag to Data_Purchase to avoid spinner
@@ -231,11 +231,17 @@ export class DetailComponent implements OnInit, OnDestroy {
       this.pages.push(i);
     }
 
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.displayedRequests = this.request.slice(startIndex, endIndex);
+    // const startIndex = (this.currentPage - 1) * this.pageSize;
+    // const endIndex = startIndex + this.pageSize;
+    // this.displayedRequests = this.request.slice(startIndex, endIndex);
 
     this.cdr.markForCheck();
+  }
+
+  get displayedRequests() {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return this.request.slice(startIndex, endIndex);
   }
 
   onPageChange(page: number) {
@@ -337,6 +343,14 @@ export class DetailComponent implements OnInit, OnDestroy {
           MCQTY: it.MCQTY ?? it.MCNo, // Map MCNo to MCQTY Setup Tool
           _parsedRequestDate: it.DateTime_Record ? new Date(it.DateTime_Record) : null,
           _parsedDueDate: it.DueDate ? new Date(it.DueDate) : null,
+          // Store original request info for Production columns (same as Cutting Tool)
+          Req_ItemNo: it.ItemNo,
+          Req_PartNo: it.PartNo,
+          Req_SPEC: it.SPEC,
+          Req_ItemName: it.ItemName,
+          // Normalize On Hand field name (view may return STOCK_ON_HAND or ON_HAND)
+          ON_HAND: it.ON_HAND ?? it.STOCK_ON_HAND ?? 0,
+          STOCK_ON_HAND: it.STOCK_ON_HAND ?? it.ON_HAND ?? 0,
           TableType: 'Setup' // Explicitly mark as Setup Tool
         }));
 
@@ -517,6 +531,7 @@ export class DetailComponent implements OnInit, OnDestroy {
     }
 
     row.STOCK_ON_HAND = onHand;
+    row.ON_HAND = onHand;
     row.MAIN_LOCATION = mainLocation;
 
     this.cdr.markForCheck();
@@ -805,6 +820,14 @@ export class DetailComponent implements OnInit, OnDestroy {
     this.request = source.filter(item => {
       const status = (item.Status ?? '').toLowerCase().trim();
 
+      // Show Completed Toggle Logic
+      let matchCompleted = true;
+      if (this.showCompleted) {
+        matchCompleted = (status === 'complete' || status === 'completetoexcel');
+      } else {
+        matchCompleted = (status !== 'complete' && status !== 'completetoexcel');
+      }
+
       const matchStatus = !this.Status_?.length || (status && status.includes(this.Status_.toLowerCase()));
 
       const matchDivision = !this.Division_?.length || item.Division === this.Division_;
@@ -848,7 +871,7 @@ export class DetailComponent implements OnInit, OnDestroy {
         matchDueDate = itemDueDate.getTime() === dueFilter.getTime();
       }
 
-      return matchStatus && matchDivision && matchProcess && matchCase && matchReqDate && matchTooling && matchMRNo && matchMCType && matchItemNo && matchDueDate && matchPartNo;
+      return matchCompleted && matchStatus && matchDivision && matchProcess && matchCase && matchReqDate && matchTooling && matchMRNo && matchMCType && matchItemNo && matchDueDate && matchPartNo;
     });
 
     this.currentPage = 1;
@@ -914,6 +937,8 @@ export class DetailComponent implements OnInit, OnDestroy {
     this.MCType_ = null;
     this.ItemNoFilter_ = null;
     this.PartNo_ = null;
+
+    this.showCompleted = false;
 
     this.onFilter();
   }

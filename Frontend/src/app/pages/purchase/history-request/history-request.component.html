@@ -85,7 +85,7 @@
               *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
           <th style="min-width: 120px;" (click)="onSort('ItemNo')" class="sortable highlight-yellow">ITEM NO.<span
               *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-          <th style="min-width: 120px;" (click)="onSort('PartNo')" class="sortable">PART NO.<span
+          <th style="min-width: 180px;" (click)="onSort('PartNo')" class="sortable">PART NO.<span
               *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
           <th style="min-width: 120px;" (click)="onSort('MFG_Order_No')" class="sortable highlight-yellow">MFG ORDER
             NO.<span *ngIf="sortKey === 'MFG_Order_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
@@ -118,7 +118,7 @@
           <td>{{ i + 1 }}</td>
           <td>{{ req.Division }}</td>
           <td>{{ req.ItemNo }}</td>
-          <td>{{ req.PartNo }}</td>
+          <td style="white-space: nowrap;">{{ req.PartNo }}</td>
           <td>{{ req.MFG_Order_No }}</td>
           <td>{{ req.DocNo }}</td>
           <td>{{ req.Stock_Location }}</td>

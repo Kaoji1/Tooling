@@ -27,6 +27,17 @@
           (change)="onFilter()" placeholder="Select" [clearable]="true" appendTo="body" style="min-width: 150px;">
         </ng-select>
       </div>
+
+      <!-- Show Completed Toggle -->
+      <div class="group-select ms-4">
+        <div class="form-check form-switch m-0 p-0 d-flex align-items-center">
+          <input class="form-check-input custom-switch m-0" type="checkbox" id="showCompleted"
+            [(ngModel)]="showCompleted" (change)="onFilter()">
+          <label class="form-check-label ms-2 fw-bold text-primary" for="showCompleted" style="cursor: pointer;">
+            Show Completed
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- Actions Group -->
@@ -624,7 +635,7 @@
   </div>
 
   <!-- Pagination Controls (Fixed Bottom) -->
-  <div class="pagination-wrapper" *ngIf="(Tooling_ === 'Cutting Tool' || Tooling_ === 'Setup Tool') && totalPages > 1">
+  <div class="pagination-wrapper" *ngIf="totalPages > 1">
     <div class="d-inline-block bg-white p-2 rounded shadow-sm border">
       <span class="me-3">
         Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ min((currentPage * pageSize), request.length) }} of {{

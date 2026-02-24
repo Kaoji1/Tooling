@@ -35,14 +35,19 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
   public error: string = '';
   public dataFromDB: any[] = [];
 
-  // Filter สำหรับ Cost Analyze
-  selectedCostDivision: string = 'ALL';
+  // mapping division id to name
+  private divisionMap: { [key: string]: string } = {
+    '7122': 'GM',
+    '71DZ': 'PMC'
+  };
 
   // ตัวเลือก dropdown
   divisions = [
-    { name: '7122' },
-    { name: '71DZ' }
+    { id: '7122', name: 'GM' },
+    { id: '71DZ', name: 'PMC' }
   ];
+
+  selectedCostDivision: string = 'ALL';
 
   selectedDivisions: string[] = []; // เก็บ division ที่เลือก
   chart: Chart | null = null;
@@ -96,6 +101,32 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
   public costStackedGroupBy: 'Division' | 'CASE' | 'Process' = 'Division';
   public costStackedValueType: 'qty' | 'price' = 'price';
 
+  // Item Life Cycle
+  public lifecycleData: {
+    itemNo: string;
+    spec: string;
+    division: string;
+    totalRequests: number;
+    totalQty: number;
+    avgDays: number;
+    alert: 'high' | 'medium' | 'normal';
+  }[] = [];
+  public lifecycleSortBy: string = 'avgDays';
+  public lifecycleSortDir: 'asc' | 'desc' = 'asc';
+
+  // Trend Analysis
+  public trendChart: Chart | null = null;
+  public trendViewMode: 'monthly' | 'daily' = 'monthly';
+
+  // Most Item Select date filters
+  public mostItemMonthYear: string | null = null;
+  public availableYears: string[] = [];
+
+  // Global Filters
+  public globalDivision: string = 'ALL';
+  public globalDateStart: string | null = null;
+  public globalDateEnd: string | null = null;
+
   constructor(
     private analyzeService: AnalyzeService,
     private cdr: ChangeDetectorRef,
@@ -134,6 +165,11 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
     this.fetchCostAnalyzeData(); // ✅ โหลดข้อมูล Combo Chart
   }
 
+  getDivisionLabel(divId: string): string {
+    if (!divId || divId === 'ALL') return 'All Divisions';
+    return this.divisionMap[divId] || divId;
+  }
+
   fetchAnalyzeData() {
     this.loading = true;
     this.analyzeService.getdataall().subscribe({
@@ -152,6 +188,13 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
         this.data.forEach(item => divisionSet.add(item.Division || 'อื่นๆ'));
         this.Divisions = Array.from(divisionSet);
 
+        // หาค่าปีที่มีในข้อมูล
+        const yearSet = new Set<string>();
+        this.data.forEach(item => {
+          if (item.DateComplete) yearSet.add(String(new Date(item.DateComplete).getFullYear()));
+        });
+        this.availableYears = Array.from(yearSet).sort();
+
         const caseSet = new Set<string>();
         this.data.forEach(item => caseSet.add(item.CASE || 'อื่นๆ'));
         this.Cases = Array.from(caseSet);
@@ -166,7 +209,6 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
         this.loading = false;
 
         // วาดกราฟ
-        this.renderStatusChart();
         this.renderStackedBarChart();
         this.renderHorizontalBarChart();
       },
@@ -185,8 +227,10 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
         this.costData = response;
         this.loading = false;
         this.calculateSummaryCards(); // คำนวณข้อมูลสำหรับ Summary Cards
-        this.renderComboChart(); // วาด Combo Chart
-        this.renderCostStackedBar(); // วาด Stacked Bar Chart
+        this.renderComboChart();
+        this.renderCostStackedBar();
+        this.computeLifecycleData();
+        this.renderTrendChart(); // วาด Trend Analysis
       },
       error: (err) => {
         console.error("Error fetching cost analyze data:", err);
@@ -207,6 +251,42 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
     this.applyCostFilters();
   }
 
+  clearMostItemDate() {
+    this.mostItemMonthYear = null;
+    this.renderHorizontalBarChart();
+  }
+
+  // ============== Global Filter Methods ==============
+
+  applyGlobalFilters() {
+    // Sync global division to local ones if needed, or just let the getters handle it
+    // For simplicity, we'll let the refactored getters prioritize global values
+    this.calculateSummaryCards();
+    this.renderStackedBarChart();
+    this.renderHorizontalBarChart();
+    this.renderComboChart();
+    this.renderTrendChart();
+  }
+
+  resetGlobalFilters() {
+    this.globalDivision = 'ALL';
+    this.globalDateStart = null;
+    this.globalDateEnd = null;
+
+    // Also reset local specific filters to defaults
+    this.selectedDivision = 'ALL';
+    this.selectedCostDivision = 'ALL';
+    this.overviewDateStart = null;
+    this.overviewDateEnd = null;
+    this.costDateStart = null;
+    this.costDateEnd = null;
+    this.mostItemMonthYear = null;
+    this.selectedDivisions = [];
+    this.selectedDivisionStacked = 'ALL';
+
+    this.applyGlobalFilters();
+  }
+
   applyOverviewFilters() {
     this.renderStackedBarChart();
     this.renderHorizontalBarChart();
@@ -222,32 +302,64 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
   getFilteredOverviewData(): any[] {
     let filteredData = this.data || [];
 
-    if (this.overviewDateStart) {
-      const startDate = new Date(this.overviewDateStart);
-      filteredData = filteredData.filter(item => new Date(item.DateComplete) >= startDate);
+    // Apply Global Division if not ALL
+    if (this.globalDivision !== 'ALL') {
+      filteredData = filteredData.filter(item => (item.Division || 'อื่นๆ') === this.globalDivision);
     }
-    if (this.overviewDateEnd) {
-      const endDate = new Date(this.overviewDateEnd);
+
+    // Use Global Date if set, otherwise use local overview dates
+    let startDateStr = this.globalDateStart || this.overviewDateStart;
+    let endDateStr = this.globalDateEnd || this.overviewDateEnd;
+
+    let startDate = startDateStr ? new Date(startDateStr) : null;
+    let endDate = endDateStr ? new Date(endDateStr) : null;
+
+    // ถ้าเลือกแค่วันเดียว (ช่องใดช่องหนึ่ง) ให้เหมารีพอร์ตวันนั้นวันเดียว
+    if (startDate && !endDate) {
+      endDate = new Date(startDate);
+    } else if (!startDate && endDate) {
+      startDate = new Date(endDate);
+    }
+
+    if (startDate) {
+      filteredData = filteredData.filter(item => new Date(item.DateComplete) >= startDate!);
+    }
+    if (endDate) {
       endDate.setHours(23, 59, 59, 999);
-      filteredData = filteredData.filter(item => new Date(item.DateComplete) <= endDate);
+      filteredData = filteredData.filter(item => new Date(item.DateComplete) <= endDate!);
     }
 
     return filteredData;
   }
 
   getFilteredCostData(): any[] {
-    let filteredData = this.selectedCostDivision === 'ALL'
-      ? this.costData
-      : this.costData.filter(d => d.Division === this.selectedCostDivision);
+    // Logic: If globalDivision is set, use it. Otherwise use selectedCostDivision.
+    const activeDivision = this.globalDivision !== 'ALL' ? this.globalDivision : this.selectedCostDivision;
 
-    if (this.costDateStart) {
-      const startDate = new Date(this.costDateStart);
-      filteredData = filteredData.filter(item => new Date(item.DateComplete) >= startDate);
+    let filteredData = activeDivision === 'ALL'
+      ? this.costData
+      : this.costData.filter(d => d.Division === activeDivision);
+
+    // Use Global Date if set, otherwise use local cost dates
+    let startDateStr = this.globalDateStart || this.costDateStart;
+    let endDateStr = this.globalDateEnd || this.costDateEnd;
+
+    let startDate = startDateStr ? new Date(startDateStr) : null;
+    let endDate = endDateStr ? new Date(endDateStr) : null;
+
+    // ถ้าเลือกแค่วันเดียว (ช่องใดช่องหนึ่ง) ให้เหมารีพอร์ตวันนั้นวันเดียว
+    if (startDate && !endDate) {
+      endDate = new Date(startDate);
+    } else if (!startDate && endDate) {
+      startDate = new Date(endDate);
     }
-    if (this.costDateEnd) {
-      const endDate = new Date(this.costDateEnd);
+
+    if (startDate) {
+      filteredData = filteredData.filter(item => new Date(item.DateComplete) >= startDate!);
+    }
+    if (endDate) {
       endDate.setHours(23, 59, 59, 999);
-      filteredData = filteredData.filter(item => new Date(item.DateComplete) <= endDate);
+      filteredData = filteredData.filter(item => new Date(item.DateComplete) <= endDate!);
     }
 
     return filteredData;
@@ -296,6 +408,208 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
       }
     }
     this.mostUsedCase = { name: maxCase, count: maxQty };
+  }
+
+  // ============== Item Life Cycle / Re-order Alert ==============
+  computeLifecycleData() {
+    if (!this.costData || this.costData.length === 0) return;
+
+    // Use filtered data
+    const filteredData = this.getFilteredCostData();
+
+    // Group by ItemNo
+    const groups: { [key: string]: any[] } = {};
+    filteredData.forEach(item => {
+      const key = item.ItemNo || 'N/A';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
+    });
+
+    const result: typeof this.lifecycleData = [];
+
+    for (const [itemNo, items] of Object.entries(groups)) {
+      // Sort by DateComplete ascending
+      const sorted = items
+        .filter(i => i.DateComplete)
+        .sort((a, b) => new Date(a.DateComplete).getTime() - new Date(b.DateComplete).getTime());
+
+      const totalRequests = sorted.length;
+      const totalQty = items.reduce((s, i) => s + (Number(i.QTY) || 0), 0);
+      const spec = items[0]?.SPEC || '-';
+      const division = items[0]?.Division || '-';
+
+      let avgDays = -1; // -1 = only 1 request, can't compute
+      if (sorted.length >= 2) {
+        const diffs: number[] = [];
+        for (let i = 1; i < sorted.length; i++) {
+          const d1 = new Date(sorted[i - 1].DateComplete).getTime();
+          const d2 = new Date(sorted[i].DateComplete).getTime();
+          diffs.push((d2 - d1) / (1000 * 60 * 60 * 24)); // days
+        }
+        avgDays = Math.round(diffs.reduce((s, d) => s + d, 0) / diffs.length);
+      }
+
+      let alert: 'high' | 'medium' | 'normal' = 'normal';
+      if (avgDays >= 0 && avgDays <= 7) alert = 'high';
+      else if (avgDays >= 8 && avgDays <= 21) alert = 'medium';
+
+      result.push({ itemNo, spec, division, totalRequests, totalQty, avgDays, alert });
+    }
+
+    // Default sort: avgDays ascending (most frequent first), items with only 1 request go last
+    result.sort((a, b) => {
+      if (a.avgDays === -1 && b.avgDays === -1) return 0;
+      if (a.avgDays === -1) return 1;
+      if (b.avgDays === -1) return -1;
+      return a.avgDays - b.avgDays;
+    });
+
+    this.lifecycleData = result;
+  }
+
+  sortLifecycle(column: string) {
+    if (this.lifecycleSortBy === column) {
+      this.lifecycleSortDir = this.lifecycleSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.lifecycleSortBy = column;
+      this.lifecycleSortDir = 'asc';
+    }
+
+    const dir = this.lifecycleSortDir === 'asc' ? 1 : -1;
+    this.lifecycleData.sort((a: any, b: any) => {
+      const va = a[column];
+      const vb = b[column];
+      if (typeof va === 'string') return va.localeCompare(vb) * dir;
+      // Push -1 (single request) to the end
+      if (va === -1 && vb === -1) return 0;
+      if (va === -1) return 1;
+      if (vb === -1) return -1;
+      return (va - vb) * dir;
+    });
+  }
+
+  // ============== Trend Analysis (Line Chart) ==============
+  renderTrendChart() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const canvas = document.getElementById('trendChart') as HTMLCanvasElement;
+
+    // Use filtered data
+    const filteredData = this.getFilteredCostData();
+    if (!canvas || !filteredData.length) return;
+
+    if (this.trendChart) this.trendChart.destroy();
+
+    const isMonthly = this.trendViewMode === 'monthly';
+
+    // Group data by time period
+    const grouped: { [key: string]: { cost: number; qty: number } } = {};
+
+    filteredData.forEach(item => {
+      if (!item.DateComplete) return;
+      const d = new Date(item.DateComplete);
+      const key = isMonthly
+        ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+        : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+      if (!grouped[key]) grouped[key] = { cost: 0, qty: 0 };
+      grouped[key].cost += Number(item.Total_Price_THB) || 0;
+      grouped[key].qty += Number(item.QTY) || 0;
+    });
+
+    // Sort by date key
+    const sortedKeys = Object.keys(grouped).sort();
+    const labels = sortedKeys.map(k => {
+      if (isMonthly) {
+        const [y, m] = k.split('-');
+        const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        return `${months[parseInt(m) - 1]} ${y}`;
+      }
+      return k;
+    });
+    const costValues = sortedKeys.map(k => grouped[k].cost);
+    const qtyValues = sortedKeys.map(k => grouped[k].qty);
+
+    this.trendChart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'มูลค่ารวม (THB)',
+            data: costValues,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            yAxisID: 'y',
+          },
+          {
+            label: 'จำนวนเบิก (QTY)',
+            data: qtyValues,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            yAxisID: 'y1',
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: isMonthly ? 'Monthly Cost & Usage Trend' : 'Daily Cost & Usage Trend',
+            font: { size: 14, weight: 'bold' }
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = ctx.parsed.y ?? 0;
+                if (ctx.datasetIndex === 0) {
+                  return `มูลค่า: ฿${val.toLocaleString('th-TH', { minimumFractionDigits: 2 })}`;
+                }
+                return `จำนวน: ${val.toLocaleString('th-TH')} ชิ้น`;
+              }
+            }
+          },
+          datalabels: { display: false }
+        },
+        scales: {
+          y: {
+            type: 'linear',
+            position: 'left',
+            title: { display: true, text: 'THB (บาท)' },
+            ticks: {
+              callback: (v: any) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v
+            },
+            grid: { color: 'rgba(0,0,0,0.05)' }
+          },
+          y1: {
+            type: 'linear',
+            position: 'right',
+            title: { display: true, text: 'QTY (ชิ้น)' },
+            grid: { drawOnChartArea: false }
+          },
+          x: {
+            ticks: {
+              maxRotation: 45,
+              autoSkip: true,
+              maxTicksLimit: isMonthly ? 24 : 31
+            }
+          }
+        }
+      }
+    });
   }
 
   renderComboChart() {
@@ -429,6 +743,9 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
             },
             grid: {
               color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              precision: 0 // บังคับแสดงเฉพาะจำนวนเต็ม (ไม่มีทศนิยม)
             }
           },
           y1: {
@@ -748,10 +1065,8 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
 
     const overviewData = this.getFilteredOverviewData();
 
-    // กรองตาม Division, Case, Process เท่านั้น (ไม่มีวันที่)
-    let filteredData = this.selectedDivisionStacked === 'ALL'
-      ? overviewData
-      : overviewData.filter(d => d.Division === this.selectedDivisionStacked);
+    // Already filtered by Global Division within getFilteredOverviewData()
+    let filteredData = overviewData;
 
     if (this.selectedCaseall && this.selectedCaseall !== 'ALL') {
       filteredData = filteredData.filter(
@@ -971,7 +1286,12 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
     const canvas = document.getElementById('horizontalBarChart') as HTMLCanvasElement;
     if (!canvas || !this.data?.length) return;
 
-    const overviewData = this.getFilteredOverviewData();
+    const overviewData = this.getFilteredOverviewData().filter(item => {
+      if (!item.DateComplete || !this.mostItemMonthYear) return true;
+      const d = new Date(item.DateComplete);
+      const [selYear, selMonth] = this.mostItemMonthYear.split('-').map(Number);
+      return d.getFullYear() === selYear && (d.getMonth() + 1) === selMonth;
+    });
 
     // ปรับโครงสร้างให้เก็บ PartNo ด้วย
     // { SPEC: { case1: { qty: number, partNos: string[] } } }

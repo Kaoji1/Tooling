@@ -6,6 +6,32 @@
     <div class="button-group"></div>
   </div>
 
+  <!-- Global Filter Panel -->
+  <div class="global-filter-card">
+    <div class="filter-panel">
+      <div class="filter-group">
+        <label><i class="bi bi-diagram-3"></i> Division</label>
+        <select [(ngModel)]="globalDivision" (change)="applyGlobalFilters()">
+          <option value="ALL">All Divisions</option>
+          <option *ngFor="let d of Divisions" [value]="d">{{ getDivisionLabel(d) }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="bi bi-calendar3"></i> Date Range</label>
+        <div class="date-range">
+          <input type="date" [(ngModel)]="globalDateStart" (change)="applyGlobalFilters()">
+          <span class="separator">-</span>
+          <input type="date" [(ngModel)]="globalDateEnd" (change)="applyGlobalFilters()">
+          <button class="btn-clear" (click)="resetGlobalFilters()"
+            *ngIf="globalDateStart || globalDateEnd || globalDivision !== 'ALL'">
+            <i class="bi bi-arrow-counterclockwise"></i> Reset Filters
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Summary Cards -->
   <div class="summary-cards">
 
@@ -34,6 +60,36 @@
 
   </div>
 
+  <!-- ═══ Trend Analysis (Line Chart) ═══ -->
+  <div class="chart-card chart-card--full">
+
+    <div class="section-header">
+      <div class="section-title-group" style="border-left-color: #10b981;">
+        <h3>Trend Analysis</h3>
+        <p>แนวโน้มต้นทุนและจำนวนเบิกตามช่วงเวลา</p>
+      </div>
+
+      <div class="filter-pill sort-toggle">
+        <label>View:</label>
+        <div class="btn-group" role="group" aria-label="Trend Toggle">
+          <input type="radio" class="btn-check" name="trendMode" id="trendMonthly" value="monthly"
+            [(ngModel)]="trendViewMode" (change)="renderTrendChart()">
+          <label class="btn btn-outline-secondary btn-sm" for="trendMonthly">Monthly</label>
+
+          <input type="radio" class="btn-check" name="trendMode" id="trendDaily" value="daily"
+            [(ngModel)]="trendViewMode" (change)="renderTrendChart()">
+          <label class="btn btn-outline-secondary btn-sm" for="trendDaily">Daily</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-canvas">
+      <div class="chart-inner">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+  </div>
+
   <!-- Chart Grid -->
   <div class="card-grid">
 
@@ -54,13 +110,6 @@
           <input type="number" min="1" max="20" [(ngModel)]="topN1" (change)="renderStackedBarChart()">
         </div>
 
-        <div class="filter-group">
-          <label>Division</label>
-          <select [(ngModel)]="selectedDivisionStacked" (change)="renderStackedBarChart()">
-            <option value="ALL">Select All</option>
-            <option *ngFor="let d of Divisions" [value]="d">{{ d }}</option>
-          </select>
-        </div>
 
         <div class="filter-group">
           <label>Case</label>
@@ -78,17 +127,6 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <label>Date Range</label>
-          <div class="date-range">
-            <input type="date" [(ngModel)]="overviewDateStart" (change)="applyOverviewFilters()">
-            <span class="date-separator">–</span>
-            <input type="date" [(ngModel)]="overviewDateEnd" (change)="applyOverviewFilters()">
-            <button class="btn-clear" (click)="clearOverviewDate()" *ngIf="overviewDateStart || overviewDateEnd">
-              <i class="bi bi-x-circle"></i> Clear
-            </button>
-          </div>
-        </div>
       </div>
 
       <!-- Toolbar -->
@@ -112,48 +150,6 @@
 
     </div>
 
-    <!-- ═══ Status (Pie) ═══ -->
-    <div class="chart-card chart-card--status">
-
-      <div class="section-header">
-        <div class="section-title-group">
-          <h3>Status</h3>
-          <p>Show Status Complete & Waiting to AS400.</p>
-        </div>
-      </div>
-
-      <!-- Filters -->
-      <div class="filter-panel">
-        <div class="filter-group">
-          <label>Division</label>
-          <ng-select class="select" [items]="divisions" bindLabel="name" bindValue="name"
-            [(ngModel)]="selectedDivisions" [multiple]="true" placeholder="Select Division"
-            (change)="renderStatusChart()">
-          </ng-select>
-        </div>
-      </div>
-
-      <!-- Toolbar -->
-      <div class="toolbar">
-        <button type="button" class="toolbar-btn toolbar-btn--zoom-in" (click)="zoomIn1()">
-          <i class="bi bi-zoom-in"></i> Zoom In</button>
-        <button type="button" class="toolbar-btn toolbar-btn--zoom-out" (click)="zoomOut1()">
-          <i class="bi bi-zoom-out"></i> Zoom Out</button>
-        <button type="button" class="toolbar-btn toolbar-btn--reset" (click)="resetChart()">
-          <i class="bi bi-arrows-fullscreen"></i> Reset</button>
-        <button type="button" class="toolbar-btn toolbar-btn--export" (click)="exportStatusPNG()">
-          <i class="bi bi-filetype-png"></i> Save PNG</button>
-      </div>
-
-      <!-- Canvas -->
-      <div class="chart-canvas chart-canvas--small">
-        <div #chartWrapper class="chart-inner">
-          <canvas id="dailySalesChart" style="width:80%; height:80%;"></canvas>
-        </div>
-      </div>
-
-    </div>
-
     <!-- ═══ Most Item Select (Horizontal Bar) ═══ -->
     <div class="chart-card chart-card--full chart-card--item">
 
@@ -171,13 +167,6 @@
           <input type="number" [(ngModel)]="topN" min="1" (change)="renderHorizontalBarChart()">
         </div>
 
-        <div class="filter-group">
-          <label>Division</label>
-          <select [(ngModel)]="selectedDivision" (change)="renderHorizontalBarChart()">
-            <option value="ALL">Select All</option>
-            <option *ngFor="let d of Divisions" [value]="d">{{ d }}</option>
-          </select>
-        </div>
 
         <div class="filter-group">
           <label>Case</label>
@@ -193,6 +182,16 @@
             <option value="ALL">Select All</option>
             <option *ngFor="let c of uniqueprocess" [value]="c">{{ c }}</option>
           </select>
+        </div>
+
+        <div class="filter-group">
+          <label>เดือน/ปี</label>
+          <div class="date-range">
+            <input type="month" [(ngModel)]="mostItemMonthYear" (change)="renderHorizontalBarChart()">
+            <button class="btn-clear" (click)="clearMostItemDate()" *ngIf="mostItemMonthYear">
+              <i class="bi bi-x-circle"></i> Clear
+            </button>
+          </div>
         </div>
       </div>
 
@@ -228,14 +227,6 @@
         <!-- Inline filter pills (right side of header) -->
         <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
 
-          <div class="filter-pill">
-            <label>Division:</label>
-            <select [(ngModel)]="selectedCostDivision" (change)="applyCostFilters()">
-              <option value="ALL">All (GM + PMC)</option>
-              <option value="7122">GM (7122)</option>
-              <option value="71DZ">PMC (71DZ)</option>
-            </select>
-          </div>
 
           <div class="filter-pill sort-toggle">
             <label>Sort By</label>
@@ -255,17 +246,6 @@
             <input type="number" [(ngModel)]="comboTopN" min="1" max="50" (change)="renderComboChart()">
           </div>
 
-          <div class="filter-pill">
-            <label>Date Range:</label>
-            <div class="date-range">
-              <input type="date" [(ngModel)]="costDateStart" (change)="applyCostFilters()">
-              <span class="date-separator">–</span>
-              <input type="date" [(ngModel)]="costDateEnd" (change)="applyCostFilters()">
-              <button class="btn-clear" (click)="clearCostDate()" *ngIf="costDateStart || costDateEnd">
-                <i class="bi bi-x-circle"></i> Clear
-              </button>
-            </div>
-          </div>
 
         </div>
       </div>
@@ -275,51 +255,6 @@
         <div class="chart-inner">
           <canvas id="comboChart"></canvas>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ Cost Structure Analysis (Stacked Bar) ═══ -->
-  <div class="chart-card chart-card--full chart-card--structure">
-
-    <div class="section-header">
-      <div class="section-title-group">
-        <h3>Cost Structure Analysis</h3>
-        <p>Breakdown by Division, Case, or Process</p>
-      </div>
-
-      <!-- Inline filter pills -->
-      <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
-
-        <div class="filter-pill">
-          <label>Group By:</label>
-          <select [(ngModel)]="costStackedGroupBy" (change)="renderCostStackedBar()">
-            <option value="Division">Division (Fac)</option>
-            <option value="CASE">Case</option>
-            <option value="Process">Process</option>
-          </select>
-        </div>
-
-        <div class="filter-pill sort-toggle">
-          <label>Show:</label>
-          <div class="btn-group" role="group" aria-label="Value Toggle">
-            <input type="radio" class="btn-check" name="stackedValueType" id="valQty" value="qty"
-              [(ngModel)]="costStackedValueType" (change)="renderCostStackedBar()">
-            <label class="btn btn-outline-secondary btn-sm" for="valQty">QTY</label>
-
-            <input type="radio" class="btn-check" name="stackedValueType" id="valPrice" value="price"
-              [(ngModel)]="costStackedValueType" (change)="renderCostStackedBar()">
-            <label class="btn btn-outline-secondary btn-sm" for="valPrice">THB (Price)</label>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Canvas -->
-    <div class="chart-canvas">
-      <div class="chart-inner">
-        <canvas id="costStackedBarChart"></canvas>
       </div>
     </div>
   </div>

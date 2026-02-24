@@ -57,8 +57,7 @@
 
                 <!-- Role -->
                 <td *ngIf="editingId !== emp.Employee_ID">
-                  <span
-                    class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">
+                  <span class="badge rounded-pill" [ngClass]="getRoleBadgeClass(emp.Role)">
                     {{ emp.Role }}
                   </span>
                 </td>

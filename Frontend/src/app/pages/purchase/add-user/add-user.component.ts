@@ -255,4 +255,20 @@ export class AddUserComponent implements OnInit, OnDestroy {
   }
 
 
+  getRoleBadgeClass(role: string): string {
+    const r = (role || '').toLowerCase();
+    const map: { [key: string]: string } = {
+      'admin': 'role-admin',
+      'purchase': 'role-purchase',
+      'production': 'role-production',
+      'engineer': 'role-engineer',
+      'pc': 'role-pc',
+      'qc': 'role-qc',
+      'gage': 'role-gage',
+      'cost': 'role-cost',
+      'view': 'role-view'
+    };
+    return map[r] || 'role-default';
+  }
+
 }
