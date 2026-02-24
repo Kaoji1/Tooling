@@ -25,7 +25,10 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
     request: any[] = []; // Synced with displayedRequests for compatibility
 
     // Pivot Arrays for Filters
-    divisionList: any[] = [];
+    divisionList = [
+        { label: 'GM', value: '7122' },
+        { label: 'PMC', value: '71DZ' }
+    ];
     StatusList = [
         { label: 'Wait', value: 'Waiting' },
         { label: 'Complete', value: 'Complete' }
@@ -71,6 +74,7 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
     pageSize: number = 20;
     totalPages: number = 1;
     pages: number[] = [];
+    showCompleted: boolean = false;
 
     // Sorting
     sortKey: string = '';
@@ -91,8 +95,7 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
         this.fetchData();
         // Auto-refresh every 10 seconds
         if (isPlatformBrowser(this.platformId)) {
-            this.get_ItemNo();
-            this.refreshSubscription = interval(10000).subscribe(() => {
+            this.refreshSubscription = interval(30000).subscribe(() => {
                 // Only fetch if no unsaved changes (editing, selected, or dirty)
                 if (!this.hasUnsavedChanges()) {
                     this.fetchData(true); // Pass true to indicate background refresh
@@ -147,7 +150,9 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
                 this.populateDropdowns();
                 this.onFilter();
                 this.isLoading = false;
-                this.cdRef.detectChanges();
+                // Load item master AFTER main data is ready (not needed for initial display)
+                this.get_ItemNo();
+                this.cdRef.markForCheck();
             },
             error: (err: any) => {
                 console.error('Error fetching Case Setup data:', err);
@@ -203,17 +208,22 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
         this.ItemNoList = toSortedOptions(sets.ItemNo);
         this.MRNoList = toSortedOptions(sets.MR_No);
 
-        // Hardcoded Division List
-        this.divisionList = [
-            { label: 'GM', value: '7122' },
-            { label: 'PMC', value: '71DZ' }
-        ];
     }
 
     onFilter() {
         this.displayedRequests = this.allRequests.filter(req => {
+            const status = (req.Status ?? '').toLowerCase().trim();
             const matchDiv = !this.Division_ || req.Division === this.Division_;
-            const matchStatus = !this.Status_ || (req.Status && req.Status.toLowerCase().includes(this.Status_.toLowerCase()));
+
+            // Status Filter Logic for Show Completed Toggle
+            let matchCompleted = true;
+            if (this.showCompleted) {
+                matchCompleted = (status === 'complete' || status === 'completetoexcel');
+            } else {
+                matchCompleted = (status !== 'complete' && status !== 'completetoexcel');
+            }
+
+            const matchStatus = !this.Status_ || (status && status.includes(this.Status_.toLowerCase()));
             const matchRequester = !this.Requester_ || req.Requester === this.Requester_;
             const matchFac = !this.Fac_ || req.Fac == this.Fac_;
             const matchCase = !this.Case_ || req.CASE === this.Case_;
@@ -239,12 +249,10 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
                 matchDueDate = dueDate === filterDueDate;
             }
 
-            return matchDiv && matchStatus && matchRequester && matchFac && matchCase && matchModel && matchPartNo && matchProcess && matchMCType && matchDocNo && matchMRNo && matchItemNo && matchDate && matchDueDate;
+            return matchDiv && matchCompleted && matchStatus && matchRequester && matchFac && matchCase && matchModel && matchPartNo && matchProcess && matchMCType && matchDocNo && matchMRNo && matchItemNo && matchDate && matchDueDate;
         });
 
-        // Sync request list
-        this.request = [...this.displayedRequests];
-
+        this.request = this.displayedRequests;
         this.currentPage = 1;
         this.updatePagination();
     }
@@ -263,6 +271,7 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
         this.DueDateFilter_ = null;
         this.MRNo_ = null;
         this.ItemNoFilter_ = null;
+        this.showCompleted = false;
         this.onFilter();
     }
 
@@ -318,6 +327,7 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
         for (let i = startPage; i <= endPage; i++) {
             this.pages.push(i);
         }
+        this.cdRef.markForCheck();
     }
 
     // Computed property for slice (Pattern A)
@@ -330,6 +340,7 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
         if (page >= 1 && page <= this.totalPages) {
             this.currentPage = page;
             this.updatePagination();
+            this.cdRef.markForCheck();
         }
     }
 
@@ -427,7 +438,7 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
                     delete this.editingIndex[publicId];
                     this.updatePagination();
                     Swal.fire({ icon: 'success', title: 'Your work has been saved', showConfirmButton: false, timer: 1330 });
-                    this.cdRef.detectChanges();
+                    this.cdRef.markForCheck();
                 },
                 error: (err) => {
                     Object.assign(item, snapshot);
@@ -455,7 +466,7 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
                         delete this.editingIndex[item.Public_Id];
                         this.updatePagination();
                         Swal.fire({ icon: 'success', title: 'Confirmed!', showConfirmButton: false, timer: 1200 });
-                        this.cdRef.detectChanges();
+                        this.cdRef.markForCheck();
                     },
                     error: err => Swal.fire({ icon: 'error', title: 'Confirm failed', text: err?.message })
                 });
@@ -504,7 +515,7 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
                             timer: 2000,
                             showConfirmButton: false
                         });
-                        this.cdRef.detectChanges();
+                        this.cdRef.markForCheck();
                     },
                     error: (err: any) => {
                         console.error('Complete error', err);
@@ -514,7 +525,7 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
                             text: 'Failed to complete items. Please try again.',
                         });
                         this.isCompleting = false;
-                        this.cdRef.detectChanges();
+                        this.cdRef.markForCheck();
                     }
                 });
             }
@@ -571,7 +582,7 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
                 if (!foundLocal) {
                     row.SPEC = '';
                     row.ItemName = '';
-                    this.cdRef.detectChanges();
+                    this.cdRef.markForCheck();
                 }
             }
         });
@@ -593,7 +604,7 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
         row.STOCK_ON_HAND = onHand;
         row.MAIN_LOCATION = mainLocation;
 
-        this.cdRef.detectChanges();
+        this.cdRef.markForCheck();
     }
 
     onItemNoChange(event: any, item: any) {
@@ -606,6 +617,6 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
             this.syncSpecWithItemNo(item);
         }
         delete this.editingIndex[id];
-        this.cdRef.detectChanges();
+        this.cdRef.markForCheck();
     }
 }

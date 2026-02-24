@@ -138,11 +138,11 @@ export class HistoryRequestComponent implements OnInit {
           ...item,
           ID_Request: item.ID_Request,
           Public_Id: item.Public_Id || item.ID_Request,
-          PartNo: (item.PartNo ?? '').substring(0, 11),
+          PartNo: item.PartNo ?? '',
           Status: item.Status ?? '',
           DateRequest: item.DateRequest ?? item.DueDate ?? '',
           ItemNo: item.ItemNo ?? '',
-          MFG_Order_No: (item.MFGOrderNo ?? '').substring(0, 11),
+          MFG_Order_No: item.MFGOrderNo ?? '',
           Document_No: item.Document_No ?? '',
           MatLot: item.MatLot ?? '',
           Stock_Location: item.Stock_Location ?? '',
@@ -476,7 +476,7 @@ export class HistoryRequestComponent implements OnInit {
       { header: 'MATL LOT', key: 'MATL_LOT', width: 15 },
       { header: 'TRANSACTION(DMY)', key: 'TRANSACTION', width: 18 },
       { header: 'ISSUE QTY', key: 'QTY', width: 10 },
-      { header: 'M/O NO.', key: 'MC_No', width: 15 },
+      { header: 'M/C NO.', key: 'MC_No', width: 15 },
       { header: 'DECLATION NO', key: 'DECLATION_NO', width: 20 },
     ];
 

@@ -114,3 +114,76 @@
   font-size: 0.875rem;
   min-width: 120px;
 }
+
+// ==========================================
+//    Role Badge Colors
+// ==========================================
+.role-admin {
+  background-color: #fde8e8 !important;
+  color: #dc2626 !important;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  font-weight: 600;
+}
+
+.role-purchase {
+  background-color: #dbeafe !important;
+  color: #2563eb !important;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  font-weight: 600;
+}
+
+.role-production {
+  background-color: #dcfce7 !important;
+  color: #16a34a !important;
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  font-weight: 600;
+}
+
+.role-engineer {
+  background-color: #f3e8ff !important;
+  color: #9333ea !important;
+  border: 1px solid rgba(147, 51, 234, 0.25);
+  font-weight: 600;
+}
+
+.role-pc {
+  background-color: #ffedd5 !important;
+  color: #ea580c !important;
+  border: 1px solid rgba(234, 88, 12, 0.25);
+  font-weight: 600;
+}
+
+.role-qc {
+  background-color: #ccfbf1 !important;
+  color: #0d9488 !important;
+  border: 1px solid rgba(13, 148, 136, 0.25);
+  font-weight: 600;
+}
+
+.role-gage {
+  background-color: #e0e7ff !important;
+  color: #4f46e5 !important;
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  font-weight: 600;
+}
+
+.role-cost {
+  background-color: #fef3c7 !important;
+  color: #d97706 !important;
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  font-weight: 600;
+}
+
+.role-view {
+  background-color: #f1f5f9 !important;
+  color: #64748b !important;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  font-weight: 600;
+}
+
+.role-default {
+  background-color: #f1f5f9 !important;
+  color: #64748b !important;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  font-weight: 600;
+}
