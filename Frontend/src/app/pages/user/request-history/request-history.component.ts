@@ -24,7 +24,6 @@ export class RequestHistoryComponent implements OnInit {
     processList: any[] = [];
     itemNoList: any[] = [];
     statusList: any[] = [];
-    toolingTypeList: any[] = [];
 
     // Filter Models
     selectedDivisions: any[] = [];
@@ -32,7 +31,6 @@ export class RequestHistoryComponent implements OnInit {
     selectedProcesses: any[] = [];
     selectedItemNos: any[] = [];
     selectedStatuses: any[] = [];
-    selectedToolingTypes: any[] = [];
     fromDate: string = '';
     toDate: string = '';
 
@@ -97,7 +95,6 @@ export class RequestHistoryComponent implements OnInit {
         this.processList = [...new Set(sourceList.map(i => i.Process))].filter(x => x).sort().map(x => ({ label: x, value: x }));
         this.itemNoList = [...new Set(sourceList.map(i => i.ItemNo))].filter(x => x).sort().map(x => ({ label: x, value: x }));
         this.statusList = [...new Set(sourceList.map(i => i.Status))].filter(x => x).sort().map(x => ({ label: x, value: x }));
-        this.toolingTypeList = [...new Set(sourceList.map(i => i.ToolingType))].filter(x => x).sort().map(x => ({ label: x, value: x }));
     }
 
     toggleFilter(column: string) {
@@ -125,7 +122,6 @@ export class RequestHistoryComponent implements OnInit {
         const matchProcess = ignoreKey === 'Process' || !this.selectedProcesses?.length || this.selectedProcesses.includes(item.Process);
         const matchItemNo = ignoreKey === 'ItemNo' || !this.selectedItemNos?.length || this.selectedItemNos.includes(item.ItemNo);
         const matchStatus = ignoreKey === 'Status' || !this.selectedStatuses?.length || this.selectedStatuses.includes(item.Status);
-        const matchToolingType = ignoreKey === 'ToolingType' || !this.selectedToolingTypes?.length || this.selectedToolingTypes.includes(item.ToolingType);
 
         // Date Filter
         let matchDate = true;
@@ -145,7 +141,7 @@ export class RequestHistoryComponent implements OnInit {
             }
         }
 
-        return matchDivision && matchPartNo && matchProcess && matchItemNo && matchStatus && matchToolingType && matchDate;
+        return matchDivision && matchPartNo && matchProcess && matchItemNo && matchStatus && matchDate;
     }
 
     updateDropdownsCascading() {
@@ -154,7 +150,6 @@ export class RequestHistoryComponent implements OnInit {
         this.processList = this.getUniqueValues('Process');
         this.itemNoList = this.getUniqueValues('ItemNo');
         this.statusList = this.getUniqueValues('Status');
-        this.toolingTypeList = this.getUniqueValues('ToolingType');
     }
 
     getUniqueValues(key: string): any[] {
@@ -171,7 +166,6 @@ export class RequestHistoryComponent implements OnInit {
         this.selectedProcesses = [];
         this.selectedItemNos = [];
         this.selectedStatuses = [];
-        this.selectedToolingTypes = [];
         this.fromDate = '';
         this.toDate = '';
         this.currentPage = 1;

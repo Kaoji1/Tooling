@@ -96,7 +96,7 @@
                                 MFG NO. <span *ngIf="sortKey === 'MFGOrderNo'">{{ sortAsc ? '↑' : '↓' }}</span>
                             </span>
                         </div>
-                        
+
                     </th>
                     <th class="text-start column-header">
                         <div class="header-flex">
@@ -195,25 +195,6 @@
                     <th class="text-start column-header">
                         <div class="header-flex">CASE</div>
                     </th>
-                    <!-- ➕ Added TYPE (ToolingType) Column -->
-                    <th class="text-start column-header">
-                        <div class="header-flex">
-                            <span (click)="onSort('ToolingType')" class="sortable">
-                                TYPE <span *ngIf="sortKey === 'ToolingType'">{{ sortAsc ? '↑' : '↓' }}</span>
-                            </span>
-                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
-                                <i class="bi bi-funnel-fill filter-icon"
-                                    [class.active]="selectedToolingTypes.length > 0"
-                                    (click)="toggleFilter('ToolingType')"></i>
-                                <div class="filter-dropdown" *ngIf="activeFilter === 'ToolingType'">
-                                    <ng-select class="premium-select" [items]="toolingTypeList" bindLabel="label"
-                                        bindValue="value" [(ngModel)]="selectedToolingTypes" [multiple]="true"
-                                        [closeOnSelect]="false" placeholder="Select Type"
-                                        (change)="onFilter()"></ng-select>
-                                </div>
-                            </div>
-                        </div>
-                    </th>
                     <th class="text-start column-header">
                         <div class="header-flex">
                             <span (click)="onSort('ItemNo')" class="sortable">
@@ -252,7 +233,7 @@
             <!-- Table Body -->
             <tbody>
                 <tr *ngIf="filteredList.length === 0">
-                    <td colspan="23" class="text-center text-muted py-4">
+                    <td colspan="22" class="text-center text-muted py-4">
                         <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
                         <p class="mt-2">No Request History Found</p>
                     </td>
@@ -286,9 +267,6 @@
                     <td class="text-start secondary-data">{{ item.MCNo }}</td>
                     <td class="text-start secondary-data">{{ item.CASE }}</td>
 
-                    <!-- ➕ Added ToolingType Cell -->
-                    <td class="text-start"><span class="badge bg-light text-secondary border">{{ item.ToolingType
-                            }}</span></td>
 
                     <td class="text-start primary-data">{{ item.ItemNo }}</td>
                     <td class="text-start secondary-data truncate-cell" [title]="item.ItemName || ''">{{ item.ItemName

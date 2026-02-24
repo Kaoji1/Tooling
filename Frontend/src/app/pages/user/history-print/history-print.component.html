@@ -1,54 +1,60 @@
 <div class="content-area">
-  <div class="header">
-    <h1>History Print</h1>
-    <p>History Print</p>
+  <div class="main-header">
+    <div class="header-left">
+      <h4>History Print</h4>
+      <span class="breadcrumb-label">Print Log</span>
+    </div>
   </div>
 
   <div class="box-input">
     <div class="form-input">
       <div class="group-select">
-        <label for="satus">Document</label>
-        <ng-select [items]="docNumbers" bindLabel="label" bindValue="value" [(ngModel)]="selectedDocNo"
-          (change)="onFilter()" placeholder="Select a Document">
+        <label for="doc-select">Document</label>
+        <ng-select id="doc-select" [items]="docNumbers" [(ngModel)]="selectedDocNo" (change)="onFilter()"
+          placeholder="Select a Document">
         </ng-select>
       </div>
-    </div>
 
-    <div class="button-group">
-      <div class="btn-group-req">
-        <button class="btn-sort" type="button" (click)="onFilter()">Filter</button>
-        <button class="btn-sort" type="button" (click)="onSort()"><i class="bi bi-sort-down"></i>Sort </button>
+      <div class="button-group ms-auto">
+        <button class="btn btn-primary" type="button" (click)="onFilter()">
+          <i class="bi bi-funnel"></i> FILTER
+        </button>
+        <button class="btn btn-outline-secondary ms-2" type="button" (click)="onSort()">
+          <i class="bi bi-sort-down"></i> SORT
+        </button>
       </div>
     </div>
   </div>
 
   <!-- ตารางที่รับค่ามาจากการกด send request -->
   <div class="table-responsive">
-    <table class="table table-striped" id="table-data">
+    <table class="table table-hover align-middle text-center" id="table-data">
       <thead>
         <tr>
-          <th>No.</th>
-          <th>EmployeeID</th>
-          <th>Division</th>
-          <th>DocNo</th>
-          <th>PartNo</th>
-          <th>Due_Date</th>
-          <th>TypePrint</th>
-          <th>Print_QTY</th>
-          <th>Date_Print</th>
+          <th style="width: 50px;">NO.</th>
+          <th>EMPLOYEE ID</th>
+          <th>DIVISION</th>
+          <th>DOC NO.</th>
+          <th>PART NO.</th>
+          <th>DUE DATE</th>
+          <th>TYPE PRINT</th>
+          <th>PRINT QTY</th>
+          <th>DATE PRINT</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let item of filteredRequests; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td>{{ item.EmployeeID }}</td>
-          <td>{{ item.Division }}</td>
-          <td>{{ item.DocNo }}</td>
-          <td>{{ item.PratNo }}</td>
-          <td>{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
-          <td>{{ item.TypePrint }}</td>
-          <td>{{ item.Total }}</td>
-          <td>{{ item.Date_Record | date:'dd/MM/yyyy HH:mm:ss':'UTC' }}</td>
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="text-center secondary-data">{{ item.EmployeeID }}</td>
+          <td class="text-center fw-medium">{{ item.Division }}</td>
+          <td class="text-center primary-data">{{ item.DocNo }}</td>
+          <td class="text-center secondary-data">{{ item.PratNo }}</td>
+          <td class="text-center secondary-data">{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
+          <td class="text-center secondary-data">{{ item.TypePrint }}</td>
+          <td class="text-center">
+            <span class="badge bg-light text-dark border">{{ item.Total }}</span>
+          </td>
+          <td class="text-center secondary-data">{{ item.Date_Record | date:'dd/MM/yyyy HH:mm:ss':'UTC' }}</td>
         </tr>
       </tbody>
     </table>
