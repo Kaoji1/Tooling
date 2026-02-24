@@ -8,16 +8,14 @@ exports.Purchase_Request = async (req, res) => {
 
     // 1. ดึงข้อมูล Cutting Tool
     const cuttingQuery = `
-      SELECT *, 'Cutting' as ToolType 
+      SELECT *, 'Cutting' as ToolingType 
       FROM [db_Tooling].[viewer].[View_IssueCuttingTool_Request_Document] 
-      WHERE Status = 'Complete'
     `;
 
     // 2. ดึงข้อมูล Setup Tool
     const setupQuery = `
-      SELECT *, 'Setup' as ToolType 
+      SELECT *, 'Setup' as ToolingType 
       FROM [db_Tooling].[viewer].[View_IssueSetupTool_Request_Document] 
-      WHERE Status = 'Complete'
     `;
 
     // ทำงานพร้อมกัน (Parallel Execution)

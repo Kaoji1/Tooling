@@ -312,13 +312,13 @@
             <span class="value">{{ getSelectedItemsCount }}</span>
           </div>
           <div class="divider"></div>
-          <p class="submit-hint">Please review all items before final submission.</p>
+          <p class="submit-hint">กรุณาตรวจสอบรายการทั้งหมดให้ถูกต้อง ก่อนกดยืนยันการส่ง</p>
         </div>
 
         <button class="btn-submit-premium" type="button" (click)="AddToCart()" [disabled]="loading">
           <span class="btn-content">
             <i class="bi" [ngClass]="Tooling_ === 'Setup tool' ? 'bi-send-check-fill' : 'bi-shield-check'"></i>
-            {{ Tooling_ === 'Setup tool' ? 'Send Request' : 'Submit Final Request' }}
+            {{ Tooling_ === 'Setup tool' ? 'Send Request' : 'Submit' }}
           </span>
           <div class="btn-glow"></div>
         </button>

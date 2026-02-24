@@ -7,20 +7,33 @@
         </div>
     </div>
 
-    <!-- Toolbar: Clear, Filter, Export -->
+    <!-- Toolbar: Division Toggle, Clear, Export -->
     <div class="box-input">
         <div class="form-input">
+
+            <!-- Division Toggle (Identical to Return History style) -->
+            <div class="division-toggle me-auto">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn"
+                        [class.btn-primary]="selectedDivisions.includes('7122') && selectedDivisions.length === 1"
+                        [class.btn-outline-primary]="!(selectedDivisions.includes('7122') && selectedDivisions.length === 1)"
+                        (click)="setDivisionFilter('7122')">GM</button>
+                    <button type="button" class="btn"
+                        [class.btn-primary]="selectedDivisions.includes('71DZ') && selectedDivisions.length === 1"
+                        [class.btn-outline-primary]="!(selectedDivisions.includes('71DZ') && selectedDivisions.length === 1)"
+                        (click)="setDivisionFilter('71DZ')">PMC</button>
+                    <button type="button" class="btn" [class.btn-primary]="selectedDivisions.length === 0"
+                        [class.btn-outline-primary]="selectedDivisions.length !== 0"
+                        (click)="setDivisionFilter('')">ALL</button>
+                </div>
+            </div>
+
             <div class="button-clear">
-                <button class="btn btn-clear" type="button" (click)="clearFilters()">
-                    <i class="bi bi-x-circle-fill text-white"></i> Clear
+                <button class="btn btn-clear" type="button" (click)="clearAll()">
+                    CLEAR ALL <i class="bi bi-trash3"></i>
                 </button>
             </div>
-            <div class="button-filter">
-                <button class="btn btn-filter" type="button" (click)="onFilter()">
-                    <i class="bi bi-funnel-fill text-white"></i> Filter
-                </button>
-            </div>
-            <div class="button-group">
+            <div class="button-group ms-3">
                 <button class="excel-button btn btn-success" type="button" (click)="exportExcel()">
                     <i class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL
                 </button>
@@ -28,119 +41,309 @@
         </div>
     </div>
 
-    <div class="table-responsive">
+    <!-- 🔄 Top Synced Scrollbar (User requested "Scroll at header") -->
+    <div class="top-scroll-wrapper" #topScroll (scroll)="syncScroll(topScroll, tableScroll)">
+        <div class="top-scroll-content"></div>
+    </div>
+
+    <div class="table-responsive" #tableScroll (scroll)="syncScroll(tableScroll, topScroll)">
         <table class="table table-hover align-middle text-center" id="table-data">
 
-            <!-- Filter Options Row (Placeholder for Ng-Selects) -->
-            <thead>
-                <tr class="filter-row">
-                    <td></td> <!-- No -->
-                    <td></td> <!-- M/R No. -->
-                    <td></td> <!-- MFG Order No -->
-                    <td></td> <!-- Document -->
-                    <td><input type="date" class="premium-input" [(ngModel)]="reqDate" placeholder="Req Date"></td>
-                    <!-- Req Date -->
-                    <td></td> <!-- Req By -->
-                    <td>
-                        <ng-select class="premium-select" [items]="divisionList" bindLabel="label" bindValue="value"
-                            [(ngModel)]="selectedDivisions" [multiple]="true" [closeOnSelect]="false"
-                            placeholder="Division">
-                        </ng-select>
-                    </td> <!-- Div -->
-                    <td>
-                        <ng-select class="premium-select" [items]="partNoList" bindLabel="label" bindValue="value"
-                            [(ngModel)]="selectedPartNos" [multiple]="true" [closeOnSelect]="false"
-                            placeholder="Part No">
-                        </ng-select>
-                    </td> <!-- Part NO. -->
-                    <td>
-                        <ng-select class="premium-select" [items]="processList" bindLabel="label" bindValue="value"
-                            [(ngModel)]="selectedProcesses" [multiple]="true" [closeOnSelect]="false"
-                            placeholder="Process">
-                        </ng-select>
-                    </td> <!-- Process -->
-                    <td></td> <!-- Fac -->
-                    <td></td> <!-- MC Type -->
-                    <td></td> <!-- MC No -->
-                    <td></td> <!-- Case -->
-                    <td>
-                        <ng-select class="premium-select" [items]="itemNoList" bindLabel="label" bindValue="value"
-                            [(ngModel)]="selectedItemNos" [multiple]="true" [closeOnSelect]="false"
-                            placeholder="Item No">
-                        </ng-select>
-                    </td> <!-- Item NO. -->
-                    <td></td> <!-- Item Name -->
-                    <td></td> <!-- Spec -->
-                    <td></td> <!-- QTY -->
-                    <td></td> <!-- Total -->
-                    <td></td> <!-- Phone -->
-                </tr>
-            </thead>
-
-            <!-- Table Headers based on user requirements -->
+            <!-- Table Headers -->
             <thead class="table-light">
                 <tr>
-                    <th style="width: 50px;">NO.</th>
-                    <th (click)="onSort('MR_No')" class="sortable">M/R NO. <span *ngIf="sortKey === 'MR_No'">{{ sortAsc
-                            ? '↑' : '↓' }}</span></th>
-                    <th (click)="onSort('MFG_Order_No')" class="sortable">MFG ORDER NO. <span
-                            *ngIf="sortKey === 'MFG_Order_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
-                    <th (click)="onSort('Document')" class="sortable">DOCUMENT <span *ngIf="sortKey === 'Document'">{{
-                            sortAsc ? '↑' : '↓' }}</span></th>
-                    <th (click)="onSort('Req_Date')" class="sortable">REQ DATE <span *ngIf="sortKey === 'Req_Date'">{{
-                            sortAsc ? '↑' : '↓' }}</span></th>
-                    <th>REQ BY</th>
-                    <th (click)="onSort('Div')" class="sortable">DIV <span *ngIf="sortKey === 'Div'">{{ sortAsc ? '↑' :
-                            '↓' }}</span></th>
-                    <th (click)="onSort('Part_No')" class="sortable">PART NO. <span *ngIf="sortKey === 'Part_No'">{{
-                            sortAsc ? '↑' : '↓' }}</span></th>
-                    <th>PROCESS</th>
-                    <th>FAC</th>
-                    <th>MC TYPE</th>
-                    <th>MC NO</th>
-                    <th>CASE</th>
-                    <th (click)="onSort('Item_No')" class="sortable">ITEM NO. <span *ngIf="sortKey === 'Item_No'">{{
-                            sortAsc ? '↑' : '↓' }}</span></th>
-                    <th>ITEM NAME</th>
-                    <th>SPEC</th>
-                    <th>QTY</th>
-                    <th>TOTAL</th>
-                    <th>PHONE</th>
+                    <th style="width: 50px;" class="text-center column-header">
+                        <div class="header-flex justify-content-center">NO.</div>
+                    </th>
+
+                    <!-- 🔄 DIV moved after NO. -->
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('Division')" class="sortable">
+                                DIV <span *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedDivisions.length > 0"
+                                    (click)="toggleFilter('Division')"></i>
+                                <div class="filter-dropdown" *ngIf="activeFilter === 'Division'">
+                                    <ng-select class="premium-select" [items]="divisionList" bindLabel="label"
+                                        bindValue="value" [(ngModel)]="selectedDivisions" [multiple]="true"
+                                        [closeOnSelect]="false" placeholder="Select Div"
+                                        (change)="onFilter()"></ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('MR_No')" class="sortable">
+                                M/R NO. <span *ngIf="sortKey === 'MR_No'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                        </div>
+                    </th>
+
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('DateComplete')" class="sortable">
+                                DATE COMPLETE <span *ngIf="sortKey === 'DateComplete'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                        </div>
+                    </th>
+
+                    <!-- 🔄 STATUS moved after DATE COMPLETE -->
+                    <th class="text-center column-header">
+                        <div class="header-flex justify-content-center">
+                            <span (click)="onSort('Status')" class="sortable">
+                                STATUS <span *ngIf="sortKey === 'Status'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedStatuses.length > 0"
+                                    (click)="toggleFilter('Status')"></i>
+                                <div class="filter-dropdown" *ngIf="activeFilter === 'Status'">
+                                    <ng-select class="premium-select" [items]="statusList" bindLabel="label"
+                                        bindValue="value" [(ngModel)]="selectedStatuses" [multiple]="true"
+                                        [closeOnSelect]="false" placeholder="Select Status"
+                                        (change)="onFilter()"></ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('MFGOrderNo')" class="sortable">
+                                MFG ORDER NO. <span *ngIf="sortKey === 'MFGOrderNo'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('DocNo')" class="sortable">
+                                DOCUMENT <span *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                        </div>
+                    </th>
+
+                    <!-- 🔄 ITEM Columns after DocNo (Kept from previous step) -->
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('ItemNo')" class="sortable">
+                                ITEM NO. <span *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedItemNos.length > 0"
+                                    (click)="toggleFilter('ItemNo')"></i>
+                                <div class="filter-dropdown" *ngIf="activeFilter === 'ItemNo'">
+                                    <ng-select class="premium-select" [items]="itemNoList" bindLabel="label"
+                                        bindValue="value" [(ngModel)]="selectedItemNos" [multiple]="true"
+                                        [closeOnSelect]="false" placeholder="Select ItemNo"
+                                        (change)="onFilter()"></ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">ITEM NAME</div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">SPEC</div>
+                    </th>
+
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('DateTime_Record')" class="sortable">
+                                REQ DATE <span *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                                <i class="bi bi-funnel-fill filter-icon" [class.active]="fromDate || toDate"
+                                    (click)="toggleFilter('DateTime_Record')"></i>
+                                <div class="filter-dropdown date-filter" *ngIf="activeFilter === 'DateTime_Record'">
+                                    <label class="dropdown-label">From:</label>
+                                    <input type="date" class="premium-input w-100 mb-2" [(ngModel)]="fromDate"
+                                        (change)="onFilter()">
+                                    <label class="dropdown-label">To:</label>
+                                    <input type="date" class="premium-input w-100" [(ngModel)]="toDate"
+                                        (change)="onFilter()">
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('DueDate')" class="sortable">
+                                DUE DATE <span *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">REQ BY</div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('PartNo')" class="sortable">
+                                PART NO. <span *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedPartNos.length > 0"
+                                    (click)="toggleFilter('PartNo')"></i>
+                                <div class="filter-dropdown" *ngIf="activeFilter === 'PartNo'">
+                                    <ng-select class="premium-select" [items]="partNoList" bindLabel="label"
+                                        bindValue="value" [(ngModel)]="selectedPartNos" [multiple]="true"
+                                        [closeOnSelect]="false" placeholder="Select PartNo"
+                                        (change)="onFilter()"></ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span>PROCESS</span>
+                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedProcesses.length > 0"
+                                    (click)="toggleFilter('Process')"></i>
+                                <div class="filter-dropdown" *ngIf="activeFilter === 'Process'">
+                                    <ng-select class="premium-select" [items]="processList" bindLabel="label"
+                                        bindValue="value" [(ngModel)]="selectedProcesses" [multiple]="true"
+                                        [closeOnSelect]="false" placeholder="Select Process"
+                                        (change)="onFilter()"></ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">FAC</div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">MC TYPE</div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">MC NO</div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">CASE</div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('ToolingType')" class="sortable">
+                                TYPE <span *ngIf="sortKey === 'ToolingType'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                                <i class="bi bi-funnel-fill filter-icon"
+                                    [class.active]="selectedToolingTypes.length > 0"
+                                    (click)="toggleFilter('ToolingType')"></i>
+                                <div class="filter-dropdown" *ngIf="activeFilter === 'ToolingType'">
+                                    <ng-select class="premium-select" [items]="toolingTypeList" bindLabel="label"
+                                        bindValue="value" [(ngModel)]="selectedToolingTypes" [multiple]="true"
+                                        [closeOnSelect]="false" placeholder="Select Type"
+                                        (change)="onFilter()"></ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+
+                    <th style="width: 100px;" class="text-center column-header">
+                        <div class="header-flex justify-content-center">Req_QTY</div>
+                    </th>
+                    <th style="width: 100px;" class="text-center column-header">
+                        <div class="header-flex justify-content-center">Issue_QTY</div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">PHONE</div>
+                    </th>
                 </tr>
             </thead>
 
             <!-- Table Body -->
             <tbody>
                 <tr *ngIf="filteredList.length === 0">
-                    <td colspan="19" class="text-center text-muted py-4">
+                    <td colspan="23" class="text-center text-muted py-4">
                         <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
                         <p class="mt-2">No Request History Found</p>
                     </td>
                 </tr>
 
-                <tr *ngFor="let item of filteredList; let i = index">
-                    <td>{{ i + 1 }}</td>
-                    <td>{{ item.MR_No }}</td>
-                    <td>{{ item.MFG_Order_No }}</td>
-                    <td><span class="fw-medium">{{ item.Document }}</span></td>
-                    <td>{{ item.Req_Date | date:'dd/MM/yy' }}</td>
-                    <td>{{ item.Req_By }}</td>
-                    <td>{{ item.Div }}</td>
-                    <td class="text-start">{{ item.Part_No }}</td>
-                    <td>{{ item.Process }}</td>
-                    <td>{{ item.Fac }}</td>
-                    <td>{{ item.MC_Type }}</td>
-                    <td>{{ item.MC_No }}</td>
-                    <td>{{ item.Case }}</td>
-                    <td>{{ item.Item_No }}</td>
-                    <td class="text-start">{{ item.Item_Name }}</td>
-                    <td class="text-start text-muted">{{ item.Spec }}</td>
-                    <td><span class="badge bg-light text-dark border">{{ item.QTY }}</span></td>
-                    <td><span class="badge bg-primary text-white border">{{ item.Total }}</span></td>
-                    <td>{{ item.Phone }}</td>
+                <tr *ngFor="let item of paginatedList; let i = index">
+                    <td class="text-center">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+
+                    <!-- 🔄 DIV after NO. -->
+                    <td class="text-start"><span class="fw-medium">{{ item.Division }}</span></td>
+
+                    <td class="text-start primary-data">{{ item.MR_No }}</td>
+
+                    <td class="text-start secondary-data">{{ item.DateComplete | date:'dd/MM/yy HH:mm' }}</td>
+
+                    <!-- 🔄 STATUS after DATE COMPLETE -->
+                    <td class="text-center">
+                        <span class="status-badge" [ngClass]="{
+                                'waiting': item.Status === 'Waiting',
+                                'complete': item.Status === 'Complete'
+                            }">
+                            {{ item.Status }}
+                        </span>
+                    </td>
+
+                    <td class="text-start secondary-data">{{ item.MFGOrderNo }}</td>
+                    <td class="text-start primary-data">{{ item.DocNo }}</td>
+
+                    <!-- 🔄 ITEM Columns -->
+                    <td class="text-start primary-data">{{ item.ItemNo }}</td>
+                    <td class="text-start secondary-data truncate-cell" [title]="item.ItemName || ''">{{ item.ItemName
+                        || '-' }}</td>
+                    <td class="text-start primary-data spec-truncate" [title]="item.SPEC || ''">{{ item.SPEC || '-' }}
+                    </td>
+
+                    <td class="text-start secondary-data">{{ item.DateTime_Record | date:'dd/MM/yy' }}</td>
+                    <td class="text-start secondary-data">{{ item.DueDate | date:'dd/MM/yy' }}</td>
+                    <td class="text-start secondary-data">{{ item.Requester }}</td>
+                    <td class="text-start secondary-data">{{ item.PartNo }}</td>
+                    <td class="text-start secondary-data">{{ item.Process }}</td>
+                    <td class="text-start secondary-data">{{ item.Fac }}</td>
+                    <td class="text-start secondary-data">{{ item.MCType }}</td>
+                    <td class="text-start secondary-data">{{ item.MCNo }}</td>
+                    <td class="text-start secondary-data">{{ item.CASE }}</td>
+
+                    <td class="text-start"><span class="badge bg-light text-secondary border">{{ item.ToolingType
+                            }}</span></td>
+
+                    <td class="text-center">
+                        <span class="badge bg-light text-dark border">{{ item.Req_QTY }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-light text-dark border">{{ item.QTY }}</span>
+                    </td>
+                    <td class="text-start secondary-data">{{ item.PhoneNo }}</td>
                 </tr>
             </tbody>
         </table>
+    </div>
+
+    <!-- 📄 Pagination Controls -->
+    <div class="pagination-container" *ngIf="filteredList.length > 0">
+        <div class="pagination-info">
+            Showing <b>{{ (currentPage - 1) * pageSize + 1 }}</b> to <b>{{ (currentPage * pageSize) >
+                filteredList.length ? filteredList.length : (currentPage * pageSize) }}</b> of <b>{{ filteredList.length
+                }}</b> entries
+        </div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination mb-0">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                    <a class="page-link" (click)="setPage(currentPage - 1)" aria-label="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+
+                <li class="page-item" *ngFor="let page of pages" [class.active]="currentPage === page">
+                    <a class="page-link" (click)="setPage(page)">{{ page }}</a>
+                </li>
+
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                    <a class="page-link" (click)="setPage(currentPage + 1)" aria-label="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
 
 </div>

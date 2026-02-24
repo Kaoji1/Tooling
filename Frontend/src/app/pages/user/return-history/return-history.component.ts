@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { ReturnService } from '../../../core/services/return.service';
@@ -18,6 +18,7 @@ import * as XLSX from 'xlsx';
 export class ReturnHistoryComponent implements OnInit {
     historyList: any[] = [];
     filteredList: any[] = [];
+    paginatedList: any[] = [];
     isLoading: boolean = true;
     selectAllCheck: boolean = false;
 
@@ -26,6 +27,8 @@ export class ReturnHistoryComponent implements OnInit {
     partNoList: any[] = [];
     itemNoList: any[] = [];
     docNoList: any[] = [];
+    itemNameList: any[] = [];
+    specList: any[] = [];
     statusList: any[] = [];
 
     // Filter Models
@@ -33,12 +36,24 @@ export class ReturnHistoryComponent implements OnInit {
     selectedPartNos: any[] = [];
     selectedItemNos: any[] = [];
     selectedDocNos: any[] = [];
+    selectedItemNames: any[] = [];
+    selectedSpecs: any[] = [];
+    selectedStatuses: any[] = [];
     fromDate: string = '';
     toDate: string = '';
+
+    // Pagination
+    currentPage: number = 1;
+    pageSize: number = 20;
+    totalPages: number = 1;
+    pages: number[] = [];
 
     // Sorting
     sortKey: string = '';
     sortAsc: boolean = true;
+
+    // Filter Popup State
+    activeFilter: string | null = null;
 
     fileName = "ReturnHistory.xlsx";
 
@@ -66,7 +81,8 @@ export class ReturnHistoryComponent implements OnInit {
                 }));
 
                 this.extractDropdowns();
-                this.filteredList = [...this.historyList]; // Initial display
+                this.filteredList = [...this.historyList];
+                this.updatePaginatedList();
                 this.isLoading = false;
             },
             error: (err) => {
@@ -77,52 +93,145 @@ export class ReturnHistoryComponent implements OnInit {
         });
     }
 
-    extractDropdowns() {
-        this.divisionList = [...new Set(this.historyList.map(i => i.Division))].filter(x => x).map(x => ({ label: x, value: x }));
-        this.partNoList = [...new Set(this.historyList.map(i => i.PartNo))].filter(x => x).map(x => ({ label: x, value: x }));
-        this.itemNoList = [...new Set(this.historyList.map(i => i.ItemNo))].filter(x => x).map(x => ({ label: x, value: x }));
-        this.docNoList = [...new Set(this.historyList.map(i => i.Doc_No))].filter(x => x).map(x => ({ label: x, value: x }));
-        // Status if needed
+    // 🔄 Scroll Sync Logic
+    syncScroll(source: HTMLElement, target: HTMLElement) {
+        if (source.scrollLeft !== target.scrollLeft) {
+            target.scrollLeft = source.scrollLeft;
+        }
+    }
+
+    extractDropdowns(sourceList: any[] = this.historyList) {
+        this.divisionList = [...new Set(sourceList.map(i => i.Division))].filter(x => x).map(x => ({ label: x, value: x }));
+        this.partNoList = [...new Set(sourceList.map(i => i.PartNo))].filter(x => x).map(x => ({ label: x, value: x }));
+        this.itemNoList = [...new Set(sourceList.map(i => i.ItemNo))].filter(x => x).map(x => ({ label: x, value: x }));
+        this.docNoList = [...new Set(sourceList.map(i => i.Doc_No))].filter(x => x).map(x => ({ label: x, value: x }));
+        this.itemNameList = [...new Set(sourceList.map(i => i.ItemName))].filter(x => x).map(x => ({ label: x, value: x }));
+        this.specList = [...new Set(sourceList.map(i => i.Spec))].filter(x => x).map(x => ({ label: x, value: x }));
+        this.statusList = [...new Set(sourceList.map(i => i.Status))].filter(x => x).map(x => ({ label: x, value: x }));
+    }
+
+    toggleFilter(column: string) {
+        this.activeFilter = this.activeFilter === column ? null : column;
+    }
+
+    @HostListener('document:click', ['$event'])
+    closeFilter(event: Event) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.filter-wrapper')) {
+            this.activeFilter = null;
+        }
     }
 
     onFilter() {
-        this.filteredList = this.historyList.filter(item => {
-            // Filter by Dropdowns (Multi-select)
-            const matchDivision = !this.selectedDivisions?.length || this.selectedDivisions.includes(item.Division);
-            const matchPartNo = !this.selectedPartNos?.length || this.selectedPartNos.includes(item.PartNo);
-            const matchItemNo = !this.selectedItemNos?.length || this.selectedItemNos.includes(item.ItemNo);
-            const matchDocNo = !this.selectedDocNos?.length || this.selectedDocNos.includes(item.Doc_No);
+        this.filteredList = this.historyList.filter(item => this.checkItemMatch(item));
+        this.currentPage = 1;
+        this.updatePaginatedList();
+        this.updateDropdownsCascading();
+    }
 
-            // Filter by Date (Using Return_Date or DateTime_Record)
-            let matchDate = true;
-            if (this.fromDate || this.toDate) {
-                const dateToCheck = item.Return_Date || item.DateTime_Record;
-                const itemDate = new Date(dateToCheck);
-                itemDate.setHours(0, 0, 0, 0); // Ignore time
+    checkItemMatch(item: any, ignoreKey: string = ''): boolean {
+        // Filter by Dropdowns (Multi-select)
+        const matchDivision = ignoreKey === 'Division' || !this.selectedDivisions?.length || this.selectedDivisions.includes(item.Division);
+        const matchPartNo = ignoreKey === 'PartNo' || !this.selectedPartNos?.length || this.selectedPartNos.includes(item.PartNo);
+        const matchItemNo = ignoreKey === 'ItemNo' || !this.selectedItemNos?.length || this.selectedItemNos.includes(item.ItemNo);
+        const matchDocNo = ignoreKey === 'Doc_No' || !this.selectedDocNos?.length || this.selectedDocNos.includes(item.Doc_No);
+        const matchItemName = ignoreKey === 'ItemName' || !this.selectedItemNames?.length || this.selectedItemNames.includes(item.ItemName);
+        const matchSpec = ignoreKey === 'Spec' || !this.selectedSpecs?.length || this.selectedSpecs.includes(item.Spec);
+        const matchStatus = ignoreKey === 'Status' || !this.selectedStatuses?.length || this.selectedStatuses.includes(item.Status);
 
-                if (this.fromDate) {
-                    const start = new Date(this.fromDate);
-                    start.setHours(0, 0, 0, 0);
-                    if (itemDate < start) matchDate = false;
-                }
-                if (this.toDate) {
-                    const end = new Date(this.toDate);
-                    end.setHours(0, 0, 0, 0);
-                    if (itemDate > end) matchDate = false;
-                }
+        // Filter by Date
+        let matchDate = true;
+        if (ignoreKey !== 'Return_Date' && (this.fromDate || this.toDate)) {
+            const dateToCheck = item.Return_Date || item.DateTime_Record;
+            const itemDate = new Date(dateToCheck);
+            itemDate.setHours(0, 0, 0, 0);
+
+            if (this.fromDate) {
+                const start = new Date(this.fromDate);
+                start.setHours(0, 0, 0, 0);
+                if (itemDate < start) matchDate = false;
             }
+            if (this.toDate) {
+                const end = new Date(this.toDate);
+                end.setHours(0, 0, 0, 0);
+                if (itemDate > end) matchDate = false;
+            }
+        }
 
-            return matchDivision && matchPartNo && matchItemNo && matchDocNo && matchDate;
-        });
+        return matchDivision && matchPartNo && matchItemNo && matchDocNo && matchItemName && matchSpec && matchStatus && matchDate;
+    }
+
+    updateDropdownsCascading() {
+        this.divisionList = this.getUniqueValues('Division');
+        this.partNoList = this.getUniqueValues('PartNo');
+        this.itemNoList = this.getUniqueValues('ItemNo');
+        this.docNoList = this.getUniqueValues('Doc_No');
+        this.itemNameList = this.getUniqueValues('ItemName');
+        this.specList = this.getUniqueValues('Spec');
+        this.statusList = this.getUniqueValues('Status');
+    }
+
+    getUniqueValues(key: string): any[] {
+        const list = this.historyList
+            .filter(item => this.checkItemMatch(item, key))
+            .map(item => item[key]);
+        return [...new Set(list)].filter(x => x).sort().map(x => ({ label: x, value: x }));
     }
 
     clearFilters() {
+        this.activeFilter = null;
         this.selectedDivisions = [];
         this.selectedPartNos = [];
         this.selectedItemNos = [];
         this.selectedDocNos = [];
+        this.selectedItemNames = [];
+        this.selectedSpecs = [];
+        this.selectedStatuses = [];
         this.fromDate = '';
         this.toDate = '';
+        this.currentPage = 1;
+        this.onFilter();
+    }
+
+    clearAll() {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "ระบบจะทำการล้างรายการตัวกรองทั้งหมด",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, clear all!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.clearFilters();
+                Swal.fire({
+                    title: 'Cleared!',
+                    text: 'ตัวกรองทั้งหมดถูกล้างเรียบร้อยแล้ว',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        });
+    }
+
+
+    setDivisionFilter(div: string) {
+        this.selectedPartNos = [];
+        this.selectedItemNos = [];
+        this.selectedDocNos = [];
+        this.selectedItemNames = [];
+        this.selectedSpecs = [];
+        this.selectedStatuses = [];
+        this.fromDate = '';
+        this.toDate = '';
+
+        if (!div) {
+            this.selectedDivisions = [];
+        } else {
+            this.selectedDivisions = [div];
+        }
         this.onFilter();
     }
 
@@ -153,6 +262,48 @@ export class ReturnHistoryComponent implements OnInit {
                 ? String(valA).localeCompare(String(valB))
                 : String(valB).localeCompare(String(valA));
         });
+
+        this.currentPage = 1;
+        this.updatePaginatedList();
+    }
+
+    // 📄 Pagination Logic
+    updatePaginatedList() {
+        this.totalPages = Math.ceil(this.filteredList.length / this.pageSize);
+        if (this.totalPages < 1) this.totalPages = 1;
+
+        if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+        if (this.currentPage < 1) this.currentPage = 1;
+
+        const startIndex = (this.currentPage - 1) * this.pageSize;
+        const endIndex = startIndex + this.pageSize;
+        this.paginatedList = this.filteredList.slice(startIndex, endIndex);
+
+        this.generatePageNumbers();
+    }
+
+    generatePageNumbers() {
+        const pagesToShow = 5;
+        let startPage = Math.max(1, this.currentPage - Math.floor(pagesToShow / 2));
+        let endPage = Math.min(this.totalPages, startPage + pagesToShow - 1);
+
+        if (endPage - startPage + 1 < pagesToShow) {
+            startPage = Math.max(1, endPage - pagesToShow + 1);
+        }
+
+        this.pages = [];
+        for (let i = startPage; i <= endPage; i++) {
+            this.pages.push(i);
+        }
+    }
+
+    setPage(page: number) {
+        if (page < 1 || page > this.totalPages) return;
+        this.currentPage = page;
+        this.updatePaginatedList();
+
+        const table = document.querySelector('.table-responsive');
+        if (table) table.scrollTop = 0;
     }
 
     // Checkbox Logic

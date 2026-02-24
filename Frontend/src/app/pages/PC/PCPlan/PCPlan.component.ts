@@ -532,7 +532,7 @@ export class PCPlanComponent implements OnInit {
   clearAll() {
     Swal.fire({
       title: 'Are you sure?',
-      text: "ระบบจะทำการล้างรายการทั้งหมดในตาราง",
+      text: "รายการที่เลือกทั้งหมดจะถูกล้างทิ้ง คุณแน่ใจหรือไม่?",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
@@ -710,7 +710,7 @@ export class PCPlanComponent implements OnInit {
       <div style="text-align: left; font-family: 'Kanit', sans-serif; color: #334155;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem;">
           <span><strong>Division:</strong> <span style="color: #1d4ed8; font-weight: 600;">${displayDivision}</span></span>
-          <span style="font-size: 0.85rem; color: #64748b;">(รายการที่ต้องการบันทึก)</span>
+          <span style="font-size: 0.85rem; color: #64748b;">รายการที่ต้องการบันทึก</span>
         </div>
         
         <div style="background: #f8fafc; border-radius: 8px; padding: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; max-height: 350px; overflow-y: auto;">
@@ -886,7 +886,7 @@ export class PCPlanComponent implements OnInit {
             Saving your plans...
           </div>
           <div style="font-family: 'Kanit', sans-serif; margin-top: 5px; color: #64748b; font-size: 0.85rem;">
-            Please wait a moment while we process your data.
+            รอสักครู่นะครับ เรากำลังจัดการข้อมูลให้คุณ.
           </div>
         </div>
       `,

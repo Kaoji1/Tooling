@@ -64,7 +64,7 @@ export class SidebarPurchaseComponent implements OnInit {
   logout() {
     Swal.fire({
       title: 'Are you sure?',
-      text: 'Do you want to log out?',
+      text: 'คุณต้องการออกจากระบบหรือไม่?',
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#d33',

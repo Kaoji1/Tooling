@@ -408,7 +408,7 @@ export class ReturnComponent implements OnInit {
       Swal.fire({
         icon: 'warning',
         title: 'Required Fields',
-        text: 'Please select Division, Facility, and Process / กรุณากรอกข้อมูลให้ครบถ้วน'
+        text: 'กรุณากรอกข้อมูลให้ครบถ้วน'
       });
       this.tableInputControls[index].setValue('', { emitEvent: false }); // Clear invalid input
       return;
@@ -505,7 +505,7 @@ export class ReturnComponent implements OnInit {
       Swal.fire({
         icon: 'warning',
         title: 'Required Fields',
-        text: 'Please select Division, Facility, and Process / กรุณากรอกข้อมูลให้ครบถ้วน'
+        text: 'กรุณากรอกข้อมูลให้ครบถ้วน'
       });
       return;
     }

@@ -14,7 +14,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { CustomDateAdapter } from '../../../core/utils/custom-date-adapter';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, timer } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
 export const MY_DATE_FORMATS = {
@@ -913,7 +913,7 @@ export class requestComponent implements OnInit {
             <span style="font-weight: 700; color: #1e293b;">Fac:</span> <span style="color: #2563eb; font-weight: 700;">F.${Factory}</span> &nbsp;&nbsp;|&nbsp;&nbsp;
             <span style="font-weight: 700; color: #1e293b;">Case:</span> <span style="color: #2563eb; font-weight: 700;">${caseValue}</span>
           </div>
-          <div style="font-size: 0.85rem; color: #64748b;">(รายการที่ต้องการบันทึก)</div>
+          <div style="font-size: 0.85rem; color: #64748b;">รายการที่ต้องการบันทึก</div>
         </div>
 
         <!-- Table Container -->
@@ -956,7 +956,7 @@ export class requestComponent implements OnInit {
 
         <!-- Total Section -->
         <div style="text-align: right; font-size: 0.95rem; font-weight: 700; color: #475569; padding-right: 5px;">
-          รวมจำนวนรายการทั้งหมด (Total) 
+          รวมจำนวนรายการทั้งหมด 
           <span style="color: #10b981; font-size: 1.4rem; font-weight: 800; margin: 0 8px;">${allItems.length}</span> 
           รายการ
         </div>
@@ -983,7 +983,30 @@ export class requestComponent implements OnInit {
       hideClass: { popup: 'animate__animated animate__fadeOutDown animate__faster' }
     }).then((result) => {
       if (result.isConfirmed) {
-        this.executeSubmit(allItems);
+        // Step 2: "Are you sure?" confirmation prompt
+        Swal.fire({
+          title: '<span style="font-family: Kanit; font-weight: 800; color: #1e293b; font-size: 1.4rem;">Are you sure?</span>',
+          html: '<span style="font-family: Kanit; color: #334155;">คุณต้องการบันทึกคำขอทั้งหมดนี้ใช่หรือไม่?</span>',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, Submit!',
+          cancelButtonText: 'Go back',
+          confirmButtonColor: '#10b981',
+          cancelButtonColor: '#94a3b8',
+          width: 450,
+          customClass: {
+            popup: 'swal-premium-popup-minimal',
+            confirmButton: 'swal-premium-btn-primary',
+            cancelButton: 'swal-premium-btn-secondary'
+          },
+          backdrop: `rgba(15, 23, 42, 0.6)`
+        }).then((res2) => {
+          if (res2.isConfirmed) {
+            this.executeSubmit(allItems);
+          } else if (res2.dismiss === Swal.DismissReason.cancel) {
+            this.AddToCart(); // Reopen the first modal
+          }
+        });
       }
     });
   }
@@ -992,59 +1015,102 @@ export class requestComponent implements OnInit {
   //   Execute Submit (API Call)
   // ========================================
   private executeSubmit(allItems: any[]) {
-    this.loading = true;
+    this.loading = true; // ✅ Ensure button is disabled
 
-    this.detailPurchaseService.insertRequestBulk(allItems).subscribe({
-      next: (res: any) => {
+    // Show Loading sequence
+    Swal.fire({
+      title: '',
+      html: `
+        <div style="padding: 20px;">
+          <svg width="80" height="80" viewBox="0 0 50 50" style="margin: 0 auto; display: block;">
+            <circle cx="25" cy="25" r="20" fill="none" stroke="#e2e8f0" stroke-width="4" />
+            <circle cx="25" cy="25" r="20" fill="none" stroke="#3b82f6" stroke-width="4" stroke-linecap="round">
+              <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite" />
+              <animate attributeName="stroke-dasharray" values="1,150;90,150;1,150" dur="1.5s" repeatCount="indefinite" />
+            </circle>
+            <path d="M25 15 L25 25 L32 25" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" fill="none">
+               <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="4s" repeatCount="indefinite" />
+            </path>
+          </svg>
+          <div style="font-family: 'Kanit', sans-serif; margin-top: 20px; color: #1e293b; font-weight: 600; font-size: 1.1rem;">
+            Saving your plans...
+          </div>
+          <div style="font-family: 'Kanit', sans-serif; margin-top: 5px; color: #64748b; font-size: 0.85rem;">
+            รอสักครู่นะครับ เรากำลังจัดการข้อมูลให้คุณ.
+          </div>
+        </div>
+      `,
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      customClass: {
+        popup: 'swal-premium-popup-minimal'
+      }
+    });
+
+    // forkJoin for artificial delay + API call
+    forkJoin([
+      timer(1500),
+      this.detailPurchaseService.insertRequestBulk(allItems)
+    ]).subscribe({
+      next: ([_, res]) => {
         this.loading = false;
         const total = res?.successCount ?? allItems.length;
-        const caseSetup = res?.CaseSetupCount ?? 0;
-        const cutting = res?.CuttingCount ?? 0;
-        const setup = res?.SetupCount ?? 0;
 
-        let detailHtml = `<div style="font-size:1.15rem; color:#059669; font-weight:800; margin-bottom:1rem; letter-spacing:-0.01em;">
-          ${total} items submitted successfully!</div>
-          <div style="background:#f8fafc; border-radius:12px; padding:1.25rem; border:1px solid #e2e8f0; display:flex; flex-direction:column; gap:0.5rem;">`;
-
-        if (caseSetup > 0) detailHtml += `<div style="color:#475569; display:flex; gap:8px;">📋 <span style="flex:1">Case Setup:</span> <b style="color:#1e293b">${caseSetup}</b></div>`;
-        if (cutting > 0) detailHtml += `<div style="color:#475569; display:flex; gap:8px;">🔧 <span style="flex:1">Cutting Tool:</span> <b style="color:#1e293b">${cutting}</b></div>`;
-        if (setup > 0) detailHtml += `<div style="color:#475569; display:flex; gap:8px;">⚙️ <span style="flex:1">Setup Tool:</span> <b style="color:#1e293b">${setup}</b></div>`;
-        detailHtml += `</div>`;
-
+        // Success turtle animation
         Swal.fire({
-          icon: 'success',
-          title: '<span style="color:#059669; font-weight:800; font-size:1.5rem;">Request Submitted!</span>',
-          html: detailHtml,
+          html: `
+            <svg width="200" height="120" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg" style="margin: 0 auto; display: block; overflow: visible;">
+                <path d="M 0 100 Q 100 98 200 100" stroke="#1d1d1f" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <g class="walking-turtle-group" transform="translate(10, 5)">
+                  <path class="turtle-leg-back" d="M 125 95 C 120 75 145 75 140 95" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                  <path class="turtle-leg-back" d="M 85 95 C 80 75 105 75 100 95" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                  <path d="M 68 85 C 100 95 140 95 162 85" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                  <path d="M 62 85 C 65 30 160 30 168 85" fill="#c4ebc8" stroke="#1d1d1f" stroke-width="2" stroke-linejoin="round"/>
+                  <path d="M 88 85 L 98 55 L 132 55 L 142 85" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                  <path d="M 98 55 L 115 35 L 132 55" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                  <path d="M 66 70 L 92 70 L 98 55 M 132 55 L 138 70 L 165 70" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+                  <path class="turtle-leg-front" d="M 110 85 C 105 105 130 105 125 85" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                  <g class="turtle-leg-front">
+                    <circle cx="115" cy="92" r="1.5" fill="#1d1d1f"/><circle cx="120" cy="95" r="1.5" fill="#1d1d1f"/><circle cx="122" cy="88" r="1.5" fill="#1d1d1f"/>
+                  </g>
+                  <path class="turtle-leg-front" d="M 70 85 C 65 105 90 105 85 85" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                  <g class="turtle-leg-front">
+                    <circle cx="75" cy="92" r="1.5" fill="#1d1d1f"/><circle cx="80" cy="95" r="1.5" fill="#1d1d1f"/><circle cx="82" cy="88" r="1.5" fill="#1d1d1f"/>
+                  </g>
+                  <path d="M 64 78 C 30 80 40 40 60 40 C 75 40 70 60 70 60" fill="#fff" stroke="#1d1d1f" stroke-width="2"/>
+                  <circle cx="50" cy="50" r="2.5" fill="#1d1d1f"/>
+                  <path d="M 58 55 C 60 62 48 65 46 60" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-linecap="round"/>
+                </g>
+            </svg>
+            <h2 style="color: #2e7d32; font-family: Kanit, sans-serif; font-size: 2.2rem; font-weight: 800; margin: 15px 0 5px 0;">Success!</h2>
+            <p style="color: #5c6e58; font-family: Kanit, sans-serif; font-size: 1.1rem; margin: 0; font-weight: 500;">บันทึกข้อมูลคำอขอสำเร็จแล้ว</p>
+            <p style="color: #8da488; font-family: Kanit, sans-serif; font-size: 0.95rem; margin-top: 5px;">(บันทึกทั้งหมด ${total} รายการ)</p>
+          `,
           showConfirmButton: true,
-          confirmButtonText: 'Great!',
-          customClass: {
-            popup: 'swal-premium-popup',
-            title: 'swal-premium-title',
-            confirmButton: 'swal-premium-confirm swal-premium-confirm-success',
-          },
+          confirmButtonText: 'Continue',
+          showCloseButton: true,
           timer: 5000,
           timerProgressBar: true,
-          backdrop: `rgba(15, 23, 42, 0.6)`,
-          showClass: { popup: 'animate__animated animate__fadeInUp animate__faster' },
-          hideClass: { popup: 'animate__animated animate__fadeOutDown animate__faster' }
+          customClass: {
+            popup: 'swal-turtle-popup-success',
+            confirmButton: 'swal-turtle-btn-success',
+            actions: 'swal-turtle-actions'
+          },
+          backdrop: `rgba(15, 23, 42, 0.5)`
         });
 
         this.resetAfterSubmit();
       },
       error: (err) => {
         this.loading = false;
-        console.error('Error submitting request:', err);
+        console.error('Submit error:', err);
         Swal.fire({
           icon: 'error',
-          title: '<span style="color:#ef4444; font-weight:800;">Submission Failed</span>',
-          text: 'ไม่สามารถส่งคำขอได้ กรุณาลองใหม่อีกครั้ง',
-          confirmButtonText: 'ลองใหม่',
+          title: 'Error',
+          text: 'ไม่สามารถส่งคำขอได้ กรุณาลองใหมีกครั้ง',
           customClass: {
-            popup: 'swal-premium-popup',
-            title: 'swal-premium-title',
-            confirmButton: 'swal-premium-confirm',
-          },
-          backdrop: `rgba(15, 23, 42, 0.6)`
+            popup: 'swal-premium-popup-minimal'
+          }
         });
       }
     });
@@ -1076,6 +1142,41 @@ export class requestComponent implements OnInit {
 
   // function clearall
   Clearall() {
+    Swal.fire({
+      title: '<span style="font-family: Kanit; font-weight: 800; color: #1e293b; font-size: 1.5rem;">Clear All Selection?</span>',
+      text: 'รายการที่เลือกทั้งหมดจะถูกล้างทิ้ง คุณแน่ใจหรือไม่?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Clear All',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#94a3b8',
+      reverseButtons: true,
+      customClass: {
+        popup: 'swal-premium-popup-minimal',
+        confirmButton: 'swal-premium-btn-danger',
+        cancelButton: 'swal-premium-btn-secondary'
+      },
+      backdrop: `rgba(15, 23, 42, 0.6)`
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.resetForm();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Cleared!',
+          text: 'ล้างข้อมูลทั้งหมดเรียบร้อยแล้ว',
+          timer: 1500,
+          showConfirmButton: false,
+          customClass: {
+            popup: 'swal-premium-popup-minimal'
+          }
+        });
+      }
+    });
+  }
+
+  private resetForm() {
     // Delete select group - KEEP Tooling_ and Case_ as requested
     // this.Tooling_ = null; 
     // this.Case_ = null;

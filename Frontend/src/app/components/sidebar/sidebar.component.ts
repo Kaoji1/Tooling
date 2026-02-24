@@ -100,7 +100,7 @@ export class SidebarComponent implements OnInit {
   logout() {
     Swal.fire({
       title: 'Are you sure?',           // หัวข้อ Popup
-      text: 'Do you want to log out?',  // ข้อความรายละเอียด
+      text: 'คุณต้องการออกจากระบบหรือไม่?',  // ข้อความรายละเอียด
       icon: 'question',                 // ไอคอนรูปเครื่องหมายคำถาม
       showCancelButton: true,           // แสดงปุ่ม Cancel
       confirmButtonColor: '#d33',       // สีปุ่มยืนยัน (แดง)

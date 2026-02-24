@@ -835,9 +835,7 @@ export class PlanListComponent implements OnInit {
           กรุณาเลือก Division เพื่อเข้าดูข้อมูลแผนงาน<br>
           ระบบจะ<strong style="color: #0f172a;">จดจำตัวเลือกของคุณ</strong>สำหรับการเข้าใช้งานครั้งนี้
         </div>
-        <div style="font-family: Inter, Kanit; color: #64748b; font-size: 0.9rem; margin-top: 15px; font-weight: 500;">
-          คุณต้องการดำเนินการต่อด้วย Division ใด?
-        </div>
+        
       `,
       showCancelButton: true,
       confirmButtonText: 'PMC',
