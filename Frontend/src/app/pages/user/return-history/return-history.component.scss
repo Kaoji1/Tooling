@@ -195,10 +195,9 @@ $radius: 12px;
     overflow-y: visible;
     border-radius: 12px; // Match Standard
     border: 1px solid $border-color;
-    background: white;
+    background: white; // Table needs white bg
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); // Match Standard Shadow
     -webkit-overflow-scrolling: touch;
-    // Removed max-height/overflow-y to enable global page scrolling
 
     table {
         width: 100%;
@@ -301,7 +300,7 @@ $radius: 12px;
 
 .header-flex {
     display: flex;
-    align-items: center; // Vertical centering
+    align-items: center; // Ve rtical centering
     //justify-content: space-between; 
     padding: 12px;
     gap: 8px;
@@ -379,7 +378,6 @@ $radius: 12px;
     text-transform: capitalize;
     display: inline-block;
 
-    &.pending,
     &.waiting {
         background-color: #fff7ed; // Soft Orange
         color: #9a3412;
@@ -509,73 +507,5 @@ input[type="checkbox"] {
     to {
         opacity: 1;
         transform: translateY(0);
-    }
-}
-
-// 📄 Pagination
-.pagination-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem;
-    background: white;
-    border: 1px solid $border-color;
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-
-    .pagination-info {
-        font-size: 0.875rem;
-        color: #64748b;
-
-        b {
-            color: #1e293b;
-        }
-    }
-
-    .pagination {
-        gap: 0.25rem;
-        display: flex;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-
-        .page-item {
-            .page-link {
-                min-width: 36px;
-                height: 36px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 8px !important;
-                border: 1px solid #e2e8f0;
-                color: #64748b;
-                font-weight: 500;
-                font-size: 0.875rem;
-                transition: all 0.2s;
-                cursor: pointer;
-                text-decoration: none;
-                padding: 0 8px;
-
-                &:hover {
-                    background-color: #f1f5f9;
-                    border-color: #cbd5e1;
-                    color: #1e293b;
-                }
-            }
-
-            &.active .page-link {
-                background-color: #3b82f6;
-                border-color: #3b82f6;
-                color: white !important;
-                box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
-            }
-
-            &.disabled .page-link {
-                opacity: 0.5;
-                cursor: not-allowed;
-                background-color: #f8fafc;
-            }
-        }
     }
 }

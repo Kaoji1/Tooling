@@ -56,25 +56,6 @@
                         <div class="header-flex justify-content-center">NO.</div>
                     </th>
 
-                    <!-- 🔄 DIV moved after NO. -->
-                    <th class="text-start column-header">
-                        <div class="header-flex">
-                            <span (click)="onSort('Division')" class="sortable">
-                                DIV <span *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span>
-                            </span>
-                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
-                                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedDivisions.length > 0"
-                                    (click)="toggleFilter('Division')"></i>
-                                <div class="filter-dropdown" *ngIf="activeFilter === 'Division'">
-                                    <ng-select class="premium-select" [items]="divisionList" bindLabel="label"
-                                        bindValue="value" [(ngModel)]="selectedDivisions" [multiple]="true"
-                                        [closeOnSelect]="false" placeholder="Select Div"
-                                        (change)="onFilter()"></ng-select>
-                                </div>
-                            </div>
-                        </div>
-                    </th>
-
                     <th class="text-start column-header">
                         <div class="header-flex">
                             <span (click)="onSort('MR_No')" class="sortable">
@@ -83,15 +64,7 @@
                         </div>
                     </th>
 
-                    <th class="text-start column-header">
-                        <div class="header-flex">
-                            <span (click)="onSort('DateComplete')" class="sortable">
-                                DATE COMPLETE <span *ngIf="sortKey === 'DateComplete'">{{ sortAsc ? '↑' : '↓' }}</span>
-                            </span>
-                        </div>
-                    </th>
-
-                    <!-- 🔄 STATUS moved after DATE COMPLETE -->
+                    <!-- 🔄 STATUS and DATE COMPLETE positioned after M/R NO. -->
                     <th class="text-center column-header">
                         <div class="header-flex justify-content-center">
                             <span (click)="onSort('Status')" class="sortable">
@@ -109,11 +82,18 @@
                             </div>
                         </div>
                     </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('DateComplete')" class="sortable">
+                                DATE COMPLETE <span *ngIf="sortKey === 'DateComplete'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                        </div>
+                    </th>
 
                     <th class="text-start column-header">
                         <div class="header-flex">
                             <span (click)="onSort('MFGOrderNo')" class="sortable">
-                                MFG ORDER NO. <span *ngIf="sortKey === 'MFGOrderNo'">{{ sortAsc ? '↑' : '↓' }}</span>
+                                MFG NO. <span *ngIf="sortKey === 'MFGOrderNo'">{{ sortAsc ? '↑' : '↓' }}</span>
                             </span>
                         </div>
                     </th>
@@ -124,32 +104,6 @@
                             </span>
                         </div>
                     </th>
-
-                    <!-- 🔄 ITEM Columns after DocNo (Kept from previous step) -->
-                    <th class="text-start column-header">
-                        <div class="header-flex">
-                            <span (click)="onSort('ItemNo')" class="sortable">
-                                ITEM NO. <span *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span>
-                            </span>
-                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
-                                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedItemNos.length > 0"
-                                    (click)="toggleFilter('ItemNo')"></i>
-                                <div class="filter-dropdown" *ngIf="activeFilter === 'ItemNo'">
-                                    <ng-select class="premium-select" [items]="itemNoList" bindLabel="label"
-                                        bindValue="value" [(ngModel)]="selectedItemNos" [multiple]="true"
-                                        [closeOnSelect]="false" placeholder="Select ItemNo"
-                                        (change)="onFilter()"></ng-select>
-                                </div>
-                            </div>
-                        </div>
-                    </th>
-                    <th class="text-start column-header">
-                        <div class="header-flex">ITEM NAME</div>
-                    </th>
-                    <th class="text-start column-header">
-                        <div class="header-flex">SPEC</div>
-                    </th>
-
                     <th class="text-start column-header">
                         <div class="header-flex">
                             <span (click)="onSort('DateTime_Record')" class="sortable">
@@ -178,6 +132,23 @@
                     </th>
                     <th class="text-start column-header">
                         <div class="header-flex">REQ BY</div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('Division')" class="sortable">
+                                DIV <span *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedDivisions.length > 0"
+                                    (click)="toggleFilter('Division')"></i>
+                                <div class="filter-dropdown" *ngIf="activeFilter === 'Division'">
+                                    <ng-select class="premium-select" [items]="divisionList" bindLabel="label"
+                                        bindValue="value" [(ngModel)]="selectedDivisions" [multiple]="true"
+                                        [closeOnSelect]="false" placeholder="Select Div"
+                                        (change)="onFilter()"></ng-select>
+                                </div>
+                            </div>
+                        </div>
                     </th>
                     <th class="text-start column-header">
                         <div class="header-flex">
@@ -223,6 +194,7 @@
                     <th class="text-start column-header">
                         <div class="header-flex">CASE</div>
                     </th>
+                    <!-- ➕ Added TYPE (ToolingType) Column -->
                     <th class="text-start column-header">
                         <div class="header-flex">
                             <span (click)="onSort('ToolingType')" class="sortable">
@@ -241,7 +213,29 @@
                             </div>
                         </div>
                     </th>
-
+                    <th class="text-start column-header">
+                        <div class="header-flex">
+                            <span (click)="onSort('ItemNo')" class="sortable">
+                                ITEM NO. <span *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span>
+                            </span>
+                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedItemNos.length > 0"
+                                    (click)="toggleFilter('ItemNo')"></i>
+                                <div class="filter-dropdown" *ngIf="activeFilter === 'ItemNo'">
+                                    <ng-select class="premium-select" [items]="itemNoList" bindLabel="label"
+                                        bindValue="value" [(ngModel)]="selectedItemNos" [multiple]="true"
+                                        [closeOnSelect]="false" placeholder="Select ItemNo"
+                                        (change)="onFilter()"></ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">ITEM NAME</div>
+                    </th>
+                    <th class="text-start column-header">
+                        <div class="header-flex">SPEC</div>
+                    </th>
                     <th style="width: 100px;" class="text-center column-header">
                         <div class="header-flex justify-content-center">Req_QTY</div>
                     </th>
@@ -265,15 +259,9 @@
 
                 <tr *ngFor="let item of paginatedList; let i = index">
                     <td class="text-center">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-
-                    <!-- 🔄 DIV after NO. -->
-                    <td class="text-start"><span class="fw-medium">{{ item.Division }}</span></td>
-
                     <td class="text-start primary-data">{{ item.MR_No }}</td>
 
-                    <td class="text-start secondary-data">{{ item.DateComplete | date:'dd/MM/yy HH:mm' }}</td>
-
-                    <!-- 🔄 STATUS after DATE COMPLETE -->
+                    <!-- 🔄 STATUS and DateComplete Cells -->
                     <td class="text-center">
                         <span class="status-badge" [ngClass]="{
                                 'waiting': item.Status === 'Waiting',
@@ -282,20 +270,14 @@
                             {{ item.Status }}
                         </span>
                     </td>
+                    <td class="text-start secondary-data">{{ item.DateComplete | date:'dd/MM/yy HH:mm' }}</td>
 
                     <td class="text-start secondary-data">{{ item.MFGOrderNo }}</td>
                     <td class="text-start primary-data">{{ item.DocNo }}</td>
-
-                    <!-- 🔄 ITEM Columns -->
-                    <td class="text-start primary-data">{{ item.ItemNo }}</td>
-                    <td class="text-start secondary-data truncate-cell" [title]="item.ItemName || ''">{{ item.ItemName
-                        || '-' }}</td>
-                    <td class="text-start primary-data spec-truncate" [title]="item.SPEC || ''">{{ item.SPEC || '-' }}
-                    </td>
-
                     <td class="text-start secondary-data">{{ item.DateTime_Record | date:'dd/MM/yy' }}</td>
                     <td class="text-start secondary-data">{{ item.DueDate | date:'dd/MM/yy' }}</td>
                     <td class="text-start secondary-data">{{ item.Requester }}</td>
+                    <td class="text-start"><span class="fw-medium">{{ item.Division }}</span></td>
                     <td class="text-start secondary-data">{{ item.PartNo }}</td>
                     <td class="text-start secondary-data">{{ item.Process }}</td>
                     <td class="text-start secondary-data">{{ item.Fac }}</td>
@@ -303,9 +285,15 @@
                     <td class="text-start secondary-data">{{ item.MCNo }}</td>
                     <td class="text-start secondary-data">{{ item.CASE }}</td>
 
+                    <!-- ➕ Added ToolingType Cell -->
                     <td class="text-start"><span class="badge bg-light text-secondary border">{{ item.ToolingType
                             }}</span></td>
 
+                    <td class="text-start primary-data">{{ item.ItemNo }}</td>
+                    <td class="text-start secondary-data truncate-cell" [title]="item.ItemName || ''">{{ item.ItemName
+                        || '-' }}</td>
+                    <td class="text-start primary-data spec-truncate" [title]="item.SPEC || ''">{{ item.SPEC || '-' }}
+                    </td>
                     <td class="text-center">
                         <span class="badge bg-light text-dark border">{{ item.Req_QTY }}</span>
                     </td>
