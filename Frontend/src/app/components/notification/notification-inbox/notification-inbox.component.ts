@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationService, NotificationLog } from '../../../core/services/notification.service';
-import { NOTIFICATION_TEMPLATES, getTemplate } from '../../../core/utils/notification-templates';
+import { NOTIFICATION_TEMPLATES, getTemplate, getFieldLabel } from '../../../core/utils/notification-templates';
 import { Observable, map } from 'rxjs';
 
 @Component({
@@ -117,7 +117,11 @@ export class NotificationInboxComponent implements OnInit {
         const tmpl = getTemplate(item.Event_Type);
         if (!tmpl) return item.Event_Type;
         // Fallback: interpolate from template with available vars
-        return this._interpolate(tmpl.subject, this._buildVars(item));
+        return this._interpolate(tmpl.subject, {
+            Plan_No: item.Doc_No || '',
+            User_Name: item.Action_By || 'System',
+            Item_Count: ''
+        });
     }
 
     /**
@@ -188,12 +192,64 @@ export class NotificationInboxComponent implements OnInit {
         return template.replace(/\[(\w+)\]/g, (_, key) => vars[key] ?? `[${key}]`);
     }
 
-    /** Extract available variables from a notification payload */
-    private _buildVars(item: NotificationLog): Record<string, string> {
-        return {
-            Plan_No: item.Doc_No || '',
-            User_Name: item.Action_By || 'System',
-            Item_Count: ''
-        };
+    // ─── Details JSON Dynamic Rendering ──────────────────────
+
+    /** Fields to hide from the detailed view (internal/redundant) */
+    private SKIP_FIELDS = new Set([
+        'GroupId', 'Revision', 'PlanStatus', 'Division', 'Employee_ID',
+        'Path_Dwg', 'Path_Layout', 'Path_IIQC'
+    ]);
+
+    /** Parse Details_JSON (may be a string from DB or an object from socket) */
+    parseDetails(item: NotificationLog): any {
+        if (!item.Details_JSON) return null;
+        if (typeof item.Details_JSON === 'string') {
+            try {
+                item.Details_JSON = JSON.parse(item.Details_JSON);
+            } catch {
+                return null;
+            }
+        }
+        return item.Details_JSON;
+    }
+
+    /** Get the detail type: 'new_plan', 'revision', 'cancel', or null */
+    getDetailType(item: NotificationLog): string | null {
+        const d = this.parseDetails(item);
+        return d?.type || null;
+    }
+
+    /** For NEW_PLAN: get the items array */
+    getDetailItems(item: NotificationLog): any[] {
+        const d = this.parseDetails(item);
+        return d?.items || [];
+    }
+
+    /** For PLAN_REVISION: get the changes array [{field, old, new}] */
+    getDetailChanges(item: NotificationLog): any[] {
+        const d = this.parseDetails(item);
+        return d?.changes || [];
+    }
+
+    /** Get display keys for item grid (filters out internal fields and empty values) */
+    getItemKeys(row: any): string[] {
+        if (!row) return [];
+        return Object.keys(row).filter(k => !this.SKIP_FIELDS.has(k));
+    }
+
+    /** Translate a DB field name to a readable label using the current lang */
+    fieldLabel(field: string): string {
+        return getFieldLabel(field, this.lang);
+    }
+
+    /** Check if a details payload has content worth showing */
+    hasDetails(item: NotificationLog): boolean {
+        const d = this.parseDetails(item);
+        if (!d) return false;
+        if (d.type === 'revision' && d.changes?.length > 0) return true;
+        if (d.type === 'new_plan' && d.items?.length > 0) return true;
+        if (d.type === 'cancel' && d.items?.length > 0) return true;
+        return false;
     }
 }
+

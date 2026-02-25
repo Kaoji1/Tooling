@@ -192,3 +192,41 @@ export function getSubject(eventType: string, vars: Record<string, string>): str
 export function getTemplate(eventType: string): NotificationTemplate | undefined {
     return NOTIFICATION_TEMPLATES[eventType];
 }
+
+// ═══════════════════════════════════════════════════
+// Field Labels for Dynamic Detail Rendering (EN/TH)
+// ═══════════════════════════════════════════════════
+
+export const FIELD_LABELS: Record<string, { EN: string; TH: string }> = {
+    PlanDate: { EN: 'Plan Date', TH: 'วันที่แผนงาน' },
+    MC_Type: { EN: 'Machine Type', TH: 'ประเภทเครื่องจักร' },
+    Facility: { EN: 'Facility', TH: 'โรงงาน' },
+    Before_Part: { EN: 'Part Before', TH: 'Part ก่อนเปลี่ยน' },
+    Process: { EN: 'Process', TH: 'กระบวนการ' },
+    MC_No: { EN: 'Machine No.', TH: 'เลขเครื่องจักร' },
+    PartNo: { EN: 'Part No.', TH: 'เลข Part' },
+    QTY: { EN: 'Quantity', TH: 'จำนวน' },
+    Time: { EN: 'Time (min)', TH: 'เวลา (นาที)' },
+    Comment: { EN: 'Comment', TH: 'หมายเหตุ' },
+    Division: { EN: 'Division', TH: 'แผนก' },
+    Employee_ID: { EN: 'Employee ID', TH: 'รหัสพนักงาน' },
+    PlanStatus: { EN: 'Status', TH: 'สถานะ' },
+    GroupId: { EN: 'Group ID', TH: 'รหัสกลุ่ม' },
+    Revision: { EN: 'Revision', TH: 'รุ่นแก้ไข' },
+    Path_Dwg: { EN: 'Drawing', TH: 'แบบ Drawing' },
+    Path_Layout: { EN: 'Layout', TH: 'แบบ Layout' },
+    Path_IIQC: { EN: 'IIQC', TH: 'IIQC' },
+    Doc_No: { EN: 'Document No.', TH: 'เลขเอกสาร' },
+    ItemNo: { EN: 'Item No.', TH: 'เลข Item' },
+    ItemName: { EN: 'Item Name', TH: 'ชื่อ Item' },
+    Spec: { EN: 'Specification', TH: 'สเปค' },
+    Remark: { EN: 'Remark', TH: 'หมายเหตุ' }
+};
+
+/**
+ * Get a human-readable field label in the given language.
+ * Falls back to the raw field name if no mapping exists.
+ */
+export function getFieldLabel(field: string, lang: 'EN' | 'TH' = 'EN'): string {
+    return FIELD_LABELS[field]?.[lang] || field;
+}

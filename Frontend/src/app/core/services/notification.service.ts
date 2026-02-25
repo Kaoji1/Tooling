@@ -10,13 +10,14 @@ import { NOTIFICATION_TEMPLATES, getTemplate } from '../utils/notification-templ
 export interface NotificationLog {
   Notification_ID?: number;
   Event_Type: string;
-  Subject?: string;          // NEW: Pre-built subject line
-  Message: string;           // EN message body
-  Message_TH?: string;       // NEW: Thai message body
+  Subject?: string;
+  Message: string;
+  Message_TH?: string;
   Doc_No?: string;
-  Action_By?: string;        // NEW: Who triggered the action
-  Target_Roles?: string;     // NEW: comma-separated roles or 'ALL'
-  CTA_Route?: string;        // NEW: Frontend route for CTA button
+  Action_By?: string;
+  Target_Roles?: string;
+  CTA_Route?: string;
+  Details_JSON?: any;         // NEW: Dynamic payload (parsed JSON)
   Created_At: Date;
   IsRead: boolean;
 }
@@ -120,6 +121,7 @@ export class NotificationService {
         Action_By: data.actionBy || '',
         Target_Roles: data.targetRoles || 'ALL',
         CTA_Route: data.ctaRoute || '',
+        Details_JSON: data.detailsJson || null,
         Created_At: new Date(data.timestamp || new Date()),
         IsRead: false
       };

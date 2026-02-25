@@ -355,8 +355,8 @@
 }
 
 .accordion-body.open {
-    max-height: 500px;
-    /* generous upper bound */
+    max-height: 1200px;
+    /* generous for tables */
     opacity: 1;
 }
 
@@ -501,4 +501,165 @@
 
 .inbox-list-body::-webkit-scrollbar-thumb:hover {
     background: #cbd5e1;
+}
+
+/* ═══════════════════════════════════════════════════
+   Dynamic Details Section
+   ═══════════════════════════════════════════════════ */
+
+.details-section {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.details-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 0.6rem;
+    letter-spacing: -0.01em;
+
+    i {
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+}
+
+.items-count {
+    font-weight: 400;
+    color: #94a3b8;
+    font-size: 0.72rem;
+}
+
+/* ─── Changes Table (Revision Diff) ───────────────── */
+.changes-table-wrap {
+    overflow-x: auto;
+    border-radius: 0.5rem;
+    border: 1px solid #f1f5f9;
+}
+
+.changes-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+
+    thead {
+        background: #f8fafc;
+    }
+
+    th {
+        padding: 0.45rem 0.75rem;
+        text-align: left;
+        font-weight: 700;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    td {
+        padding: 0.45rem 0.75rem;
+        border-bottom: 1px solid #f8fafc;
+        color: #334155;
+    }
+
+    .field-name {
+        font-weight: 600;
+        color: #475569;
+        white-space: nowrap;
+    }
+
+    .val-old {
+        color: #dc2626;
+        text-decoration: line-through;
+        background: #fef2f2;
+    }
+
+    .val-new {
+        color: #16a34a;
+        font-weight: 600;
+        background: #f0fdf4;
+    }
+
+    .col-old {
+        min-width: 100px;
+    }
+
+    .col-new {
+        min-width: 100px;
+    }
+}
+
+.changes-note {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-style: italic;
+    margin: 0.35rem 0 0;
+}
+
+/* ─── Data Grid (New Plan Items) ──────────────────── */
+.data-grid-wrap {
+    overflow-x: auto;
+    border-radius: 0.5rem;
+    border: 1px solid #f1f5f9;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.data-grid {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72rem;
+
+    thead {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: #f1f5f9;
+    }
+
+    th {
+        padding: 0.4rem 0.65rem;
+        text-align: left;
+        font-weight: 700;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #475569;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 0.35rem 0.65rem;
+        border-bottom: 1px solid #f8fafc;
+        color: #334155;
+        white-space: nowrap;
+    }
+
+    .row-num {
+        color: #94a3b8;
+        font-weight: 600;
+        width: 2rem;
+        text-align: center;
+    }
+
+    tbody tr:hover {
+        background: #f8fafc;
+    }
+}
+
+.data-grid-wrap::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+.data-grid-wrap::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
 }

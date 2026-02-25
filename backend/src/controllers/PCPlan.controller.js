@@ -170,7 +170,7 @@ exports.insertPCPlan = async (req, res) => {
             .input('TargetDate', sql.Date, new Date(sampleDate))
             .execute('trans.Stored_PCPlan_Insert_All_Snapshot_Excel');
 
-        // === Notification Trigger (V2) ===
+        // === Notification Trigger (V2 + Details_JSON) ===
         try {
             const { emitNotification } = require('./Notification.controller');
             const firstItem = items[0];
@@ -187,9 +187,56 @@ exports.insertPCPlan = async (req, res) => {
                     docNo: firstItem.groupId,
                     actionBy: userName,
                     targetRoles: 'ALL',
-                    ctaRoute: '/pc/plan-list'
+                    ctaRoute: '/pc/plan-list',
+                    detailsJson: { type: 'cancel', items: jsonItems.slice(0, 10) }
                 });
+
             } else if (isRevision) {
+                // ── Dynamic Before/After Comparison ──
+                // Fetch OLD record from DB by GroupId (previous revision)
+                let changes = [];
+                try {
+                    const histResult = await pool.request()
+                        .input('GroupId', sql.NVarChar, firstItem.groupId)
+                        .execute('trans.Stored_PCPlan_GetHistory');
+
+                    const history = histResult.recordset || [];
+                    // Get the PREVIOUS revision (sort by revision desc, skip the latest which is the one we just inserted)
+                    const prevRevision = firstItem.revision - 1;
+                    const oldRecord = history.find(h => h.Revision === prevRevision) || history[0];
+
+                    if (oldRecord) {
+                        // Map of DB column names -> request body field names
+                        const fieldMap = {
+                            'PlanDate': { newKey: 'date', transform: v => v ? new Date(v).toISOString().slice(0, 10) : '' },
+                            'MC_Type': { newKey: 'mcType', transform: v => v || '' },
+                            'Facility': { newKey: 'fac', transform: v => v || '' },
+                            'Before_Part': { newKey: 'partBefore', transform: v => v || '' },
+                            'Process': { newKey: 'process', transform: v => v || '' },
+                            'MC_No': { newKey: 'mcNo', transform: v => v || '' },
+                            'PartNo': { newKey: 'partNo', transform: v => v || '' },
+                            'QTY': { newKey: 'qty', transform: v => parseFloat(v) || 0 },
+                            'Time': { newKey: 'time', transform: v => parseInt(v) || 0 },
+                            'Comment': { newKey: 'comment', transform: v => v || '' }
+                        };
+
+                        // Dynamically compare every mapped field
+                        for (const [dbField, { newKey, transform }] of Object.entries(fieldMap)) {
+                            const oldVal = transform(oldRecord[dbField]);
+                            const newVal = transform(firstItem[newKey]);
+                            const oldStr = String(oldVal);
+                            const newStr = String(newVal);
+
+                            if (oldStr !== newStr) {
+                                changes.push({ field: dbField, old: oldVal, new: newVal });
+                            }
+                        }
+                    }
+                } catch (diffErr) {
+                    console.error('[Notification] Diff comparison failed:', diffErr);
+                    // Fallback: send basic info without diff
+                }
+
                 await emitNotification(req, pool, {
                     eventType: 'PLAN_REVISION',
                     subject: `🔵 [FYI] Plan Revised: ${firstItem.groupId}`,
@@ -198,9 +245,31 @@ exports.insertPCPlan = async (req, res) => {
                     docNo: firstItem.groupId,
                     actionBy: userName,
                     targetRoles: 'ALL',
-                    ctaRoute: '/pc/plan-list'
+                    ctaRoute: '/pc/plan-list',
+                    detailsJson: {
+                        type: 'revision',
+                        revision: firstItem.revision,
+                        changes: changes,
+                        newValues: jsonItems[0] || {}
+                    }
                 });
+
             } else {
+                // ── NEW_PLAN: Capture full item details ──
+                // Build a clean summary of all imported items (cap at 20 for payload size)
+                const itemSummaries = jsonItems.slice(0, 20).map(ji => ({
+                    PlanDate: ji.PlanDate ? new Date(ji.PlanDate).toISOString().slice(0, 10) : '',
+                    MC_Type: ji.MC_Type,
+                    Facility: ji.Facility,
+                    Process: ji.Process,
+                    MC_No: ji.MC_No,
+                    Before_Part: ji.Before_Part,
+                    PartNo: ji.PartNo,
+                    QTY: ji.QTY,
+                    Time: ji.Time,
+                    Comment: ji.Comment
+                }));
+
                 await emitNotification(req, pool, {
                     eventType: 'NEW_PLAN',
                     subject: `🔵 [FYI] New Initial Plan Imported: ${batchId}`,
@@ -209,7 +278,12 @@ exports.insertPCPlan = async (req, res) => {
                     docNo: batchId,
                     actionBy: 'PC',
                     targetRoles: 'ALL',
-                    ctaRoute: '/pc/plan-list'
+                    ctaRoute: '/pc/plan-list',
+                    detailsJson: {
+                        type: 'new_plan',
+                        totalItems: items.length,
+                        items: itemSummaries
+                    }
                 });
             }
         } catch (notifyErr) {

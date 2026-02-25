@@ -103,6 +103,78 @@
                             <!-- Message Body -->
                             <div class="detail-body" [innerHTML]="getBody(item)"></div>
 
+                            <!-- ═══ Dynamic Details Section ═══ -->
+                            <ng-container *ngIf="hasDetails(item)">
+
+                                <!-- REVISION: Before & After Changes Table -->
+                                <ng-container *ngIf="getDetailType(item) === 'revision'">
+                                    <div class="details-section">
+                                        <h4 class="details-title">
+                                            <i class="bi bi-arrow-left-right"></i>
+                                            {{ lang === 'EN' ? 'Changes Summary' : 'สรุปการเปลี่ยนแปลง' }}
+                                        </h4>
+                                        <div class="changes-table-wrap">
+                                            <table class="changes-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>{{ lang === 'EN' ? 'Field' : 'ฟิลด์' }}</th>
+                                                        <th class="col-old">{{ lang === 'EN' ? 'Before' : 'ก่อน' }}</th>
+                                                        <th class="col-new">{{ lang === 'EN' ? 'After' : 'หลัง' }}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let change of getDetailChanges(item)">
+                                                        <td class="field-name">{{ fieldLabel(change.field) }}</td>
+                                                        <td class="val-old">{{ change.old }}</td>
+                                                        <td class="val-new">{{ change.new }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <p class="changes-note" *ngIf="getDetailChanges(item).length === 0">
+                                            {{ lang === 'EN' ? 'No field-level changes detected.' :
+                                            'ไม่พบการเปลี่ยนแปลงในข้อมูล' }}
+                                        </p>
+                                    </div>
+                                </ng-container>
+
+                                <!-- NEW PLAN: Item Data Grid -->
+                                <ng-container
+                                    *ngIf="getDetailType(item) === 'new_plan' || getDetailType(item) === 'cancel'">
+                                    <div class="details-section">
+                                        <h4 class="details-title">
+                                            <i class="bi bi-table"></i>
+                                            {{ lang === 'EN' ? 'Imported Items' : 'รายการที่นำเข้า' }}
+                                            <span class="items-count" *ngIf="parseDetails(item)?.totalItems">
+                                                ({{ parseDetails(item).totalItems }} {{ lang === 'EN' ? 'total' :
+                                                'รายการ' }})
+                                            </span>
+                                        </h4>
+                                        <div class="data-grid-wrap" *ngIf="getDetailItems(item).length > 0">
+                                            <table class="data-grid">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th *ngFor="let key of getItemKeys(getDetailItems(item)[0])">
+                                                            {{ fieldLabel(key) }}
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let row of getDetailItems(item); let i = index">
+                                                        <td class="row-num">{{ i + 1 }}</td>
+                                                        <td *ngFor="let key of getItemKeys(row)">
+                                                            {{ row[key] }}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </ng-container>
+
+                            </ng-container>
+
                             <!-- CTA -->
                             <div class="detail-cta">
                                 <button class="cta-btn" (click)="navigateCTA(item); $event.stopPropagation()">

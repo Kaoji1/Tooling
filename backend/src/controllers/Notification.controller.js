@@ -66,7 +66,8 @@ exports.emitNotification = async (req, pool, {
     docNo,
     actionBy,
     targetRoles,
-    ctaRoute
+    ctaRoute,
+    detailsJson
 }) => {
     try {
         const io = req.app.get('socketio');
@@ -81,6 +82,7 @@ exports.emitNotification = async (req, pool, {
             .input('Message_TH', sql.NVarChar, messageTH || '')
             .input('Target_Roles', sql.NVarChar, targetRoles || 'ALL')
             .input('CTA_Route', sql.NVarChar, ctaRoute || '')
+            .input('Details_JSON', sql.NVarChar, detailsJson ? JSON.stringify(detailsJson) : null)
             .execute('trans.Stored_Insert_Notification_Log');
 
         const notificationId = notifyResult.recordset[0]?.Notification_ID;
@@ -97,6 +99,7 @@ exports.emitNotification = async (req, pool, {
                 actionBy: actionBy || 'System',
                 targetRoles: targetRoles || 'ALL',
                 ctaRoute: ctaRoute || '',
+                detailsJson: detailsJson || null,
                 timestamp: new Date()
             });
             console.log(`[Notification] Emitted: ${eventType} (ID: ${notificationId}) -> ${targetRoles}`);

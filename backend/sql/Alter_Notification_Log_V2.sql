@@ -39,6 +39,14 @@ BEGIN
 END;
 GO
 
+IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = 'master' AND TABLE_NAME = 'tb_Notification_Log' AND COLUMN_NAME = 'Details_JSON')
+BEGIN
+    ALTER TABLE [master].[tb_Notification_Log]
+    ADD [Details_JSON] NVARCHAR(MAX) NULL;
+END;
+GO
+
 -- 2. Update Insert SP to accept new fields
 IF OBJECT_ID('[trans].[Stored_Insert_Notification_Log]', 'P') IS NOT NULL
     DROP PROCEDURE [trans].[Stored_Insert_Notification_Log];
@@ -52,13 +60,14 @@ CREATE PROCEDURE [trans].[Stored_Insert_Notification_Log]
     @Subject      NVARCHAR(255) = NULL,
     @Message_TH   NVARCHAR(MAX) = NULL,
     @Target_Roles NVARCHAR(255) = 'ALL',
-    @CTA_Route    NVARCHAR(255) = NULL
+    @CTA_Route    NVARCHAR(255) = NULL,
+    @Details_JSON NVARCHAR(MAX) = NULL
 AS
 BEGIN
     INSERT INTO [master].[tb_Notification_Log]
-        (Event_Type, Message, Doc_No, Action_By, Subject, Message_TH, Target_Roles, CTA_Route)
+        (Event_Type, Message, Doc_No, Action_By, Subject, Message_TH, Target_Roles, CTA_Route, Details_JSON)
     VALUES
-        (@Event_Type, @Message, @Doc_No, @Action_By, @Subject, @Message_TH, @Target_Roles, @CTA_Route);
+        (@Event_Type, @Message, @Doc_No, @Action_By, @Subject, @Message_TH, @Target_Roles, @CTA_Route, @Details_JSON);
     
     SELECT @@IDENTITY AS Notification_ID;
 END;
@@ -83,6 +92,7 @@ BEGIN
         Action_By,
         Target_Roles,
         CTA_Route,
+        Details_JSON,
         Created_At,
         IsRead
     FROM [master].[tb_Notification_Log]
