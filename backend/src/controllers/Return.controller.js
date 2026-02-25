@@ -147,7 +147,7 @@ exports.saveReturnRequest = async (req, res) => {
                     eventType: 'RETURN_SENT',
                     subject: `🔴 [Action Required] Tooling Return Pending: ${docNo}`,
                     messageEN: `A tooling return request has been submitted by ${userName} (Production). Please verify the returned items and complete the process.`,
-                    messageTH: `มีการส่งคืน Tooling (Return) เข้ามาในระบบโดย ${userName} (แผนก Production) รบกวนตรวจสอบรายการและดำเนินการรับคืน`,
+                    messageTH: `มีการกรอกรายการส่งคืน Tooling เข้ามาในระบบโดย ${userName} จาก Production รบกวนตรวจสอบรายการและดำเนินการต่อด้วยครับ`,
                     docNo: docNo,
                     actionBy: userName,
                     targetRoles: 'purchase',
