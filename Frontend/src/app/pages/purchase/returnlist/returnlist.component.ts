@@ -43,6 +43,7 @@ export class ReturnlistComponent implements OnInit {
     ReturnDateFilter_: string | null = null;
     ProcessFilter_: string | null = null;
     FacFilter_: string | null = null;
+    PartNoFilter_: string | null = null;
     ItemNoFilter_: string | null = null;
 
     // Toggle for Complete Items
@@ -52,6 +53,7 @@ export class ReturnlistComponent implements OnInit {
     DocNoList: any[] = [];
     ProcessList: any[] = [];
     FacList: any[] = [];
+    PartNoList: any[] = [];
     ItemNoList: any[] = [];
 
     // Sorting
@@ -103,6 +105,7 @@ export class ReturnlistComponent implements OnInit {
         this.DocNoList = getUniqueList('Doc_No');
         this.ProcessList = getUniqueList('Process');
         this.FacList = getUniqueList('Facility');
+        this.PartNoList = getUniqueList('PartNo');
         this.ItemNoList = getUniqueList('ItemNo');
     }
 
@@ -123,6 +126,7 @@ export class ReturnlistComponent implements OnInit {
             const matchDocNo = !this.DocNoFilter_ || item.Doc_No === this.DocNoFilter_;
             const matchProcess = !this.ProcessFilter_ || item.Process === this.ProcessFilter_;
             const matchFac = !this.FacFilter_ || item.Facility == this.FacFilter_;
+            const matchPartNo = !this.PartNoFilter_ || (item.PartNo && item.PartNo.toLowerCase().includes(this.PartNoFilter_.toLowerCase()));
             const matchItemNo = !this.ItemNoFilter_ || (item.ItemNo && item.ItemNo.toLowerCase().includes(this.ItemNoFilter_.toLowerCase()));
 
             let matchReturnDate = true;
@@ -144,7 +148,7 @@ export class ReturnlistComponent implements OnInit {
                 matchStatus = item.Status !== 'Complete';
             }
 
-            return matchDivision && matchDocNo && matchProcess && matchFac && matchItemNo && matchReturnDate && matchStatus;
+            return matchDivision && matchDocNo && matchProcess && matchFac && matchPartNo && matchItemNo && matchReturnDate && matchStatus;
         });
         this.currentPage = 1;
         this.updatePagination();
@@ -158,6 +162,7 @@ export class ReturnlistComponent implements OnInit {
         this.DocNoFilter_ = null;
         this.ProcessFilter_ = null;
         this.FacFilter_ = null;
+        this.PartNoFilter_ = null;
         this.ItemNoFilter_ = null;
         this.ReturnDateFilter_ = null;
 
@@ -254,10 +259,12 @@ export class ReturnlistComponent implements OnInit {
             'Division': item.Division || '',
             'Process': item.Process || '',
             'Facility': item.Facility || '',
+            'Part No.': item.PartNo || '',
             'Item No.': item.ItemNo || '',
             'Item Name': item.ItemName || '',
             'Spec': item.Spec || '',
             'QTY': item.QTY || 0,
+            'Usage': item.Used_Qty !== null && item.Used_Qty !== undefined ? item.Used_Qty : '',
             'Phone No': item.Phone_No || ''
         }));
 

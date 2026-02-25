@@ -39,4 +39,8 @@ export class MasterPHService {
     importMasterToolingGM(data: FormData): Observable<any> {
         return this.http.post<any>(`${this.baseUrl}/master-ph/import-master-tooling-gm`, data);
     }
+
+    syncMasterToolingGM(): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/master-ph/sync-gm`, {});
+    }
 }
