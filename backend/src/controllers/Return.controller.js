@@ -121,7 +121,7 @@ exports.saveReturnRequest = async (req, res) => {
                     .input('Doc_No', sql.NVarChar, header.docNo)
                     .input('Employee_ID', sql.NVarChar, header.employeeId)
                     .input('Return_By', sql.NVarChar, header.returnBy)
-                    .input('Division', sql.NVarChar, header.divisionName) // Changed ID to Name? DB says nvarchar. Let's send Name.
+                    .input('Division', sql.NVarChar, header.divisionName)
                     .input('Process', sql.NVarChar, header.process)
                     .input('Facility', sql.NVarChar, header.facility)
                     .input('Phone_No', sql.NVarChar, header.phone)
@@ -136,6 +136,27 @@ exports.saveReturnRequest = async (req, res) => {
             }
 
             await transaction.commit();
+
+            // === Notification Trigger (V2): RETURN_SENT ===
+            try {
+                const { emitNotification } = require('./Notification.controller');
+                const userName = header.returnBy || header.employeeId || 'Production User';
+                const docNo = header.docNo;
+
+                await emitNotification(req, pool, {
+                    eventType: 'RETURN_SENT',
+                    subject: `🔴 [Action Required] Tooling Return Pending: ${docNo}`,
+                    messageEN: `A tooling return request has been submitted by ${userName} (Production). Please verify the returned items and complete the process.`,
+                    messageTH: `มีการส่งคืน Tooling (Return) เข้ามาในระบบโดย ${userName} (แผนก Production) รบกวนตรวจสอบรายการและดำเนินการรับคืน`,
+                    docNo: docNo,
+                    actionBy: userName,
+                    targetRoles: 'purchase',
+                    ctaRoute: '/purchase/return-history'
+                });
+            } catch (notifErr) {
+                console.error('Notification Error (Return Sent):', notifErr);
+            }
+
             res.status(200).json({ message: 'Saved successfully', docNo: header.docNo });
 
         } catch (err) {
@@ -248,13 +269,34 @@ exports.getNextDocNo = async (req, res) => {
 // 9. Update Return Status
 exports.updateReturnStatus = async (req, res) => {
     try {
-        const { id, status } = req.body; // Expects { id, status }
+        const { id, status, docNo } = req.body; // Expects { id, status, docNo? }
 
         const pool = await poolPromise;
         const result = await pool.request()
             .input('Return_ID', sql.Int, id)
             .input('Status', sql.NVarChar, status)
             .execute('trans.Stored_Update_Return_Status');
+
+        // === Notification Trigger (V2): RETURN_COMPLETED ===
+        if (status && status.toLowerCase() === 'completed') {
+            try {
+                const { emitNotification } = require('./Notification.controller');
+                const refDocNo = docNo || String(id);
+
+                await emitNotification(req, pool, {
+                    eventType: 'RETURN_COMPLETED',
+                    subject: `🟢 [Completed] Tooling Return Confirmed: ${refDocNo}`,
+                    messageEN: `The tooling return for ${refDocNo} has been successfully verified and completed by the Purchase department.`,
+                    messageTH: `การส่งคืน Tooling เลขที่ ${refDocNo} ของคุณ ได้รับการตรวจสอบและยืนยันการรับคืนโดยแผนก Purchase เรียบร้อยแล้ว`,
+                    docNo: refDocNo,
+                    actionBy: 'Purchase',
+                    targetRoles: 'production',
+                    ctaRoute: '/production/return-history'
+                });
+            } catch (notifErr) {
+                console.error('Notification Error (Return Completed):', notifErr);
+            }
+        }
 
         res.status(200).json({ message: 'Update status success' });
 

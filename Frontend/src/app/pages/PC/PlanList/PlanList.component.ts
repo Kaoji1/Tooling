@@ -439,8 +439,8 @@ export class PlanListComponent implements OnInit {
       }
 
 
-      // 2. Filter Date (Ignore calendar filter if in Action Required or Completed mode)
-      const matchDate = (this.filterDate && !isActionRequiredTab && !isCompletedTab) ? this.isDateMatch(item.date, this.filterDate) : true;
+      // 2. Filter Date (Always respect calendar filter)
+      const matchDate = this.filterDate ? this.isDateMatch(item.date, this.filterDate) : true;
 
       if (!matchSubTab || !matchDate) return false;
 
@@ -573,7 +573,7 @@ export class PlanListComponent implements OnInit {
       }
 
       // Date Filter
-      const matchDate = (this.filterDate && !isActionRequiredTab && !isCompletedTab) ? this.isDateMatch(item.date, this.filterDate) : true;
+      const matchDate = this.filterDate ? this.isDateMatch(item.date, this.filterDate) : true;
 
       if (!matchSubTab || !matchDate) return false;
 
@@ -1255,7 +1255,7 @@ export class PlanListComponent implements OnInit {
 
     const path = this.selectedItemForPrint[this.printType]?.replace(/^"|"$/g, '');
     if (!path || path === '-') {
-      Swal.fire('Error', 'File not Found', 'error');
+      Swal.fire('เกิดข้อผิดพลาด', 'ไม่พบไฟล์', 'error');
       this.previewUrl = null;
       this.printType = null; // Reset selection
       return;
@@ -1289,19 +1289,19 @@ export class PlanListComponent implements OnInit {
 
   printPdf() {
     if (!this.selectedItemForPrint || !this.printType) {
-      Swal.fire('Warning', 'Please select a Type.', 'warning');
+      Swal.fire('แจ้งเตือน', 'กรุณาเลือกประเภทที่ต้องการพิมพ์', 'warning');
       return;
     }
 
     const qty = Number(this.printQty);
     if (!qty || qty <= 0) {
-      Swal.fire('Warning', 'Please enter a valid quantity.', 'warning');
+      Swal.fire('แจ้งเตือน', 'กรุณาระบุจำนวนให้ถูกต้อง', 'warning');
       return;
     }
 
     const path = this.selectedItemForPrint[this.printType]?.replace(/^"|"$/g, '');
     if (!path || path === '-') {
-      Swal.fire('Error', 'File not Found', 'error');
+      Swal.fire('เกิดข้อผิดพลาด', 'ไม่พบไฟล์', 'error');
       return;
     }
 

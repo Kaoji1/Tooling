@@ -1535,6 +1535,7 @@
   animation: turtle-leg-swing 1s ease-in-out infinite alternate-reverse;
   transform-origin: center top;
 }
+
 // --- Premium SweetAlert2 Custom Classes ---
 ::ng-deep .swal-premium-popup-minimal {
   border-radius: 16px !important;
@@ -1554,7 +1555,7 @@
   border: none !important;
   box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2) !important;
   transition: all 0.2s !important;
-  
+
   &:hover {
     transform: translateY(-1px) !important;
     box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.3) !important;
@@ -1570,7 +1571,7 @@
   font-weight: 600 !important;
   border: 1px solid #e2e8f0 !important;
   transition: all 0.2s !important;
-  
+
   &:hover {
     background: #e2e8f0 !important;
     color: #1e293b !important;
@@ -1586,11 +1587,10 @@
   border: none !important;
   box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2) !important;
   transition: all 0.2s !important;
-  
+
   &:hover {
     transform: translateY(-1px) !important;
     box-shadow: 0 6px 12px -2px rgba(239, 68, 68, 0.3) !important;
     filter: brightness(1.1) !important;
   }
 }
-
