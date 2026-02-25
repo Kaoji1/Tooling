@@ -19,6 +19,11 @@ export class EditDataModalComponent implements OnInit {
     ngOnInit() {
         // Clone data to avoid direct mutation
         this.editForm = JSON.parse(JSON.stringify(this.data || {}));
+
+        // Format date for native <input type="date">
+        if (this.editForm.date) {
+            this.editForm.date = new Date(this.editForm.date).toISOString().split('T')[0];
+        }
     }
 
     onSave() {

@@ -297,6 +297,7 @@ export class PlanListComponent implements OnInit {
     const hKeyToUuid = new Map<string, string>();
     const latestMap = new Map<string, number>();
     const groupMaxIdMap = new Map<string, number>();
+    const groupDateMap = new Map<string, string>();
 
     // Pass 1: Collect UUIDs for all known metadata patterns
     this.planList.forEach(item => {
@@ -320,9 +321,12 @@ export class PlanListComponent implements OnInit {
     this.planList.forEach(item => {
       const key = itemIdentities.get(item.id)!;
 
-      // 2. Find Max Revision in this group
+      // 2. Find Max Revision and its Date in this group
       const currentMaxRev = latestMap.get(key) || -1;
-      if (item.revision > currentMaxRev) latestMap.set(key, item.revision);
+      if (item.revision > currentMaxRev) {
+        latestMap.set(key, item.revision);
+        groupDateMap.set(key, item.date);
+      }
 
       // 3. Find Max ID in group (for Recency sorting)
       const currentMaxId = groupMaxIdMap.get(key) || -1;
@@ -350,8 +354,9 @@ export class PlanListComponent implements OnInit {
       const isLatest = item.revision === latestMap.get(key);
       item.isLatest = isLatest; // Store for UI
 
-      // Add groupMaxId to item for sorting later
+      // Add group properties for sorting
       item.groupMaxId = groupMaxIdMap.get(key);
+      item.groupDate = groupDateMap.get(key) || item.date;
       item.groupKey = key; // Keep key for post-processing
 
       // --- Division Filtering Logic ---
@@ -453,11 +458,11 @@ export class PlanListComponent implements OnInit {
       return isLatest;
     });
 
-    // เรียงลำดับ: วันที่ -> Recency (ID ล่าสุดของกลุ่ม) -> Revision ล่าสุด
+    // เรียงลำดับ: วันที่รวมของกลุ่ม -> Recency (ID ล่าสุดของกลุ่ม) -> Revision ล่าสุด
     this.filteredPlanList.sort((a, b) => {
-      // 1. Sort by PlanDate (ASC) - Show soonest plans first for Upcoming
-      const [dayA, monthA, yearA] = a.date.split('/').map(Number);
-      const [dayB, monthB, yearB] = b.date.split('/').map(Number);
+      // 1. Sort by Group Date (ASC) - Ensures all revisions of the same group stick together
+      const [dayA, monthA, yearA] = a.groupDate.split('/').map(Number);
+      const [dayB, monthB, yearB] = b.groupDate.split('/').map(Number);
       const dateA = new Date(yearA, monthA - 1, dayA).getTime();
       const dateB = new Date(yearB, monthB - 1, dayB).getTime();
       if (dateA !== dateB) return dateA - dateB;
@@ -466,7 +471,7 @@ export class PlanListComponent implements OnInit {
       // This ensures edited/cancelled items (which have a higher max group ID) jump to the top of the date section.
       const groupMaxA = a.groupMaxId || 0;
       const groupMaxB = b.groupMaxId || 0;
-      if (groupMaxA !== groupMaxB) return groupMaxB - groupMaxA;
+      if (groupMaxA !== groupMaxB) return groupMaxB - groupMaxA; // DESC
 
       // 3. Within same group, show Latest Revision first
       return (b.revision || 0) - (a.revision || 0);
@@ -889,9 +894,16 @@ export class PlanListComponent implements OnInit {
     // 1. Check if ANY changes occurred
     const original = this.editData.originalItem || {};
 
+    // First convert dateObj back to DD/MM/YYYY string to compare with original date
+    let newDateStr = this.editData.date;
+    if (this.editData.dateObj instanceof Date && !isNaN(this.editData.dateObj.getTime())) {
+      const d = this.editData.dateObj;
+      newDateStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+    }
+
     // Compare Plan Fields
     const isPlanChanged =
-      this.editData.date !== original.date ||
+      newDateStr !== original.date ||
       this.editData.mcType !== original.mcType ||
       this.editData.fac !== original.fac ||
       this.editData.process !== original.process ||
@@ -1000,12 +1012,17 @@ export class PlanListComponent implements OnInit {
           }
         });
       } else if (isPlanChanged) {
+        // Build payload using newDateStr formatted as YYYY-MM-DD for the DB
         let finalDate = '';
-        if (this.editData.dateObj instanceof Date) {
+        if (this.editData.dateObj instanceof Date && !isNaN(this.editData.dateObj.getTime())) {
           const d = this.editData.dateObj;
           finalDate = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
         } else if (typeof this.editData.dateObj === 'string') {
           finalDate = this.editData.dateObj;
+        } else {
+          // fallback if dateObj is missing but original text date exists
+          const parts = (this.editData.date || '').split('/');
+          if (parts.length === 3) finalDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
         }
 
         const payload = [{

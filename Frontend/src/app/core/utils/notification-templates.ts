@@ -123,11 +123,11 @@ export const NOTIFICATION_TEMPLATES: Record<string, NotificationTemplate> = {
         eventType: 'RETURN_SENT',
         subject: '🔴 [Action Required] Tooling Return Pending: [Plan_No]',
         messageEN: (v) => interpolate(
-            'A tooling return request has been submitted by [User_Name] (Production). Please verify the returned items and complete the process.',
+            'A tooling return request has been submitted by [User_Name] Production. Please verify the returned items and complete the process.',
             v
         ),
         messageTH: (v) => interpolate(
-            'มีการส่งคืน Tooling (Return) เข้ามาในระบบโดย [User_Name] (แผนก Production) รบกวนตรวจสอบรายการและดำเนินการรับคืน',
+            'มีการกรอกรายการส่งคืน Tooling เข้ามาในระบบโดย [User_Name] จาก Production รบกวนตรวจสอบรายการและดำเนินการต่อด้วยครับ',
             v
         ),
         ctaLabel: 'View Return List',

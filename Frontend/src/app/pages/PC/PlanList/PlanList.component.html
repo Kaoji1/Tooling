@@ -299,7 +299,7 @@
           <div class="form-group">
             <label>Date</label>
             <mat-form-field appearance="outline" style="width: 100%;" subscriptSizing="dynamic">
-              <input matInput [matDatepicker]="picker" [(ngModel)]="editData.dateObj" placeholder="DD/MM/YYYY" readonly
+              <input matInput [matDatepicker]="picker" [(ngModel)]="editData.dateObj" placeholder="DD/MM/YYYY"
                 (click)="picker.open()">
               <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
               <mat-datepicker #picker></mat-datepicker>
@@ -531,11 +531,11 @@
     </div>
     <div class="modal-footer">
       <div style="color: red; font-weight: bold; margin-right: auto; font-size: 0.9em;">
-  กรุณาเตรียมเครื่องพิมพ์ให้พร้อมก่อนกดสั่งพิมพ์<br>
-  <span style="color: #666; font-weight: normal; font-size: 0.85em;">
-    หมายเหตุ: กรุณาระบุจำนวนชุดที่ต้องการพิมพ์เอง ในหน้าต่างตั้งค่าการพิมพ์
-  </span>
-</div>
+        กรุณาเตรียมเครื่องพิมพ์ให้พร้อมก่อนกดสั่งพิมพ์<br>
+        <span style="color: #666; font-weight: normal; font-size: 0.85em;">
+          หมายเหตุ: กรุณาระบุจำนวนชุดที่ต้องการพิมพ์เอง ในหน้าต่างตั้งค่าการพิมพ์
+        </span>
+      </div>
       <button class="btn-cancel" (click)="closePrintModal()">Close</button>
       <button class="btn-save" (click)="printPdf()">Print</button>
     </div>
