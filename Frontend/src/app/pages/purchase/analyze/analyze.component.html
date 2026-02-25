@@ -46,7 +46,11 @@
     <div class="summary-card summary-card--orange">
       <div class="card-icon"><i class="bi bi-tools"></i></div>
       <div class="card-title">Tooling ที่ใช้แพงสุด (Most Expensive)</div>
-      <div class="card-value" [title]="mostExpensiveTool.name">{{ mostExpensiveTool.name }}</div>
+      <div class="card-value"
+        [title]="mostExpensiveTool.name + (mostExpensiveTool.itemName ? ' - ' + mostExpensiveTool.itemName : '')">{{
+        mostExpensiveTool.name }}</div>
+      <div class="card-sub" *ngIf="mostExpensiveTool.itemName"
+        style="opacity:0.85; font-size:0.8rem; margin-bottom:0.2rem;">{{ mostExpensiveTool.itemName }}</div>
       <div class="card-sub">มูลค่ารวม: ฿ {{ mostExpensiveTool.cost | number:'1.2-2' }}</div>
     </div>
 
@@ -193,6 +197,14 @@
             </button>
           </div>
         </div>
+
+        <div class="filter-group">
+          <label>Item Name</label>
+          <select [(ngModel)]="selectedItemNameHoz" (change)="renderHorizontalBarChart()">
+            <option value="ALL">Select All</option>
+            <option *ngFor="let n of uniqueItemNames" [value]="n">{{ n }}</option>
+          </select>
+        </div>
       </div>
 
       <!-- Toolbar -->
@@ -244,6 +256,14 @@
           <div class="filter-pill">
             <label>Top N:</label>
             <input type="number" [(ngModel)]="comboTopN" min="1" max="50" (change)="renderComboChart()">
+          </div>
+
+          <div class="filter-pill">
+            <label>Item Name:</label>
+            <select [(ngModel)]="selectedItemNameCombo" (change)="renderComboChart()">
+              <option value="ALL">Select All</option>
+              <option *ngFor="let n of uniqueCostItemNames" [value]="n">{{ n }}</option>
+            </select>
           </div>
 
 
