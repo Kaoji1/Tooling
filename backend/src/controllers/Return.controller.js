@@ -130,6 +130,7 @@ exports.saveReturnRequest = async (req, res) => {
                     .input('ItemName', sql.NVarChar, item.itemName)
                     .input('Spec', sql.NVarChar, item.spec)
                     .input('QTY', sql.Int, item.qty)
+                    .input('Used_Qty', sql.Int, item.usedQty || 0) // New Parameter
                     .input('Remark', sql.NVarChar, item.remark)
                     .execute('trans.Stored_Save_Return_Request');
             }
@@ -174,7 +175,30 @@ exports.getReturnList = async (req, res) => {
     try {
         const pool = await poolPromise;
         const result = await pool.request()
-            .execute('trans.Stored_Get_Return_List');
+            .query(`
+                SELECT 
+                    Return_ID, 
+                    Doc_No, 
+                    Employee_ID, 
+                    Return_By, 
+                    Division, 
+                    Process, 
+                    Facility, 
+                    Phone_No, 
+                    ItemNo, 
+                    PartNo, 
+                    ItemName, 
+                    Spec, 
+                    QTY, 
+                    Used_Qty, 
+                    Remark, 
+                    Return_Date, 
+                    DateTime_Record, 
+                    DateComplete, 
+                    Status
+                FROM [db_Tooling].[master].[tb_Return_List]
+                ORDER BY Return_ID DESC
+            `);
 
         res.status(200).json(result.recordset);
     } catch (err) {

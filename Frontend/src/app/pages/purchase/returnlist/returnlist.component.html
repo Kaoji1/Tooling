@@ -77,6 +77,12 @@
                             [searchable]="true">
                         </ng-select>
                     </td>
+                    <td class="col-partno">
+                        <ng-select [items]="PartNoList" bindLabel="label" bindValue="value" [(ngModel)]="PartNoFilter_"
+                            (change)="onFilter()" placeholder="All" [clearable]="true" appendTo="body" class="no-expand"
+                            [searchable]="true">
+                        </ng-select>
+                    </td>
                     <td class="col-itemno">
                         <ng-select [items]="ItemNoList" bindLabel="label" bindValue="value" [(ngModel)]="ItemNoFilter_"
                             (change)="onFilter()" placeholder="All" [clearable]="true" appendTo="body" class="no-expand"
@@ -86,11 +92,12 @@
                     <td class="col-itemname"></td> <!-- Item Name -->
                     <td class="col-spec"></td> <!-- Spec -->
                     <td class="col-qty"></td> <!-- QTY -->
+                    <td class="col-usage"></td> <!-- Usage -->
                     <td class="col-phone"></td> <!-- Phone -->
                     <td class="col-confirm"></td> <!-- Confirm -->
                 </tr>
                 <tr class="header-group-row">
-                    <th colspan="14">FOR PURCHASE</th>
+                    <th colspan="16">FOR PURCHASE</th>
                 </tr>
                 <tr class="header-cols">
                     <th class="col-checkbox no-sort">
@@ -109,18 +116,21 @@
                             class="bi bi-arrow-down-up ms-1 small"></i></th>
                     <th class="col-fac" (click)="onSort('Facility')">Fac <i class="bi bi-arrow-down-up ms-1 small"></i>
                     </th>
+                    <th class="col-partno" (click)="onSort('PartNo')">Part No. <i
+                            class="bi bi-arrow-down-up ms-1 small"></i></th>
                     <th class="col-itemno" (click)="onSort('ItemNo')">Item No. <i
                             class="bi bi-arrow-down-up ms-1 small"></i></th>
                     <th class="col-itemname" (click)="onSort('ItemName')">Item Name</th>
                     <th class="col-spec no-sort">Spec</th>
                     <th class="col-qty" (click)="onSort('QTY')">QTY</th>
+                    <th class="col-usage" (click)="onSort('Used_Qty')">Usage ที่ใช้ไป</th>
                     <th class="col-phone no-sort">Phone</th>
                     <th class="col-confirm no-sort">Confirm</th>
                 </tr>
             </thead>
             <tbody>
                 <tr *ngIf="Division_ && displayedReturns.length === 0">
-                    <td colspan="14" class="text-center text-muted" style="padding: 2rem;">No items found. /
+                    <td colspan="16" class="text-center text-muted" style="padding: 2rem;">No items found. /
                         ไม่พบข้อมูล</td>
                 </tr>
                 <tr *ngFor="let item of displayedReturns; let i = index">
@@ -134,10 +144,12 @@
                     <td>{{ item.Division }}</td>
                     <td>{{ item.Process }}</td>
                     <td>{{ item.Facility }}</td>
+                    <td>{{ item.PartNo }}</td>
                     <td>{{ item.ItemNo }}</td>
                     <td>{{ item.ItemName }}</td>
                     <td>{{ item.Spec }}</td>
                     <td class="fw-bold">{{ item.QTY }}</td>
+                    <td class="fw-bold text-danger">{{ item.Used_Qty !== null ? item.Used_Qty : '-' }}</td>
                     <td>{{ item.Phone_No }}</td>
                     <td>
                         <button class="btn-ok" [disabled]="item.Status === 'Complete'"

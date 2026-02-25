@@ -92,11 +92,6 @@ export const routes: Routes = [
         data: { roles: ['purchase', 'view', 'admin'] }
       },
       {
-        path: 'requestlist',
-        loadComponent: () => import('./pages/purchase/requestlist/requestlist.component').then(m => m.RequestlistComponent),
-        data: { roles: ['purchase', 'view', 'admin'] }
-      },
-      {
         path: 'returnlist',
         loadComponent: () => import('./pages/purchase/returnlist/returnlist.component').then(m => m.ReturnlistComponent),
         data: { roles: ['purchase', 'view', 'admin'] }

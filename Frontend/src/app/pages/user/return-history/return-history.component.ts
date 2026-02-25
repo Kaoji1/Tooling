@@ -77,7 +77,8 @@ export class ReturnHistoryComponent implements OnInit {
                     ItemNo: item.ItemNo || '',
                     Doc_No: item.Doc_No || '',
                     Remark: item.Remark || '',
-                    Status: item.Status || 'Pending'
+                    Status: item.Status || 'Pending',
+                    Used_Qty: item.Used_Qty
                 }));
 
                 this.extractDropdowns();
@@ -346,6 +347,7 @@ export class ReturnHistoryComponent implements OnInit {
             'Item Name': item.ItemName,
             'Spec': item.Spec,
             'QTY': item.QTY,
+            'Usage': item.Used_Qty !== null && item.Used_Qty !== undefined ? item.Used_Qty : '',
             'Remark': item.Remark,
             'Status': item.Status
         }));

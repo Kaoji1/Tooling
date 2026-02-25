@@ -681,6 +681,20 @@ exports.importTypeTooling = async (req, res) => {
     }
 };
 
+exports.syncMasterToolingGM = async (req, res) => {
+    try {
+        const pool = await poolPromise;
+        const request = pool.request();
+
+        await request.execute('[db_Tooling].[trans].[Stored_Mapping_All_GM_Tooling_Load]');
+
+        res.status(200).json({ message: "GM Master Tooling synchronized successfully", success: true });
+    } catch (err) {
+        console.error("Sync Master Tooling GM Error:", err);
+        res.status(500).json({ message: "Error syncing GM Master Tooling", error: err.message });
+    }
+};
+
 exports.importMasterAllPMC = async (req, res) => {
     try {
         const items = req.body;

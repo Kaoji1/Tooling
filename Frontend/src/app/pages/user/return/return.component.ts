@@ -23,8 +23,9 @@ interface ReturnItem {
   itemName: string;
   spec: string;
   qty: number;
+  usedQty: number | null; // Changed to allow null
   remark: string;
-  selected?: boolean; // New property for checkbox
+  selected?: boolean;
 }
 
 
@@ -277,6 +278,7 @@ export class ReturnComponent implements OnInit {
       itemName: '',
       spec: '',
       qty: 0,
+      usedQty: null, // Start empty
       remark: ''
     });
     this.initTableInputControl(this.returnItems.length - 1);
@@ -330,11 +332,12 @@ export class ReturnComponent implements OnInit {
             const lastPartNo = this.returnItems.length > 0 ? this.returnItems[this.returnItems.length - 1].partNo : '';
 
             const newItem: ReturnItem = {
-              partNo: lastPartNo, // Auto-carry PartNo
+              partNo: lastPartNo,
               itemNo: data.ItemNo,
               itemName: data.ItemName,
               spec: data.SPEC,
-              qty: 1, // Default Qty 1 for scan
+              qty: 1,
+              usedQty: null, // Start empty
               remark: ''
             };
 
@@ -389,6 +392,7 @@ export class ReturnComponent implements OnInit {
       itemName: item.ItemName,
       spec: item.SPEC,
       qty: 1,
+      usedQty: null, // Start empty
       remark: ''
     };
 

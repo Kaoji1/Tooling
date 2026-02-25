@@ -11,6 +11,7 @@ router.post('/master-ph/import-type-tooling', upload.single('file'), controller.
 router.post('/master-ph/import-master-all-pmc', upload.single('file'), controller.importMasterAllPMC);
 router.post('/master-ph/import-master-tooling-pmc', controller.importMasterToolingPMC);
 // router.post('/master-ph/import-master-tooling-gm', upload.single('file'), controller.importMasterToolingGM); // Disabled per user request
+router.post('/master-ph/sync-gm', controller.syncMasterToolingGM);
 router.post('/master-ph/import-ireport', upload.single('file'), controller.importIReport);
 
 module.exports = router;

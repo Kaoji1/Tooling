@@ -182,6 +182,9 @@
                     <th style="width: 80px;" class="text-center column-header">
                         <div class="header-flex justify-content-center">QTY</div>
                     </th>
+                    <th style="width: 100px;" class="text-center column-header">
+                        <div class="header-flex justify-content-center">USAGE ที่ใช้ไป</div>
+                    </th>
                     <th class="text-start column-header">
                         <div class="header-flex">REMARK</div>
                     </th>
@@ -242,6 +245,8 @@
                     <td class="text-start primary-data spec-truncate" [title]="item.Spec || ''">{{ item.Spec || '-' }}
                     </td>
                     <td class="text-center"><span class="badge bg-light text-dark border">{{ item.QTY }}</span></td>
+                    <td class="text-center"><span class="badge bg-light text-danger border">{{ item.Used_Qty !== null &&
+                            item.Used_Qty !== undefined ? item.Used_Qty : '-' }}</span></td>
                     <td class="text-start secondary-data truncate-cell" [title]="item.Remark || ''">{{ item.Remark ||
                         '-' }}</td>
                     <td class="text-start secondary-data">{{ item.Return_By }}</td>
