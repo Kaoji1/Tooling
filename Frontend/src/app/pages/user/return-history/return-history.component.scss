@@ -379,6 +379,7 @@ $radius: 12px;
     text-transform: capitalize;
     display: inline-block;
 
+    &.pending,
     &.waiting {
         background-color: #fff7ed; // Soft Orange
         color: #9a3412;
