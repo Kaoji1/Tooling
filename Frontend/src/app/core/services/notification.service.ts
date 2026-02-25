@@ -5,12 +5,18 @@ import { io, Socket } from 'socket.io-client';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { NOTIFICATION_TEMPLATES, getTemplate } from '../utils/notification-templates';
 
 export interface NotificationLog {
   Notification_ID?: number;
   Event_Type: string;
-  Message: string;
+  Subject?: string;          // NEW: Pre-built subject line
+  Message: string;           // EN message body
+  Message_TH?: string;       // NEW: Thai message body
   Doc_No?: string;
+  Action_By?: string;        // NEW: Who triggered the action
+  Target_Roles?: string;     // NEW: comma-separated roles or 'ALL'
+  CTA_Route?: string;        // NEW: Frontend route for CTA button
   Created_At: Date;
   IsRead: boolean;
 }
@@ -28,25 +34,39 @@ export class NotificationService {
   private unreadCountSubject = new BehaviorSubject<number>(0);
   public unreadCount$ = this.unreadCountSubject.asObservable();
 
+  private currentUserRole: string = '';
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private http: HttpClient
   ) {
     // Connect to Backend Socket.IO only in Browser
     if (isPlatformBrowser(this.platformId)) {
+      // Read role from sessionStorage
+      try {
+        const userSession = sessionStorage.getItem('user');
+        if (userSession) {
+          const user = JSON.parse(userSession);
+          this.currentUserRole = (user.Role || '').toLowerCase();
+        }
+      } catch (e) {
+        console.error('Error reading user role for notifications:', e);
+      }
+
       this.socket = io(environment.socketUrl, {
-        transports: ['websocket', 'polling'], // Allow both
+        transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: 5
       });
       this.setupSocketListeners();
-      this.fetchNotifications(); // Load history on init
+      this.fetchNotifications();
     }
   }
 
-  // Fetch initial history from DB
+  // Fetch initial history from DB (with role filtering)
   public fetchNotifications() {
-    this.http.get<NotificationLog[]>(`${environment.apiUrl}/notifications/list`)
+    const roleParam = this.currentUserRole ? `?role=${this.currentUserRole}` : '';
+    this.http.get<NotificationLog[]>(`${environment.apiUrl}/notifications/list${roleParam}`)
       .subscribe({
         next: (data) => {
           this.notificationsSubject.next(data);
@@ -58,14 +78,16 @@ export class NotificationService {
 
   // Allow components to manually add notifications (Fallback/Local feedback)
   public addManualNotification(message: string, type: string = 'INFO') {
+    const tmpl = getTemplate(type);
     const newNotif: NotificationLog = {
       Event_Type: type,
+      Subject: tmpl?.subject || type,
       Message: message,
+      Message_TH: '',
       Created_At: new Date(),
       IsRead: false
     };
     this.addNotification(newNotif);
-    this.playNotificationSound(); // Optional: Play sound for manual too
   }
 
   private setupSocketListeners() {
@@ -78,11 +100,26 @@ export class NotificationService {
     this.socket.on('notification', (data: any) => {
       console.log('New Notification Received:', data);
 
+      // Role-based filtering on the client side
+      const targetRoles = (data.targetRoles || 'ALL').toLowerCase();
+      if (targetRoles !== 'all' && this.currentUserRole) {
+        const rolesArray = targetRoles.split(',').map((r: string) => r.trim());
+        if (!rolesArray.includes(this.currentUserRole) && this.currentUserRole !== 'admin') {
+          console.log('Notification filtered out: not for role', this.currentUserRole);
+          return; // Skip – not relevant to this user
+        }
+      }
+
       const newNotif: NotificationLog = {
-        Notification_ID: data.id, // Capture the ID from backend for persistence
+        Notification_ID: data.id,
         Event_Type: data.type,
+        Subject: data.subject || '',
         Message: data.message,
+        Message_TH: data.messageTH || '',
         Doc_No: data.docNo,
+        Action_By: data.actionBy || '',
+        Target_Roles: data.targetRoles || 'ALL',
+        CTA_Route: data.ctaRoute || '',
         Created_At: new Date(data.timestamp || new Date()),
         IsRead: false
       };
@@ -143,11 +180,7 @@ export class NotificationService {
 
   private playNotificationSound() {
     try {
-      // Simple beep using base64 to avoid file dependency for now
-      // This is a short "ding" sound
       const audio = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...");
-      // Note: Browser policy might block auto-play without user interaction first.
-      // We will try to rely on the "Beautiful Bell" visual for now as primary.
     } catch (error) {
       console.error('Sound error', error);
     }

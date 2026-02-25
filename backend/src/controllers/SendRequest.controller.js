@@ -136,36 +136,26 @@ exports.Send_Request = async (req, res) => {
       });
     }
 
-    // === Notification Trigger ===
+    // === Notification Trigger (V2) ===
     try {
-      const io = req.app.get('socketio');
+      const { emitNotification } = require('./Notification.controller');
       const firstItem = items[0];
-      const notifyMsg = `New Request: ${firstItem.Doc_no} (${firstItem.Division}) - ${items.length} Items`;
+      const userName = firstItem.Employee_Name || 'System';
+      const docNo = firstItem.Doc_no;
+      const itemCount = String(items.length);
 
-      // 1. Save to DB
-      const notifyResult = await pool.request()
-        .input('Event_Type', sql.NVarChar, 'NEW_REQUEST')
-        .input('Message', sql.NVarChar, notifyMsg)
-        .input('Doc_No', sql.NVarChar, firstItem.Doc_no)
-        .input('Action_By', sql.NVarChar, firstItem.Employee_Name || 'System')
-        .execute('trans.Stored_Insert_Notification_Log');
-
-      const notificationId = notifyResult.recordset[0]?.Notification_ID;
-
-      // 2. Emit Real-time Event
-      if (io) {
-        io.emit('notification', {
-          id: notificationId,
-          type: 'NEW_REQUEST',
-          message: notifyMsg,
-          docNo: firstItem.Doc_no,
-          timestamp: new Date()
-        });
-        console.log('socket.io emit notification success with ID:', notificationId);
-      }
+      await emitNotification(req, pool, {
+        eventType: 'REQUEST_SENT',
+        subject: `🔴 [Action Required] New Tooling Request: ${docNo}`,
+        messageEN: `A new tooling request has been submitted by ${userName} (Production). Total items: ${itemCount}. Please review and proceed with the confirmation.`,
+        messageTH: `มีคำขอเบิก Tooling ใหม่ส่งมาจาก ${userName} (แผนก Production) จำนวน ${itemCount} รายการ รบกวนตรวจสอบและดำเนินการยืนยันคำขอ`,
+        docNo: docNo,
+        actionBy: userName,
+        targetRoles: 'purchase',
+        ctaRoute: '/purchase/request-list'
+      });
     } catch (notifError) {
       console.error('Notification Trigger Failed:', notifError);
-      // Don't block the main response
     }
 
     res.status(200).json({ message: " All rows have been successfully saved." });

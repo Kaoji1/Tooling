@@ -170,48 +170,47 @@ exports.insertPCPlan = async (req, res) => {
             .input('TargetDate', sql.Date, new Date(sampleDate))
             .execute('trans.Stored_PCPlan_Insert_All_Snapshot_Excel');
 
-        // === Notification Trigger ===
+        // === Notification Trigger (V2) ===
         try {
-            const io = req.app.get('socketio');
+            const { emitNotification } = require('./Notification.controller');
             const firstItem = items[0];
             const isCancellation = firstItem.planStatus === 'Cancelled';
             const isRevision = firstItem.revision > 0;
-
-            let eventType = 'NEW_PLAN';
-            let notifyMsg = `Batch: <strong>${batchId}</strong> | Total: <strong>${items.length} Items</strong> imported by <em>User</em>.`;
-            let docRef = batchId;
+            const userName = firstItem.employeeId || 'PC User';
 
             if (isCancellation) {
-                eventType = 'CANCEL_PLAN';
-                notifyMsg = `Job: <strong>${firstItem.groupId}</strong> has been removed. Reason: <span class="italic">${firstItem.comment || 'N/A'}</span>`;
-                docRef = firstItem.groupId;
-            } else if (isRevision) {
-                eventType = 'PLAN_REVISION';
-                // Note: Simplified revision message as old values aren't easily accessible here without a DB lookup
-                notifyMsg = `Job: <strong>${firstItem.groupId}</strong> | Plan updated to Revision <strong>${firstItem.revision}</strong>. <span class="text-slate-600">Comment: ${firstItem.comment || '-'}</span>`;
-                docRef = firstItem.groupId;
-            }
-
-            // 1. Save to DB
-            const notifyResult = await pool.request()
-                .input('Event_Type', sql.NVarChar, eventType)
-                .input('Message', sql.NVarChar, notifyMsg)
-                .input('Doc_No', sql.NVarChar, docRef)
-                .input('Action_By', sql.NVarChar, 'PC')
-                .execute('trans.Stored_Insert_Notification_Log');
-
-            const notificationId = notifyResult.recordset[0]?.Notification_ID;
-
-            // 2. Emit Socket Event
-            if (io) {
-                io.emit('notification', {
-                    id: notificationId,
-                    type: eventType,
-                    message: notifyMsg,
-                    docNo: docRef,
-                    timestamp: new Date()
+                await emitNotification(req, pool, {
+                    eventType: 'CANCEL_PLAN',
+                    subject: `⚫ [Cancelled] Plan Deleted/Cancelled: ${firstItem.groupId}`,
+                    messageEN: `The plan ${firstItem.groupId} has been cancelled or deleted from the system by ${userName}.`,
+                    messageTH: `แผนงานเลขที่ ${firstItem.groupId} ได้ถูกยกเลิกหรือลบออกจากระบบโดย ${userName}`,
+                    docNo: firstItem.groupId,
+                    actionBy: userName,
+                    targetRoles: 'ALL',
+                    ctaRoute: '/pc/plan-list'
                 });
-                console.log(`[Notification] Emitted: ${eventType} with ID: ${notificationId}`);
+            } else if (isRevision) {
+                await emitNotification(req, pool, {
+                    eventType: 'PLAN_REVISION',
+                    subject: `🔵 [FYI] Plan Revised: ${firstItem.groupId}`,
+                    messageEN: `Plan ${firstItem.groupId} has been updated to Revision ${firstItem.revision}. Comment: ${firstItem.comment || '-'}`,
+                    messageTH: `แผนงาน ${firstItem.groupId} ได้รับการแก้ไขเป็น Revision ${firstItem.revision} หมายเหตุ: ${firstItem.comment || '-'}`,
+                    docNo: firstItem.groupId,
+                    actionBy: userName,
+                    targetRoles: 'ALL',
+                    ctaRoute: '/pc/plan-list'
+                });
+            } else {
+                await emitNotification(req, pool, {
+                    eventType: 'NEW_PLAN',
+                    subject: `🔵 [FYI] New Initial Plan Imported: ${batchId}`,
+                    messageEN: `A new PC Plan ${batchId} has been imported into the system by the PC department. Total items: ${items.length}.`,
+                    messageTH: `แผนงานใหม่ เลขที่ ${batchId} จำนวน ${items.length} รายการ ได้ถูกนำเข้าสู่ระบบโดยแผนก PC`,
+                    docNo: batchId,
+                    actionBy: 'PC',
+                    targetRoles: 'ALL',
+                    ctaRoute: '/pc/plan-list'
+                });
             }
         } catch (notifyErr) {
             console.error('Notification Error:', notifyErr);
@@ -291,29 +290,19 @@ exports.cancelPCPlan = async (req, res) => {
             return res.status(404).send({ message: "No plan found with the given ID." });
         }
 
-        // === Notification Trigger ===
+        // === Notification Trigger (V2) ===
         try {
-            const io = req.app.get('socketio');
-            const notifyMsg = `Plan Cancelled: ID ${id}`;
-
-            const notifyResult = await pool.request()
-                .input('Event_Type', sql.NVarChar, 'CANCEL_PLAN')
-                .input('Message', sql.NVarChar, notifyMsg)
-                .input('Doc_No', sql.NVarChar, String(id))
-                .input('Action_By', sql.NVarChar, 'PC')
-                .execute('trans.Stored_Insert_Notification_Log');
-
-            const notificationId = notifyResult.recordset[0]?.Notification_ID;
-
-            if (io) {
-                io.emit('notification', {
-                    id: notificationId,
-                    type: 'CANCEL_PLAN',
-                    message: notifyMsg,
-                    docNo: String(id),
-                    timestamp: new Date()
-                });
-            }
+            const { emitNotification } = require('./Notification.controller');
+            await emitNotification(req, pool, {
+                eventType: 'CANCEL_PLAN',
+                subject: `⚫ [Cancelled] Plan Deleted/Cancelled: ${id}`,
+                messageEN: `The plan ${id} has been cancelled from the system by PC User.`,
+                messageTH: `แผนงานเลขที่ ${id} ได้ถูกยกเลิกจากระบบโดย PC User`,
+                docNo: String(id),
+                actionBy: 'PC',
+                targetRoles: 'ALL',
+                ctaRoute: '/pc/plan-list'
+            });
         } catch (e) { console.error('Notify Error:', e); }
 
         res.status(200).json({ message: "Plan cancelled successfully", id, affectedRows });
@@ -379,29 +368,19 @@ exports.deletePCPlanGroup = async (req, res) => {
 
         console.log(`[deletePCPlanGroup] GroupId: ${groupId}, Deleted Rows: ${result.rowsAffected[0]}`);
 
-        // === Notification Trigger ===
+        // === Notification Trigger (V2) ===
         try {
-            const io = req.app.get('socketio');
-            const notifyMsg = `Job: <strong>${groupId}</strong> has been removed. Reason: <span class="italic text-red-500">Deleted by authorized user</span>`;
-
-            const notifyResult = await pool.request()
-                .input('Event_Type', sql.NVarChar, 'CANCEL_PLAN')
-                .input('Message', sql.NVarChar, notifyMsg)
-                .input('Doc_No', sql.NVarChar, groupId)
-                .input('Action_By', sql.NVarChar, 'PC')
-                .execute('trans.Stored_Insert_Notification_Log');
-
-            const notificationId = notifyResult.recordset[0]?.Notification_ID;
-
-            if (io) {
-                io.emit('notification', {
-                    id: notificationId,
-                    type: 'CANCEL_PLAN',
-                    message: notifyMsg,
-                    docNo: groupId,
-                    timestamp: new Date()
-                });
-            }
+            const { emitNotification } = require('./Notification.controller');
+            await emitNotification(req, pool, {
+                eventType: 'CANCEL_PLAN',
+                subject: `⚫ [Cancelled] Plan Deleted/Cancelled: ${groupId}`,
+                messageEN: `The plan ${groupId} has been cancelled or deleted from the system by an authorized user.`,
+                messageTH: `แผนงานเลขที่ ${groupId} ได้ถูกยกเลิกหรือลบออกจากระบบโดยผู้มีสิทธิ์`,
+                docNo: groupId,
+                actionBy: 'PC',
+                targetRoles: 'ALL',
+                ctaRoute: '/pc/plan-list'
+            });
         } catch (e) { console.error('Notify Error:', e); }
 
         res.status(200).json({
@@ -452,44 +431,31 @@ exports.updatePaths = async (req, res) => {
         const affectedRows = result.rowsAffected[0] || 0;
         console.log(`[updatePaths] GroupId: ${groupId}, Affected Rows: ${affectedRows}`);
 
-        // === Notification Trigger (Only if rows actually updated) ===
+        // === Notification Trigger (V2 - Only if rows actually updated) ===
         if (affectedRows > 0) {
             try {
-                const io = req.app.get('socketio');
+                const { emitNotification } = require('./Notification.controller');
                 let attachedFiles = [];
                 let deptName = 'Engineering';
-                let statusMsg = '<span class="text-blue-600">Wait QC</span>';
 
                 if (pathDwg && pathDwg !== '-') attachedFiles.push('Drawing');
                 if (pathLayout && pathLayout !== '-') attachedFiles.push('Layout');
                 if (iiqc && iiqc !== '-') {
                     attachedFiles.push('IIQC Table');
                     deptName = 'QC';
-                    statusMsg = '<span class="text-green-600">Ready</span>';
                 }
 
                 if (attachedFiles.length > 0) {
-                    const notifyHeader = `Document Attached (${deptName})`;
-                    const notifyMsg = `Attached <strong>${attachedFiles.join(' & ')}</strong> for Job: <strong>${groupId}</strong>. Status: ${statusMsg}`;
-
-                    const notifyResult = await pool.request()
-                        .input('Event_Type', sql.NVarChar, 'UPDATE_PLAN')
-                        .input('Message', sql.NVarChar, notifyMsg)
-                        .input('Doc_No', sql.NVarChar, groupId)
-                        .input('Action_By', sql.NVarChar, deptName)
-                        .execute('trans.Stored_Insert_Notification_Log');
-
-                    const notificationId = notifyResult.recordset[0]?.Notification_ID;
-
-                    if (io) {
-                        io.emit('notification', {
-                            id: notificationId,
-                            type: 'UPDATE_PLAN',
-                            message: notifyMsg,
-                            docNo: groupId,
-                            timestamp: new Date()
-                        });
-                    }
+                    await emitNotification(req, pool, {
+                        eventType: 'UPDATE_PLAN',
+                        subject: `🔵 [FYI] Document Attached for Plan: ${groupId}`,
+                        messageEN: `New documents (${attachedFiles.join(' & ')}) have been attached to plan ${groupId} by ${deptName}.`,
+                        messageTH: `มีการแนบไฟล์เอกสารใหม่ (${attachedFiles.join(' & ')}) สำหรับแผนงาน ${groupId} โดย ${deptName}`,
+                        docNo: groupId,
+                        actionBy: deptName,
+                        targetRoles: 'ALL',
+                        ctaRoute: '/pc/plan-list'
+                    });
                 }
             } catch (e) { console.error('Notify Error:', e); }
         }
