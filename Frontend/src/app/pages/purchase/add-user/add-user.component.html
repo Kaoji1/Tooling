@@ -29,15 +29,14 @@
               <th class="py-3">Username</th>
               <th class="py-3">Password</th>
               <th class="py-3">Email</th>
-              <th class="py-3 text-center">Edit</th>
-              <th class="py-3 pe-3 text-center rounded-top-end">Delete</th>
+              <th class="py-3 pe-3 text-center rounded-top-end">Edit</th>
             </tr>
           </thead>
           <tbody>
             <ng-container *ngFor="let group of groupedEmployees | keyvalue">
               <!-- Group Header -->
               <tr class="table-light">
-                <td colspan="9" class="py-2 px-3 fw-bold text-muted text-uppercase small">
+                <td colspan="8" class="py-2 px-3 fw-bold text-muted text-uppercase small">
                   <i class="bi bi-people-fill me-2"></i> Role: {{ group.key }}
                 </td>
               </tr>
@@ -106,19 +105,11 @@
                     </div>
                   </ng-template>
                 </td>
-
-                <!-- Delete Action -->
-                <td class="pe-3 text-center">
-                  <button class="btn btn-outline-danger btn-sm border-0 rounded-circle"
-                    (click)="deleteEmployee(emp.Employee_ID)" [disabled]="isViewer()" title="Delete">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
               </tr>
             </ng-container>
 
             <tr *ngIf="!groupedEmployees || (groupedEmployees | keyvalue)?.length === 0">
-              <td colspan="9" class="text-center py-5 text-muted">
+              <td colspan="8" class="text-center py-5 text-muted">
                 <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                 No employees found.
               </td>
@@ -159,7 +150,6 @@
                 <div class="col">
                   <label for="EmployeeId" class="form-label">Employee ID</label>
                   <input type="text" id="EmployeeId" class="form-control" name="EmployeeId" [(ngModel)]="EmployeeId_" />
-                  <small class="form-text text-muted">Employee ID such as 1001</small>
                 </div>
                 <div class="col">
                   <label for="EmployeeName" class="form-label">Employee Name</label>
@@ -169,13 +159,8 @@
                 </div>
               </div>
 
-              <!-- Username & Password -->
+              <!-- Password -->
               <div class="mb-3 row">
-                <div class="col">
-                  <label for="Username" class="form-label">Username</label>
-                  <input type="text" id="Username" class="form-control" name="Username" [(ngModel)]="Username_" />
-                  <small class="form-text text-muted">Login Username</small>
-                </div>
                 <div class="col">
                   <label for="Password" class="form-label">Password</label>
                   <input type="text" id="Password" class="form-control" name="Password" [(ngModel)]="Password_" />
@@ -188,7 +173,7 @@
                 <div class="col">
                   <label for="Email" class="form-label">Email</label>
                   <input type="email" id="Email" class="form-control" name="Email" [(ngModel)]="Email_" />
-                  <small class="form-text text-muted">Contact email</small>
+                  <small class="form-text text-muted">Contact email (Optional)</small>
                 </div>
               </div>
             </form>

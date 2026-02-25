@@ -337,8 +337,8 @@ export class ReturnHistoryComponent implements OnInit {
         const exportData = dataToExport.map((item, index) => ({
             'No.': index + 1,
             'Doc No': item.Doc_No,
-            'Return Date': item.Return_Date || item.DateTime_Record,
-            'Date Complete': item.DateComplete,
+            'Return Date': item.Return_Date ? new Date(item.Return_Date).toLocaleDateString('en-GB') : (item.DateTime_Record ? new Date(item.DateTime_Record).toLocaleDateString('en-GB') : ''),
+            'Date Complete': item.DateComplete ? new Date(item.DateComplete).toLocaleDateString('en-GB') : '',
             'Employee ID': item.Employee_ID,
             'Return By': item.Return_By,
             'Division': item.Division,

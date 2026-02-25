@@ -111,7 +111,7 @@ export class AddUserComponent implements OnInit, OnDestroy {
 
   // เพิ่มพนักงาน
   addEmployee() {
-    if (!this.EmployeeId_ || !this.EmployeeName_ || !this.Username_ || !this.Password_ || !this.Role_ || !this.Email_) {
+    if (!this.EmployeeId_ || !this.EmployeeName_ || !this.Password_ || !this.Role_) {
       Swal.fire({ icon: 'warning', title: 'Please fill out the information completely' });
       return;
     }
@@ -119,7 +119,7 @@ export class AddUserComponent implements OnInit, OnDestroy {
     const employeeData = {
       Employee_ID: this.EmployeeId_,
       Employee_Name: this.EmployeeName_,
-      Username: this.Username_,
+      Username: this.EmployeeId_, // Username = Employee ID
       Password: this.Password_,
       Role: this.Role_,
       Email: this.Email_

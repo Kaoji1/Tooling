@@ -62,6 +62,16 @@ export class RequestHistoryComponent implements OnInit {
                 this.historyList = data;
                 this.extractDropdowns();
                 this.filteredList = [...this.historyList];
+
+                // Set initial sort to newest first
+                this.sortKey = 'DateTime_Record';
+                this.sortAsc = false;
+                this.filteredList.sort((a, b) => {
+                    const dateA = new Date(a.DateTime_Record ?? '').getTime();
+                    const dateB = new Date(b.DateTime_Record ?? '').getTime();
+                    return dateB - dateA;
+                });
+
                 this.updatePaginatedList();
                 this.isLoading = false;
             },

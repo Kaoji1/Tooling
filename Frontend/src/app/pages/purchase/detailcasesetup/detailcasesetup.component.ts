@@ -92,16 +92,16 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit() {
+        if (!isPlatformBrowser(this.platformId)) return;
+
         this.fetchData();
-        // Auto-refresh every 10 seconds
-        if (isPlatformBrowser(this.platformId)) {
-            this.refreshSubscription = interval(30000).subscribe(() => {
-                // Only fetch if no unsaved changes (editing, selected, or dirty)
-                if (!this.hasUnsavedChanges()) {
-                    this.fetchData(true); // Pass true to indicate background refresh
-                }
-            });
-        }
+        // Auto-refresh every 30 seconds
+        this.refreshSubscription = interval(30000).subscribe(() => {
+            // Only fetch if no unsaved changes (editing, selected, or dirty)
+            if (!this.hasUnsavedChanges()) {
+                this.fetchData(true); // Pass true to indicate background refresh
+            }
+        });
     }
 
     ngOnDestroy() {

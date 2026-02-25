@@ -28,7 +28,14 @@
                 </div>
             </div>
 
-            <div class="button-clear">
+            <div class="status-filter ms-3" style="width: 250px;">
+                <ng-select class="premium-select" [items]="statusList" bindLabel="label" bindValue="value"
+                    [(ngModel)]="selectedStatuses" [multiple]="true" [closeOnSelect]="false"
+                    placeholder="Filter by Status" (change)="onFilter()">
+                </ng-select>
+            </div>
+
+            <div class="button-clear ms-3">
                 <button class="btn btn-clear" type="button" (click)="clearAll()">
                     CLEAR ALL <i class="bi bi-trash3"></i>
                 </button>
@@ -70,16 +77,6 @@
                             <span (click)="onSort('Status')" class="sortable">
                                 STATUS <span *ngIf="sortKey === 'Status'">{{ sortAsc ? '↑' : '↓' }}</span>
                             </span>
-                            <div class="filter-wrapper" (click)="$event.stopPropagation()">
-                                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedStatuses.length > 0"
-                                    (click)="toggleFilter('Status')"></i>
-                                <div class="filter-dropdown" *ngIf="activeFilter === 'Status'">
-                                    <ng-select class="premium-select" [items]="statusList" bindLabel="label"
-                                        bindValue="value" [(ngModel)]="selectedStatuses" [multiple]="true"
-                                        [closeOnSelect]="false" placeholder="Select Status"
-                                        (change)="onFilter()"></ng-select>
-                                </div>
-                            </div>
                         </div>
                     </th>
                     <th class="text-start column-header">
@@ -145,7 +142,7 @@
                                 <div class="filter-dropdown" *ngIf="activeFilter === 'Division'">
                                     <ng-select class="premium-select" [items]="divisionList" bindLabel="label"
                                         bindValue="value" [(ngModel)]="selectedDivisions" [multiple]="true"
-                                        [closeOnSelect]="false" placeholder="Select Div"
+                                        [closeOnSelect]="false" placeholder="Select Div" appendTo="body"
                                         (change)="onFilter()"></ng-select>
                                 </div>
                             </div>
@@ -162,7 +159,7 @@
                                 <div class="filter-dropdown" *ngIf="activeFilter === 'PartNo'">
                                     <ng-select class="premium-select" [items]="partNoList" bindLabel="label"
                                         bindValue="value" [(ngModel)]="selectedPartNos" [multiple]="true"
-                                        [closeOnSelect]="false" placeholder="Select PartNo"
+                                        [closeOnSelect]="false" placeholder="Select PartNo" appendTo="body"
                                         (change)="onFilter()"></ng-select>
                                 </div>
                             </div>
@@ -177,7 +174,7 @@
                                 <div class="filter-dropdown" *ngIf="activeFilter === 'Process'">
                                     <ng-select class="premium-select" [items]="processList" bindLabel="label"
                                         bindValue="value" [(ngModel)]="selectedProcesses" [multiple]="true"
-                                        [closeOnSelect]="false" placeholder="Select Process"
+                                        [closeOnSelect]="false" placeholder="Select Process" appendTo="body"
                                         (change)="onFilter()"></ng-select>
                                 </div>
                             </div>
@@ -206,7 +203,7 @@
                                 <div class="filter-dropdown" *ngIf="activeFilter === 'ItemNo'">
                                     <ng-select class="premium-select" [items]="itemNoList" bindLabel="label"
                                         bindValue="value" [(ngModel)]="selectedItemNos" [multiple]="true"
-                                        [closeOnSelect]="false" placeholder="Select ItemNo"
+                                        [closeOnSelect]="false" placeholder="Select ItemNo" appendTo="body"
                                         (change)="onFilter()"></ng-select>
                                 </div>
                             </div>
