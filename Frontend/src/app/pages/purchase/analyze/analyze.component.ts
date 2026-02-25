@@ -76,6 +76,17 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
   uniqueprocess: string[] = [];
   selectedprocesshoz: string = 'ALL';
 
+  // Item Name filter for Most Item Select chart
+  uniqueItemNames: string[] = [];
+  selectedItemNameHoz: string = 'ALL';
+
+  // Item Name filter for Cost Analyze chart
+  uniqueCostItemNames: string[] = [];
+  selectedItemNameCombo: string = 'ALL';
+
+  // Map SPEC -> ItemName for display in chart labels
+  specToItemNameMap: { [spec: string]: string } = {};
+
   public pieChart: Chart | null = null;
   public horizontalBarChart: Chart | null = null;
   public stackedBarChart: Chart | null = null; // ถ้ามี stacked bar
@@ -93,7 +104,7 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
 
   // Summary Cards
   public totalCostTHB: number = 0;
-  public mostExpensiveTool: { name: string; cost: number } = { name: '-', cost: 0 };
+  public mostExpensiveTool: { name: string; itemName: string; cost: number } = { name: '-', itemName: '', cost: 0 };
   public mostUsedCase: { name: string; count: number } = { name: '-', count: 0 };
 
   // Cost Stacked Bar
@@ -203,6 +214,18 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
         this.data.forEach(item => processSet.add(item.Process || 'อื่นๆ'));
         this.Process = Array.from(processSet);
 
+        // Build SPEC -> ItemName map and unique item names for filter
+        const itemNameSet = new Set<string>();
+        this.data.forEach(item => {
+          const spec = item.SPEC || '';
+          const name = item.ItemName || item.Description || '';
+          if (spec && name) {
+            this.specToItemNameMap[spec] = name;
+          }
+          if (name) itemNameSet.add(name);
+        });
+        this.uniqueItemNames = Array.from(itemNameSet).sort();
+
         // ค่า default dropdown
         if (!this.selectedDivision) this.selectedDivision = 'ALL';
 
@@ -226,11 +249,24 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
       next: (response: any[]) => {
         this.costData = response;
         this.loading = false;
-        this.calculateSummaryCards(); // คำนวณข้อมูลสำหรับ Summary Cards
+
+        // Build SPEC -> ItemName map also from cost data
+        const costItemNameSet = new Set<string>();
+        this.costData.forEach(item => {
+          const spec = item.SPEC || '';
+          const name = item.ItemName || item.Description || '';
+          if (spec && name) {
+            this.specToItemNameMap[spec] = name;
+          }
+          if (name) costItemNameSet.add(name);
+        });
+        this.uniqueCostItemNames = Array.from(costItemNameSet).sort();
+
+        this.calculateSummaryCards();
         this.renderComboChart();
         this.renderCostStackedBar();
         this.computeLifecycleData();
-        this.renderTrendChart(); // วาด Trend Analysis
+        this.renderTrendChart();
       },
       error: (err) => {
         console.error("Error fetching cost analyze data:", err);
@@ -396,7 +432,8 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
         maxTool = spec;
       }
     }
-    this.mostExpensiveTool = { name: maxTool, cost: maxCost };
+    const maxToolItemName = this.specToItemNameMap[maxTool] || '';
+    this.mostExpensiveTool = { name: maxTool, itemName: maxToolItemName, cost: maxCost };
 
     // หา Case ที่ถูกใช้เยอะที่สุด (QTY)
     let maxQty = 0;
@@ -618,17 +655,26 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
     if (!canvas || !this.costData?.length) return;
 
     // 1. จัดกลุ่มข้อมูลตาม SPEC (หรือ ItemNo) เพื่อรวม QTY และ Total_Price_THB
-    const aggregatedData: { [spec: string]: { qty: number, totalPrice: number } } = {};
+    const aggregatedData: { [spec: string]: { qty: number, totalPrice: number, unitPrice: number } } = {};
 
-    const filteredData = this.getFilteredCostData();
+    const filteredData = this.getFilteredCostData().filter(item => {
+      if (this.selectedItemNameCombo === 'ALL') return true;
+      const name = item.ItemName || item.Description || '';
+      return name === this.selectedItemNameCombo;
+    });
 
     filteredData.forEach(item => {
       const spec = item.SPEC || 'ไม่ระบุ';
       const qty = Number(item.QTY) || 0;
       const price = Number(item.Total_Price_THB) || 0;
+      const unitPrice = Number(item.UnitPrice_Bath) || 0;
 
       if (!aggregatedData[spec]) {
-        aggregatedData[spec] = { qty: 0, totalPrice: 0 };
+        aggregatedData[spec] = { qty: 0, totalPrice: 0, unitPrice: unitPrice };
+      }
+      // Keep the first non-zero unit price found
+      if (aggregatedData[spec].unitPrice === 0 && unitPrice > 0) {
+        aggregatedData[spec].unitPrice = unitPrice;
       }
       aggregatedData[spec].qty += qty;
       aggregatedData[spec].totalPrice += price;
@@ -646,9 +692,14 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
     // ตัดเอาเฉพาะ Top N
     sortedData = sortedData.slice(0, this.comboTopN);
 
-    const labels = sortedData.map(d => d[0]); // ชื่อ SPEC
+    const labels = sortedData.map(d => {
+      const spec = d[0]; // ชื่อ SPEC
+      const name = this.specToItemNameMap[spec];
+      return name ? `${spec} (${name})` : spec;
+    });
     const dataQty = sortedData.map(d => d[1].qty); // จำนวน
     const dataPrice = sortedData.map(d => d[1].totalPrice); // ราคา
+    const dataUnitPrice = sortedData.map(d => d[1].unitPrice); // ราคาต่อหน่วย
 
     if (this.comboChart) this.comboChart.destroy();
     const ctx = canvas.getContext('2d');
@@ -721,6 +772,13 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
                   }
                 }
                 return label;
+              },
+              footer: function (tooltipItems) {
+                const dataIndex = tooltipItems[0]?.dataIndex;
+                if (dataIndex === undefined) return '';
+                const unitPrice = dataUnitPrice[dataIndex];
+                if (!unitPrice) return '';
+                return `💰 ราคาต่อหน่วย: ${unitPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ฿/ชิ้น`;
               }
             }
           },
@@ -1146,10 +1204,7 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
                 });
 
                 const totalQty = matchingItems.reduce((acc, curr) => acc + (Number(curr.QTY) || 0), 0);
-                const avgPriceParts = Array.from(new Set(matchingItems.map(m => Number(m.UnitPrice_Bath) || 0)));
-                const avgPrice = avgPriceParts.length > 0 ? avgPriceParts[0] : 0;
-
-                return `จำนวนที่เบิก: ${totalQty} ชิ้น\nราคาเฉลี่ยต่อชิ้น: ${avgPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} THB`;
+                return `จำนวนที่เบิก: ${totalQty} ชิ้น`;
               }
             }
           },
@@ -1308,12 +1363,14 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
 
       itemDivisionMap[SPEC] = division;
 
-      //  เพิ่ม filter process
+      //  เพิ่ม filter process + ItemName
       const matchDivision = this.selectedDivision === 'ALL' || division === this.selectedDivision;
       const matchCase = this.selectedCase === 'ALL' || caseName === this.selectedCase;
       const matchProcess = this.selectedprocesshoz === 'ALL' || process === this.selectedprocesshoz;
+      const itemName = item.ItemName || item.Description || '';
+      const matchItemName = this.selectedItemNameHoz === 'ALL' || itemName === this.selectedItemNameHoz;
 
-      if (matchDivision && matchCase && matchProcess) {
+      if (matchDivision && matchCase && matchProcess && matchItemName) {
         if (!itemCaseMap[SPEC]) itemCaseMap[SPEC] = {};
         if (!itemCaseMap[SPEC][caseName]) itemCaseMap[SPEC][caseName] = { qty: 0, partNos: [] };
 
@@ -1329,6 +1386,12 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
       .slice(0, this.topN);
 
     const topItemNos = topItems.map(e => e[0]);
+
+    // Build display labels: SPEC (ItemName)
+    const topItemLabels = topItemNos.map(spec => {
+      const name = this.specToItemNameMap[spec];
+      return name ? `${spec} (${name})` : spec;
+    });
 
     // list ของ case ที่มี
     const allCASE = Array.from(new Set(this.data.map(item => item.CASE || 'ไม่ระบุ')));
@@ -1360,7 +1423,7 @@ export class AnalyzeComponent implements OnInit, AfterViewInit {
 
     this.horizontalBarChart = new Chart(ctx!, {
       type: 'bar',
-      data: { labels: topItemNos, datasets: datasets },
+      data: { labels: topItemLabels, datasets: datasets },
       options: {
         indexAxis: 'y',   // ✅ แกนสลับแนวนอน
         responsive: true,

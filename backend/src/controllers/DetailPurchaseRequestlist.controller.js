@@ -6,7 +6,7 @@ const frontendLink = process.env.FRONTEND_URL || 'http://localhost:4200';
 
 /**
  * API: ดึงข้อมูลรายการเบิกเครื่องมือตัด (Cutting Tool)
- * หน้าที่: ดึงรายการสั่งซื้อ Cutting Tool ที่พนักงานเบิกค้างอยู่ (รอจัดเรียง) มาแสดงให้ฝ่ายจัดซื้อดู
+ * หน้าที่: ดึงรายการสั่งซื้อ Cutting Tool ที่พนักงานเบิกค้างอยู่ (Waiting) มาแสดงให้ PH ดู
  */
 exports.Detail_Purchase = async (req, res) => {
   try {
@@ -16,7 +16,7 @@ exports.Detail_Purchase = async (req, res) => {
       FROM [db_Tooling].[viewer].[View_IssueCuttingTool_Request_Document] T1
       LEFT JOIN [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType] T2 
       ON T1.MCType = T2.MCT_MachineTypeName COLLATE Thai_CI_AS 
-      WHERE T1.Status IN ('Waiting','In Progress','Complete','CompleteToExcel')
+      WHERE T1.Status IN ('Waiting','In Progress')
       ORDER BY T1.DateTime_Record ASC
     `);
     res.json(result.recordset);
@@ -28,7 +28,7 @@ exports.Detail_Purchase = async (req, res) => {
 
 /**
  * API: ดึงข้อมูลรายการเบิกเครื่องมือติดตั้ง (Setup Tool)
- * หน้าที่: ดึงรายการสั่งซื้อ Setup Tool ที่ค้างอยู่ (รอจัดเรียง) เพื่อแยกเป็นอีกตารางหนึ่งให้ฝ่ายจัดซื้อทำงาน
+ * หน้าที่: ดึงรายการสั่งซื้อ Setup Tool ที่ค้างอยู่ (Waiting) เพื่อแยกเป็นอีกตารางหนึ่งให้ PH ทำงาน
  */
 exports.Detail_Purchase_Setup = async (req, res) => {
   try {
@@ -36,7 +36,7 @@ exports.Detail_Purchase_Setup = async (req, res) => {
     const result = await pool.request().query(`
       SELECT *
       FROM [db_Tooling].[viewer].[View_IssueSetupTool_Request_Document]
-      WHERE Status IN ('Waiting','In Progress','Complete','CompleteToExcel')
+      WHERE Status IN ('Waiting','In Progress')
       AND ([CASE] IS NULL OR [CASE] != 'SET')
       ORDER BY DateTime_Record ASC
     `);
@@ -48,8 +48,8 @@ exports.Detail_Purchase_Setup = async (req, res) => {
 };
 
 /**
- * API: ดึงข้อมูลรายการ Case Setup (จัดเตรียมเครื่องมือแบบเป็นเซ็ต)
- * หน้าที่: ดึงรายการขอจัดเซ็ตเครื่องมือที่ค้างอยู่ มาแสดงโดยเรียงตามวันที่ที่ต้องใช้ของ (DueDate) เพื่อให้รู้ว่างานไหนรีบ
+ * API: ดึงข้อมูลรายการ Case Setup 
+ * หน้าที่: ดึงรายการขอ Case Setup ที่ค้างอยู่ มาแสดงโดยเรียงตามวันที่ที่ต้องใช้ของ (DueDate) เพื่อให้รู้ว่างานไหนรีบ
  */
 exports.Detail_CaseSetup = async (req, res) => {
   try {
@@ -57,7 +57,7 @@ exports.Detail_CaseSetup = async (req, res) => {
     const result = await pool.request().query(`
       SELECT *
       FROM [db_Tooling].[viewer].[View_CaseSetup_Request]
-      WHERE Status IN ('Waiting','In Progress','Complete','CompleteToExcel')
+      WHERE Status IN ('Waiting','In Progress')
       ORDER BY DueDate ASC
     `);
     res.json(result.recordset);
@@ -86,8 +86,8 @@ exports.Get_ItemNo = getItemsQuery;
 exports.get_ItemNo = getItemsQuery;
 
 /**
- * (ฟังก์ชันหลังบ้าน) สำหรับส่งอีเมลแจ้งเตือน
- * หน้าที่: ฟังก์ชันนี้จะคอยส่งอีเมล์ไปบอกคนเบิกหรือแผนก Production ว่า "รายการรอเบิกนี้เตรียมของเสร็จแล้วนะ มารับได้เลย"
+ * (ยังใช้ไม่ได้) สำหรับส่งอีเมลแจ้งเตือน
+ * หน้าที่: ฟังก์ชันนี้จะคอยส่งอีเมล์ไปบอกคนเบิกหรือแผนก Production ว่า "รายการรอเบิกนี้เตรียมของเสร็จแล้วนะ"
  */
 const sendCompletionEmail = async (pool, idList, finalTableType, isPublicId) => {
   try {
@@ -191,9 +191,9 @@ const sendCompletionEmail = async (pool, idList, finalTableType, isPublicId) => 
 };
 
 /**
- * API: ย้ายสถานะรายการขอเบิก (เปลี่ยน Status)
- * หน้าที่: ทำงานเวลากดปุ่มย้ายสถานะตามตาราง เช่น ย้ายจาก "รอจัดเตรียม" ไปเป็น "เสร็จสมบูรณ์ (Complete)" 
- * รองรับการย้ายทีละหลายๆ แถวพร้อมกันได้เลย
+ * API: เปลี่ยนสถานะรายการขอเบิก
+ * หน้าที่: ทำงานเวลากดปุ่มเปลี่ยนสถานะตามตาราง เช่น เปลี่ยนจาก "Waiting" ไปเป็น "Complete" 
+ * รองรับการเปลี่ยนทีละหลายๆ แถวพร้อมกันได้เลย
  */
 exports.Update_Status_Purchase = async (req, res) => {
   try {
@@ -287,7 +287,7 @@ exports.Update_Status_Purchase = async (req, res) => {
 
 /**
  * API: แก้ไขรายละเอียดตัวหนังสือในตาราง
- * หน้าที่: ทำงานเมื่อจัดซื้อพิมพ์ช่องว่างๆ ในตารางเพื่อแก้ไขรายละเอียด เช่น เปลี่ยนจำนวน (QTY), ใส่คอมเมนต์ (Remark), เลขล็อต แล้วตารางจะเซฟลงฐานข้อมูล
+ * หน้าที่: ทำงานเมื่อ PH พิมพ์ช่องว่างๆ ในตารางเพื่อแก้ไขรายละเอียด เช่น เปลี่ยนจำนวน (QTY), ใส่คอมเมนต์ (Remark), ล็อต แล้วตารางจะเซฟลงฐานข้อมูล
  */
 exports.Update_Request = async (req, res) => {
   try {
@@ -393,7 +393,7 @@ exports.Update_Request = async (req, res) => {
 
 /**
  * API: สร้างรายการขอเบิกใหม่
- * หน้าที่: รับข้อมูลเครื่องมือจากฟอร์มหน้าเว็บ เพื่อนำมาสร้างออเดอร์เข้าคลัง โดยช่วยสร้างหมายเลขใบสั่งงาน (MFGOrderNo) อัตโนมัติด้วย
+ * หน้าที่: รับข้อมูลการขอเบิกจากฟอร์มหน้าเว็บ เพื่อนำมาสร้างออเดอร์ ช่วยสร้าง MFGOrderNo และ Document อัตโนมัติด้วย
  */
 exports.Add_New_Request = async (req, res) => {
   try {
@@ -415,8 +415,36 @@ exports.Add_New_Request = async (req, res) => {
       ItemNo = itemResult.recordset[0].ItemNo;
     }
 
+    let GeneratedMFGOrderNo = '';
+    try {
+      let machineCode = '';
+      if (['PMC', '71DZ', 'GM', '7122'].includes(Division)) {
+        const machineResult = await pool.request()
+          .input("MCType", sql.NVarChar, MCType)
+          .query(`SELECT TOP 1 MC_Code FROM [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group] WHERE MC_Group = @MCType`);
+        machineCode = machineResult.recordset[0]?.MC_Code || '';
+      }
+
+      const partNoPrefix = (PartNo || '').substring(0, 6);
+      if (['PMC', '71DZ'].includes(Division)) {
+        GeneratedMFGOrderNo = `M${partNoPrefix}${machineCode}`;
+      } else if (['GM', '7122'].includes(Division)) {
+        GeneratedMFGOrderNo = `P${partNoPrefix}${machineCode}`;
+      } else {
+        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        GeneratedMFGOrderNo = `${CASE}${Process}F${Fac}${dateStr}`;
+      }
+    } catch (err) {
+      console.error('Error generating MFGOrderNo:', err);
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      GeneratedMFGOrderNo = `${CASE}${Process}F${Fac}${dateStr}`;
+    }
+
+    const MR_No = new Date().toISOString().slice(2, 10).replace(/-/g, '');
+
     const result = await pool.request()
       .input("DocNo", sql.NVarChar, DocNo)
+      .input("MFGOrderNo", sql.NVarChar, GeneratedMFGOrderNo)
       .input("Division", sql.NVarChar, Division)
       .input("Requester", sql.NVarChar, Requester)
       .input("PartNo", sql.NVarChar, PartNo)
@@ -435,16 +463,14 @@ exports.Add_New_Request = async (req, res) => {
       .input("PathLayout", sql.NVarChar, PathLayout)
       .input("Remark", sql.NVarChar, Remark)
       .input("PhoneNo", sql.Int, PhoneNo)
+      .input("MR_No", sql.NVarChar, MR_No)
       .input("ItemName", sql.NVarChar, (ItemName || '').substring(0, 255) || null)
       .query(`
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document]
           (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo, MFGOrderNo, MR_No, ItemName)
         OUTPUT INSERTED.ID_Request
         VALUES
-          (@DocNo, @Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, 
-          [trans].[fn_Generate_Request_MFGOrderNo](@Division, @PartNo, @MCType, @CASE, @Process, @Fac, GETDATE()), 
-          FORMAT(GETDATE(), 'yyMMdd'), 
-          @ItemName);
+          (@DocNo, @Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, @MFGOrderNo, @MR_No, @ItemName);
       `);
 
     const ID_Request = result.recordset[0]?.ID_Request || null;
