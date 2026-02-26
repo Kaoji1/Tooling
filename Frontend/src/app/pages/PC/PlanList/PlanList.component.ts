@@ -197,10 +197,9 @@ export class PlanListComponent implements OnInit {
 
       // Initialize sub-tabs for the selected dept
       this.selectDepartment(this.selectedDepartment);
-    }
 
-    this.loadPlanList();
-    // this.loadMachineMasterData(); // Removed
+      this.loadPlanList();
+    }
   }
 
   // Load Machine Types dynamically from the loaded Plan List (Excel-style)
