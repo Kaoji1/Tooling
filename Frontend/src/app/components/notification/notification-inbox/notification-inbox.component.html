@@ -56,7 +56,7 @@
                         <!-- Content -->
                         <div class="row-content">
                             <div class="row-top">
-                                <h3 class="row-title">{{ getEventLabel(item.Event_Type) }}</h3>
+                                <h3 class="row-title">{{ getEventLabel(item) }}</h3>
                                 <span class="row-doc" *ngIf="item.Doc_No">{{ item.Doc_No }}</span>
                             </div>
                             <p class="row-preview">{{ getSubject(item) }}</p>
@@ -91,12 +91,34 @@
                                     <span class="event-badge"
                                         [style.background-color]="getBadgeColor(item.Event_Type) + '15'"
                                         [style.color]="getBadgeColor(item.Event_Type)">
-                                        {{ getEventLabel(item.Event_Type) }}
+                                        {{ getEventLabel(item) }}
                                     </span>
                                 </div>
-                                <div class="meta-chip" *ngIf="item.Doc_No">
-                                    <span class="meta-label">Reference</span>
-                                    <span class="meta-value mono">{{ item.Doc_No }}</span>
+                                <div class="meta-chip" *ngIf="getMetaValue(item, 'PlanDate')">
+                                    <span class="meta-label">{{ lang === 'EN' ? 'Plan Date' : 'วันที่แผนงาน' }}</span>
+                                    <span class="meta-value mono">{{ getMetaValue(item, 'PlanDate') }}</span>
+                                </div>
+                                <div class="meta-chip" *ngIf="getMetaValue(item, 'PartNo')">
+                                    <span class="meta-label">{{ lang === 'EN' ? 'Part No.' : 'เลข Part' }}</span>
+                                    <span class="meta-value mono">{{ getMetaValue(item, 'PartNo') }}</span>
+                                </div>
+                                <div class="meta-chip"
+                                    *ngIf="getMetaValue(item, 'Division') || getMetaValue(item, 'Facility')">
+                                    <span class="meta-label">{{ lang === 'EN' ? 'Div > Fac' : 'แผนก > โรงงาน' }}</span>
+                                    <span class="meta-value">
+                                        <ng-container
+                                            *ngIf="getMetaValue(item, 'Division') && getMetaValue(item, 'Facility')">
+                                            {{ getMetaValue(item, 'Division') }} > {{ getMetaValue(item, 'Facility') }}
+                                        </ng-container>
+                                        <ng-container
+                                            *ngIf="getMetaValue(item, 'Division') && !getMetaValue(item, 'Facility')">
+                                            {{ getMetaValue(item, 'Division') }}
+                                        </ng-container>
+                                        <ng-container
+                                            *ngIf="!getMetaValue(item, 'Division') && getMetaValue(item, 'Facility')">
+                                            {{ getMetaValue(item, 'Facility') }}
+                                        </ng-container>
+                                    </span>
                                 </div>
                             </div>
 
@@ -125,8 +147,10 @@
                                                 <tbody>
                                                     <tr *ngFor="let change of getDetailChanges(item)">
                                                         <td class="field-name">{{ fieldLabel(change.field) }}</td>
-                                                        <td class="val-old">{{ change.old }}</td>
-                                                        <td class="val-new">{{ change.new }}</td>
+                                                        <td class="val-old">{{ formatFieldValue(change.field,
+                                                            change.old) }}</td>
+                                                        <td class="val-new">{{ formatFieldValue(change.field,
+                                                            change.new) }}</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -164,7 +188,7 @@
                                                     <tr *ngFor="let row of getDetailItems(item); let i = index">
                                                         <td class="row-num">{{ i + 1 }}</td>
                                                         <td *ngFor="let key of getItemKeys(row)">
-                                                            {{ row[key] }}
+                                                            {{ formatFieldValue(key, row[key]) }}
                                                         </td>
                                                     </tr>
                                                 </tbody>

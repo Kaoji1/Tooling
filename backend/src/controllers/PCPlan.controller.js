@@ -237,11 +237,39 @@ exports.insertPCPlan = async (req, res) => {
                     // Fallback: send basic info without diff
                 }
 
+                // --- Dynamic Subject Title ---
+                let subjectPrefix = 'Plan Revised';
+                if (changes.length > 0) {
+                    const labelMap = {
+                        'PlanDate': 'Date',
+                        'MC_Type': 'Machine Type',
+                        'Facility': 'Facility',
+                        'Before_Part': 'Part Before',
+                        'Process': 'Process',
+                        'MC_No': 'MC No',
+                        'PartNo': 'Part No',
+                        'QTY': 'QTY',
+                        'Time': 'Time',
+                        'Comment': 'Comment'
+                    };
+                    const labels = changes.map(c => labelMap[c.field] || c.field);
+
+                    if (labels.length === 1) {
+                        subjectPrefix = `Edit ${labels[0]}`;
+                    } else if (labels.length === 2) {
+                        subjectPrefix = `Edit ${labels[0]}, ${labels[1]}`;
+                    } else {
+                        subjectPrefix = `Edit ${labels[0]} and ${labels.length - 1} others`;
+                    }
+                }
+
+                const planDateFormatted = firstItem.date ? new Date(firstItem.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
+
                 await emitNotification(req, pool, {
                     eventType: 'PLAN_REVISION',
-                    subject: `🔵 [FYI] Plan Revised: ${firstItem.groupId}`,
-                    messageEN: `Plan ${firstItem.groupId} has been updated to Revision ${firstItem.revision}. Comment: ${firstItem.comment || '-'}`,
-                    messageTH: `แผนงาน ${firstItem.groupId} ได้รับการแก้ไขเป็น Revision ${firstItem.revision} หมายเหตุ: ${firstItem.comment || '-'}`,
+                    subject: `🔵 [FYI] ${subjectPrefix}${firstItem.partNo ? ' - Part No. ' + firstItem.partNo : ''}`,
+                    messageEN: `The plan for date ${planDateFormatted}, Part No. ${firstItem.partNo || '-'} has been revised}`,
+                    messageTH: `แผนงานของวันที่ ${planDateFormatted} Part No. ${firstItem.partNo || '-'} ได้รับการแก้ไข`,
                     docNo: firstItem.groupId,
                     actionBy: userName,
                     targetRoles: 'ALL',

@@ -37,7 +37,7 @@ export const NOTIFICATION_TEMPLATES: Record<string, NotificationTemplate> = {
         ),
         ctaLabel: 'View Request',
         ctaRoute: '/purchase/request-list',
-        targetRoles: 'purchase',
+        targetRoles: 'purchase,ph',
         iconClass: 'bi-send-fill',
         badgeColor: '#ef4444'
     },
@@ -80,7 +80,25 @@ export const NOTIFICATION_TEMPLATES: Record<string, NotificationTemplate> = {
         badgeColor: '#3b82f6'
     },
 
-    // ─── Case 4: Cancel Plan ──────────────────────────────────────
+    PLAN_REVISION: {
+        eventType: 'PLAN_REVISION',
+        subject: '🔵 [FYI] [Edited_Fields] - Part No. [Part_No]',
+        messageEN: (v) => interpolate(
+            'The plan for date [Plan_Date], Part No. [Part_No] has been revised',
+            v
+        ),
+        messageTH: (v) => interpolate(
+            'แผนงานของวันที่ [Plan_Date] Part No. [Part_No] ได้รับการแก้ไข',
+            v
+        ),
+        ctaLabel: 'View Plan List',
+        ctaRoute: '/pc/plan-list',
+        targetRoles: 'ALL',
+        iconClass: 'bi-pencil-square',
+        badgeColor: '#3b82f6'
+    },
+
+    // ─── Case 5: Cancel Plan ──────────────────────────────────────
     CANCEL_PLAN: {
         eventType: 'CANCEL_PLAN',
         subject: '⚫ [Cancelled] Plan Deleted/Cancelled: [Plan_No]',
@@ -198,29 +216,30 @@ export function getTemplate(eventType: string): NotificationTemplate | undefined
 // ═══════════════════════════════════════════════════
 
 export const FIELD_LABELS: Record<string, { EN: string; TH: string }> = {
-    PlanDate: { EN: 'Plan Date', TH: 'วันที่แผนงาน' },
-    MC_Type: { EN: 'Machine Type', TH: 'ประเภทเครื่องจักร' },
-    Facility: { EN: 'Facility', TH: 'โรงงาน' },
-    Before_Part: { EN: 'Part Before', TH: 'Part ก่อนเปลี่ยน' },
-    Process: { EN: 'Process', TH: 'กระบวนการ' },
-    MC_No: { EN: 'Machine No.', TH: 'เลขเครื่องจักร' },
-    PartNo: { EN: 'Part No.', TH: 'เลข Part' },
-    QTY: { EN: 'Quantity', TH: 'จำนวน' },
-    Time: { EN: 'Time (min)', TH: 'เวลา (นาที)' },
-    Comment: { EN: 'Comment', TH: 'หมายเหตุ' },
-    Division: { EN: 'Division', TH: 'แผนก' },
-    Employee_ID: { EN: 'Employee ID', TH: 'รหัสพนักงาน' },
-    PlanStatus: { EN: 'Status', TH: 'สถานะ' },
-    GroupId: { EN: 'Group ID', TH: 'รหัสกลุ่ม' },
-    Revision: { EN: 'Revision', TH: 'รุ่นแก้ไข' },
-    Path_Dwg: { EN: 'Drawing', TH: 'แบบ Drawing' },
-    Path_Layout: { EN: 'Layout', TH: 'แบบ Layout' },
+    PlanDate: { EN: 'Plan Date', TH: 'Plan Date' },
+    MC_Type: { EN: 'Machine Type', TH: 'Machine Type' },
+    Facility: { EN: 'Facility', TH: 'Facility' },
+    Before_Part: { EN: 'Part Before', TH: 'Part Before' },
+    Process: { EN: 'Process', TH: 'Process' },
+    MC: { EN: 'MC', TH: 'MC' },
+    MC_No: { EN: 'Machine No.', TH: 'Machine No.' },
+    PartNo: { EN: 'Part No.', TH: 'Part No.' },
+    QTY: { EN: 'QTY', TH: 'QTY' },
+    Time: { EN: 'Time', TH: 'Time' },
+    Comment: { EN: 'Comment', TH: 'Comment' },
+    Division: { EN: 'Division', TH: 'Division' },
+    Employee_ID: { EN: 'Employee ID', TH: 'Employee ID' },
+    PlanStatus: { EN: 'Status', TH: 'Status' },
+    GroupId: { EN: 'Group ID', TH: 'Group ID' },
+    Revision: { EN: 'Revision', TH: 'Revision' },
+    Path_Dwg: { EN: 'Drawing', TH: 'Drawing' },
+    Path_Layout: { EN: 'Layout', TH: 'Layout' },
     Path_IIQC: { EN: 'IIQC', TH: 'IIQC' },
-    Doc_No: { EN: 'Document No.', TH: 'เลขเอกสาร' },
-    ItemNo: { EN: 'Item No.', TH: 'เลข Item' },
-    ItemName: { EN: 'Item Name', TH: 'ชื่อ Item' },
-    Spec: { EN: 'Specification', TH: 'สเปค' },
-    Remark: { EN: 'Remark', TH: 'หมายเหตุ' }
+    Doc_No: { EN: 'Document No.', TH: 'Document No.' },
+    ItemNo: { EN: 'Item No.', TH: 'Item No.' },
+    ItemName: { EN: 'Item Name', TH: 'Item Name' },
+    Spec: { EN: 'Specification', TH: 'Specification' },
+    Remark: { EN: 'Remark', TH: 'Remark' }
 };
 
 /**

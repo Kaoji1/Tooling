@@ -146,7 +146,8 @@ export class NotificationInboxComponent implements OnInit {
         return tmpl?.badgeColor || '#64748b';
     }
 
-    getEventLabel(eventType: string): string {
+    getEventLabel(item: NotificationLog): string {
+        const eventType = item.Event_Type;
         const labels: Record<string, string> = {
             'REQUEST_SENT': 'New Request',
             'REQUEST_COMPLETED': 'Request Completed',
@@ -159,6 +160,15 @@ export class NotificationInboxComponent implements OnInit {
             'RETURN_COMPLETED': 'Return Confirmed',
             'FILE_UPLOAD': 'File Uploaded'
         };
+
+        if (eventType === 'PLAN_REVISION' && item.Subject) {
+            // Extract "Edit Date, QTY" from "🔵 [FYI] Edit Date, QTY - Part No...."
+            const match = item.Subject.match(/\]\s*(.*?)(?:\s*-|$)/);
+            if (match && match[1]) {
+                return match[1].trim();
+            }
+        }
+
         return labels[eventType] || eventType;
     }
 
@@ -175,7 +185,7 @@ export class NotificationInboxComponent implements OnInit {
         if (!date) return '';
         const d = new Date(date);
         return d.toLocaleDateString('en-GB', {
-            day: '2-digit', month: 'short', year: 'numeric'
+            day: '2-digit', month: '2-digit', year: 'numeric'
         }) + ' · ' + d.toLocaleTimeString('en-GB', {
             hour: '2-digit', minute: '2-digit'
         });
@@ -234,12 +244,47 @@ export class NotificationInboxComponent implements OnInit {
     /** Get display keys for item grid (filters out internal fields and empty values) */
     getItemKeys(row: any): string[] {
         if (!row) return [];
-        return Object.keys(row).filter(k => !this.SKIP_FIELDS.has(k));
+        return Object.keys(row).filter(k => k !== 'Division' && k !== 'Facility' && !this.SKIP_FIELDS.has(k));
     }
 
     /** Translate a DB field name to a readable label using the current lang */
     fieldLabel(field: string): string {
         return getFieldLabel(field, this.lang);
+    }
+
+    /** Format specific field values for display (e.g., Dates) */
+    formatFieldValue(field: string, value: any): any {
+        if (!value) return value;
+        if (field === 'PlanDate' || field === 'Return_Date' || field === 'date') {
+            const strValue = String(value);
+            // Convert YYYY-MM-DD (or YYYY-MM-DDTHH:mm:SSZ) to DD/MM/YYYY
+            if (/^\d{4}-\d{2}-\d{2}/.test(strValue)) {
+                const datePart = strValue.split('T')[0];
+                const parts = datePart.split('-');
+                if (parts.length === 3) {
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+            }
+        }
+        return value;
+    }
+
+    /** Extract metadata blocks like Plan Date, Part No, Division from JSON payload */
+    getMetaValue(item: NotificationLog, key: 'PlanDate' | 'PartNo' | 'Division' | 'Facility'): string | null {
+        const d = this.parseDetails(item);
+        if (!d) return null;
+
+        let val = null;
+        if (d.type === 'revision' && d.newValues) {
+            val = d.newValues[key];
+        } else if ((d.type === 'new_plan' || d.type === 'cancel') && d.items && d.items.length > 0) {
+            val = d.items[0][key];
+        }
+
+        if (val) {
+            return key === 'PlanDate' ? this.formatFieldValue('PlanDate', val) : val;
+        }
+        return null;
     }
 
     /** Check if a details payload has content worth showing */

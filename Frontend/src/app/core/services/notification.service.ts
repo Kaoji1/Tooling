@@ -57,9 +57,26 @@ export class NotificationService {
       this.socket = io(environment.socketUrl, {
         transports: ['websocket', 'polling'],
         reconnection: true,
-        reconnectionAttempts: 5
+        reconnectionAttempts: 5,
+        reconnectionDelay: 30000, //0.5min
       });
       this.setupSocketListeners();
+      this.fetchNotifications(); // Initial load of notifications   
+    }
+  }
+
+  // Reloads notifications and role config on successful SPA login
+  public refreshSession() {
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const userSession = sessionStorage.getItem('user');
+        if (userSession) {
+          const user = JSON.parse(userSession);
+          this.currentUserRole = (user.Role || '').toLowerCase();
+        }
+      } catch (e) {
+        console.error('Error reading user role for notifications:', e);
+      }
       this.fetchNotifications();
     }
   }

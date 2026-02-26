@@ -1,6 +1,7 @@
 const { poolPromise } = require("../config/database");
 const sql = require("mssql");
 const nodemailer = require('nodemailer');
+const { emitNotification } = require("./Notification.controller");
 
 const frontendLink = process.env.FRONTEND_URL || 'http://localhost:4200';
 
@@ -532,6 +533,43 @@ exports.Add_New_Request_Bulk = async (req, res) => {
       CuttingCount: totalCutting,
       SetupCount: totalSetup
     });
+
+    // --- Send Notification ---
+    try {
+      if (totalInserted > 0 && items.length > 0) {
+        const firstItem = items[0];
+        // req.user.Name might not be available, fallback to Requester ID
+        const userName = (req.user && req.user.Name) ? req.user.Name : (firstItem.Requester || 'System');
+        const countStr = String(totalInserted);
+
+        await emitNotification(req, pool, {
+          eventType: 'REQUEST_SENT',
+          subject: `🔴 [Action Required] New Tooling Request: ${countStr} items`,
+          messageEN: `A new tooling request has been submitted by ${userName} (Production). Total items: ${countStr}. Please review and proceed with the confirmation.`,
+          messageTH: `มีคำขอเบิก Tooling ใหม่ส่งมาจาก ${userName} (แผนก Production) จำนวน ${countStr} รายการ รบกวนตรวจสอบและดำเนินการยืนยันคำขอ`,
+          docNo: firstItem.PartNo || firstItem.Division || '-', // Fallback since DocNo is generated in SP
+          actionBy: userName,
+          targetRoles: 'purchase,ph',
+          ctaRoute: '/purchase/request-list',
+          detailsJson: {
+            type: 'new_request',
+            items: items.map(ji => ({
+              PartNo: ji.PartNo,
+              ItemNo: ji.ItemNo,
+              ItemName: ji.ItemName,
+              Spec: ji.SPEC,
+              Process: ji.Process,
+              MC: ji.MCType,
+              QTY: ji.QTY,
+              Division: ji.Division,
+              Facility: ji.Fac ? `F.${ji.Fac}` : ''
+            }))
+          }
+        });
+      }
+    } catch (notifErr) {
+      console.error('[Notification] Error in Add_New_Request_Bulk:', notifErr);
+    }
 
   } catch (error) {
     console.error('Error in Add_New_Request_Bulk:', error);

@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgIf, NgClass, NgFor } from '@angular/common';
 import { LoginService } from '../../core/services/Login.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 
 @Component({
@@ -22,7 +23,11 @@ export class LoginComponent {
   brandChars = "MinebeaMitsumi".split('');
   subtitleChars = "Web Application For Request & Return Indirect Material".split('');
 
-  constructor(private router: Router, private LoginService: LoginService) { }
+  constructor(
+    private router: Router,
+    private LoginService: LoginService,
+    private notificationService: NotificationService
+  ) { }
 
   onLogin() {
     const credentials = { Username: this.Username, Password: this.Password };
@@ -36,6 +41,9 @@ export class LoginComponent {
           sessionStorage.setItem('token', res.token);
           sessionStorage.setItem('role', res.user.Role); // <-- เพิ่ม role สำหรับ AuthGuard
           sessionStorage.setItem('user', JSON.stringify(res.user));
+
+          // Reload socket and notification data for the new user
+          this.notificationService.refreshSession();
 
           // Redirect ตาม role
           switch (res.user.Role) {
