@@ -92,8 +92,9 @@ export class PCPlanComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loadDivisions();
-    // this.restoreState(); // Moved to loadDivisions to avoid race condition
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadDivisions();
+    }
   }
 
   loadDivisions() {
