@@ -65,7 +65,7 @@ export class PlanListComponent implements OnInit {
   showHistory: boolean = false; // Toggle for Global History
 
   // New Tab Structure
-  departments: string[] = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gage', 'View'];
+  departments: string[] = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gate', 'View'];
   selectedDepartment: string = ''; // Initialize empty to prevent "Flash of PC Content" before role check
 
   subTabs: string[] = ['Upcoming'];
@@ -140,7 +140,7 @@ export class PlanListComponent implements OnInit {
       const role = this.currentUser.Role;
 
       // 1. Show ALL Viewtabs for everyone
-      this.departments = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gage', 'View'];
+      this.departments = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gate', 'View'];
 
       // 2. Determine which tabs are ACCESSIBLE (Clickable)
       let allowed: string[] = [];
@@ -148,7 +148,7 @@ export class PlanListComponent implements OnInit {
       if (role) {
         switch (role) {
           case 'admin':
-            allowed = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gage', 'View'];
+            allowed = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gate', 'View'];
             break;
           case 'PC':
             allowed = ['PC'];
@@ -165,8 +165,8 @@ export class PlanListComponent implements OnInit {
           case 'QC':
             allowed = ['QC'];
             break;
-          case 'Gage':
-            allowed = ['Gage'];
+          case 'Gate':
+            allowed = ['Gate'];
             break;
           case 'Cost':
           case 'view': // Assuming view role also sees View tab
