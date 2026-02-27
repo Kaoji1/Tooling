@@ -37,7 +37,7 @@ CREATE OR ALTER PROCEDURE [trans].[Stored_PCPlan_Insert_All_Snapshot_Excel]
 AS
 BEGIN
     SET NOCOUNT ON;
-
+    
     -- 1. Parse JSON into Temp Table
     SELECT * INTO #IncomingData
     FROM OPENJSON(@JsonData)
