@@ -130,7 +130,7 @@
         <div class="grid-cell col-no sticky-col" style="justify-content: center;">NO</div>
         <div class="grid-cell col-action sticky-col" style="justify-content: center;">Action</div>
         <div class="grid-cell col-print sticky-col" style="justify-content: center;">Print</div>
-        <div class="grid-cell">Plan Date</div>
+        <div class="grid-cell">Plan Setup</div>
         <div class="grid-cell text-center" style="justify-content: center;">Rev</div>
         <div class="grid-cell text-center" style="justify-content: center;">Status</div>
         <div class="grid-cell">MC Type</div>
@@ -484,6 +484,7 @@
         <!-- Info -->
         <div style="grid-column: span 2;">
           <p><strong>Part No:</strong> {{ selectedItemForPrint.partNo }} </p>
+          <p><strong>MC Type:</strong> {{ selectedItemForPrint.mcType }} </p>
           <p><strong>MC No:</strong> {{ selectedItemForPrint.mcNo }} </p>
         </div>
 
@@ -524,11 +525,7 @@
           </button>
         </div>
 
-        <div class="form-group" style="max-width: 200px; margin-top: 1.5rem;">
-          <label style="font-weight: 600;">Number of Copies</label>
-          <input type="number" [(ngModel)]="printQty" min="1" class="form-control" style="padding: 0.5rem;">
-        </div>
-
+        <!-- Removed Number of Copies input -->
         <!-- Preview with Zoom -->
         <div style="grid-column: span 2; margin-top: 10px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">

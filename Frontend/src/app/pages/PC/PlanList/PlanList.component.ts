@@ -1378,11 +1378,7 @@ export class PlanListComponent implements OnInit {
       return;
     }
 
-    const qty = Number(this.printQty);
-    if (!qty || qty <= 0) {
-      Swal.fire('แจ้งเตือน', 'กรุณาระบุจำนวนให้ถูกต้อง', 'warning');
-      return;
-    }
+    const qty = 1; // Default to 1 for history tracking without user input
 
     const path = this.selectedItemForPrint[this.printType]?.replace(/^"|"$/g, '');
     if (!path || path === '-') {
@@ -1443,27 +1439,24 @@ export class PlanListComponent implements OnInit {
         iframe.onload = () => {
           const contentWindow = iframe.contentWindow;
           if (contentWindow) {
-            contentWindow.focus();
-            contentWindow.print();
 
-            // Check if user actually printed
+            // 1. Save Print History Immediately
+            this.savePrintHistory(qty, docNoToSave, typePrintToSend, employeeId, dueDateVal);
+
+            // 2. Focus and Print (Wrapped in setTimeout to allow HTTP request to dispatch before blocking thread)
+            setTimeout(() => {
+              contentWindow.focus();
+              contentWindow.print();
+            }, 100);
+
+            // 3. Clean up iframe when print dialog closes
             const onPrintClose = () => {
               setTimeout(() => {
-                Swal.fire({
-                  title: 'Did you print successfully?',
-                  text: "Click 'Yes' to save this print record.",
-                  icon: 'question',
-                  showCancelButton: true,
-                  confirmButtonText: 'Yes, I printed',
-                  cancelButtonText: 'No, Cancelled'
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                    this.savePrintHistory(qty, docNoToSave, typePrintToSend, employeeId, dueDateVal);
-                  }
+                try {
                   document.body.removeChild(iframe);
                   URL.revokeObjectURL(blobUrl);
-                });
-              }, 500);
+                } catch (e) { }
+              }, 1000);
             };
 
             contentWindow.onafterprint = onPrintClose;
@@ -1490,12 +1483,25 @@ export class PlanListComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.updatePrintCounts();
-        this.closePrintModal();
-        Swal.fire('Success', 'Print history saved.', 'success');
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Print history saved.',
+          showConfirmButton: false,
+          timer: 2000
+        });
       },
       error: err => {
         console.error("Save history error:", err);
-        Swal.fire('Error', 'Failed to save print history.', 'error');
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: 'Failed to save print history.',
+          showConfirmButton: false,
+          timer: 3000
+        });
       }
     });
   }

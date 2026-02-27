@@ -1,5 +1,5 @@
-import { Component, OnInit, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, HostListener, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { ReturnService } from '../../../core/services/return.service';
 import { HttpClientModule } from '@angular/common/http';
@@ -57,7 +57,10 @@ export class ReturnHistoryComponent implements OnInit {
 
     fileName = "ReturnHistory.xlsx";
 
-    constructor(private returnService: ReturnService) { }
+    constructor(
+        private returnService: ReturnService,
+        @Inject(PLATFORM_ID) private platformId: Object
+    ) { }
 
     ngOnInit() {
         this.loadHistory();
@@ -67,7 +70,28 @@ export class ReturnHistoryComponent implements OnInit {
         this.isLoading = true;
         this.returnService.getReturnHistory().subscribe({
             next: (data) => {
-                console.log('Return History Data:', data);
+                // IMPORTANT: Only process data if in browser. 
+                // We keep isLoading = true on the server to prevent SSR from rendering the "No Data" row prematurely.
+                if (!isPlatformBrowser(this.platformId)) {
+                    return; 
+                }
+
+                const userStr = sessionStorage.getItem('user');
+                if (userStr) {
+                    try {
+                        const currentUser = JSON.parse(userStr);
+                        if (currentUser.Role?.toLowerCase() === 'production') {
+                            const targetId = (currentUser.Employee_ID || '').toString().trim().toLowerCase();
+                            data = data.filter((item: any) => {
+                                const empId = (item.Employee_ID || item.EmployeeID || '').toString().trim().toLowerCase();
+                                return empId === targetId;
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing user session', e);
+                    }
+                }
+
                 this.historyList = data.map(item => ({
                     ...item,
                     Selection: false, // For checkbox

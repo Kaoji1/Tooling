@@ -9,9 +9,9 @@
   <div class="box-input">
     <div class="form-input">
       <div class="group-select">
-        <label for="doc-select">Document</label>
-        <ng-select id="doc-select" [items]="docNumbers" [(ngModel)]="selectedDocNo" (change)="onFilter()"
-          placeholder="Select a Document">
+        <label for="div-select">Division</label>
+        <ng-select id="div-select" [items]="divisions" [(ngModel)]="selectedDivision" (change)="onFilter()"
+          placeholder="Select a Division">
         </ng-select>
       </div>
 
@@ -38,11 +38,16 @@
           <th>PART NO.</th>
           <th>DUE DATE</th>
           <th>TYPE PRINT</th>
-          <th>PRINT QTY</th>
           <th>DATE PRINT</th>
         </tr>
       </thead>
       <tbody>
+        <tr *ngIf="!isLoading && filteredRequests.length === 0">
+          <td colspan="8" class="text-center text-muted py-5">
+            <i class="bi bi-printer d-block mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+            <h5 class="fw-light">No Print History Found</h5>
+          </td>
+        </tr>
         <tr *ngFor="let item of filteredRequests; let i = index">
           <td class="text-center">{{ i + 1 }}</td>
           <td class="text-center secondary-data">{{ item.EmployeeID }}</td>
@@ -51,9 +56,6 @@
           <td class="text-center secondary-data">{{ item.PratNo }}</td>
           <td class="text-center secondary-data">{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
           <td class="text-center secondary-data">{{ item.TypePrint }}</td>
-          <td class="text-center">
-            <span class="badge bg-light text-dark border">{{ item.Total }}</span>
-          </td>
           <td class="text-center secondary-data">{{ item.Date_Record | date:'dd/MM/yyyy HH:mm:ss':'UTC' }}</td>
         </tr>
       </tbody>
