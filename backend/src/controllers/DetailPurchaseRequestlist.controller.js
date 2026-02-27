@@ -3,7 +3,7 @@ const sql = require("mssql");
 const nodemailer = require('nodemailer');
 const { emitNotification } = require("./Notification.controller");
 
-const frontendLink = process.env.FRONTEND_URL || 'http://localhost:4200';
+const frontendLink = process.env.FRONTEND_URL
 
 /**
  * API: ดึงข้อมูลรายการเบิกเครื่องมือตัด (Cutting Tool)
@@ -17,7 +17,8 @@ exports.Detail_Purchase = async (req, res) => {
       FROM [db_Tooling].[viewer].[View_IssueCuttingTool_Request_Document] T1
       LEFT JOIN [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType] T2 
       ON T1.MCType = T2.MCT_MachineTypeName COLLATE Thai_CI_AS 
-      WHERE T1.Status IN ('Waiting','In Progress')
+      WHERE (T1.Status IN ('Waiting','In Progress', 'Complete', 'CompletetoExcel')) 
+        AND T1.DateTime_Record >= DATEADD(day, -90, GETDATE())
       ORDER BY T1.DateTime_Record ASC
     `);
     res.json(result.recordset);
@@ -37,7 +38,8 @@ exports.Detail_Purchase_Setup = async (req, res) => {
     const result = await pool.request().query(`
       SELECT *
       FROM [db_Tooling].[viewer].[View_IssueSetupTool_Request_Document]
-      WHERE Status IN ('Waiting','In Progress')
+      WHERE Status IN ('Waiting','In Progress', 'Complete', 'CompletetoExcel') 
+        AND DateTime_Record >= DATEADD(day, -90, GETDATE())
       AND ([CASE] IS NULL OR [CASE] != 'SET')
       ORDER BY DateTime_Record ASC
     `);
@@ -58,7 +60,8 @@ exports.Detail_CaseSetup = async (req, res) => {
     const result = await pool.request().query(`
       SELECT *
       FROM [db_Tooling].[viewer].[View_CaseSetup_Request]
-      WHERE Status IN ('Waiting','In Progress')
+      WHERE Status IN ('Waiting','In Progress', 'Complete', 'CompletetoExcel')
+        AND DateTime_Record >= DATEADD(day, -90, GETDATE())
       ORDER BY DueDate ASC
     `);
     res.json(result.recordset);

@@ -71,7 +71,7 @@
   <div class="table-responsive">
 
     <!-- Cutting Tool Table (Show ONLY if Cutting Tool is selected) -->
-    <ng-container *ngIf="Tooling_ === 'Cutting Tool'">
+    <ng-container *ngIf="Tooling_ === 'Cutting Tool' && !showCompleted">
       <table id="table-data" class="table table-bordered text-center">
         <thead>
           <!-- Filter Row (Top of Thead) -->
@@ -395,7 +395,7 @@
     </ng-container>
 
     <!-- Setup Tool Table -->
-    <ng-container *ngIf="Tooling_ === 'Setup Tool'">
+    <ng-container *ngIf="Tooling_ === 'Setup Tool' && !showCompleted">
       <table id="table-setup" class="table table-bordered text-center">
         <thead>
           <!-- Filter Row (Same as Cutting Tool) -->
@@ -628,6 +628,87 @@
       </table>
     </ng-container>
 
+    <!-- NEW COMPLETED TABLE -->
+    <ng-container *ngIf="showCompleted">
+      <table class="table table-bordered text-center">
+        <thead>
+          <tr class="filter-row">
+            <td colspan="20" style="height: 45px;"></td>
+          </tr>
+          <tr class="header-group-row">
+            <th class="header-production" colspan="20">Completed Items</th>
+          </tr>
+          <tr>
+            <th style="width: 50px;">NO</th>
+            <th (click)="onSort('MR_No')" style="min-width: 90px; cursor: pointer;">M/R No. <span
+                *ngIf="sortKey === 'MR_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('MFGOrderNo')" style="min-width: 120px; cursor: pointer;">MFGORDER No. <span
+                *ngIf="sortKey === 'MFGOrderNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('DocNo')" style="min-width: 120px; cursor: pointer;">Document <span
+                *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('DateTime_Record')" style="min-width: 90px; cursor: pointer;">Req Date <span
+                *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Requester')" style="min-width: 80px; cursor: pointer;">Req By <span
+                *ngIf="sortKey === 'Requester'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Division')" style="width: 60px; cursor: pointer;">Div <span
+                *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('PartNo')" style="min-width: 120px; cursor: pointer;">Part NO. <span
+                *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Process')" style="width: 80px; cursor: pointer;">Process <span
+                *ngIf="sortKey === 'Process'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Fac')" style="width: 50px; cursor: pointer;">Fac <span *ngIf="sortKey === 'Fac'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('MCType')" style="width: 70px; cursor: pointer;">MC Type <span
+                *ngIf="sortKey === 'MCType'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('MCQTY')" style="width: 70px; cursor: pointer;">MC No <span
+                *ngIf="sortKey === 'MCQTY'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('CASE')" style="width: 60px; cursor: pointer;">Case <span *ngIf="sortKey === 'CASE'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('ItemNo')" style="min-width: 120px; cursor: pointer;">Item NO. <span
+                *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th style="min-width: 120px;">Item Name</th>
+            <th (click)="onSort('SPEC')" style="min-width: 150px; cursor: pointer;">Spec <span
+                *ngIf="sortKey === 'SPEC'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('QTY')" style="width: 60px; cursor: pointer;">QTY <span *ngIf="sortKey === 'QTY'">{{
+                sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('MatLot')" style="min-width: 100px; cursor: pointer;">Mat Lot <span
+                *ngIf="sortKey === 'MatLot'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('Remark')" style="min-width: 120px; cursor: pointer;">Remark <span
+                *ngIf="sortKey === 'Remark'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+            <th (click)="onSort('PhoneNo')" style="min-width: 90px; cursor: pointer;">Phone <span
+                *ngIf="sortKey === 'PhoneNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of displayedRequests; let i = index">
+            <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td>{{ item.MR_No }}</td>
+            <td>{{ item.MFGOrderNo }}</td>
+            <td>{{ item.DocNo }}</td>
+            <td>{{ item.DateTime_Record | date:'dd/MM/yyyy' }}</td>
+            <td>{{ item.Requester }}</td>
+            <td>{{ item.Division }}</td>
+            <td>{{ item.Req_PartNo }}</td>
+            <td>{{ item.Process }}</td>
+            <td>{{ item.Fac }}</td>
+            <td>{{ item.MCType }}</td>
+            <td>{{ item.MCQTY }}</td>
+            <td>{{ item.CASE }}</td>
+            <td>{{ item.ItemNo }}</td>
+            <td>{{ item.ItemName || item.Req_ItemName }}</td>
+            <td>{{ item.SPEC }}</td>
+            <td>{{ item.QTY }}</td>
+            <td>{{ item.MatLot }}</td>
+            <td>{{ item.Remark }}</td>
+            <td>{{ item.PhoneNo }}</td>
+          </tr>
+          <tr *ngIf="displayedRequests.length === 0">
+            <td colspan="20" class="text-center py-4 text-muted">No completed items found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+
 
 
 
@@ -635,7 +716,7 @@
   </div>
 
   <!-- Pagination Controls (Fixed Bottom) -->
-  <div class="pagination-wrapper" *ngIf="totalPages > 1">
+  <div class="pagination-wrapper" *ngIf="Division_ && totalPages > 1">
     <div class="d-inline-block bg-white p-2 rounded shadow-sm border">
       <span class="me-3">
         Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ min((currentPage * pageSize), request.length) }} of {{

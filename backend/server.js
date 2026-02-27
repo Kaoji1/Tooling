@@ -34,7 +34,7 @@ const Return = require('./src/routes/Return.route.js');
 
 // Create Instance and Express application
 const app = express();
-const port = 3000; // Define the port number
+const port = process.env.PORT
 
 // Define the routes
 app.use(fileupload());
