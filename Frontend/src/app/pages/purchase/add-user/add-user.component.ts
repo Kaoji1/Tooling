@@ -271,4 +271,13 @@ export class AddUserComponent implements OnInit, OnDestroy {
     return map[r] || 'role-default';
   }
 
+  // ======  trackBy ======
+  trackByGroup(index: number, group: any): string {
+    return group.key;
+  }
+
+  trackByEmp(index: number, emp: any): string {
+    return emp.Employee_ID;
+  }
+
 }

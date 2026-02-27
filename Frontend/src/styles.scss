@@ -185,6 +185,14 @@ body {
 }
 
 // ==========================================
+//    ng-select Dropdown Panel Global Fix (Above Modals)
+// ==========================================
+.ng-dropdown-panel {
+  z-index: 1060 !important;
+  /* Higher than Bootstrap Modal (1055) */
+}
+
+// ==========================================
 //    SweetAlert2 Premium Theme (Global)
 // ==========================================
 .swal-premium-popup {

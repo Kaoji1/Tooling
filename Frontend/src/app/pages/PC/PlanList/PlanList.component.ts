@@ -18,6 +18,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { CustomDateAdapter } from '../../../core/utils/custom-date-adapter';
 import { CalendarModule } from 'primeng/calendar';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { PrintActionBtnComponent } from './components/print-action-btn/print-action-btn.component';
 
@@ -47,7 +48,8 @@ export const MY_DATE_FORMATS = {
 
     CalendarModule,
     NotificationComponent,
-    PrintActionBtnComponent
+    PrintActionBtnComponent,
+    NgSelectModule
   ],
   providers: [
     { provide: DateAdapter, useClass: CustomDateAdapter },
@@ -62,6 +64,10 @@ export class PlanListComponent implements OnInit {
   filterDate: Date | null = null;
   filterDivision: string = '';
   filterMachineType: string = '';
+  filterStatus: string = '';
+  filterFac: string = '';
+  filterProcess: string = '';
+  filterPartNo: string = '';
   showHistory: boolean = false; // Toggle for Global History
 
   // New Tab Structure
@@ -88,6 +94,10 @@ export class PlanListComponent implements OnInit {
   // รายการใน Dropdown Filter
   divisions: string[] = ['GM', 'PMC'];
   machineTypes: string[] = ['CNC', 'Lathe', 'Milling'];
+  facList: string[] = [];
+  processList: string[] = [];
+  partNoList: string[] = [];
+  statusList: string[] = ['Ready', 'Wait Eng', 'Wait QC', 'Wait En & QC', 'Cancelled'];
 
   // ข้อมูลตาราง
   planList: any[] = [];
@@ -211,9 +221,18 @@ export class PlanListComponent implements OnInit {
       currentData = currentData.filter(item => item.division === this.filterDivision);
     }
 
-    // 3. Extract Unique MC Types (Sort alphabetically)
+    // 3. Extract Unique Options (Sort alphabetically)
     const uniqueMCs = new Set(currentData.map(item => item.mcType).filter(mc => mc));
     this.machineTypes = Array.from(uniqueMCs).sort();
+
+    const uniqueFacs = new Set(currentData.map(item => item.fac).filter(fac => fac));
+    this.facList = Array.from(uniqueFacs).sort();
+
+    const uniqueProcesses = new Set(currentData.map(item => item.process).filter(process => process));
+    this.processList = Array.from(uniqueProcesses).sort();
+
+    const uniquePartNos = new Set(currentData.map(item => item.partNo).filter(partNo => partNo));
+    this.partNoList = Array.from(uniquePartNos).sort();
   }
 
   checkPrintPermission() {
@@ -358,15 +377,28 @@ export class PlanListComponent implements OnInit {
       item.groupDate = groupDateMap.get(key) || item.date;
       item.groupKey = key; // Keep key for post-processing
 
-      // --- Division Filtering Logic ---
-      // All departments see ALL divisions by default. Users filter via the dropdown.
+      // --- Filter Logic ---
       let matchDivision = this.filterDivision ? item.division === this.filterDivision : true;
+      let matchMachine = this.filterMachineType ? item.mcType === this.filterMachineType : true;
+      let matchFac = this.filterFac ? item.fac === this.filterFac : true;
+      let matchProcess = this.filterProcess ? item.process === this.filterProcess : true;
+      let matchPartNo = this.filterPartNo ? item.partNo === this.filterPartNo : true;
 
-      const matchMachine = this.filterMachineType ? item.mcType === this.filterMachineType : true;
+      let matchStatus = true;
+      if (this.filterStatus) {
+        if (this.filterStatus === 'Cancelled') {
+          matchStatus = item.planStatus === 'Cancelled';
+        } else {
+          const calculatedStatus = this.getProcessStatus(item).label;
+          matchStatus = item.planStatus !== 'Cancelled' && calculatedStatus === this.filterStatus;
+        }
+      }
+
+      const isBaseMatch = matchDivision && matchMachine && matchFac && matchProcess && matchPartNo && matchStatus;
       const isActiveLatest = (item.planStatus === 'Active' || item.planStatus === 'Incomplete') && isLatest;
 
-      // --- 1. Calculate Counts (Always respect Division/Machine filters) ---
-      if (matchDivision && matchMachine && isActiveLatest) {
+      // --- 1. Calculate Counts (Always respect basic filters) ---
+      if (isBaseMatch && isActiveLatest) {
         // Count for 'Upcoming' (Global logic: Today + 2 Months)
         const twoMonthsLater = new Date(today);
         twoMonthsLater.setMonth(today.getMonth() + 2);
@@ -394,7 +426,7 @@ export class PlanListComponent implements OnInit {
       }
 
       // --- 2. Actual Filtering for the List ---
-      if (!matchDivision || !matchMachine) return false;
+      if (!isBaseMatch) return false;
 
       let matchSubTab = true;
 
@@ -526,9 +558,22 @@ export class PlanListComponent implements OnInit {
       const isActiveLatest = (item.planStatus === 'Active' || item.planStatus === 'Incomplete') && isLatest;
 
       let matchDivision = this.filterDivision ? item.division === this.filterDivision : true;
+      let matchFac = this.filterFac ? item.fac === this.filterFac : true;
+      let matchProcess = this.filterProcess ? item.process === this.filterProcess : true;
+      let matchPartNo = this.filterPartNo ? item.partNo === this.filterPartNo : true;
+
+      let matchStatus = true;
+      if (this.filterStatus) {
+        if (this.filterStatus === 'Cancelled') {
+          matchStatus = item.planStatus === 'Cancelled';
+        } else {
+          const calculatedStatus = this.getProcessStatus(item).label;
+          matchStatus = item.planStatus !== 'Cancelled' && calculatedStatus === this.filterStatus;
+        }
+      }
       // SKIP matchMachine
 
-      if (!matchDivision) return false;
+      if (!matchDivision || !matchFac || !matchProcess || !matchPartNo || !matchStatus) return false;
 
       let matchSubTab = true;
       // ... (Re-use subtab logic logic is complex due to dependence on item properties)
@@ -590,12 +635,36 @@ export class PlanListComponent implements OnInit {
     const seenMCs = new Set(baseListForDropdown.map(i => i.mcType).filter(m => m));
     this.machineTypes = Array.from(seenMCs).sort();
 
-    // Fix: If the currently selected MC Type is no longer available in the new list,
-    // reset it to '' (All) to avoid showing an empty table unexpectedly.
+    const seenFacs = new Set(baseListForDropdown.map(i => i.fac).filter(f => f));
+    this.facList = Array.from(seenFacs).sort();
+
+    const seenProcesses = new Set(baseListForDropdown.map(i => i.process).filter(p => p));
+    this.processList = Array.from(seenProcesses).sort();
+
+    const seenPartNos = new Set(baseListForDropdown.map(i => i.partNo).filter(p => p));
+    this.partNoList = Array.from(seenPartNos).sort();
+
+    // Fix: If the currently selected items are no longer available in the new lists, reset them
+    let shouldReFilter = false;
+
     if (this.filterMachineType && !seenMCs.has(this.filterMachineType)) {
       this.filterMachineType = '';
-      // We need to re-run the final filter logic because filterMachineType changed to ''
-      // Recursive call is safe here because next time filterMachineType will be '' and won't trigger this block.
+      shouldReFilter = true;
+    }
+    if (this.filterFac && !seenFacs.has(this.filterFac)) {
+      this.filterFac = '';
+      shouldReFilter = true;
+    }
+    if (this.filterProcess && !seenProcesses.has(this.filterProcess)) {
+      this.filterProcess = '';
+      shouldReFilter = true;
+    }
+    if (this.filterPartNo && !seenPartNos.has(this.filterPartNo)) {
+      this.filterPartNo = '';
+      shouldReFilter = true;
+    }
+
+    if (shouldReFilter) {
       this.applyFilter();
       return; // Exit current run
     }
