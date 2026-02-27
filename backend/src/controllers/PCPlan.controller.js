@@ -1,7 +1,10 @@
 const sql = require('mssql');
 const { poolPromise } = require('../config/database'); // ตรวจสอบ path config database ว่าถูกต้อง
 
-// 1. ฟังก์ชันดึง Division (สำหรับ Dropdown เลือกแผนก)
+/**
+ * API: ดึงข้อมูล Division สำหรับ PC Plan
+ * หน้าที่: ดึงข้อมูล Master ของแผนก (เช่น PMC, GM) เพื่อนำไปป้อนลงใน Dropdown เลือกแผนกหน้า PC Plan
+ */
 exports.getDivisions = async (req, res) => {
     try {
         const pool = await poolPromise;
@@ -16,7 +19,11 @@ exports.getDivisions = async (req, res) => {
     }
 };
 
-// 2. ฟังก์ชันดึง Master Data รวม (Machines, Facilities, Processes, PartNos) ตาม Division ที่เลือก
+/**
+ * API: ดึงข้อมูล Master Data รวมทั้งหมดตาม Division (Get Master Data By Division)
+ * หน้าที่: ดึงข้อมูล Machines, Facilities, Processes และ PartNo
+ * แบบรวดเดียว โดยอิงตาม Division ที่เลือก และรองรับ Mode ลดโหลด (FAST, SLOW, ALL)
+ */
 exports.getMasterDataByDivision = async (req, res) => {
     try {
         const divCode = req.params.divCode; // Now this is Division_Id
@@ -80,8 +87,11 @@ exports.getMasterDataByDivision = async (req, res) => {
     }
 };
 
-// 5. ฟังก์ชันเพิ่มรายการ PC Plan ใหม่ (Import Excel / Add New) -> Revert to Basic Insert
-// 5. ฟังก์ชันเพิ่มรายการ PC Plan ใหม่ (Import Excel / Add New) -> Revision Aware
+/**
+ * API: นำเข้า/เพิ่มแผนงาน PC Plan ใหม่ (Insert/Import PC Plan) 
+ * หน้าที่: รับข้อมูลแบบ Array จากหน้าเว็บ (ดึงมาจากไฟล์ Excel หรือกด Add New) เพื่อทยอย Insert ลงฐานข้อมูล
+ * และรองรับการจัดการ Revision ระบบแจ้งเตือน (Notification) แบบเปรียบเทียบ Before/After อัตโนมัติเวลาที่มีการแก้ไขแผน
+ */
 exports.insertPCPlan = async (req, res) => {
     try {
         const items = req.body;
@@ -329,7 +339,11 @@ exports.insertPCPlan = async (req, res) => {
         res.status(500).send({ message: err.message });
     }
 };
-// 3.5 Update an existing PC Plan IN-PLACE (No new revision)
+
+/**
+ * API: อัปเดตข้อมูล PC Plan รายตัว (Update PC Plan In-Place)
+ * หน้าที่: แก้ไขข้อมูลแผนงานเดิมโดยไม่สร้าง Revision ใหม่ (ใช้อัปเดตข้อมูลทั่วไปเช่น QTY, Time, Comment ฯลฯ)
+ */
 exports.updatePCPlan = async (req, res) => {
     try {
         const { id, date, division, mcType, fac, partBefore, process, mcNo, partNo, qty, time, comment, pathDwg, pathLayout, iiqc } = req.body;
@@ -371,7 +385,10 @@ exports.updatePCPlan = async (req, res) => {
     }
 };
 
-// 3.6 Cancel an existing PC Plan IN-PLACE (Just change status)
+/**
+ * API: ยกเลิก/ปรับสถานะแผนงาน PC Plan (Cancel PC Plan)
+ * หน้าที่: อัปเดตสถานะของ Plan_ID นั้นให้เป็นยกเลิก (ใช้แทนการลบถาวร) พร้อมกับส่งแจ้งเตือน Notification
+ */
 exports.cancelPCPlan = async (req, res) => {
     try {
         const id = req.params.id;
@@ -414,7 +431,10 @@ exports.cancelPCPlan = async (req, res) => {
     }
 };
 
-// 4. ฟังก์ชันดึงรายการ PC Plan ทั้งหมด (Get List)
+/**
+ * API: ดึงรายการ PC Plan ทั้งหมด (Get PC Plan List)
+ * หน้าที่: เรียกดูรายการแผนงาน PC Plan ทั้งหมดในระบบจากฐานข้อมูล รองรับพารามิเตอร์ showHistory เพื่อแยกดูตัวปัจจบัน หรือดูประวัติเก่า
+ */
 exports.getPlanList = async (req, res) => {
     try {
         const showHistory = req.query.showHistory === 'true'; // Check query param
@@ -432,7 +452,10 @@ exports.getPlanList = async (req, res) => {
     }
 };
 
-// 5. ฟังก์ชันลบข้อมูล PC Plan (Delete) -> Soft Delete
+/**
+ * API: ลบข้อมูล PC Plan แบบลบบางตัวหรือ Soft Delete (Delete PC Plan)
+ * หน้าที่: ลบข้อมูลรายการที่มี Plan_ID ตรงกัน เปลี่ยนสถานะในระบบให้ไม่แสดงผล (Soft Delete)
+ */
 exports.deletePCPlan = async (req, res) => {
     try {
         const id = req.params.id;
@@ -454,7 +477,10 @@ exports.deletePCPlan = async (req, res) => {
     }
 };
 
-// 6. ฟังก์ชันลบข้อมูล PC Plan (Delete Group - All Revisions) -> Soft Delete
+/**
+ * API: ลบแผนงาน PC Plan ยกกลุ่ม (Delete PC Plan Group - All Revisions)
+ * หน้าที่: ลบแผนงานใน GroupId เดียวกันแบบ Soft Delete (ลบประวัติ Revision ทั้งหมดของไอเทมนั้น) และส่ง Event แจ้งเตือนกระดานข่าว
+ */
 exports.deletePCPlanGroup = async (req, res) => {
     try {
         const groupId = req.params.groupId;
@@ -497,7 +523,10 @@ exports.deletePCPlanGroup = async (req, res) => {
     }
 };
 
-// 6. ฟังก์ชันดึงประวัติการแก้ไข (History) ตาม GroupId
+/**
+ * API: ดึงประวัติการแก้ไข PC Plan ตาม GroupId (Get Plan History)
+ * หน้าที่: ดึงข้อมูลรายการแผนงานเก่า (Revision เก่าๆ) ของไอเทมที่อยู่ใน GroupId นั้นมาแสดงให้ผู้ใช้ดูประวัติย้อนหลังได้
+ */
 exports.getPlanHistory = async (req, res) => {
     try {
         const { groupId } = req.params;
@@ -515,7 +544,11 @@ exports.getPlanHistory = async (req, res) => {
     }
 };
 
-// 7. Update Paths Only (No Revision)
+/**
+ * API: อัปเดตเฉพาะเส้นทางไฟล์แนบ (Update Paths Only)
+ * หน้าที่: อัปเดตลิงก์พาทของไฟล์เอกสารต่างๆ (Drawing, Layout, IIQC Table) แบบ In-place โดยไม่เปลี่ยน Revision 
+ * พร้อมส่งแจ้งเตือน Notification หาคนอื่นเมื่อ Engineering หรือ QC เพิ่มเอกสาร
+ */
 exports.updatePaths = async (req, res) => {
     try {
         const { groupId, pathDwg, pathLayout, iiqc } = req.body;
