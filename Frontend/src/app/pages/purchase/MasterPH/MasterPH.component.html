@@ -28,11 +28,13 @@
                         </div>
                     </div>
 
+                    <!-- Upload Zone PMC -->
                     <div class="upload-zone text-center p-4 mb-4 rounded-3 border-2 border-dashed"
                         [class.has-file]="masterToolingPMCFileName" (click)="fileInputMasterToolingPMC.click()">
 
                         <input type="file" #fileInputMasterToolingPMC style="display: none;"
-                            (change)="onFileChangeMasterToolingPMC($event)" accept=".xlsx, .xls" />
+                            (change)="onFileChangeMasterToolingPMC($event)" accept=".xlsx, .xls"
+                            [disabled]="uploadingPMC" />
 
                         <div *ngIf="!masterToolingPMCFileName">
                             <i class="bi bi-cloud-arrow-up display-4 text-secondary mb-2"></i>
@@ -50,9 +52,41 @@
                         </div>
                     </div>
 
+                    <!-- Progress Bar & Summary Section PMC -->
+                    <div *ngIf="uploadingPMC || summaryPMC" class="mb-4">
+                        <div *ngIf="uploadingPMC">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-semibold text-primary">Uploading...</span>
+                                <span class="small fw-semibold text-primary">{{uploadProgressPMC}}%</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                                    role="progressbar" [style.width.%]="uploadProgressPMC"
+                                    [attr.aria-valuenow]="uploadProgressPMC" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div *ngIf="summaryPMC && !uploadingPMC"
+                            class="alert alert-success mt-3 mb-0 py-2 px-3 border-0 bg-success-subtle">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>
+                                <div>
+                                    <h6 class="mb-0 text-success fw-bold fs-6">Upload Complete</h6>
+                                    <small class="text-success-emphasis">Successfully processed {{summaryPMC.total}}
+                                        records.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <button class="btn btn-primary w-100 py-3 fw-bold btn-upload" (click)="uploadData('masterTooling')"
-                        [disabled]="!tempData.masterToolingPMC || tempData.masterToolingPMC.length === 0">
-                        <i class="bi bi-cloud-upload-fill me-2"></i> Upload PMC Data
+                        [disabled]="!tempData.masterToolingPMC || tempData.masterToolingPMC.length === 0 || uploadingPMC">
+                        <span *ngIf="!uploadingPMC"><i class="bi bi-cloud-upload-fill me-2"></i> Upload PMC Data</span>
+                        <span *ngIf="uploadingPMC">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Uploading...
+                        </span>
                     </button>
                 </div>
             </div>
@@ -60,7 +94,8 @@
 
         <!-- GM Section Card -->
         <div class="col-lg-6">
-            <div class="card upload-card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
+            <div class="card upload-card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative"
+                [class.border-info]="masterToolingGMFileName">
                 <div class="card-body p-5">
 
                     <div class="d-flex align-items-center mb-4">
@@ -73,14 +108,68 @@
                         </div>
                     </div>
 
-                    <div class="text-center p-4 mb-4 rounded-3 bg-light border">
-                        <i class="bi bi-database-fill-gear display-4 text-info mb-3"></i>
-                        <h6 class="fw-semibold">Sync Data with System</h6>
-                        <p class="text-muted small mb-0">Retrieve and map uploaded GM Tooling data automatically.</p>
+                    <!-- Upload Zone GM -->
+                    <div class="upload-zone text-center p-4 mb-4 rounded-3 border-2 border-dashed"
+                        [ngClass]="masterToolingGMFileName ? 'border-info bg-info-subtle' : ''"
+                        (click)="fileInputMasterToolingGM.click()">
+
+                        <input type="file" #fileInputMasterToolingGM style="display: none;"
+                            (change)="onFileChangeMasterToolingGM($event)" accept=".xlsx, .xls"
+                            [disabled]="uploadingGM" />
+
+                        <div *ngIf="!masterToolingGMFileName">
+                            <i class="bi bi-cloud-arrow-up display-4 text-secondary mb-2"></i>
+                            <h6 class="fw-semibold">Drop file or click to choose</h6>
+                            <p class="text-muted small mb-0">Supports Excel files (.xlsx, .xls)</p>
+                        </div>
+
+                        <div *ngIf="masterToolingGMFileName" class="d-flex flex-column align-items-center">
+                            <i class="bi bi-file-earmark-excel-fill display-4 text-info mb-2"></i>
+                            <h6 class="fw-semibold text-dark text-truncate w-100 px-3"
+                                title="{{masterToolingGMFileName}}">
+                                {{masterToolingGMFileName}}
+                            </h6>
+                            <span class="badge bg-info-subtle text-info mt-1 border border-info-subtle">Ready to
+                                upload</span>
+                        </div>
                     </div>
 
-                    <button class="btn btn-info text-white w-100 py-3 fw-bold btn-upload" (click)="syncGMData()">
-                        <i class="bi bi-arrow-repeat me-2"></i> Sync GM Data
+                    <!-- Progress Bar & Summary Section GM -->
+                    <div *ngIf="uploadingGM || summaryGM" class="mb-4">
+                        <div *ngIf="uploadingGM">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-semibold text-info">Uploading...</span>
+                                <span class="small fw-semibold text-info">{{uploadProgressGM}}%</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                                    role="progressbar" [style.width.%]="uploadProgressGM"
+                                    [attr.aria-valuenow]="uploadProgressGM" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div *ngIf="summaryGM && !uploadingGM"
+                            class="alert alert-info mt-3 mb-0 py-2 px-3 border-0 bg-info-subtle">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle-fill text-info fs-5 me-2"></i>
+                                <div>
+                                    <h6 class="mb-0 text-info fw-bold fs-6">Upload Complete</h6>
+                                    <small class="text-info-emphasis">Successfully processed {{summaryGM.total}}
+                                        records.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-info text-white w-100 py-3 fw-bold btn-upload shadow-sm"
+                        (click)="uploadDataGM()"
+                        [disabled]="!tempData.masterToolingGM || tempData.masterToolingGM.length === 0 || uploadingGM">
+                        <span *ngIf="!uploadingGM"><i class="bi bi-cloud-upload-fill me-2"></i> Upload GM Data</span>
+                        <span *ngIf="uploadingGM">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Uploading...
+                        </span>
                     </button>
                 </div>
             </div>

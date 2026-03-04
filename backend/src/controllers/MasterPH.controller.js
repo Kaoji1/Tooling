@@ -812,8 +812,42 @@ exports.importMasterToolingPMC = async (req, res) => {
             return res.status(400).send({ message: "Sheet not found" });
         }
 
+        // --- Pre-process: Convert Excel error cells to text strings ---
+        // Excel errors (#N/A, #DIV/0!, etc.) are stored as error type cells.
+        // The xlsx library returns them as error codes (numbers) or undefined,
+        // NOT as the literal strings "#N/A" / "#DIV/0!" that the SP expects.
+        // This step converts error cells to their text representation.
+        const XLSX = require('xlsx');
+        const ERROR_MAP = {
+            0x00: '#NULL!',
+            0x07: '#DIV/0!',
+            0x0F: '#VALUE!',
+            0x17: '#REF!',
+            0x1D: '#NAME?',
+            0x24: '#NUM!',
+            0x2A: '#N/A',
+            0x2B: '#GETTING_DATA'
+        };
+
+        if (worksheet['!ref']) {
+            const wsRange = XLSX.utils.decode_range(worksheet['!ref']);
+            for (let R = wsRange.s.r; R <= wsRange.e.r; R++) {
+                for (let C = wsRange.s.c; C <= wsRange.e.c; C++) {
+                    const cellAddr = XLSX.utils.encode_cell({ r: R, c: C });
+                    const cell = worksheet[cellAddr];
+                    if (cell && cell.t === 'e') {
+                        // Convert error cell to string type
+                        cell.t = 's';
+                        cell.v = cell.w || ERROR_MAP[cell.v] || '#ERROR';
+                        delete cell.w;
+                    }
+                }
+            }
+            console.log('[Import Master Tooling PMC] Pre-processed Excel error cells to text strings.');
+        }
+
         // Find Header Row Logic
-        const aoa = require('xlsx').utils.sheet_to_json(worksheet, { header: 1 });
+        const aoa = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
         let headerRowIndex = 0;
         const keywords = ['item no', 'itemno', 'division'];
 
@@ -830,7 +864,7 @@ exports.importMasterToolingPMC = async (req, res) => {
         }
 
         // Parse to JSON Array
-        const items = require('xlsx').utils.sheet_to_json(worksheet, { range: headerRowIndex });
+        const items = XLSX.utils.sheet_to_json(worksheet, { range: headerRowIndex });
         const totalItems = items.length;
 
         console.log(`[Import Master Tooling PMC] Parsed ${totalItems} items from Excel.`);
@@ -856,27 +890,25 @@ exports.importMasterToolingPMC = async (req, res) => {
         const getString = (val) => (val === "" || val == null) ? null : String(val).trim();
 
         // Map items to plain JSON object with keys expected by SP
-        // Using exact headers from user screenshots as primary candidates
-        const mappedItems = items.map(item => {
-            // Holder_Spec logic
-            const holderSpecVal = findValue(item, ['Holder Spec', 'Holder_Spec']); // Screenshot: "Holder Spec"
-            const holderSpec = (holderSpecVal === '-' || holderSpecVal === '' || holderSpecVal == null) ? null : String(holderSpecVal).trim();
-
+        // All values use getString() to pass raw Excel data — SP handles cleansing
+        const mappedItems = items.map((item, index) => {
             return {
-                Spec: getString(findValue(item, ['Spec'])), // Screenshot: "Spec"
-                PartNo: getString(findValue(item, ['PartNo', 'Part No', 'Part No.'])), // Screenshot: "PartNo"
-                ItemNo: getString(findValue(item, ['ItemNo', 'Item No', 'Item No.'])), // Screenshot: "ItemNo"
-                Process: getString(findValue(item, ['Process'])), // Screenshot: "Process"
-                MC: getString(findValue(item, ['MC'])), // Screenshot: "MC"
-                DwgRev: getString(findValue(item, ['DwgRev', 'Dwg Rev'])), // Screenshot: "DwgRev"
-                DwgUpdate: getString(findValue(item, ['DwgUpdate', 'Dwg Update'])), // Screenshot: "DwgUpdate"
-                Usage_pcs: getString(findValue(item, ['Usage_pcs', 'Usage pcs'])), // Screenshot: "Usage_pcs"
-                CT_sec: getString(findValue(item, ['CT_sec', 'CT sec'])), // Screenshot: "CT_sec"
-                Position: getString(findValue(item, ['Position'])), // Screenshot: "Position"
-                Res: getString(findValue(item, ['Res.', 'Res'])), // Screenshot: "Res."
-                Date_update: getString(findValue(item, ['Date update', 'Date_update'])), // Screenshot: "Date update"
-                Insert_Maker: getString(findValue(item, ['Insert Maker', 'Insert_Maker'])), // Screenshot: "Insert Maker"
-                Holder_Spec: holderSpec,
+                ExcelRow: index + 2,
+
+                Spec: getString(findValue(item, ['Spec'])),
+                PartNo: getString(findValue(item, ['PartNo', 'Part No', 'Part No.'])),
+                ItemNo: getString(findValue(item, ['ItemNo', 'Item No', 'Item No.'])),
+                Process: getString(findValue(item, ['Process'])),
+                MC: getString(findValue(item, ['MC'])),
+                DwgRev: getString(findValue(item, ['DwgRev', 'Dwg Rev'])),
+                DwgUpdate: getString(findValue(item, ['DwgUpdate', 'Dwg Update'])),
+                Usage_pcs: getString(findValue(item, ['Usage_pcs', 'Usage pcs'])),
+                CT_sec: getString(findValue(item, ['CT_sec', 'CT sec'])),
+                Position: getString(findValue(item, ['Position'])),
+                Res: getString(findValue(item, ['Res.', 'Res'])),
+                Date_update: getString(findValue(item, ['Date update', 'Date_update'])),
+                Insert_Maker: getString(findValue(item, ['Insert Maker', 'Insert_Maker'])),
+                Holder_Spec: getString(findValue(item, ['Holder Spec', 'Holder_Spec'])),
                 Holder_No: getString(findValue(item, ['Holder No', 'Holder_No'])), // Screenshot: "Holder No"
                 Holder_Maker: getString(findValue(item, ['Holder Maker', 'Holder_Maker'])), // Screenshot: "Holder Maker"
                 Conner: getString(findValue(item, ['Conner'])), // Screenshot: "Conner"
@@ -884,7 +916,8 @@ exports.importMasterToolingPMC = async (req, res) => {
                 Cutting_Layout_No: getString(findValue(item, ['Cutting Layout No.', 'Cutting_Layout_No'])), // Screenshot: "Cutting Layout No."
                 Cutting_Layout_Rev: getString(findValue(item, ['Cutting Layout Rev.', 'Cutting_Layout_Rev'])), // Screenshot: "Cutting Layout Rev."
                 Program_cutting_No: getString(findValue(item, ['Program cutting No.', 'Program_cutting_No'])), // Screenshot: "Program cutting No."
-                Position_Code: getString(findValue(item, ['Position Code', 'Holder Position'])) // Screenshot: "Position Code"
+                Position_Code: getString(findValue(item, ['Position Code', 'Holder Position'])), // Screenshot: "Position Code"
+                Fac: getString(findValue(item, ['Fac', 'Facility', 'FAC'])) // Added Fac mapping for new SP
             };
         });
 
@@ -893,41 +926,44 @@ exports.importMasterToolingPMC = async (req, res) => {
         console.log(`[Import Master Tooling PMC] Sending JSON to SP [trans].[Stored_Import_Master_Tooling_PMC_JSON]...`);
 
         const request = pool.request();
+        request.timeout = 300000; // 5 minutes timeout prevent db cancel
         request.input('JsonData', sql.NVarChar(sql.MAX), jsonString);
         request.input('UploadedBy', sql.NVarChar(100), uploadedBy);
 
-        // Optional Stats Outputs if SP supports them (Adjust as needed based on new SP)
-        request.output('CuttingUpdated', sql.Int);
-        request.output('CuttingInserted', sql.Int);
-        request.output('SetupUpdated', sql.Int);
-        request.output('SetupInserted', sql.Int);
-
-        // Execute New SP
-        // Using name provided by user: [trans].[Stored_Import_Master_Tooling_PMC_JSON]
-        const spResult = await request.execute('[trans].[Stored_Import_Master_Tooling_PMC_JSON]');
-
-        const cuttingUpdated = spResult.output.CuttingUpdated || 0;
-        const cuttingInserted = spResult.output.CuttingInserted || 0;
-        const setupUpdated = spResult.output.SetupUpdated || 0;
-        const setupInserted = spResult.output.SetupInserted || 0;
-        const totalChanges = cuttingUpdated + cuttingInserted + setupUpdated + setupInserted;
+        // Execute SP — returns a summary result set
+        const result = await request.execute('[trans].[Stored_Import_Master_Tooling_PMC_JSON]');
 
         console.log(`[Import Master Tooling PMC] SP execution complete.`);
 
+        // Read summary from SP result set (Step 5 SELECT)
+        const summary = result.recordset && result.recordset[0];
+        const successCount = summary ? summary.SuccessCount : null;
+        const skippedRows = summary ? summary.SkippedRows : 0;
+        const missingPartCount = summary ? summary.MissingPartNoCount : 0;
+        const skippedDetail = summary ? summary.SkippedDetail : null;
+
         res.status(200).send({
-            message: "Import successful",
-            count: totalItems,
-            stats: {
-                cuttingUpdated,
-                cuttingInserted,
-                setupUpdated,
-                setupInserted,
-                totalChanges
-            }
+            message: skippedRows > 0
+                ? `Import completed with ${skippedRows} row(s) skipped due to ${missingPartCount} unrecognized Part No.`
+                : 'Import successful',
+            successCount,
+            skippedRows,
+            missingPartNoCount: missingPartCount,
+            skippedDetail: skippedDetail || null,
+            totalInputRows: totalItems
         });
 
     } catch (err) {
         console.error("Import Master Tooling PMC Error:", err);
+
+        // Check if it's our custom SQL Validation error
+        if (err.message && err.message.includes('Upload Validation Failed')) {
+            return res.status(400).send({
+                message: err.message, // Send specific message to frontend
+                error: "Validation Error"
+            });
+        }
+
         res.status(500).send({
             message: "Internal Server Error",
             error: err.message,

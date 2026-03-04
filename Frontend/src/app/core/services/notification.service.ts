@@ -106,6 +106,7 @@ export class NotificationService {
       IsRead: false
     };
     this.addNotification(newNotif);
+    this.playNotificationSound();
   }
 
   private setupSocketListeners() {
@@ -197,11 +198,40 @@ export class NotificationService {
     return this.unreadCount$;
   }
 
+  /**
+   * Plays a clean 2-note ascending chime (C5 → E5) using Web Audio API.
+   * Inspired by Line notification — soft, clear, and distinctive.
+   */
   private playNotificationSound() {
+    if (!isPlatformBrowser(this.platformId)) return;
     try {
-      const audio = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...");
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+      const playTone = (frequency: number, startTime: number, duration: number) => {
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, startTime);
+
+        // Soft attack + exponential fade-out
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(0.35, startTime + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration);
+      };
+
+      const now = ctx.currentTime;
+      playTone(523.25, now, 0.25);        // C5 — first note
+      playTone(659.25, now + 0.15, 0.35); // E5 — second note (slightly overlapping)
+
     } catch (error) {
-      console.error('Sound error', error);
+      console.error('Notification sound error:', error);
     }
   }
 }
