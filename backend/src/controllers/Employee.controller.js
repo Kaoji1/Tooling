@@ -1,9 +1,11 @@
 const { poolPromise } = require("../config/database");
 const sql = require('mssql');
 
-
+/**
+ * API: ดึงรายชื่อพนักงานทั้งหมด (Get All Employees)
+ * หน้าที่: ดึงข้อมูลพนักงานทั้งหมดระบบจาก View_CuttingTool_Employee เพื่อนำไปแสดงในตารางหน้าจัดการผู้ใช้งาน (User Management)
+ */
 exports.ShowUser = async (req, res) => {
-
   try {
     console.log(req.body)
     const pool = await poolPromise;
@@ -20,6 +22,11 @@ exports.ShowUser = async (req, res) => {
   }
 };
 
+/**
+ * API: เพิ่มผู้ใช้งานใหม่ (Add New Employee)
+ * หน้าที่: รับข้อมูลจากฟอร์มหน้าเว็บ (รหัสพนักงาน, ชื่อ, Username, Password, บทบาท, อีเมล) 
+ * เพื่อบันทึกผู้ใช้งานใหม่ลงในฐานข้อมูลผ่าน Stored Procedure
+ */
 exports.AddUser = async (req, res) => {
   try {
     const {
@@ -50,7 +57,11 @@ exports.AddUser = async (req, res) => {
     res.status(500).json({ success: false, error: err.message || 'Cannot add employee' });
   }
 };
-// controller
+
+/**
+ * API: ลบผู้ใช้งาน (Delete Employee)
+ * หน้าที่: รับไอดีพนักงาน (Employee_ID) เพื่อค้นหาและลบผู้ใช้งานนั้นออกจากฐานข้อมูล (tb_CuttingTool_Employee)
+ */
 exports.DeleteEmployee = async (req, res) => {
   try {
     const empId = req.params.id;
@@ -65,7 +76,11 @@ exports.DeleteEmployee = async (req, res) => {
     res.status(500).json({ error: err.message || 'Delete failed' });
   }
 };
-// employees.controller.js
+
+/**
+ * API: อัปเดตข้อมูลผู้ใช้งาน (Update Employee Info)
+ * หน้าที่: แก้ไขข้อมูลผู้ใช้งานเดิมในระบบ หากมีการส่ง Password ใหม่มาจะทำการอัปเดต ถ้าไม่ส่งมาจะใช้รหัสเดิม
+ */
 exports.updateEmployee = async (req, res) => {
   try {
     const id = req.params.id;

@@ -1,35 +1,12 @@
 const sql = require("mssql");
 const { poolPromise } = require("../config/database");
 
-exports.SaveHistoryPrint = async (req, res) => {
-  try {
-    const {
-      EmployeeID,
-      Division,
-      DocNo,
-      PratNo,
-      DueDate,
-      TypePrint,
-      Total
-    } = req.body;
-
-    const pool = await poolPromise;
-    await pool.request()
-      .input("EmployeeID", sql.NVarChar(50), EmployeeID)
-      .input("Division", sql.NVarChar(50), Division)
-      .input("DocNo", sql.NVarChar(50), DocNo)
-      .input("PratNo", sql.NVarChar(50), PratNo)
-      .input("DueDate", sql.NVarChar(50), DueDate)
-      .input("TypePrint", sql.NVarChar(50), TypePrint)
-      .input("Total", sql.Int, Total)
-      .execute("stored_Master_HistoryPrint_Insert");
-
-    res.status(200).json({ message: "บันทึกประวัติการพิมพ์สำเร็จ" });
-  } catch (err) {
-    console.error("Error SaveHistoryPrint:", err);
-    res.status(500).json({ error: "บันทึกไม่สำเร็จ", details: err.message });
-  }
-};
+/**
+ * API: บันทึกข้อมูลประวัติการพิมพ์เอกสาร (Save History Print)
+ * หน้าที่: บันทึกข้อมูลว่าพนักงานคนไหน (EmployeeID) พิมพ์เอกสารเบิกแผนกอะไร (Division) 
+ * เลขที่เอกสาร (DocNo), พาร์ท (PratNo), วันที่ครบกำหนด (DueDate), ประเภทการพิมพ์และจำนวนไปกี่แผ่น
+ * (ข้อมูลจะถูกบันทึกผ่าน Stored Procedure: stored_Master_HistoryPrint_Insert)
+ */
 exports.SaveHistoryPrint = async (req, res) => {
   try {
     const { EmployeeID, Division, DocNo, PratNo, DueDate, TypePrint, Total } = req.body;
@@ -45,30 +22,20 @@ exports.SaveHistoryPrint = async (req, res) => {
       .input('Total', sql.Int, Total)
       .execute('stored_Master_HistoryPrint_Insert');
 
-    res.json({ success: true });
+    res.json({ success: true, message: "บันทึกประวัติการพิมพ์สำเร็จ" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-//เรียกdivisionจากSQL 
-exports.Get_Total = async (req, res) => {
-  console.log(req.body)
-  try {
-    const pool = await poolPromise;
-    const result = await pool
-    .request()
-    .query("SELECT * FROM [dbo].[View_Master_CuttingTool_HistoryPrint]");
-
-    res.json(result.recordset);
-  } 
-  catch (error) {
-    console.error("Error executing query:", error.stack);
-    res.status(500).json({ error: "Internal Server Error", details: error.message });
+    console.error("Error SaveHistoryPrint:", err);
+    res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 };
 
-// ดึงรายชื่อพนักงานที่มีสิทธิ์ print
+
+
+/**
+ * API: ดึงรายชื่อพนักงานที่มีสิทธิ์พิมพ์ (Get Employee Print Permission List)
+ * หน้าที่: ค้นหาว่าในระบบมีพนักงาน (Employee_ID) คนไหนบ้างที่ได้รับอนุญาตให้กดปุ่ม Print ได้ 
+ * (โดยเช็คจากตาราง tb_Emp_PermissionPrint)
+ */
 exports.EmpPrint = async (req, res) => {
   try {
     const pool = await poolPromise;
@@ -83,7 +50,11 @@ exports.EmpPrint = async (req, res) => {
   }
 };
 
-// ตรวจสอบสิทธิ์ก่อนพิมพ์ PDF
+/**
+ * API: ตรวจสอบสิทธิ์การพิมพ์ของพนักงานรายบุคคล (Check Print Permission)
+ * หน้าที่: รับไอดีพนักงาน (Employee_ID) มาเช็คตรงๆ ว่ามีรายชื่ออยู่ในตาราง tb_Emp_PermissionPrint หรือไม่ 
+ * ส่งค่ากลับเป็น true (พิมพ์ได้) หรือ false (ไม่มีสิทธิ์พิมพ์)
+ */
 exports.checkPrintPermission = async (req, res) => {
   try {
     const { Employee_ID } = req.query;
@@ -105,8 +76,11 @@ exports.checkPrintPermission = async (req, res) => {
   }
 };
 
-//ข้อมูลประวัติการprint
-
+/**
+ * API: ดึงข้อมูลประวัติการพิมพ์ทั้งหมด (Get All History Print)
+ * หน้าที่: ดึงข้อมูลดิบประวัติการปริ้นต์จากตาราง tb_Cuttingtool_HistoryPrint ทั้งหมด 
+ * เพื่อแสดงลิสต์รายชื่อเอกสารที่เคยถูกสั่งพิมพ์ไปแล้ว
+ */
 exports.HistoryPrint = async (req, res) => {
   try {
     const pool = await poolPromise;

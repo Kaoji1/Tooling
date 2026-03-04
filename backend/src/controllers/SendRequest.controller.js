@@ -3,7 +3,7 @@ const Type = require("mssql").TYPES;
 const sql = require("mssql");
 const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
 
-const frontendLink = process.env.FRONTEND_URL || 'http://localhost:4200';
+const frontendLink = process.env.FRONTEND_URL 
 
 // insert data to table
 exports.Send_Request = async (req, res) => {

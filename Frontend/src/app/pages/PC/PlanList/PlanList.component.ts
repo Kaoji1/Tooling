@@ -18,6 +18,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { CustomDateAdapter } from '../../../core/utils/custom-date-adapter';
 import { CalendarModule } from 'primeng/calendar';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { NotificationComponent } from '../../../components/notification/notification.component';
 import { PrintActionBtnComponent } from './components/print-action-btn/print-action-btn.component';
 
@@ -47,7 +48,8 @@ export const MY_DATE_FORMATS = {
 
     CalendarModule,
     NotificationComponent,
-    PrintActionBtnComponent
+    PrintActionBtnComponent,
+    NgSelectModule
   ],
   providers: [
     { provide: DateAdapter, useClass: CustomDateAdapter },
@@ -62,10 +64,14 @@ export class PlanListComponent implements OnInit {
   filterDate: Date | null = null;
   filterDivision: string = '';
   filterMachineType: string = '';
+  filterStatus: string = '';
+  filterFac: string = '';
+  filterProcess: string = '';
+  filterPartNo: string = '';
   showHistory: boolean = false; // Toggle for Global History
 
   // New Tab Structure
-  departments: string[] = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gage', 'View'];
+  departments: string[] = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gate', 'View'];
   selectedDepartment: string = ''; // Initialize empty to prevent "Flash of PC Content" before role check
 
   subTabs: string[] = ['Upcoming'];
@@ -88,6 +94,10 @@ export class PlanListComponent implements OnInit {
   // รายการใน Dropdown Filter
   divisions: string[] = ['GM', 'PMC'];
   machineTypes: string[] = ['CNC', 'Lathe', 'Milling'];
+  facList: string[] = [];
+  processList: string[] = [];
+  partNoList: string[] = [];
+  statusList: string[] = ['Ready', 'Wait Eng', 'Wait QC', 'Wait En & QC', 'Cancelled'];
 
   // ข้อมูลตาราง
   planList: any[] = [];
@@ -140,7 +150,7 @@ export class PlanListComponent implements OnInit {
       const role = this.currentUser.Role;
 
       // 1. Show ALL Viewtabs for everyone
-      this.departments = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gage', 'View'];
+      this.departments = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gate', 'View'];
 
       // 2. Determine which tabs are ACCESSIBLE (Clickable)
       let allowed: string[] = [];
@@ -148,7 +158,7 @@ export class PlanListComponent implements OnInit {
       if (role) {
         switch (role) {
           case 'admin':
-            allowed = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gage', 'View'];
+            allowed = ['PC', 'PD', 'PH', 'EN', 'QC', 'Gate', 'View'];
             break;
           case 'PC':
             allowed = ['PC'];
@@ -165,8 +175,8 @@ export class PlanListComponent implements OnInit {
           case 'QC':
             allowed = ['QC'];
             break;
-          case 'Gage':
-            allowed = ['Gage'];
+          case 'Gate':
+            allowed = ['Gate'];
             break;
           case 'Cost':
           case 'view': // Assuming view role also sees View tab
@@ -211,9 +221,18 @@ export class PlanListComponent implements OnInit {
       currentData = currentData.filter(item => item.division === this.filterDivision);
     }
 
-    // 3. Extract Unique MC Types (Sort alphabetically)
+    // 3. Extract Unique Options (Sort alphabetically)
     const uniqueMCs = new Set(currentData.map(item => item.mcType).filter(mc => mc));
     this.machineTypes = Array.from(uniqueMCs).sort();
+
+    const uniqueFacs = new Set(currentData.map(item => item.fac).filter(fac => fac));
+    this.facList = Array.from(uniqueFacs).sort();
+
+    const uniqueProcesses = new Set(currentData.map(item => item.process).filter(process => process));
+    this.processList = Array.from(uniqueProcesses).sort();
+
+    const uniquePartNos = new Set(currentData.map(item => item.partNo).filter(partNo => partNo));
+    this.partNoList = Array.from(uniquePartNos).sort();
   }
 
   checkPrintPermission() {
@@ -274,7 +293,7 @@ export class PlanListComponent implements OnInit {
         }));
 
         this.applyFilter(); // เรียก Filter ครั้งแรกหลังจากโหลดข้อมูลเสร็จ
-        this.updatePrintCounts(); // Fetch latest print counts
+
       },
       error: (err: any) => {
         console.error('Error loading plan list:', err);
@@ -358,15 +377,28 @@ export class PlanListComponent implements OnInit {
       item.groupDate = groupDateMap.get(key) || item.date;
       item.groupKey = key; // Keep key for post-processing
 
-      // --- Division Filtering Logic ---
-      // All departments see ALL divisions by default. Users filter via the dropdown.
+      // --- Filter Logic ---
       let matchDivision = this.filterDivision ? item.division === this.filterDivision : true;
+      let matchMachine = this.filterMachineType ? item.mcType === this.filterMachineType : true;
+      let matchFac = this.filterFac ? item.fac === this.filterFac : true;
+      let matchProcess = this.filterProcess ? item.process === this.filterProcess : true;
+      let matchPartNo = this.filterPartNo ? item.partNo === this.filterPartNo : true;
 
-      const matchMachine = this.filterMachineType ? item.mcType === this.filterMachineType : true;
+      let matchStatus = true;
+      if (this.filterStatus) {
+        if (this.filterStatus === 'Cancelled') {
+          matchStatus = item.planStatus === 'Cancelled';
+        } else {
+          const calculatedStatus = this.getProcessStatus(item).label;
+          matchStatus = item.planStatus !== 'Cancelled' && calculatedStatus === this.filterStatus;
+        }
+      }
+
+      const isBaseMatch = matchDivision && matchMachine && matchFac && matchProcess && matchPartNo && matchStatus;
       const isActiveLatest = (item.planStatus === 'Active' || item.planStatus === 'Incomplete') && isLatest;
 
-      // --- 1. Calculate Counts (Always respect Division/Machine filters) ---
-      if (matchDivision && matchMachine && isActiveLatest) {
+      // --- 1. Calculate Counts (Always respect basic filters) ---
+      if (isBaseMatch && isActiveLatest) {
         // Count for 'Upcoming' (Global logic: Today + 2 Months)
         const twoMonthsLater = new Date(today);
         twoMonthsLater.setMonth(today.getMonth() + 2);
@@ -394,7 +426,7 @@ export class PlanListComponent implements OnInit {
       }
 
       // --- 2. Actual Filtering for the List ---
-      if (!matchDivision || !matchMachine) return false;
+      if (!isBaseMatch) return false;
 
       let matchSubTab = true;
 
@@ -526,9 +558,22 @@ export class PlanListComponent implements OnInit {
       const isActiveLatest = (item.planStatus === 'Active' || item.planStatus === 'Incomplete') && isLatest;
 
       let matchDivision = this.filterDivision ? item.division === this.filterDivision : true;
+      let matchFac = this.filterFac ? item.fac === this.filterFac : true;
+      let matchProcess = this.filterProcess ? item.process === this.filterProcess : true;
+      let matchPartNo = this.filterPartNo ? item.partNo === this.filterPartNo : true;
+
+      let matchStatus = true;
+      if (this.filterStatus) {
+        if (this.filterStatus === 'Cancelled') {
+          matchStatus = item.planStatus === 'Cancelled';
+        } else {
+          const calculatedStatus = this.getProcessStatus(item).label;
+          matchStatus = item.planStatus !== 'Cancelled' && calculatedStatus === this.filterStatus;
+        }
+      }
       // SKIP matchMachine
 
-      if (!matchDivision) return false;
+      if (!matchDivision || !matchFac || !matchProcess || !matchPartNo || !matchStatus) return false;
 
       let matchSubTab = true;
       // ... (Re-use subtab logic logic is complex due to dependence on item properties)
@@ -590,12 +635,36 @@ export class PlanListComponent implements OnInit {
     const seenMCs = new Set(baseListForDropdown.map(i => i.mcType).filter(m => m));
     this.machineTypes = Array.from(seenMCs).sort();
 
-    // Fix: If the currently selected MC Type is no longer available in the new list,
-    // reset it to '' (All) to avoid showing an empty table unexpectedly.
+    const seenFacs = new Set(baseListForDropdown.map(i => i.fac).filter(f => f));
+    this.facList = Array.from(seenFacs).sort();
+
+    const seenProcesses = new Set(baseListForDropdown.map(i => i.process).filter(p => p));
+    this.processList = Array.from(seenProcesses).sort();
+
+    const seenPartNos = new Set(baseListForDropdown.map(i => i.partNo).filter(p => p));
+    this.partNoList = Array.from(seenPartNos).sort();
+
+    // Fix: If the currently selected items are no longer available in the new lists, reset them
+    let shouldReFilter = false;
+
     if (this.filterMachineType && !seenMCs.has(this.filterMachineType)) {
       this.filterMachineType = '';
-      // We need to re-run the final filter logic because filterMachineType changed to ''
-      // Recursive call is safe here because next time filterMachineType will be '' and won't trigger this block.
+      shouldReFilter = true;
+    }
+    if (this.filterFac && !seenFacs.has(this.filterFac)) {
+      this.filterFac = '';
+      shouldReFilter = true;
+    }
+    if (this.filterProcess && !seenProcesses.has(this.filterProcess)) {
+      this.filterProcess = '';
+      shouldReFilter = true;
+    }
+    if (this.filterPartNo && !seenPartNos.has(this.filterPartNo)) {
+      this.filterPartNo = '';
+      shouldReFilter = true;
+    }
+
+    if (shouldReFilter) {
       this.applyFilter();
       return; // Exit current run
     }
@@ -1309,11 +1378,7 @@ export class PlanListComponent implements OnInit {
       return;
     }
 
-    const qty = Number(this.printQty);
-    if (!qty || qty <= 0) {
-      Swal.fire('แจ้งเตือน', 'กรุณาระบุจำนวนให้ถูกต้อง', 'warning');
-      return;
-    }
+    const qty = 1; // Default to 1 for history tracking without user input
 
     const path = this.selectedItemForPrint[this.printType]?.replace(/^"|"$/g, '');
     if (!path || path === '-') {
@@ -1374,27 +1439,24 @@ export class PlanListComponent implements OnInit {
         iframe.onload = () => {
           const contentWindow = iframe.contentWindow;
           if (contentWindow) {
-            contentWindow.focus();
-            contentWindow.print();
 
-            // Check if user actually printed
+            // 1. Save Print History Immediately
+            this.savePrintHistory(qty, docNoToSave, typePrintToSend, employeeId, dueDateVal);
+
+            // 2. Focus and Print (Wrapped in setTimeout to allow HTTP request to dispatch before blocking thread)
+            setTimeout(() => {
+              contentWindow.focus();
+              contentWindow.print();
+            }, 100);
+
+            // 3. Clean up iframe when print dialog closes
             const onPrintClose = () => {
               setTimeout(() => {
-                Swal.fire({
-                  title: 'Did you print successfully?',
-                  text: "Click 'Yes' to save this print record.",
-                  icon: 'question',
-                  showCancelButton: true,
-                  confirmButtonText: 'Yes, I printed',
-                  cancelButtonText: 'No, Cancelled'
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                    this.savePrintHistory(qty, docNoToSave, typePrintToSend, employeeId, dueDateVal);
-                  }
+                try {
                   document.body.removeChild(iframe);
                   URL.revokeObjectURL(blobUrl);
-                });
-              }, 500);
+                } catch (e) { }
+              }, 1000);
             };
 
             contentWindow.onafterprint = onPrintClose;
@@ -1420,64 +1482,30 @@ export class PlanListComponent implements OnInit {
       Total: qty
     }).subscribe({
       next: () => {
-        this.updatePrintCounts();
-        this.closePrintModal();
-        Swal.fire('Success', 'Print history saved.', 'success');
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Print history saved.',
+          showConfirmButton: false,
+          timer: 2000
+        });
       },
       error: err => {
         console.error("Save history error:", err);
-        Swal.fire('Error', 'Failed to save print history.', 'error');
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: 'Failed to save print history.',
+          showConfirmButton: false,
+          timer: 3000
+        });
       }
     });
   }
 
-
-  updatePrintCounts() {
-    this.historyPrint.get_Total().subscribe({
-      next: (counts: any[]) => {
-        this.planList.forEach(item => {
-          // Filter by DocNo (which we decided is GroupId) and PartNo
-          // But wait, PlanList item doesn't have DocNo. We used GroupId.
-          // BE CAREFUL: Old history records use actual DocNo from Request.
-          // My new records use GroupId as DocNo.
-          // So I should match c.DocNo == item.groupId
-
-          // However, if I want to show counts for THIS plan item, I need to match what I saved.
-          const docNoKey = item.groupId;
-
-          const layoutTotal = counts
-            .filter(c =>
-              String(c.DocNo).trim() === String(docNoKey).trim() &&
-              String(c.PratNo).trim() === String(item.partNo).trim() &&
-              c.TypePrint === 'PathLayout'
-            )
-            .reduce((sum, c) => sum + Number(c.Total), 0);
-
-          const dwgTotal = counts
-            .filter(c =>
-              String(c.DocNo).trim() === String(docNoKey).trim() &&
-              String(c.PratNo).trim() === String(item.partNo).trim() &&
-              c.TypePrint === 'PathDwg'
-            )
-            .reduce((sum, c) => sum + Number(c.Total), 0);
-
-          item.printLayoutCount = layoutTotal;
-          item.printDwgCount = dwgTotal;
-
-          const iiqcTotal = counts
-            .filter(c =>
-              String(c.DocNo).trim() === String(docNoKey).trim() &&
-              String(c.PratNo).trim() === String(item.partNo).trim() &&
-              c.TypePrint === 'IIQC'
-            )
-            .reduce((sum, c) => sum + Number(c.Total), 0);
-
-          item.printIiqcCount = iiqcTotal;
-        });
-      },
-      error: e => console.error("Error fetching print counts:", e)
-    });
-  }
   // --- Export to Excel (Styled with ExcelJS) ---
   onExport() {
     const workbook = new ExcelJS.Workbook();

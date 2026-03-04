@@ -2,7 +2,7 @@ const { poolPromise } = require("../config/database");
 const sql = require('mssql');
 const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
 
-const frontendLink = process.env.FRONTEND_URL || 'http://localhost:4200';
+const frontendLink = process.env.FRONTEND_URL 
 
 // เพิ่มรายการลงฐานข้อมูล
 exports.AddCartItems = async (req, res) => {

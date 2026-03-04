@@ -24,6 +24,7 @@ export class HistoryRequestComponent implements OnInit {
   userRole: string = 'view';
   requests: any[] = [];
   filteredRequests: any[] = [];
+  paginatedRequests: any[] = [];
   statussList: { label: string, value: string }[] = [];
   divisionList = [
     { label: '7122', value: '7122' },
@@ -63,7 +64,11 @@ export class HistoryRequestComponent implements OnInit {
   sortKey: string = '';   // คอลัมน์ที่ sort
   sortAsc: boolean = true; // true = ASC, false = DESC
 
-
+  // Pagination
+  currentPage: number = 1;
+  pageSize: number = 30;
+  totalPages: number = 1;
+  pages: number[] = [];
 
   constructor(private purchasehistory: PurchaseHistoryservice,
     private authService: AuthService,
@@ -157,6 +162,7 @@ export class HistoryRequestComponent implements OnInit {
 
         // กรองเฉพาะ Status = 'Complete' -> แต่ยังไม่โชว์ ต้องรอเลือก Division
         this.filteredRequests = []; // เริ่มต้นเป็นว่าง
+        this.updatePaginatedList();
         console.log('Requests loaded:', this.requests.length);
 
         // const uniqueDivisions = [...new Set(this.requests.map(r => r.Division).filter(c => c))];
@@ -276,6 +282,9 @@ export class HistoryRequestComponent implements OnInit {
         ? String(valA).localeCompare(String(valB))
         : String(valB).localeCompare(String(valA));
     });
+
+    this.currentPage = 1;
+    this.updatePaginatedList();
   }
 
 
@@ -313,6 +322,8 @@ export class HistoryRequestComponent implements OnInit {
   onFilter() {
     if (!this.Division_) {
       this.filteredRequests = [];
+      this.currentPage = 1;
+      this.updatePaginatedList();
       return;
     }
 
@@ -355,6 +366,9 @@ export class HistoryRequestComponent implements OnInit {
       }
       return matchStatus && matchDivision && matchItemNo && matchPartNo && matchDocumentNo && matchDate;
     });
+
+    this.currentPage = 1;
+    this.updatePaginatedList();
   }
 
   clearFilters() {
@@ -368,6 +382,47 @@ export class HistoryRequestComponent implements OnInit {
 
     // รีเฟรชตารางหลังเคลียร์
     this.onFilter();
+  }
+
+  // 📄 Pagination Logic
+  updatePaginatedList() {
+    this.totalPages = Math.ceil(this.filteredRequests.length / this.pageSize);
+    if (this.totalPages < 1) this.totalPages = 1;
+
+    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+    if (this.currentPage < 1) this.currentPage = 1;
+
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedRequests = this.filteredRequests.slice(startIndex, endIndex);
+
+    this.generatePageNumbers();
+  }
+
+  generatePageNumbers() {
+    const pagesToShow = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(pagesToShow / 2));
+    let endPage = Math.min(this.totalPages, startPage + pagesToShow - 1);
+
+    if (endPage - startPage + 1 < pagesToShow) {
+      startPage = Math.max(1, endPage - pagesToShow + 1);
+    }
+
+    this.pages = [];
+    for (let i = startPage; i <= endPage; i++) {
+      this.pages.push(i);
+    }
+  }
+
+  setPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.updatePaginatedList();
+
+    if (isPlatformBrowser(this.platformId)) {
+      const table = document.querySelector('.table-container');
+      if (table) table.scrollTop = 0;
+    }
   }
 
   // onFilter() {

@@ -1,5 +1,10 @@
+const { poolPromise } = require("../config/database");
 
-
+/**
+ * API: ค้นหารายการเครื่องมือทั้งหมด (Get All Item No)
+ * หน้าที่: เรียก Stored Procedure `Stored_View_CuttingTool_FindItem_Purchase` โดยไม่ระบุพารามิเตอร์ 
+ * เพื่อดึงรายชื่อ ItemNo ทั้งหมดที่มีในระบบ (อาจจะถูกใช้งานสำหรับการทำ Dropdown หรือระบบ Autocomplete เพื่อค้นหาเครื่องมือแบบไม่เจาะจง)
+ */
 exports.get_ItemNo = async (req, res) => {
   console.log(req.body)
   try {
@@ -16,7 +21,12 @@ exports.get_ItemNo = async (req, res) => {
   }
 };
 
-// ดึงข้อมูล PartNo กรองจาก Division
+/**
+ * API: ค้นหารายละเอียดเครื่องมือระบุตามเบอร์ (Get Item Details by ItemNo)
+ * หน้าที่: ดึงข้อมูลรายละเอียดของเครื่องมือแบบเฉพาะเจาะจง โดยเรียก Stored Procedure `Stored_View_CuttingTool_FindItem_Purchase` 
+ * พร้อมส่งพารามิเตอร์ @ItemNo เข้าไป ซึ่งจะได้ผลรันเป็นข้อมูลและ Spec ของ ItemNo นั้นๆ 
+ * (ระบบหน้าเว็บน่าจะเอาไปใช้ตอนพิมพ์ ItemNo แล้วให้มัน Auto Fill ดึงชื่อ ดึง Spec ขึ้นมาใส่ให้ในแบบฟอร์มอัตโนมัติ)
+ */
 exports.post_SPEC = async (req, res) => {
   console.log(req);
   try {

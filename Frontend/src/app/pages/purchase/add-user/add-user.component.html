@@ -33,7 +33,7 @@
             </tr>
           </thead>
           <tbody>
-            <ng-container *ngFor="let group of groupedEmployees | keyvalue">
+            <ng-container *ngFor="let group of groupedEmployees | keyvalue; trackBy: trackByGroup">
               <!-- Group Header -->
               <tr class="table-light">
                 <td colspan="8" class="py-2 px-3 fw-bold text-muted text-uppercase small">
@@ -42,7 +42,7 @@
               </tr>
 
               <!-- Employees -->
-              <tr *ngFor="let emp of group.value; let i = index">
+              <tr *ngFor="let emp of group.value; let i = index; trackBy: trackByEmp">
                 <td class="ps-3">{{ i + 1 }}</td>
 
                 <!-- Employee ID -->
@@ -62,7 +62,7 @@
                 </td>
                 <td *ngIf="editingId === emp.Employee_ID">
                   <ng-select [items]="Role" bindLabel="label" bindValue="value" [(ngModel)]="editForm.Role"
-                    placeholder="Select Role" class="custom-ng-select-sm">
+                    placeholder="Select Role" class="custom-ng-select-sm" appendTo="body">
                   </ng-select>
                 </td>
 
@@ -134,49 +134,45 @@
 
       <div class="modal-body">
         <form>
-          <div class="modal-body">
-            <form>
-              <!-- Role -->
-              <div class="mb-3">
-                <label class="form-label">Role</label>
-                <ng-select [items]="Role" bindLabel="label" bindValue="value" [(ngModel)]="Role_" name="Role"
-                  [clearable]="true" placeholder="Select a role">
-                </ng-select>
-                <small class="form-text text-muted">Choose Role For User </small>
-              </div>
+          <!-- Role -->
+          <div class="mb-3">
+            <label class="form-label">Role</label>
+            <ng-select [items]="Role" bindLabel="label" bindValue="value" [(ngModel)]="Role_" name="Role"
+              [clearable]="true" placeholder="Select a role" appendTo="body">
+            </ng-select>
+            <small class="form-text text-muted">Choose Role For User</small>
+          </div>
 
-              <!-- Employee ID & Name -->
-              <div class="mb-3 row">
-                <div class="col">
-                  <label for="EmployeeId" class="form-label">Employee ID</label>
-                  <input type="text" id="EmployeeId" class="form-control" name="EmployeeId" [(ngModel)]="EmployeeId_" />
-                </div>
-                <div class="col">
-                  <label for="EmployeeName" class="form-label">Employee Name</label>
-                  <input type="text" id="EmployeeName" class="form-control" name="EmployeeName"
-                    [(ngModel)]="EmployeeName_" />
-                  <small class="form-text text-muted">Employee full name</small>
-                </div>
-              </div>
+          <!-- Employee ID & Name -->
+          <div class="mb-3 row">
+            <div class="col">
+              <label for="EmployeeId" class="form-label">Employee ID</label>
+              <input type="text" id="EmployeeId" class="form-control" name="EmployeeId" [(ngModel)]="EmployeeId_" />
+            </div>
+            <div class="col">
+              <label for="EmployeeName" class="form-label">Employee Name</label>
+              <input type="text" id="EmployeeName" class="form-control" name="EmployeeName"
+                [(ngModel)]="EmployeeName_" />
+              <small class="form-text text-muted">Employee full name</small>
+            </div>
+          </div>
 
-              <!-- Password -->
-              <div class="mb-3 row">
-                <div class="col">
-                  <label for="Password" class="form-label">Password</label>
-                  <input type="text" id="Password" class="form-control" name="Password" [(ngModel)]="Password_" />
-                  <small class="form-text text-muted">Login Password</small>
-                </div>
-              </div>
+          <!-- Password -->
+          <div class="mb-3 row">
+            <div class="col">
+              <label for="Password" class="form-label">Password</label>
+              <input type="text" id="Password" class="form-control" name="Password" [(ngModel)]="Password_" />
+              <small class="form-text text-muted">Login Password</small>
+            </div>
+          </div>
 
-              <!-- Email -->
-              <div class="mb-3 row">
-                <div class="col">
-                  <label for="Email" class="form-label">Email</label>
-                  <input type="email" id="Email" class="form-control" name="Email" [(ngModel)]="Email_" />
-                  <small class="form-text text-muted">Contact email (Optional)</small>
-                </div>
-              </div>
-            </form>
+          <!-- Email -->
+          <div class="mb-3 row">
+            <div class="col">
+              <label for="Email" class="form-label">Email</label>
+              <input type="email" id="Email" class="form-control" name="Email" [(ngModel)]="Email_" />
+              <small class="form-text text-muted">Contact email (Optional)</small>
+            </div>
           </div>
         </form>
       </div>

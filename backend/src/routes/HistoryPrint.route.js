@@ -6,7 +6,6 @@ const HistoryPrint = require('../controllers/HistoryPrint.controller')
 // กำหนด endpoint
 router.post('/SaveHistoryPrint', HistoryPrint.SaveHistoryPrint);
 
-router.get('/get_Total', HistoryPrint.Get_Total);
 
 router.get('/EmpPrint', HistoryPrint.EmpPrint);
 

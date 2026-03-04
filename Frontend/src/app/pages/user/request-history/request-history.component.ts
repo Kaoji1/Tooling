@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import Swal from 'sweetalert2';
 import { PurchaseRequestService } from '../../../core/services/PurchaseRequest.service';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, PLATFORM_ID } from '@angular/core';
 
 @Component({
     selector: 'app-request-history',
@@ -49,7 +51,10 @@ export class RequestHistoryComponent implements OnInit {
 
     fileName = "RequestHistory.xlsx";
 
-    constructor(private purchaseService: PurchaseRequestService) { }
+    constructor(
+        private purchaseService: PurchaseRequestService,
+        @Inject(PLATFORM_ID) private platformId: Object
+    ) { }
 
     ngOnInit() {
         this.loadHistory();
@@ -59,6 +64,28 @@ export class RequestHistoryComponent implements OnInit {
         this.isLoading = true;
         this.purchaseService.Purchase_Request().subscribe({
             next: (data) => {
+                // IMPORTANT: Only process data if in browser. 
+                // We keep isLoading = true on the server to prevent SSR from rendering the "No Data" row prematurely.
+                if (!isPlatformBrowser(this.platformId)) {
+                    return; 
+                }
+
+                const userStr = sessionStorage.getItem('user');
+                if (userStr) {
+                    try {
+                        const currentUser = JSON.parse(userStr);
+                        if (currentUser.Role?.toLowerCase() === 'production') {
+                            const targetId = (currentUser.Employee_ID || '').toString().trim().toLowerCase();
+                            data = data.filter((item: any) => {
+                                const empId = (item.Requester || item.EmployeeID || '').toString().trim().toLowerCase();
+                                return empId === targetId;
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing user session', e);
+                    }
+                }
+
                 this.historyList = data;
                 this.extractDropdowns();
                 this.filteredList = [...this.historyList];
@@ -78,7 +105,9 @@ export class RequestHistoryComponent implements OnInit {
             error: (err) => {
                 console.error("Error loading history:", err);
                 this.isLoading = false;
-                Swal.fire('Error', 'ไม่สามารถดึงข้อมูลประวัติได้', 'error');
+                if (isPlatformBrowser(this.platformId)) {
+                    Swal.fire('Error', 'ไม่สามารถดึงข้อมูลประวัติได้', 'error');
+                }
             }
         });
     }

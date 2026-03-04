@@ -32,7 +32,7 @@ export class AddUserComponent implements OnInit, OnDestroy {
     { label: 'Purchase', value: 'purchase' },
     { label: 'Engineer', value: 'engineer' },
     { label: 'QC', value: 'QC' },
-    { label: 'Gage', value: 'Gage' },
+    { label: 'Gate', value: 'Gate' },
     { label: 'Cost', value: 'Cost' },
     { label: 'View', value: 'view' }
   ];
@@ -264,11 +264,20 @@ export class AddUserComponent implements OnInit, OnDestroy {
       'engineer': 'role-engineer',
       'pc': 'role-pc',
       'qc': 'role-qc',
-      'gage': 'role-gage',
+      'gate': 'role-gate',
       'cost': 'role-cost',
       'view': 'role-view'
     };
     return map[r] || 'role-default';
+  }
+
+  // ======  trackBy ======
+  trackByGroup(index: number, group: any): string {
+    return group.key;
+  }
+
+  trackByEmp(index: number, emp: any): string {
+    return emp.Employee_ID;
   }
 
 }

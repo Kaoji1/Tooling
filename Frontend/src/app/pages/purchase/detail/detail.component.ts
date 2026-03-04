@@ -10,6 +10,7 @@ import { forkJoin, Subscription, interval } from 'rxjs';
 import { DetailPurchaseRequestlistService } from '../../../core/services/DetailPurchaseRequestlist.service';
 import { FileReadService } from '../../../core/services/FileRead.service';
 import { AuthService } from '../../../core/services/auth.service';
+import * as ExcelJS from 'exceljs';
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
 
@@ -740,7 +741,6 @@ export class DetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // 1. Get filtered items that are selected
     const selectedItems = this.request.filter(item => item.Selection);
 
     if (selectedItems.length === 0) {
@@ -748,45 +748,100 @@ export class DetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // 2. Map data to match the table structure
-    const dataToExport = selectedItems.map((item, index) => {
-      // Find original index if needed, or just use current loop index + 1
-      return {
-        'No.': index + 1,
-        'Document': item.DocNo || '',
-        'Requester': item.Requester || '',
-        'Account': item.ACCOUNT || '',
-        'Division': item.Division || '',
-        'Part No.': item.PartNo || '',
-        'Item No.': item.ItemNo || '',
-        'Item Name': item.ItemName || '',
-        'Spec': item.SPEC || '',
-        'Process': item.Process || '',
-        'MC Type': item.MCType || '',
-        'Fac': item.Fac || '',
-        'DWG': item.DwgRev || '',
-        'On Hand': item.ON_HAND || '',
-        'Req QTY': item.Req_QTY || '',
-        'QTY': item.QTY || '',
-        'MC No.': item.MCQTY || '',
-        'Req Date': item.DateTime_Record ? new Date(item.DateTime_Record).toLocaleDateString('en-GB') : '',
-        'Due Date': item.DueDate ? new Date(item.DueDate).toLocaleDateString('en-GB') : '',
-        'Case': item.CASE || '',
-        'Status': item.Status || '',
-        'Phone Number': item.PhoneNo || '',
-        'Remark': item.Remark || ''
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
+
+    const columns = [
+      { header: 'No.', key: 'no', width: 10 },
+      { header: 'Document', key: 'doc', width: 20 },
+      { header: 'Requester', key: 'req', width: 20 },
+      { header: 'Division', key: 'div', width: 15 },
+      { header: 'Part No.', key: 'part', width: 25 },
+      { header: 'Item No.', key: 'item', width: 20 },
+      { header: 'Item Name', key: 'name', width: 30 },
+      { header: 'Spec', key: 'spec', width: 25 },
+      { header: 'Process', key: 'process', width: 15 },
+      { header: 'MC Type', key: 'mctype', width: 15 },
+      { header: 'Fac', key: 'fac', width: 10 },
+      { header: 'Mat Lot', key: 'mat', width: 20 },
+      { header: 'PH Stock Loc', key: 'stockloc', width: 20 },
+      { header: 'On Hand', key: 'onhand', width: 15 },
+      { header: 'Req QTY', key: 'reqqty', width: 15 },
+      { header: 'QTY', key: 'qty', width: 15 },
+      { header: 'MC No.', key: 'mcno', width: 10 },
+      { header: 'Req Date', key: 'reqdate', width: 15 },
+      { header: 'Due Date', key: 'duedate', width: 15 },
+      { header: 'Case', key: 'case', width: 10 },
+      { header: 'Status', key: 'status', width: 15 },
+      { header: 'Phone Number', key: 'phone', width: 15 },
+      { header: 'Remark', key: 'remark', width: 25 }
+    ];
+    worksheet.columns = columns;
+
+    selectedItems.forEach((item, index) => {
+      worksheet.addRow({
+        no: index + 1,
+        doc: item.DocNo || '',
+        req: item.Requester || '',
+        div: item.Division || '',
+        part: item.PartNo || '',
+        item: item.ItemNo || '',
+        name: item.ItemName || '',
+        spec: item.SPEC || '',
+        process: item.Process || '',
+        mctype: item.MCType || '',
+        fac: item.Fac || '',
+        mat: item.MatLot || '',
+        stockloc: item.MAIN_LOCATION || '',
+        onhand: item.STOCK_ON_HAND ?? item.ON_HAND ?? '',
+        reqqty: item.Req_QTY || '',
+        qty: item.QTY || '',
+        mcno: item.MCQTY || '',
+        reqdate: item.DateTime_Record ? new Date(item.DateTime_Record).toLocaleDateString('en-GB') : '',
+        duedate: item.DueDate ? new Date(item.DueDate).toLocaleDateString('en-GB') : '',
+        case: item.CASE || '',
+        status: item.Status || '',
+        phone: item.PhoneNo || '',
+        remark: item.Remark || ''
+      });
+    });
+
+    // Style Header (Yellow Background, Center, Bold)
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFFFF00' } // Yellow
+      };
+      cell.font = { bold: true };
+      // Adding border to header just in case it looks better
+      cell.border = {
+        top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
       };
     });
 
-    // 3. Generate Worksheet
-    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
+    // Style All Cells (Center Alignment)
+    worksheet.eachRow((row, rowNumber) => {
+      row.eachCell((cell) => {
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        if (rowNumber > 1) { // Apply border to data cells too
+          cell.border = {
+            top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
+          };
+        }
+      });
+    });
 
-    // 4. Create Workbook and Append Sheet
-    const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-
-    // 5. Save File
-    XLSX.writeFile(wb, this.fileName);
+    workbook.xlsx.writeBuffer().then((buffer: ArrayBuffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = this.fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
   }
 
   deleteItem(id: string) {
@@ -823,9 +878,10 @@ export class DetailComponent implements OnInit, OnDestroy {
       // Show Completed Toggle Logic
       let matchCompleted = true;
       if (this.showCompleted) {
-        matchCompleted = (status === 'complete' || status === 'completetoexcel');
+        // More lenient check for completed status
+        matchCompleted = status.includes('complete') || status.includes('completetoexcel');
       } else {
-        matchCompleted = (status !== 'complete' && status !== 'completetoexcel');
+        matchCompleted = !status.includes('complete') && !status.includes('completetoexcel');
       }
 
       const matchStatus = !this.Status_?.length || (status && status.includes(this.Status_.toLowerCase()));
@@ -854,7 +910,7 @@ export class DetailComponent implements OnInit, OnDestroy {
       }
 
       // --- New Filters ---
-      const matchMRNo = !this.MRNo_?.length || (item.RefNo && item.RefNo.toLowerCase().includes(this.MRNo_.toLowerCase()));
+      const matchMRNo = !this.MRNo_?.length || (item.MR_No && item.MR_No.toLowerCase().includes(this.MRNo_.toLowerCase()));
       const matchMCType = !this.MCType_?.length || (item.MCType && item.MCType.toLowerCase().includes(this.MCType_.toLowerCase()));
       const matchItemNo = !this.ItemNoFilter_?.length || (item.ItemNo && item.ItemNo.toLowerCase().includes(this.ItemNoFilter_.toLowerCase()));
       const matchPartNo = !this.PartNo_?.length || (item.PartNo && item.PartNo.toLowerCase().includes(this.PartNo_.toLowerCase()));
@@ -876,6 +932,7 @@ export class DetailComponent implements OnInit, OnDestroy {
 
     this.currentPage = 1;
     this.updatePagination();
+    this.cdr.markForCheck(); // Ensure UI updates, especially for Show Completed table
   }
 
   onSort(key: string) {

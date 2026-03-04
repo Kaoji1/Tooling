@@ -1,6 +1,10 @@
 const { poolPromise } = require("../config/database");
 const sql = require('mssql');
 
+/**
+ * API: ตรวจสอบการเข้าสู่ระบบ (Login)
+ * หน้าที่: นำ Username และ Password ไปตรวจสอบรหัสผ่าน และส่งกลับออกไปพร้อมกับ Token 
+ */
 exports.Login = (req, res) => {
   const { Username, Password } = req.body;
 

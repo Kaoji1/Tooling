@@ -76,43 +76,77 @@
         </select>
       </div>
 
-      <div class="filter-item">
-        <select [(ngModel)]="filterMachineType" (change)="applyFilter()">
-          <option value="">MC Type: All</option>
-          <option *ngFor="let m of machineTypes" [value]="m">{{ m }}</option>
-        </select>
-      </div>
-
       <div class="filter-item checkbox-item">
         <input type="checkbox" id="showHistory" [(ngModel)]="showHistory" (change)="loadPlanList()">
-        <label for="showHistory">All Revisions</label>
+        <label>All Revisions</label>
       </div>
     </div>
   </div>
 
   <!-- ===== CSS Grid Table ===== -->
   <div class="grid-table-wrapper" [class]="'grid-table-wrapper dept-' + (selectedDepartment || 'PC').toLowerCase()">
-    <!-- Header Row -->
-    <div class="grid-header">
-      <div class="grid-cell col-no sticky-col">No.</div>
-      <div class="grid-cell col-action sticky-col">Action</div>
-      <div class="grid-cell col-print sticky-col">Print</div>
-      <div class="grid-cell">Plan Date</div>
-      <div class="grid-cell text-center">Rev</div>
-      <div class="grid-cell text-center">Status</div>
-      <div class="grid-cell">MC Type</div>
-      <div class="grid-cell">Division</div>
-      <div class="grid-cell">Fac</div>
-      <div class="grid-cell">Process</div>
-      <div class="grid-cell">Part Before</div>
-      <div class="grid-cell">MC No.</div>
-      <div class="grid-cell">Part No.</div>
-      <div class="grid-cell text-center">QTY</div>
-      <div class="grid-cell">Time</div>
-      <div class="grid-cell">Comment</div>
-      <div class="grid-cell text-center">Path Dwg</div>
-      <div class="grid-cell text-center">Path Layout</div>
-      <div class="grid-cell text-center">IIQC</div>
+    <!-- Header Row (Grouped) -->
+    <div class="grid-header-group">
+      <!-- Filter Row -->
+      <div class="grid-header filter-row">
+        <div class="grid-cell col-no sticky-col"></div>
+        <div class="grid-cell col-action sticky-col"></div>
+        <div class="grid-cell col-print sticky-col"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell border-right-0"></div>
+        <div class="grid-cell filter-cell">
+          <ng-select [items]="statusList" [(ngModel)]="filterStatus" (change)="applyFilter()" placeholder="Select"
+            [clearable]="true" appendTo="body" class="header-filter-ng-select"></ng-select>
+        </div>
+        <div class="grid-cell filter-cell">
+          <ng-select [items]="machineTypes" [(ngModel)]="filterMachineType" (change)="applyFilter()"
+            placeholder="Select" [clearable]="true" appendTo="body" class="header-filter-ng-select"></ng-select>
+        </div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell filter-cell">
+          <ng-select [items]="facList" [(ngModel)]="filterFac" (change)="applyFilter()" placeholder="Select"
+            [clearable]="true" appendTo="body" class="header-filter-ng-select"></ng-select>
+        </div>
+        <div class="grid-cell filter-cell">
+          <ng-select [items]="processList" [(ngModel)]="filterProcess" (change)="applyFilter()" placeholder="Select"
+            [clearable]="true" appendTo="body" class="header-filter-ng-select"></ng-select>
+        </div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell filter-cell">
+          <ng-select [items]="partNoList" [(ngModel)]="filterPartNo" (change)="applyFilter()" placeholder="Select"
+            [clearable]="true" appendTo="body" class="header-filter-ng-select"></ng-select>
+        </div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell border-left-0"></div>
+      </div>
+
+      <!-- Main Header Row -->
+      <div class="grid-header main-header-row">
+        <div class="grid-cell col-no sticky-col" style="justify-content: center;">NO</div>
+        <div class="grid-cell col-action sticky-col" style="justify-content: center;">Action</div>
+        <div class="grid-cell col-print sticky-col" style="justify-content: center;">Print</div>
+        <div class="grid-cell">Plan Setup</div>
+        <div class="grid-cell text-center" style="justify-content: center;">Rev</div>
+        <div class="grid-cell text-center" style="justify-content: center;">Status</div>
+        <div class="grid-cell">MC Type</div>
+        <div class="grid-cell">Division</div>
+        <div class="grid-cell">Fac</div>
+        <div class="grid-cell">Process</div>
+        <div class="grid-cell">Part Before</div>
+        <div class="grid-cell">MC No.</div>
+        <div class="grid-cell">Part NO.</div>
+        <div class="grid-cell text-center" style="justify-content: center;">QTY</div>
+        <div class="grid-cell">Time</div>
+        <div class="grid-cell">Comment</div>
+        <div class="grid-cell text-center" style="justify-content: center;">Path Dwg</div>
+        <div class="grid-cell text-center" style="justify-content: center;">Path Layout</div>
+        <div class="grid-cell text-center" style="justify-content: center;">IIQC</div>
+      </div>
     </div>
 
     <!-- Data Body -->
@@ -165,7 +199,7 @@
 
                 <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
               </ng-container>
-              <ng-container *ngIf="selectedDepartment === 'Gage'">
+              <ng-container *ngIf="selectedDepartment === 'Gate'">
                 <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
               </ng-container>
               <ng-container *ngIf="selectedDepartment === 'View'">
@@ -450,6 +484,7 @@
         <!-- Info -->
         <div style="grid-column: span 2;">
           <p><strong>Part No:</strong> {{ selectedItemForPrint.partNo }} </p>
+          <p><strong>MC Type:</strong> {{ selectedItemForPrint.mcType }} </p>
           <p><strong>MC No:</strong> {{ selectedItemForPrint.mcNo }} </p>
         </div>
 
@@ -490,11 +525,7 @@
           </button>
         </div>
 
-        <div class="form-group" style="max-width: 200px; margin-top: 1.5rem;">
-          <label style="font-weight: 600;">Number of Copies</label>
-          <input type="number" [(ngModel)]="printQty" min="1" class="form-control" style="padding: 0.5rem;">
-        </div>
-
+        <!-- Removed Number of Copies input -->
         <!-- Preview with Zoom -->
         <div style="grid-column: span 2; margin-top: 10px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">

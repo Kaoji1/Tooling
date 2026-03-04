@@ -1,7 +1,16 @@
 const { poolPromise } = require("../config/database");
 const sql = require("mssql").TYPES;
 
-//เรียกdivisionจากSQL 
+/**
+ * ==========================================
+ * CUTTING TOOL DROPDOWNS (Cascading)
+ * ==========================================
+ */
+
+/**
+ * API: ดึงข้อมูล Divisions ทั้งหมด
+ * หน้าที่: ดึงข้อมูล Division เริ่มต้นจากฐานข้อมูล เพื่อนำไปแสดงใน Dropdown ขั้นแรก
+ */
 exports.Get_Division = async (req, res) => {
   console.log(req.body)
   try {
@@ -17,7 +26,11 @@ exports.Get_Division = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };
-// ดึงข้อมูล Fac กรองจาก Division
+
+/**
+ * API: ดึง Fac ตาม Division
+ * หน้าที่: กรอง Fac ออกมาตาม Division ที่ส่งมาจากหน้าเว็บ
+ */
 exports.get_Facility = async (req, res) => {
   console.log(req);
   try {
@@ -46,7 +59,10 @@ exports.get_Facility = async (req, res) => {
   }
 };
 
-// ดึงข้อมูล PartNo กรองจาก Division
+/**
+ * API: ดึงข้อมูล PartNo ตาม Division 
+ * หน้าที่: กรองร PartNo ออกมาตาม Division ที่ส่งมาจากหน้าเว็บ
+ */
 exports.get_PartNo = async (req, res) => {
   console.log(req);
   try {
@@ -75,7 +91,10 @@ exports.get_PartNo = async (req, res) => {
   }
 };
 
-// ดึวข้อมูลprocess จาก division partno spec
+/**
+ * API: ดึง Process
+ * หน้าที่: ค้นหา Process ที่เกี่ยวข้อง โดยกรองจาก Division และ PartNo
+ */
 exports.Get_Process = async (req, res) => {
   console.log(req.body);
 
@@ -106,7 +125,10 @@ exports.Get_Process = async (req, res) => {
   }
 };
 
-//Get MC by PartNo, SPEC and Process
+/**
+ * API: ดึงข้อมูล Machine 
+ * หน้าที่: ค้นหา MCType โดยกรองจากเงื่อนไข 3 อย่างคือ Division, PartNo, และ Process
+ */
 exports.Get_MC = async (req, res) => {
   console.log(req.body);
   try {
@@ -136,7 +158,11 @@ exports.Get_MC = async (req, res) => {
   }
 
 };
-// ดึงItemno จาก division partno process mc
+
+/**
+ * API: ดึงข้อมูล ItemNo 
+ * หน้าที่: ขั้นตอนสุดท้ายของการกรอง นำ Division, FacilityName, PartNo, Process และ MC มาเพื่อหา ItemNo ที่ถูกต้อง
+ */
 exports.post_ItemNo = async (req, res) => {
   console.log('item:', req.body);
   try {
@@ -175,7 +201,10 @@ exports.post_ItemNo = async (req, res) => {
 //              SETUP TOOL
 // ==========================================
 
-// 1. Get Setup Division (Updated to use new SP)
+/**
+ * API: ดึง Division
+ * หน้าที่: ดึง Division ทั้งหมด เพื่อทำ Dropdown ขั้นแรกในฟอร์มของ Setup Tool
+ */
 exports.get_Setup_Division = async (req, res) => {
   try {
     const pool = await poolPromise;
@@ -190,7 +219,10 @@ exports.get_Setup_Division = async (req, res) => {
   }
 };
 
-// 2. Get Setup Facility by Division (Updated to use new SP)
+/**
+ * API: ดึง Fac 
+ * หน้าที่: กรอง Fac อิงตาม Division ของ Setup Tool
+ */
 exports.get_Setup_Facility = async (req, res) => {
   try {
     const { Division } = req.body;
@@ -209,7 +241,10 @@ exports.get_Setup_Facility = async (req, res) => {
   }
 };
 
-// 3. Get Setup PartNo by Division
+/**
+ * API: ดึง PartNo สำหรับ Setup Tool 
+ * หน้าที่: กรอง PartNo อิงตาม Division ของ Setup Tool
+ */
 exports.get_Setup_PartNo = async (req, res) => {
   try {
     const { Division } = req.body;
@@ -228,7 +263,10 @@ exports.get_Setup_PartNo = async (req, res) => {
   }
 };
 
-// 4. Get Setup Process by Division and PartNo
+/**
+ * API: ดึง Process สำหรับ Setup Tool
+ * หน้าที่: กรอง Process อิงตาม Division และ PartNo
+ */
 exports.get_Setup_Process = async (req, res) => {
   try {
     const { Division, PartNo } = req.body;
@@ -248,7 +286,10 @@ exports.get_Setup_Process = async (req, res) => {
   }
 };
 
-// 5. Get Setup MC by Division, PartNo, Process
+/**
+ * API: ดึง MC  
+ * หน้าที่: กรอง MC อิงตาม Division, PartNo และ Process
+ */
 exports.get_Setup_MC = async (req, res) => {
   try {
     const { Division, PartNo, Process } = req.body;
@@ -269,7 +310,10 @@ exports.get_Setup_MC = async (req, res) => {
   }
 };
 
-// 6. Search Setup Items Result
+/**
+ * API: ค้นหารายการ Setup Tool สรุปผลลัพธ์ (Search Setup Items Result)
+ * หน้าที่: ค้นหาข้อมูลไอเทม Setup Tool ตัวเต็ม หลังจากส่งค่า Dropdown ฟิลเตอร์ครบทั้งหมด (Division, PartNo, Process, MC)
+ */
 exports.get_Setup_Items_Result = async (req, res) => {
   console.time('SetupDetails_QueryTime'); // Start timer
   try {
@@ -307,7 +351,10 @@ exports.get_Setup_Items_Result = async (req, res) => {
 //         CASE SET (CuttingTool + SetupTool)
 // ==========================================
 
-// 7. Get CuttingTool for Case SET
+/**
+ * API: ดึงข้อมูล Cutting Tool ของ Case SET (Get CuttingTool for Case SET)
+ * หน้าที่: กรณีพนักงานเบิก Case SET ตรงนี้จะดึงลิสต์เฉพาะส่วนที่เป็น Cutting Tool ออกมาโชว์ 
+ */
 exports.get_CaseSET_CuttingTool = async (req, res) => {
   console.time('CaseSET_CuttingTool_QueryTime');
   try {
@@ -336,7 +383,10 @@ exports.get_CaseSET_CuttingTool = async (req, res) => {
   }
 };
 
-// 8. Get SetupTool for Case SET
+/**
+ * API: ดึงข้อมูล Setup Tool ของ Case SET (Get SetupTool for Case SET)
+ * หน้าที่: กรณีพนักงานเบิก Case SET ตรงนี้จะดึงลิสต์เฉพาะส่วนที่เป็น Setup Tool ออกมาโชว์
+ */
 exports.get_CaseSET_SetupTool = async (req, res) => {
   console.time('CaseSET_SetupTool_QueryTime');
   try {
@@ -368,9 +418,10 @@ exports.get_CaseSET_SetupTool = async (req, res) => {
 //    CASE SET DETAIL (Box/Shelf/Rack Breakdown)
 // ==========================================
 
-
-// 9. Get CuttingTool Detail for Case SET (Box/Shelf breakdown)
-// 9. Get CuttingTool Detail for Case SET (Box/Shelf breakdown)
+/**
+ * API: ดึงข้อมูลรายละเอียดกล่อง/ชั้นวางต่างๆ ของ Cutting Tool สำหรับ Case SET (Get CuttingTool Detail Breakdown)
+ * หน้าที่: ตรวจสอบรายละเอียดแต่ละชิ้น ว่าไอเทมนี้เก็บไว้ที่ตู้ไหน ถาดไหน หรือช่องไหน (Box/Shelf breakdown) 
+ */
 exports.get_CaseSET_CuttingTool_Detail = async (req, res) => {
   console.time('CaseSET_CuttingTool_Detail_QueryTime');
   try {
@@ -399,8 +450,10 @@ exports.get_CaseSET_CuttingTool_Detail = async (req, res) => {
   }
 };
 
-
-// 9.1 Get Case SET All (Unified Cutting + Setup)
+/**
+ * API: ดึงไอเทมทั้ง Cutting และ Setup ของ Case SET คืนมาพร้อมกัน (Get Case SET All Unified)
+ * หน้าที่: ดึงและรวมรายการทั้ง Cutting Tool และ Setup Tool ในบิล Case SET กลับมาในรูปแบบข้อมูลรวมก้อนเดียว 
+ */
 exports.get_CaseSET_All = async (req, res) => {
   console.time('CaseSET_All_QueryTime');
   try {
@@ -430,7 +483,10 @@ exports.get_CaseSET_All = async (req, res) => {
   }
 };
 
-// 9.2 Get ItemNo Dropdown (for non-SET Cases)
+/**
+ * API: ดึงรายชื่อ Item No (Dropdown) ของ Case SET กรณีระบุ ToolingType แบบไม่เจาะจงเต็มรูปแบบ
+ * หน้าที่: สร้าง Dropdown ของช่องเบอร์ Item สำหรับโหมด Case SET โดยใช้ ToolingType (Cutting tool หรือ Setup tool) ได้
+ */
 exports.get_CaseSET_Dropdown_ItemNo = async (req, res) => {
   try {
     const { Division, ToolingType, PartNo } = req.body;
@@ -453,7 +509,10 @@ exports.get_CaseSET_Dropdown_ItemNo = async (req, res) => {
 //    CASE SET DROPDOWNS (PartNo, Process, MC)
 // ==========================================
 
-// 9. Get PartNo Dropdown for Case SET
+/**
+ * API: ดึงรายชื่อพาร์ท Dropdown สำหรับ Case SET (Get Dropdown PartNo)
+ * หน้าที่: ดึงข้อมูล PartNo ที่มีอยู่ในบิล กรณีเบิกแบบ Case SET
+ */
 exports.get_CaseSET_Dropdown_PartNo = async (req, res) => {
   try {
     const { Division, ItemNo } = req.body;
@@ -473,7 +532,10 @@ exports.get_CaseSET_Dropdown_PartNo = async (req, res) => {
   }
 };
 
-// 10. Get Process Dropdown for Case SET
+/**
+ * API: ดึงรายชื่อกระบวนการผลิต Dropdown สำหรับ Case SET (Get Dropdown Process)
+ * หน้าที่: ดึงข้อมูล Process ตาม PartNo ในกรณีที่มีการใช้บิลแบบ Case SET
+ */
 exports.get_CaseSET_Dropdown_Process = async (req, res) => {
   try {
     const { Division, PartNo, ItemNo } = req.body;
@@ -494,7 +556,10 @@ exports.get_CaseSET_Dropdown_Process = async (req, res) => {
   }
 };
 
-// 11. Get MC Dropdown for Case SET
+/**
+ * API: ดึงรายชื่อเครื่องจักร Dropdown สำหรับ Case SET (Get Dropdown MC)
+ * หน้าที่: ดึงข้อมูลเครื่องจักร (MC) เข้ามาทำ Dropdown ในกรณีมีการใช้บิลเบิกแบบ Case SET
+ */
 exports.get_CaseSET_Dropdown_MC = async (req, res) => {
   try {
     const { Division, PartNo, Process, ItemNo } = req.body;
@@ -522,7 +587,10 @@ exports.get_CaseSET_Dropdown_MC = async (req, res) => {
 //    MC BY DIVISION (แสดงเฉยๆ ไม่ใช้กรอง)
 // ==========================================
 
-// 12. Get MC by Division only (for display, not filtering)
+/**
+ * API: ดึงข้อมูลเครื่องจักรตามแผนกเท่านั้น โดยไม่ใช้สำหรับการกรอง (Get MC by Division only)
+ * หน้าที่: ใช้เพื่อโชว์เครื่องจักรลิสต์ทั้งหมดในแผนก (Division) เช่น เพื่อตั้งค่าหน้าจอ แสดงผลเฉยๆ โดยไม่ผูกมัดกับการกรอง PartNo/Process (Display Only)
+ */
 exports.get_MC_ByDivision = async (req, res) => {
   try {
     const { Division } = req.body;
