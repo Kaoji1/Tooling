@@ -138,42 +138,102 @@ export class MasterPHComponent {
         this.masterPHService.importMasterToolingPMC(formData).subscribe({
             next: (res: any) => {
                 this.uploadingPMC = false;
-
-                const successCount = res.successCount ?? 0;
-                const skippedRows = res.skippedRows ?? 0;
-                const skippedDetail = res.skippedDetail || null;
-                const totalInputRows = res.totalInputRows ?? 0;
-
-                // Update UI Summary
-                this.summaryPMC = { total: successCount };
-
-                let html = `<div class="text-start">
-                    <p class="mb-1"><strong>Records processed:</strong> ${successCount}</p>
-                    <p class="mb-1"><strong>Total input rows:</strong> ${totalInputRows}</p>`;
-
-                if (skippedRows > 0) {
-                    html += `<p class="mb-1 text-warning"><strong>Skipped rows:</strong> ${skippedRows} (Part No. not found in system)</p>`;
-                    if (skippedDetail) {
-                        html += `<details class="mt-2"><summary style="cursor:pointer;color:#e67e22">Show skipped Part No. list</summary>
-                            <pre style="font-size:0.75rem;text-align:left;max-height:200px;overflow:auto;background:#f8f9fa;padding:8px;border-radius:4px">${skippedDetail}</pre>
-                            </details>`;
-                    }
-                }
-                html += `</div>`;
+                this.summaryPMC = { total: res.totalInputRows ?? 0 };
 
                 Swal.fire({
                     title: 'Import Successful!',
-                    html,
+                    html: `<div class="text-start">
+                        <p class="mb-1"><strong>Total input rows:</strong> ${res.totalInputRows ?? 0}</p>
+                        <p class="mb-0 text-success">✅ All records imported successfully</p>
+                    </div>`,
                     icon: 'success'
                 });
 
-                // Reset file after upload completion
                 this.masterToolingPMCFileName = '';
                 this.tempData.masterToolingPMC = null;
             },
             error: (err: any) => {
                 console.error('Import Master Tooling PMC Error:', err);
                 this.uploadingPMC = false;
+
+                const unmatchedRows: any[] = err.error?.unmatchedRows;
+
+                if (unmatchedRows && unmatchedRows.length > 0) {
+                    // ─── Distinct by PartNo ───
+                    const seen = new Set<string>();
+                    const distinctRows: any[] = [];
+                    for (const r of unmatchedRows) {
+                        if (!seen.has(r.PartNo)) {
+                            seen.add(r.PartNo);
+                            distinctRows.push(r);
+                        }
+                    }
+
+                    // Sort by Process then PartNo
+                    distinctRows.sort((a, b) => {
+                        const pa = (a.Process || '').localeCompare(b.Process || '');
+                        return pa !== 0 ? pa : (a.PartNo || '').localeCompare(b.PartNo || '');
+                    });
+
+                    // ─── Build single-sheet Excel ───
+                    const wb = XLSX.utils.book_new();
+
+                    // Row 1: title
+                    // Row 2: column headers
+                    // Row 3+: data
+                    const titleRow = ['รายการ Error โปรดตรวจสอบ PartNo ว่าตรงตาม Layout หรือไม่', '', '', '', ''];
+                    const headerRow = ['No.', 'Part No.', 'Process', 'MC', 'Excel Row'];
+                    const dataRows = distinctRows.map((r: any, i: number) => [
+                        i + 1,
+                        r.PartNo || '',
+                        r.Process || '',
+                        r.MC || '',
+                        r.ExcelRow || ''
+                    ]);
+
+                    const ws = XLSX.utils.aoa_to_sheet([titleRow, headerRow, ...dataRows]);
+
+                    // Merge title row across 5 columns (A1:E1)
+                    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }];
+
+                    // Style title cell (bold, large font — supported by xlsx-style if available,
+                    // otherwise the merge + value is enough for readability)
+                    if (ws['A1']) {
+                        ws['A1'].s = {
+                            font: { bold: true, sz: 14 },
+                            alignment: { horizontal: 'center', vertical: 'center' }
+                        };
+                    }
+
+                    // Column widths
+                    ws['!cols'] = [
+                        { wch: 6 },  // No.
+                        { wch: 20 },  // Part No.
+                        { wch: 18 },  // Process
+                        { wch: 14 },  // MC
+                        { wch: 10 }   // Excel Row
+                    ];
+
+                    XLSX.utils.book_append_sheet(wb, ws, 'Error List');
+
+                    const today = new Date().toISOString().slice(0, 10);
+                    XLSX.writeFile(wb, `Unmatched_Parts_${today}.xlsx`);
+
+                    // Show warning dialog
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Import Failed — Unmatched Part No.',
+                        html: `<div class="text-start">
+                            <p class="mb-1">พบ <strong>${distinctRows.length} Part No.</strong> ที่ไม่พบในระบบ</p>
+                            <p class="text-success mb-0">📥 ดาวน์โหลด Excel รายการ Error แล้ว<br>
+                            <small>(<strong>Unmatched_Parts_${today}.xlsx</strong>)</small></p>
+                        </div>`,
+                        confirmButtonText: 'ตกลง'
+                    });
+                    return;
+                }
+
+                // Generic error
                 const errorMsg = err.error?.message || err.error?.error || err.message || 'Unknown error';
                 Swal.fire('Error', `Failed to import: ${errorMsg}`, 'error');
             }

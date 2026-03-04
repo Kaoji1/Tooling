@@ -554,6 +554,7 @@ exports.Add_New_Request_Bulk = async (req, res) => {
           actionBy: userName,
           targetRoles: 'purchase,ph',
           ctaRoute: '/purchase/request-list',
+          division: firstItem.Division,
           detailsJson: {
             type: 'new_request',
             items: items.map(ji => ({

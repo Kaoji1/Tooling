@@ -67,10 +67,20 @@ exports.emitNotification = async (req, pool, {
     actionBy,
     targetRoles,
     ctaRoute,
-    detailsJson
+    detailsJson,
+    division
 }) => {
     try {
         const io = req.app.get('socketio');
+
+        // Automatically merge division into detailsJson if provided
+        let finalDetailsJson = detailsJson || {};
+        if (division) {
+            finalDetailsJson = {
+                ...finalDetailsJson,
+                Division: division
+            };
+        }
 
         // 1. Save to DB (new SP with extended params)
         const notifyResult = await pool.request()
@@ -82,7 +92,7 @@ exports.emitNotification = async (req, pool, {
             .input('Message_TH', sql.NVarChar, messageTH || '')
             .input('Target_Roles', sql.NVarChar, targetRoles || 'ALL')
             .input('CTA_Route', sql.NVarChar, ctaRoute || '')
-            .input('Details_JSON', sql.NVarChar, detailsJson ? JSON.stringify(detailsJson) : null)
+            .input('Details_JSON', sql.NVarChar, Object.keys(finalDetailsJson).length > 0 ? JSON.stringify(finalDetailsJson) : null)
             .execute('trans.Stored_Insert_Notification_Log');
 
         const notificationId = notifyResult.recordset[0]?.Notification_ID;
@@ -99,7 +109,7 @@ exports.emitNotification = async (req, pool, {
                 actionBy: actionBy || 'System',
                 targetRoles: targetRoles || 'ALL',
                 ctaRoute: ctaRoute || '',
-                detailsJson: detailsJson || null,
+                detailsJson: Object.keys(finalDetailsJson).length > 0 ? finalDetailsJson : null,
                 timestamp: new Date()
             });
             console.log(`[Notification] Emitted: ${eventType} (ID: ${notificationId}) -> ${targetRoles}`);

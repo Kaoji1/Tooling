@@ -1,7 +1,8 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core'; 
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule, isPlatformBrowser } from '@angular/common'; 
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { CartService } from '../../core/services/cart.service';
+import { NotificationService } from '../../core/services/notification.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -12,7 +13,7 @@ import Swal from 'sweetalert2';
   styleUrls: ['./sidebar.component.scss']
 })
 export class SidebarComponent implements OnInit {
-  
+
   // --- ตัวแปรสำหรับเก็บข้อมูลที่จะแสดงผลใน View (HTML) ---
   Employee_Name: any;             // เก็บชื่อพนักงานที่ Login เข้ามา
   imagePath = 'assets/images/1.png'; // Path รูปภาพโปรไฟล์เริ่มต้น
@@ -22,8 +23,9 @@ export class SidebarComponent implements OnInit {
   constructor(
     private router: Router,           // ใช้สำหรับเปลี่ยนหน้า (Navigation)
     private cartService: CartService, // Service จัดการตะกร้าสินค้า 
+    private notificationService: NotificationService,
     @Inject(PLATFORM_ID) private platformId: Object // [SSR] ใช้ตรวจสอบว่ารันอยู่บน Browser หรือ Server
-  ) {}
+  ) { }
 
   // ทำงานทันทีเมื่อ Component ถูกโหลด
   // 1. ตรวจสอบ Environment ว่าเป็น Browser หรือไม่
@@ -31,10 +33,10 @@ export class SidebarComponent implements OnInit {
   // 3. อัปเดตจำนวนสินค้าในตะกร้า
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      
+
       // ดึงข้อมูล Key 'user' จาก Browser Storage
       const userData = sessionStorage.getItem('user');
-      
+
       if (userData) {
         try {
           // แปลง String JSON กลับเป็น Object
@@ -64,13 +66,14 @@ export class SidebarComponent implements OnInit {
     }).then((result) => {
       // ตรวจสอบว่าผู้ใช้กดปุ่ม "Yes" หรือไม่
       if (result.isConfirmed) {
-        
+
         //  ตรวจสอบก่อนล้างข้อมูล
         if (isPlatformBrowser(this.platformId)) {
-            // ล้างข้อมูลทั้งหมดใน Session Storage (Token, User Info, Cart)
-            sessionStorage.clear();
+          // ล้างข้อมูลทั้งหมดใน Session Storage (Token, User Info, Cart)
+          sessionStorage.clear();
+          this.notificationService.logout();
         }
-        
+
         // Redirect ผู้ใช้กลับไปยังหน้า Login
         this.router.navigate(['/login']);
       }

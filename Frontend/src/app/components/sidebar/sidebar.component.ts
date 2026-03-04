@@ -2,6 +2,7 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { CartService } from '../../core/services/cart.service';
+import { NotificationService } from '../../core/services/notification.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -23,6 +24,7 @@ export class SidebarComponent implements OnInit {
   constructor(
     private router: Router,           // ใช้สำหรับเปลี่ยนหน้า (Navigation)
     private cartService: CartService, // Service จัดการตะกร้าสินค้า 
+    private notificationService: NotificationService,
     @Inject(PLATFORM_ID) private platformId: Object // [SSR] ใช้ตรวจสอบว่ารันอยู่บน Browser หรือ Server
   ) { }
 
@@ -119,6 +121,9 @@ export class SidebarComponent implements OnInit {
           // ล้างข้อมูลทั้งหมดใน Session Storage (Token, User Info, Cart)
           sessionStorage.clear();
           localStorage.clear(); // Clear local storage too just in case
+
+          // Clear notifications state
+          this.notificationService.logout();
 
           // Try to close the tab if it's a secondary one (popup)
           if (window.opener) {

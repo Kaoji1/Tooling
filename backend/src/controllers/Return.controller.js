@@ -151,7 +151,8 @@ exports.saveReturnRequest = async (req, res) => {
                     docNo: docNo,
                     actionBy: userName,
                     targetRoles: 'purchase',
-                    ctaRoute: '/purchase/return-history'
+                    ctaRoute: '/purchase/return-history',
+                    division: header.divisionName
                 });
             } catch (notifErr) {
                 console.error('Notification Error (Return Sent):', notifErr);
@@ -280,6 +281,14 @@ exports.updateReturnStatus = async (req, res) => {
         // === Notification Trigger (V2): RETURN_COMPLETED ===
         if (status && status.toLowerCase() === 'completed') {
             try {
+                let userDivision = '';
+                if (id) {
+                    const divQuery = await pool.request()
+                        .input('Query_Return_ID', sql.Int, id)
+                        .query('SELECT TOP 1 Division FROM [db_Tooling].[master].[tb_Return_List] WHERE Return_ID = @Query_Return_ID');
+                    userDivision = divQuery.recordset[0]?.Division || '';
+                }
+
                 const { emitNotification } = require('./Notification.controller');
                 const refDocNo = docNo || String(id);
 
@@ -291,7 +300,8 @@ exports.updateReturnStatus = async (req, res) => {
                     docNo: refDocNo,
                     actionBy: 'Purchase',
                     targetRoles: 'production',
-                    ctaRoute: '/production/return-history'
+                    ctaRoute: '/production/return-history',
+                    division: userDivision
                 });
             } catch (notifErr) {
                 console.error('Notification Error (Return Completed):', notifErr);

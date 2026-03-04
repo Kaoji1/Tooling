@@ -217,8 +217,9 @@ export function getTemplate(eventType: string): NotificationTemplate | undefined
 
 export const FIELD_LABELS: Record<string, { EN: string; TH: string }> = {
     PlanDate: { EN: 'Plan Date', TH: 'Plan Date' },
-    MC_Type: { EN: 'Machine Type', TH: 'Machine Type' },
-    Facility: { EN: 'Facility', TH: 'Facility' },
+    MC_Type: { EN: 'MC Type', TH: 'MC Type' },
+    Bar_Type: { EN: 'Bar Type', TH: 'Bar Type' },
+    Facility: { EN: 'Fac', TH: 'Fac' },
     Before_Part: { EN: 'Part Before', TH: 'Part Before' },
     Process: { EN: 'Process', TH: 'Process' },
     MC: { EN: 'MC', TH: 'MC' },

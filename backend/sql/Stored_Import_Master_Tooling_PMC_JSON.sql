@@ -276,50 +276,30 @@ BEGIN
             ON LTRIM(RTRIM(MP.Process_Name)) COLLATE DATABASE_DEFAULT = R.Process COLLATE DATABASE_DEFAULT;
 
         -- ============================================================
-        -- STEP 2.5: Validate Part_Id - skip rows with missing PartNo
-        -- Collect summary, delete invalid rows, continue with valid data
+        -- STEP 2.5: Validate Part_Id - halt if any PartNo not found
+        -- Return the FULL list of all unmatched rows (PartNo, Process, MC)
         -- ============================================================
-        DECLARE @MissingPartNos  NVARCHAR(MAX) = N'';
-        DECLARE @TotalMissing    INT           = 0;
-        DECLARE @SkippedRows     INT           = 0;
-        DECLARE @DisplayMissing  INT           = 20;
-
-        -- Count total distinct missing Part Nos and skipped rows
-        SELECT
-            @TotalMissing = COUNT(DISTINCT M.PartNo),
-            @SkippedRows  = COUNT(*)
-        FROM #TempMapped M
-        WHERE M.Part_Id IS NULL
-          AND M.PartNo  IS NOT NULL;
-
-        IF @TotalMissing > 0
+        IF EXISTS (
+            SELECT 1 FROM #TempMapped WHERE Part_Id IS NULL AND PartNo IS NOT NULL
+        )
         BEGIN
-            -- Build TOP 20 distinct missing Part No. summary
-            SELECT @MissingPartNos = @MissingPartNos
-                + N'  "' + sub.PartNo + N'"'
-                + N' (first found: Row ' + CAST(sub.FirstRow AS NVARCHAR(10)) + N','
-                + N' total rows: ' + CAST(sub.RowCnt AS NVARCHAR(10)) + N')' + NCHAR(10)
-            FROM (
-                SELECT TOP (@DisplayMissing)
-                    M.PartNo,
-                    MIN(M.ExcelRow) AS FirstRow,
-                    COUNT(*)        AS RowCnt
-                FROM #TempMapped M
-                WHERE M.Part_Id IS NULL
-                  AND M.PartNo  IS NOT NULL
-                GROUP BY M.PartNo
-                ORDER BY MIN(M.ExcelRow)
-            ) AS sub;
+            -- Return all unmatched records as a result set
+            SELECT
+                M.PartNo,
+                M.Process,
+                M.MC,
+                M.ExcelRow
+            FROM #TempMapped M
+            WHERE M.Part_Id IS NULL
+              AND M.PartNo  IS NOT NULL
+            ORDER BY M.ExcelRow ASC;
 
-            IF @TotalMissing > @DisplayMissing
-                SET @MissingPartNos = @MissingPartNos
-                    + N'  ... and ' + CAST(@TotalMissing - @DisplayMissing AS NVARCHAR(10))
-                    + N' more Part No. not shown.' + NCHAR(10);
+            ROLLBACK TRANSACTION;
 
-            -- Remove invalid rows from temp table (skip, do not abort)
-            DELETE FROM #TempMapped
-            WHERE Part_Id IS NULL
-              AND PartNo  IS NOT NULL;
+            DROP TABLE IF EXISTS #TempRaw;
+            DROP TABLE IF EXISTS #TempMapped;
+
+            RETURN;
         END
 
         -- ============================================================
@@ -554,20 +534,8 @@ BEGIN
         );
 
         -- ============================================================
-        -- STEP 5: Return summary, drop temp tables and commit
+        -- STEP 5: Drop temp tables and commit
         -- ============================================================
-        DECLARE @SuccessCount INT = @@ROWCOUNT;
-
-        -- Return summary result set to backend
-        SELECT
-            @SuccessCount AS SuccessCount,
-            @SkippedRows  AS SkippedRows,
-            @TotalMissing AS MissingPartNoCount,
-            CASE
-                WHEN @TotalMissing = 0 THEN NULL
-                ELSE @MissingPartNos
-            END AS SkippedDetail;
-
         DROP TABLE IF EXISTS #TempRaw;
         DROP TABLE IF EXISTS #TempMapped;
         DROP TABLE IF EXISTS #TempAggregated;

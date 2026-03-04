@@ -272,13 +272,13 @@
 
 // ===== CSS Grid Table =====Division
 // 1. PC (3 buttons) -> Action 240px
-$grid-cols-pc: 50px 240px 80px 120px 60px 140px 100px 100px 60px 100px 120px 120px 180px 80px 80px 200px 80px 80px 80px;
+$grid-cols-pc: 50px 240px 80px 120px 60px 140px 100px 100px 100px 60px 100px 120px 120px 180px 80px 80px 200px 80px 80px 80px;
 
 // 2. PD, En, QC (2-3 buttons) -> Action 220px (Increased from 170px to fit ADD PATH + VIEW)
-$grid-cols-medium: 50px 220px 80px 120px 60px 140px 100px 100px 60px 100px 120px 120px 180px 80px 80px 200px 80px 80px 80px;
+$grid-cols-medium: 50px 220px 80px 120px 60px 140px 100px 100px 100px 60px 100px 120px 120px 180px 80px 80px 200px 80px 80px 80px;
 
 // 3. PH, Gate, View (1 button) -> Action 100px
-$grid-cols-small: 50px 100px 80px 120px 60px 140px 100px 100px 60px 100px 120px 120px 180px 80px 80px 200px 80px 80px 80px;
+$grid-cols-small: 50px 100px 80px 120px 60px 140px 100px 100px 100px 60px 100px 120px 120px 180px 80px 80px 200px 80px 80px 80px;
 
 // Default variable used in initial load
 $grid-cols: $grid-cols-pc;
@@ -995,7 +995,7 @@ $grid-cols: $grid-cols-pc;
     background: #ffffff;
     border-radius: 16px;
     width: 90%;
-    max-width: 650px; // Compact width
+    max-width: 760px; // Wider to fit 2-col grid with 10 fields comfortably
     max-height: 90vh;
     display: flex;
     flex-direction: column;
@@ -1257,6 +1257,105 @@ $grid-cols: $grid-cols-pc;
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
+    }
+}
+
+// ===== Edit Modal: Enhanced Form Styles =====
+.modal-body {
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+
+        i {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+    }
+
+    .form-input {
+        width: 100%;
+        height: 42px;
+        padding: 8px 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        background-color: #f8fafc;
+        color: #0f172a;
+        font-size: 0.9rem;
+        font-family: inherit;
+        transition: all 0.2s ease;
+        outline: none;
+        box-sizing: border-box;
+
+        &::placeholder {
+            color: #cbd5e1;
+        }
+
+        &:hover {
+            border-color: #94a3b8;
+            background-color: #ffffff;
+        }
+
+        &:focus {
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+    }
+
+    .form-textarea {
+        height: auto;
+        min-height: 80px;
+        resize: vertical;
+        line-height: 1.5;
+        padding: 10px 12px;
+    }
+}
+
+// ng-select inside the edit modal
+::ng-deep .edit-modal-select {
+    .ng-select-container {
+        min-height: 42px !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+        background-color: #f8fafc !important;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+
+        &:hover {
+            border-color: #94a3b8 !important;
+            background-color: #ffffff !important;
+        }
+    }
+
+    &.ng-select-focused .ng-select-container {
+        border-color: #3b82f6 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+    }
+
+    .ng-value-container {
+        padding: 0 10px !important;
+    }
+
+    .ng-placeholder {
+        color: #cbd5e1 !important;
+        font-size: 0.9rem;
+    }
+
+    .ng-value {
+        font-weight: 500;
+        color: #0f172a;
+    }
+
+    .ng-arrow-wrapper {
+        padding-right: 8px;
     }
 }
 

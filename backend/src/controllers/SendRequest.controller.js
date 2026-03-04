@@ -3,7 +3,7 @@ const Type = require("mssql").TYPES;
 const sql = require("mssql");
 const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
 
-const frontendLink = process.env.FRONTEND_URL 
+const frontendLink = process.env.FRONTEND_URL
 
 // insert data to table
 exports.Send_Request = async (req, res) => {
@@ -141,8 +141,12 @@ exports.Send_Request = async (req, res) => {
       const { emitNotification } = require('./Notification.controller');
       const firstItem = items[0];
       const userName = firstItem.Employee_Name || 'System';
-      const docNo = firstItem.Doc_no;
+      const docNo = firstItem.Doc_no || '-';
       const itemCount = String(items.length);
+
+      console.log("[Notification Debug] REQUEST_SENT trigger. firstItem:", firstItem);
+      const matchedDivision = firstItem.Division || firstItem.division || '';
+      console.log(`[Notification Debug] Extracted Division: '${matchedDivision}'`);
 
       await emitNotification(req, pool, {
         eventType: 'REQUEST_SENT',
@@ -152,7 +156,8 @@ exports.Send_Request = async (req, res) => {
         docNo: docNo,
         actionBy: userName,
         targetRoles: 'purchase',
-        ctaRoute: '/purchase/request-list'
+        ctaRoute: '/purchase/request-list',
+        division: matchedDivision
       });
     } catch (notifError) {
       console.error('Notification Trigger Failed:', notifError);

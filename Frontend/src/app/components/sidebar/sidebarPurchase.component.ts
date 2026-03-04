@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { NotificationService } from '../../core/services/notification.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -21,6 +22,7 @@ export class SidebarPurchaseComponent implements OnInit {
   // 1. เพิ่ม @Inject(PLATFORM_ID) ใน constructor
   constructor(
     private router: Router,
+    private notificationService: NotificationService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
@@ -80,6 +82,7 @@ export class SidebarPurchaseComponent implements OnInit {
 
           sessionStorage.clear();
           localStorage.clear();
+          this.notificationService.logout();
 
           // Try to close the tab if it's a secondary one (popup)
           if (window.opener) {

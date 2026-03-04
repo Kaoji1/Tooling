@@ -68,6 +68,10 @@ export class NotificationService {
   // Reloads notifications and role config on successful SPA login
   public refreshSession() {
     if (isPlatformBrowser(this.platformId)) {
+      // Clear old state immediately so user doesn't see old notifications during loading
+      this.notificationsSubject.next([]);
+      this.unreadCountSubject.next(0);
+
       try {
         const userSession = sessionStorage.getItem('user');
         if (userSession) {
@@ -79,6 +83,13 @@ export class NotificationService {
       }
       this.fetchNotifications();
     }
+  }
+
+  // Clear state on logout
+  public logout() {
+    this.notificationsSubject.next([]);
+    this.unreadCountSubject.next(0);
+    this.currentUserRole = '';
   }
 
   // Fetch initial history from DB (with role filtering)

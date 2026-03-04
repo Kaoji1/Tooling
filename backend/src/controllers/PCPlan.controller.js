@@ -36,10 +36,10 @@ exports.getMasterDataByDivision = async (req, res) => {
         const pool = await poolPromise;
         console.log(`Fetching Master Data for Division_Id: ${divCode}, Mode: ${mode}...`);
 
-        // Use new SP: Stored_Get_Dropdown_PC_Plan_Data
-        // Input: @Division_Id, @Mode
+        // Use updated SP: Stored_Get_Dropdown_PC_Plan_Data
+        // Input: @Division_Id (INT), @Mode
         const result = await pool.request()
-            .input('Profit_Center', sql.NVarChar(50), divCode)
+            .input('Division_Id', sql.Int, parseInt(divCode, 10))  // Now INT, not NVarChar
             .input('Mode', sql.NVarChar(10), mode)
             .execute('trans.Stored_Get_Dropdown_PC_Plan_Data');
 
@@ -159,6 +159,7 @@ exports.insertPCPlan = async (req, res) => {
                 Process: item.process || '',
                 MC_No: item.mcNo || '',
                 PartNo: item.partNo || '',
+                Bar_Type: item.barType || null,          // ← เพิ่มใหม่
                 QTY: parseFloat(item.qty) || 0,
                 Time: parseInt(item.time) || 0,
                 Comment: item.comment || '',
@@ -198,6 +199,7 @@ exports.insertPCPlan = async (req, res) => {
                     actionBy: userName,
                     targetRoles: 'ALL',
                     ctaRoute: '/pc/plan-list',
+                    division: firstItem.division === '2' ? 'PMC' : firstItem.division === '3' ? 'GM' : firstItem.division,
                     detailsJson: { type: 'cancel', items: jsonItems.slice(0, 10) }
                 });
 
@@ -278,12 +280,13 @@ exports.insertPCPlan = async (req, res) => {
                 await emitNotification(req, pool, {
                     eventType: 'PLAN_REVISION',
                     subject: `🔵 [FYI] ${subjectPrefix}${firstItem.partNo ? ' - Part No. ' + firstItem.partNo : ''}`,
-                    messageEN: `The plan for date ${planDateFormatted}, Part No. ${firstItem.partNo || '-'} has been revised}`,
+                    messageEN: `The plan for date ${planDateFormatted}, Part No. ${firstItem.partNo || '-'} has been revised.`,
                     messageTH: `แผนงานของวันที่ ${planDateFormatted} Part No. ${firstItem.partNo || '-'} ได้รับการแก้ไข`,
                     docNo: firstItem.groupId,
                     actionBy: userName,
                     targetRoles: 'ALL',
                     ctaRoute: '/pc/plan-list',
+                    division: firstItem.division === '2' ? 'PMC' : firstItem.division === '3' ? 'GM' : firstItem.division,
                     detailsJson: {
                         type: 'revision',
                         revision: firstItem.revision,
@@ -295,28 +298,37 @@ exports.insertPCPlan = async (req, res) => {
             } else {
                 // ── NEW_PLAN: Capture full item details ──
                 // Build a clean summary of all imported items (cap at 20 for payload size)
+                const userName = items[0]?.employeeId || 'PC';
+                const deptName = 'PC';
+
                 const itemSummaries = jsonItems.slice(0, 20).map(ji => ({
+                    // Define exact key order requested by user:
+                    // PlanDate, PartNo, PartBefore(Before_Part), Process, MC_Type, Bar_Type, Fac(Facility), MC_No, QTY, Time, Comment
                     PlanDate: ji.PlanDate ? new Date(ji.PlanDate).toISOString().slice(0, 10) : '',
-                    MC_Type: ji.MC_Type,
-                    Facility: ji.Facility,
-                    Process: ji.Process,
-                    MC_No: ji.MC_No,
-                    Before_Part: ji.Before_Part,
                     PartNo: ji.PartNo,
+                    Before_Part: ji.Before_Part,
+                    Process: ji.Process,
+                    MC_Type: ji.MC_Type,
+                    Bar_Type: ji.Bar_Type,
+                    Facility: ji.Facility,
+                    MC_No: ji.MC_No,
                     QTY: ji.QTY,
                     Time: ji.Time,
-                    Comment: ji.Comment
+                    Comment: ji.Comment,
+                    // Hidden fields for the top-level "Div > Fac" header
+                    Division: ji.Division === '2' ? 'PMC' : ji.Division === '3' ? 'GM' : ji.Division
                 }));
 
                 await emitNotification(req, pool, {
                     eventType: 'NEW_PLAN',
                     subject: `🔵 [FYI] New Initial Plan Imported: ${batchId}`,
-                    messageEN: `A new PC Plan ${batchId} has been imported into the system by the PC department. Total items: ${items.length}.`,
-                    messageTH: `แผนงานใหม่ เลขที่ ${batchId} จำนวน ${items.length} รายการ ได้ถูกนำเข้าสู่ระบบโดยแผนก PC`,
+                    messageEN: `A new plan with ${items.length} items has been imported into the system for ${divisionCode} by ${userName}.`,
+                    messageTH: `มีแผนงานใหม่จำนวน ${items.length} รายการ ได้ถูกนำเข้าสู่ระบบโดยแผนก ${deptName} จากคุณ ${userName}`,
                     docNo: batchId,
-                    actionBy: 'PC',
+                    actionBy: userName,
                     targetRoles: 'ALL',
                     ctaRoute: '/pc/plan-list',
+                    division: (firstItem.division || items[0]?.division) === '2' ? 'PMC' : (firstItem.division || items[0]?.division) === '3' ? 'GM' : (firstItem.division || items[0]?.division),
                     detailsJson: {
                         type: 'new_plan',
                         totalItems: items.length,
@@ -396,8 +408,8 @@ exports.cancelPCPlan = async (req, res) => {
         if (!id) {
             return res.status(400).send({ message: "Plan ID is required." });
         }
-
         const pool = await poolPromise;
+
         const result = await pool.request()
             .input('Plan_ID', sql.Int, id)
             .execute('trans.Stored_PCPlan_Cancel');
@@ -420,7 +432,8 @@ exports.cancelPCPlan = async (req, res) => {
                 docNo: String(id),
                 actionBy: 'PC',
                 targetRoles: 'ALL',
-                ctaRoute: '/pc/plan-list'
+                ctaRoute: '/pc/plan-list',
+                division: null
             });
         } catch (e) { console.error('Notify Error:', e); }
 
@@ -507,7 +520,8 @@ exports.deletePCPlanGroup = async (req, res) => {
                 docNo: groupId,
                 actionBy: 'PC',
                 targetRoles: 'ALL',
-                ctaRoute: '/pc/plan-list'
+                ctaRoute: '/pc/plan-list',
+                division: groupId.includes('PLAN-2') ? 'PMC' : groupId.includes('PLAN-3') ? 'GM' : null
             });
         } catch (e) { console.error('Notify Error:', e); }
 
@@ -589,7 +603,8 @@ exports.updatePaths = async (req, res) => {
                         docNo: groupId,
                         actionBy: deptName,
                         targetRoles: 'ALL',
-                        ctaRoute: '/pc/plan-list'
+                        ctaRoute: '/pc/plan-list',
+                        division: groupId.includes('PLAN-2') ? 'PMC' : groupId.includes('PLAN-3') ? 'GM' : null
                     });
                 }
             } catch (e) { console.error('Notify Error:', e); }

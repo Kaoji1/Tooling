@@ -24,6 +24,7 @@ export interface PlanItem {
   process: string | null;
   partBef: string | null;
   partNo: string | null;
+  barType: string | null;
   qty: number | null;
   time: string;
   comment: string;
@@ -102,20 +103,21 @@ export class PCPlanComponent implements OnInit {
     this.pcPlanService.getDivisions().subscribe({
       next: (data: any[]) => {
         console.log('DEBUG: Raw divisions received:', data?.length, data);
-        // Show divisions deduplicated by Profit_Center
+        // Use Division_Id (INT) as the key - matches updated SP parameter
         this.divisionOptions = data
           .map(item => {
-            const pc = (item.Profit_Center || '').toString().trim();
-            let displayLabel = pc;
-            if (pc === '7122') {
-              displayLabel = 'GM';
-            } else if (pc === '71DZ') {
+            const divId = (item.Division_Id ?? '').toString().trim(); // '2' = PMC, '3' = GM
+            const pc = (item.Profit_Center || '').toString().trim();  // Division_Purchase value
+            let displayLabel = pc || divId;
+            if (divId === '2') {
               displayLabel = 'PMC';
+            } else if (divId === '3') {
+              displayLabel = 'GM';
             }
             return {
-              code: pc,
+              code: divId,          // Now an integer string: '2' or '3'
               label: displayLabel,
-              profitCenter: pc
+              profitCenter: pc      // Kept for reference / Excel matching
             };
           })
           .filter(item => item.code !== '')
@@ -169,12 +171,13 @@ export class PCPlanComponent implements OnInit {
     worksheet.columns = [
       { header: 'Date', key: 'Date', width: 15 },
       { header: 'Div', key: 'Div', width: 10 },
-      { header: 'Machine Type', key: 'MachineType', width: 15 },
-      { header: 'Fac', key: 'Fac', width: 15 },
-      { header: 'MC No', key: 'MCNo', width: 10 },
-      { header: 'Process', key: 'Process', width: 15 },
       { header: 'Part Before', key: 'PartBefore', width: 25 },
       { header: 'Part No.', key: 'PartNo', width: 25 },
+      { header: 'Process', key: 'Process', width: 15 },
+      { header: 'Machine Type', key: 'MachineType', width: 15 },
+      { header: 'Bar Type', key: 'BarType', width: 15 },
+      { header: 'Fac', key: 'Fac', width: 15 },
+      { header: 'MC No', key: 'MCNo', width: 10 },
       { header: 'QTY', key: 'QTY', width: 15 },
       { header: 'Time', key: 'Time', width: 10 },
       { header: 'Comment', key: 'Comment', width: 20 },
@@ -185,12 +188,13 @@ export class PCPlanComponent implements OnInit {
     worksheet.addRow({
       Date: 'DD/MM/YYYY',
       Div: '71DZ',
-      MachineType: 'BM165',
-      Fac: 'F.4',
-      MCNo: '1',
-      Process: 'TURNING',
       PartBefore: 'A5B68-2-M1A',
       PartNo: 'A5B34-4AM1A',
+      Process: 'TURNING',
+      MachineType: 'BM165',
+      BarType: 'BM-12',
+      Fac: 'F.4',
+      MCNo: '1',
       QTY: 0.5,
       Time: '4',
       Comment: 'EX.2'
@@ -203,6 +207,8 @@ export class PCPlanComponent implements OnInit {
 
     // Row 4: คำอธิบาย (Instructions)
     const instructionRow = worksheet.addRow({
+      PartBefore: 'กรอกไม่กรอกก็ได้',
+      BarType: 'กรอกไม่กรอกก็ได้',
       Fac: 'ต้องเป็น F.ตามด้วยเลข Facility',
       QTY: 'กรอกไม่กรอกก็ได้',
       Time: 'กรอกไม่กรอกก็ได้',
@@ -257,7 +263,7 @@ export class PCPlanComponent implements OnInit {
     });
 
     // 6. เปิด AutoFilter
-    worksheet.autoFilter = { from: 'A1', to: 'K1' };
+    worksheet.autoFilter = { from: 'A1', to: 'L1' };
 
     // 7. Export ไฟล์
     workbook.xlsx.writeBuffer().then((buffer: ArrayBuffer) => {
@@ -316,11 +322,18 @@ export class PCPlanComponent implements OnInit {
     const excelDiv = firstRow['Div']; // อ่านค่าจากคอลัมน์ Div (Profit_Center เช่น "7122")
 
     if (excelDiv) {
-      // 2. หา Division_Id จาก Profit_Center ที่อ่านจาก Excel
-      const matchedDiv = this.divisionOptions.find(d => d.profitCenter === excelDiv?.toString());
+      // 2. Match Excel 'Div' against Division options
+      // Try profitCenter match first (Division_Purchase e.g. 'PMC' / 'GM')
+      // then try label match, to support old-format Excel files (e.g. '71DZ', '7122')
+      let matchedDiv = this.divisionOptions.find(d => d.profitCenter === excelDiv?.toString());
+      if (!matchedDiv) {
+        matchedDiv = this.divisionOptions.find(d =>
+          d.label.toLowerCase() === excelDiv?.toString().toLowerCase()
+        );
+      }
 
       if (matchedDiv) {
-        // เจอ! ใช้ Division_Id เป็น selectedDivisionCode
+        // เจอ! ใช้ Division_Id ('2' or '3') เป็น selectedDivisionCode
         this.selectedDivisionCode = matchedDiv.code;
       } else {
         // ไม่เจอ ลองใช้ค่าตรงๆ (Fallback)
@@ -355,10 +368,11 @@ export class PCPlanComponent implements OnInit {
         date: this.excelDateToJSDate(row['Date']),
         machineType: row['Machine Type'] ? row['Machine Type'].toString().trim() : null,
         fac: rawFac ? rawFac.toString().trim() : null,
-        mcNo: row['MC No.'] ? row['MC No.'].toString().trim() : '',
+        mcNo: row['MC No'] ? row['MC No'].toString().trim() : (row['MC No.'] ? row['MC No.'].toString().trim() : ''),
         process: row['Process'] ? row['Process'].toString().trim() : null,
         partBef: pBef,
         partNo: pNo,
+        barType: row['Bar Type'] ? row['Bar Type'].toString().trim() : null,
         qty: row['QTY'] || null,
         time: row['Time'] ? row['Time'].toString().trim() : '',
         comment: row['Comment'] ? row['Comment'].toString().trim() : ''
@@ -519,6 +533,7 @@ export class PCPlanComponent implements OnInit {
       process: null,
       partBef: null,
       partNo: null,
+      barType: null,
       mcNo: '',
       qty: null,
       time: '',
@@ -697,11 +712,11 @@ export class PCPlanComponent implements OnInit {
     // 4. ถ้าผ่าน Validation ทั้งหมดค่อยส่ง
     // 4. ถ้าผ่าน Validation ทั้งหมด ให้ยืนยันก่อนส่ง (Premium Bill Style - Detailed List)
 
-    // Determine Division display name
+    // Determine Division display name (using Division_Id: 2=PMC, 3=GM)
     let displayDivision = this.selectedDivisionCode;
-    if (this.selectedDivisionCode === '7122') {
+    if (this.selectedDivisionCode === '3') {
       displayDivision = 'GM';
-    } else if (this.selectedDivisionCode === '71DZ') {
+    } else if (this.selectedDivisionCode === '2') {
       displayDivision = 'PMC';
     }
 
@@ -862,7 +877,8 @@ export class PCPlanComponent implements OnInit {
         ...item,
         date: formattedDate, // Send String YYYY-MM-DD (AD)
         mcType: item.machineType, // Map Frontend 'machineType' to Backend 'mcType'
-        division: selectedDiv?.profitCenter || this.selectedDivisionCode, // ส่ง Profit_Center ไปเก็บ
+        barType: item.barType || null,
+        division: this.selectedDivisionCode, // Division_Id: '2'=PMC, '3'=GM
         employeeId: empId,
         revision: item.revision || 0 // Ensure new items start with 0 for SP to increment correctly
       };

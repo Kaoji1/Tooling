@@ -930,26 +930,52 @@ exports.importMasterToolingPMC = async (req, res) => {
         request.input('JsonData', sql.NVarChar(sql.MAX), jsonString);
         request.input('UploadedBy', sql.NVarChar(100), uploadedBy);
 
-        // Execute SP — returns a summary result set
+        // Execute SP
+        // SP now returns either:
+        //   - Rows with { PartNo, Process, MC, ExcelRow } → validation failed (unmatched parts)
+        //   - Empty recordset → import succeeded
         const result = await request.execute('[trans].[Stored_Import_Master_Tooling_PMC_JSON]');
 
         console.log(`[Import Master Tooling PMC] SP execution complete.`);
 
-        // Read summary from SP result set (Step 5 SELECT)
-        const summary = result.recordset && result.recordset[0];
-        const successCount = summary ? summary.SuccessCount : null;
-        const skippedRows = summary ? summary.SkippedRows : 0;
-        const missingPartCount = summary ? summary.MissingPartNoCount : 0;
-        const skippedDetail = summary ? summary.SkippedDetail : null;
+        const rows = result.recordset || [];
 
+        if (rows.length > 0 && rows[0].PartNo !== undefined) {
+            // Validation failed — SP returned the list of all unmatched records
+            // Distinct by PartNo for terminal log (first occurrence per PartNo)
+            const distinctRows = [];
+            const seen = new Set();
+            for (const r of rows) {
+                if (!seen.has(r.PartNo)) {
+                    seen.add(r.PartNo);
+                    distinctRows.push(r);
+                }
+            }
+            console.warn(`[Import Master Tooling PMC] ❌ Validation failed: ${rows.length} row(s), ${distinctRows.length} distinct Part No. not found:`);
+            // Group by Process for terminal log
+            const grouped = new Map();
+            for (const r of distinctRows) {
+                const proc = r.Process || '(No Process)';
+                if (!grouped.has(proc)) grouped.set(proc, []);
+                grouped.get(proc).push(r);
+            }
+            let no = 1;
+            for (const [proc, list] of grouped) {
+                console.warn(`\n  ── Process: ${proc} (${list.length} Part No.) ──`);
+                list.forEach(r => {
+                    console.warn(`    ${String(no++).padStart(3)}. PartNo: ${r.PartNo} | MC: ${r.MC || '-'}`);
+                });
+            }
+            console.warn(''); // blank line at end
+            return res.status(400).send({
+                message: `Import failed: ${rows.length} row(s) could not be mapped to a valid Part No. Please verify the listed items in your Excel file and try again.`,
+                unmatchedRows: rows  // full list to frontend: [{ PartNo, Process, MC, ExcelRow }, ...]
+            });
+        }
+
+        // Success
         res.status(200).send({
-            message: skippedRows > 0
-                ? `Import completed with ${skippedRows} row(s) skipped due to ${missingPartCount} unrecognized Part No.`
-                : 'Import successful',
-            successCount,
-            skippedRows,
-            missingPartNoCount: missingPartCount,
-            skippedDetail: skippedDetail || null,
+            message: 'Import successful',
             totalInputRows: totalItems
         });
 
