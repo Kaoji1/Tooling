@@ -26,12 +26,13 @@
     <form (ngSubmit)="onLogin()" #loginForm="ngForm">
       <!-- Username -->
       <div class="input-group">
-        <label for="userid">Username</label>
+        <label for="username">Username</label>
         <div style="position: relative;">
           <span class="icon-wrapper">
             <i class="bi bi-person"></i>
           </span>
-          <input type="text" name="username" [(ngModel)]="Username" required placeholder="Enter your ID">
+          <input type="text" id="username" name="username" [(ngModel)]="Username" required autocomplete="username"
+            placeholder="Enter your ID">
         </div>
       </div>
 
@@ -43,8 +44,8 @@
             <span class="icon-wrapper">
               <i class="bi bi-lock"></i>
             </span>
-            <input [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="Password" required
-              placeholder="Enter password" class="password-input">
+            <input [type]="showPassword ? 'text' : 'password'" id="password" name="password" [(ngModel)]="Password"
+              required autocomplete="current-password" placeholder="Enter password" class="password-input">
           </div>
 
           <button type="button" (click)="togglePasswordVisibility()" class="toggle-password-btn-outside"

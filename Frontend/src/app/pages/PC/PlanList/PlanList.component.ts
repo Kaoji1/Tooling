@@ -293,7 +293,7 @@ export class PlanListComponent implements OnInit {
         }));
 
         this.applyFilter(); // เรียก Filter ครั้งแรกหลังจากโหลดข้อมูลเสร็จ
-        this.updatePrintCounts(); // Fetch latest print counts
+
       },
       error: (err: any) => {
         console.error('Error loading plan list:', err);
@@ -1482,7 +1482,7 @@ export class PlanListComponent implements OnInit {
       Total: qty
     }).subscribe({
       next: () => {
-        this.updatePrintCounts();
+
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -1506,53 +1506,6 @@ export class PlanListComponent implements OnInit {
     });
   }
 
-
-  updatePrintCounts() {
-    this.historyPrint.get_Total().subscribe({
-      next: (counts: any[]) => {
-        this.planList.forEach(item => {
-          // Filter by DocNo (which we decided is GroupId) and PartNo
-          // But wait, PlanList item doesn't have DocNo. We used GroupId.
-          // BE CAREFUL: Old history records use actual DocNo from Request.
-          // My new records use GroupId as DocNo.
-          // So I should match c.DocNo == item.groupId
-
-          // However, if I want to show counts for THIS plan item, I need to match what I saved.
-          const docNoKey = item.groupId;
-
-          const layoutTotal = counts
-            .filter(c =>
-              String(c.DocNo).trim() === String(docNoKey).trim() &&
-              String(c.PratNo).trim() === String(item.partNo).trim() &&
-              c.TypePrint === 'PathLayout'
-            )
-            .reduce((sum, c) => sum + Number(c.Total), 0);
-
-          const dwgTotal = counts
-            .filter(c =>
-              String(c.DocNo).trim() === String(docNoKey).trim() &&
-              String(c.PratNo).trim() === String(item.partNo).trim() &&
-              c.TypePrint === 'PathDwg'
-            )
-            .reduce((sum, c) => sum + Number(c.Total), 0);
-
-          item.printLayoutCount = layoutTotal;
-          item.printDwgCount = dwgTotal;
-
-          const iiqcTotal = counts
-            .filter(c =>
-              String(c.DocNo).trim() === String(docNoKey).trim() &&
-              String(c.PratNo).trim() === String(item.partNo).trim() &&
-              c.TypePrint === 'IIQC'
-            )
-            .reduce((sum, c) => sum + Number(c.Total), 0);
-
-          item.printIiqcCount = iiqcTotal;
-        });
-      },
-      error: e => console.error("Error fetching print counts:", e)
-    });
-  }
   // --- Export to Excel (Styled with ExcelJS) ---
   onExport() {
     const workbook = new ExcelJS.Workbook();

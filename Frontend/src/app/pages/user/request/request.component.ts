@@ -738,9 +738,13 @@ export class requestComponent implements OnInit {
   }
 
   get getSelectedItemsCount(): number {
-    const mainChecked = (this.items || []).filter((item: any) => item.checked).length;
-    const setupChecked = (this.relatedSetupItems || []).filter((item: any) => item.checked).length;
-    return mainChecked + setupChecked;
+    const mainQty = (this.items || [])
+      .filter((item: any) => item.checked)
+      .reduce((sum: number, item: any) => sum + (Number(item.QTY) || 0), 0);
+    const setupQty = (this.relatedSetupItems || [])
+      .filter((item: any) => item.checked)
+      .reduce((sum: number, item: any) => sum + (Number(item.QTY) || 0), 0);
+    return mainQty + setupQty;
   }
 
   // ==========================================
@@ -957,7 +961,7 @@ export class requestComponent implements OnInit {
         <!-- Total Section -->
         <div style="text-align: right; font-size: 0.95rem; font-weight: 700; color: #475569; padding-right: 5px;">
           รวมจำนวนรายการทั้งหมด 
-          <span style="color: #10b981; font-size: 1.4rem; font-weight: 800; margin: 0 8px;">${allItems.length}</span> 
+          <span style="color: #10b981; font-size: 1.4rem; font-weight: 800; margin: 0 8px;">${allItems.reduce((sum, item) => sum + (Number(item.QTY) || 0), 0)}</span> 
           รายการ
         </div>
       </div>`;
@@ -1177,9 +1181,9 @@ export class requestComponent implements OnInit {
   }
 
   private resetForm() {
-    // Delete select group - KEEP Tooling_ and Case_ as requested
-    // this.Tooling_ = null; 
-    // this.Case_ = null;
+    // Delete select group - Clear ALL including Tooling and Case
+    this.Tooling_ = null;
+    this.Case_ = null;
 
     this.Div_ = null;
     this.Fac_ = null;

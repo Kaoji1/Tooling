@@ -29,9 +29,9 @@
           Year
         </label>
 
-        <label for="topNInput">Top N:</label>
+        <label>Top N:</label>
         <input type="number" id="topNInput" min="1" max="20" [(ngModel)]="topN1" (change)="renderStackedBarChart()">
-        <label for="division">Division:</label>
+        <label>Division:</label>
         <select id="division" [(ngModel)]="selectedDivisionStacked" (change)="renderStackedBarChart()">
           <option value="ทั้งหมด">Select All</option>
           <option *ngFor="let d of Divisions" [value]="d">{{d}}</option>
@@ -63,9 +63,9 @@
       <p class="sub-text">Show Most Item Select.</p>
 
       <div class="controls">
-        <label for="topN">Number of ItemNo:</label>
+        <label>Number of ItemNo:</label>
         <input id="topN" type="number" [(ngModel)]="topN" min="1" (change)="renderHorizontalBarChart()">
-        <label for="division">Division:</label>
+        <label>Division:</label>
         <select id="division" [(ngModel)]="selectedDivision" (change)="renderHorizontalBarChart()">
           <option value="ทั้งหมด">Select All</option>
           <option *ngFor="let d of Divisions" [value]="d">{{d}}</option>
