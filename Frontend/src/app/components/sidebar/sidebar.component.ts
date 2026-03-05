@@ -115,12 +115,14 @@ export class SidebarComponent implements OnInit {
 
         //  ตรวจสอบก่อนล้างข้อมูล
         if (isPlatformBrowser(this.platformId)) {
-          // Trigger logout event for other tabs
-          localStorage.setItem('logout-event', Date.now().toString());
+          // Trigger logout event for other tabs ONLY for admin
+          if (this.role === 'admin' || sessionStorage.getItem('role') === 'admin') {
+            localStorage.setItem('logout-event', Date.now().toString());
+          }
 
           // ล้างข้อมูลทั้งหมดใน Session Storage (Token, User Info, Cart)
           sessionStorage.clear();
-          localStorage.clear(); // Clear local storage too just in case
+          // localStorage.clear(); // Clear local storage too just in case
 
           // Clear notifications state
           this.notificationService.logout();

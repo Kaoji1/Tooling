@@ -77,11 +77,13 @@ export class SidebarPurchaseComponent implements OnInit {
       if (result.isConfirmed) {
         // 4. การจัดการลบ session ก็ต้องทำเฉพาะบน Browser
         if (isPlatformBrowser(this.platformId)) {
-          // Trigger logout event for other tabs
-          localStorage.setItem('logout-event', Date.now().toString());
+          // Trigger logout event for other tabs ONLY for admin
+          if (this.role === 'admin' || sessionStorage.getItem('role') === 'admin') {
+            localStorage.setItem('logout-event', Date.now().toString());
+          }
 
           sessionStorage.clear();
-          localStorage.clear();
+          // localStorage.clear();
           this.notificationService.logout();
 
           // Try to close the tab if it's a secondary one (popup)

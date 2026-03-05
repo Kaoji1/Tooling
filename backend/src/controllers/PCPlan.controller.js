@@ -439,7 +439,7 @@ exports.cancelPCPlan = async (req, res) => {
                 messageEN: `The plan ${id} has been cancelled from the system by PC User.`,
                 messageTH: `แผนงานเลขที่ ${id} ได้ถูกยกเลิกจากระบบโดย PC User`,
                 docNo: String(id),
-                actionBy: 'PC',
+                actionBy: req.headers['x-username'] || 'PC', // NEW: Read username from header
                 targetRoles: 'ALL',
                 ctaRoute: '/pc/plan-list',
                 division: null
@@ -527,7 +527,7 @@ exports.deletePCPlanGroup = async (req, res) => {
                 messageEN: `The plan ${groupId} has been cancelled or deleted from the system by an authorized user.`,
                 messageTH: `แผนงานเลขที่ ${groupId} ได้ถูกยกเลิกหรือลบออกจากระบบโดยผู้มีสิทธิ์`,
                 docNo: groupId,
-                actionBy: 'PC',
+                actionBy: req.headers['x-username'] || 'PC', // NEW: Read username from header
                 targetRoles: 'ALL',
                 ctaRoute: '/pc/plan-list',
                 division: groupId.includes('PLAN-2') ? 'PMC' : groupId.includes('PLAN-3') ? 'GM' : null
@@ -604,13 +604,24 @@ exports.updatePaths = async (req, res) => {
                 }
 
                 if (attachedFiles.length > 0) {
+                    let subjectMessage = 'Document Attached';
+                    if (pathDwg && pathDwg !== '-' && pathLayout && pathLayout !== '-') {
+                        subjectMessage = 'Drawing & Layout Attached';
+                    } else if (pathDwg && pathDwg !== '-') {
+                        subjectMessage = 'Drawing Attached';
+                    } else if (pathLayout && pathLayout !== '-') {
+                        subjectMessage = 'Layout Attached';
+                    } else if (iiqc && iiqc !== '-') {
+                        subjectMessage = 'IIQC Attached';
+                    }
+
                     await emitNotification(req, pool, {
                         eventType: 'UPDATE_PLAN',
-                        subject: `🔵 [FYI] Document Attached for Plan: ${groupId}`,
+                        subject: `🔵 [FYI] ${subjectMessage} for Plan: ${groupId}`,
                         messageEN: `New documents (${attachedFiles.join(' & ')}) have been attached to plan ${groupId} by ${deptName}.`,
                         messageTH: `มีการแนบไฟล์เอกสารใหม่ (${attachedFiles.join(' & ')}) สำหรับแผนงาน ${groupId} โดย ${deptName}`,
                         docNo: groupId,
-                        actionBy: deptName,
+                        actionBy: req.headers['x-username'] || deptName, // NEW: Read username from header
                         targetRoles: 'ALL',
                         ctaRoute: '/pc/plan-list',
                         division: groupId.includes('PLAN-2') ? 'PMC' : groupId.includes('PLAN-3') ? 'GM' : null

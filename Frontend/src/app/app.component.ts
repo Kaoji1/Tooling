@@ -41,14 +41,14 @@ export class AppComponent {
     // --- Cross-Tab Logout Synchronization ---
     if (isPlatformBrowser(this.platformId)) {
       window.addEventListener('storage', (event) => {
-        // Check if the 'logout-event' key was modified or if localStorage was cleared
-        if (event.key === 'logout-event' || event.key === null) {
+        // Check if the 'logout-event' key was modified
+        if (event.key === 'logout-event') {
           // Verify if session should really be cleared (e.g., token is gone)
           // But 'logout-event' is a specific signal, so we trust it.
 
           // Clear current tab's session
           sessionStorage.clear();
-          localStorage.clear(); // Ensure consistency
+          // localStorage.clear(); // Ensure consistency
 
           // Try to close the tab if it's a secondary one (popup)
           if (window.opener) {
