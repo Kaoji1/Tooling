@@ -190,17 +190,22 @@ exports.insertPCPlan = async (req, res) => {
             const userName = firstItem.employeeId || 'PC User';
 
             if (isCancellation) {
+                const divisionName = firstItem.division === '2' ? 'PMC' : firstItem.division === '3' ? 'GM' : (firstItem.division || 'PC');
+                const userRole = (req.user && req.user.Role) ? req.user.Role : 'PC';
+                const cancelPlanDate = firstItem.date ? new Date(firstItem.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
+                const cancelPartNo = firstItem.partNo || '-';
+
                 await emitNotification(req, pool, {
                     eventType: 'CANCEL_PLAN',
                     subject: `⚫ [Cancelled] Plan Deleted/Cancelled: ${firstItem.groupId}`,
-                    messageEN: `The plan ${firstItem.groupId} has been cancelled or deleted from the system by ${userName}.`,
-                    messageTH: `แผนงานเลขที่ ${firstItem.groupId} ได้ถูกยกเลิกหรือลบออกจากระบบโดย ${userName}`,
+                    messageEN: `The plan dated ${cancelPlanDate} for Part No. ${cancelPartNo} has been cancelled by the ${userRole} department (Action by: ${userName}).`,
+                    messageTH: `แผนงานของวันที่ ${cancelPlanDate} ของ Part No. ${cancelPartNo} ถูกยกเลิกแผนงานโดยแผนก ${userRole} จากคุณ ${userName}`,
                     docNo: firstItem.groupId,
                     actionBy: userName,
                     targetRoles: 'ALL',
                     ctaRoute: '/pc/plan-list',
-                    division: firstItem.division === '2' ? 'PMC' : firstItem.division === '3' ? 'GM' : firstItem.division,
-                    detailsJson: { type: 'cancel', items: jsonItems.slice(0, 10) }
+                    division: divisionName,
+                    detailsJson: { type: 'cancel', items: jsonItems.slice(0, 10).map(ji => ({ ...ji, Division: divisionName })) }
                 });
 
             } else if (isRevision) {
@@ -222,6 +227,7 @@ exports.insertPCPlan = async (req, res) => {
                         const fieldMap = {
                             'PlanDate': { newKey: 'date', transform: v => v ? new Date(v).toISOString().slice(0, 10) : '' },
                             'MC_Type': { newKey: 'mcType', transform: v => v || '' },
+                            'Bar_Type': { newKey: 'barType', transform: v => v || '' },
                             'Facility': { newKey: 'fac', transform: v => v || '' },
                             'Before_Part': { newKey: 'partBefore', transform: v => v || '' },
                             'Process': { newKey: 'process', transform: v => v || '' },
@@ -253,8 +259,9 @@ exports.insertPCPlan = async (req, res) => {
                 let subjectPrefix = 'Plan Revised';
                 if (changes.length > 0) {
                     const labelMap = {
-                        'PlanDate': 'Date',
+                        'PlanDate': 'Edit Date',
                         'MC_Type': 'Machine Type',
+                        'Bar_Type': 'Bar Type',
                         'Facility': 'Facility',
                         'Before_Part': 'Part Before',
                         'Process': 'Process',
@@ -280,8 +287,8 @@ exports.insertPCPlan = async (req, res) => {
                 await emitNotification(req, pool, {
                     eventType: 'PLAN_REVISION',
                     subject: `🔵 [FYI] ${subjectPrefix}${firstItem.partNo ? ' - Part No. ' + firstItem.partNo : ''}`,
-                    messageEN: `The plan for date ${planDateFormatted}, Part No. ${firstItem.partNo || '-'} has been revised.`,
-                    messageTH: `แผนงานของวันที่ ${planDateFormatted} Part No. ${firstItem.partNo || '-'} ได้รับการแก้ไข`,
+                    messageEN: `The plan for date ${planDateFormatted}, Part No. ${firstItem.partNo || '-'} has been revised by ${(req.user && req.user.Role) ? req.user.Role : 'PC'} (Action by: ${userName}).`,
+                    messageTH: `แผนงานของวันที่ ${planDateFormatted} Part No. ${firstItem.partNo || '-'} ได้รับการแก้ไขโดยแผนก ${(req.user && req.user.Role) ? req.user.Role : 'PC'} จากคุณ ${userName}`,
                     docNo: firstItem.groupId,
                     actionBy: userName,
                     targetRoles: 'ALL',
@@ -319,11 +326,13 @@ exports.insertPCPlan = async (req, res) => {
                     Division: ji.Division === '2' ? 'PMC' : ji.Division === '3' ? 'GM' : ji.Division
                 }));
 
+                const userRole = (req.user && req.user.Role) ? req.user.Role : 'PC';
+
                 await emitNotification(req, pool, {
                     eventType: 'NEW_PLAN',
                     subject: `🔵 [FYI] New Initial Plan Imported: ${batchId}`,
-                    messageEN: `A new plan with ${items.length} items has been imported into the system for ${divisionCode} by ${userName}.`,
-                    messageTH: `มีแผนงานใหม่จำนวน ${items.length} รายการ ได้ถูกนำเข้าสู่ระบบโดยแผนก ${deptName} จากคุณ ${userName}`,
+                    messageEN: `A new plan with ${items.length} items has been imported into the system for ${divisionCode} by ${userRole} (Action by: ${userName}).`,
+                    messageTH: `มีแผนงานใหม่จำนวน ${items.length} รายการ ได้ถูกนำเข้าสู่ระบบโดยแผนก ${userRole} จากคุณ ${userName}`,
                     docNo: batchId,
                     actionBy: userName,
                     targetRoles: 'ALL',

@@ -1,6 +1,6 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+﻿import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { io, Socket } from 'socket.io-client';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
@@ -35,7 +35,13 @@ export class NotificationService {
   private unreadCountSubject = new BehaviorSubject<number>(0);
   public unreadCount$ = this.unreadCountSubject.asObservable();
 
+  // Trash State
+  private trashSubject = new BehaviorSubject<NotificationLog[]>([]);
+  public trash$ = this.trashSubject.asObservable();
+
   private currentUserRole: string = '';
+  private currentUserName: string = '';  // Employee_ID or Name โ€” used to suppress self-notifications
+  private currentEmployeeId: number | null = null;  // ID_Employee INT โ€” for per-user state SP calls
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -43,15 +49,18 @@ export class NotificationService {
   ) {
     // Connect to Backend Socket.IO only in Browser
     if (isPlatformBrowser(this.platformId)) {
-      // Read role from sessionStorage
+      // Read role and username from sessionStorage
       try {
         const userSession = sessionStorage.getItem('user');
         if (userSession) {
           const user = JSON.parse(userSession);
           this.currentUserRole = (user.Role || '').toLowerCase();
+          this.currentUserName = (user.Employee_ID || user.Name || user.username || '').toLowerCase();
+          const rawEmpId = parseInt(user.ID_Employee, 10);
+          this.currentEmployeeId = !isNaN(rawEmpId) ? rawEmpId : null;
         }
       } catch (e) {
-        console.error('Error reading user role for notifications:', e);
+        console.error('Error reading user session for notifications:', e);
       }
 
       this.socket = io(environment.socketUrl, {
@@ -77,6 +86,9 @@ export class NotificationService {
         if (userSession) {
           const user = JSON.parse(userSession);
           this.currentUserRole = (user.Role || '').toLowerCase();
+          this.currentUserName = (user.Employee_ID || user.Name || user.username || '').toLowerCase();
+          const rawEmpId2 = parseInt(user.ID_Employee, 10);
+          this.currentEmployeeId = !isNaN(rawEmpId2) ? rawEmpId2 : null;
         }
       } catch (e) {
         console.error('Error reading user role for notifications:', e);
@@ -89,13 +101,29 @@ export class NotificationService {
   public logout() {
     this.notificationsSubject.next([]);
     this.unreadCountSubject.next(0);
+    this.trashSubject.next([]);
     this.currentUserRole = '';
+    this.currentUserName = '';
+    this.currentEmployeeId = null;
+  }
+
+  /** Build HTTP headers that identify the current user for per-user state SPs */
+  private getAuthHeaders(): HttpHeaders {
+    let headers = new HttpHeaders();
+    // Double-safety: check both null AND isNaN to prevent 'NaN' string header
+    if (this.currentUserName) {
+      headers = headers.set('x-username', this.currentUserName);
+    }
+    if (this.currentUserRole) {
+      headers = headers.set('x-role', this.currentUserRole);
+    }
+    return headers;
   }
 
   // Fetch initial history from DB (with role filtering)
   public fetchNotifications() {
     const roleParam = this.currentUserRole ? `?role=${this.currentUserRole}` : '';
-    this.http.get<NotificationLog[]>(`${environment.apiUrl}/notifications/list${roleParam}`)
+    this.http.get<NotificationLog[]>(`${environment.apiUrl}/notifications/list${roleParam}`, { headers: this.getAuthHeaders() })
       .subscribe({
         next: (data) => {
           this.notificationsSubject.next(data);
@@ -103,6 +131,39 @@ export class NotificationService {
         },
         error: (err) => console.error('Failed to fetch notifications:', err)
       });
+  }
+
+  // Fetch trash from DB
+  public fetchTrash() {
+    const roleParam = this.currentUserRole ? `?role=${this.currentUserRole}` : '';
+    this.http.get<NotificationLog[]>(`${environment.apiUrl}/notifications/trash${roleParam}`, { headers: this.getAuthHeaders() })
+      .subscribe({
+        next: (data) => this.trashSubject.next(data),
+        error: (err) => console.error('Failed to fetch trash:', err)
+      });
+  }
+
+  // Soft-delete all read notifications -> move to trash
+  public deleteRead(): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/notifications/delete-read`, {}, { headers: this.getAuthHeaders() }).pipe(
+      tap(() => {
+        const remaining = this.notificationsSubject.value.filter(n => !n.IsRead);
+        this.notificationsSubject.next(remaining);
+        this.updateUnreadCount();
+        this.fetchTrash();
+      })
+    );
+  }
+
+  // Restore a single notification from trash back to inbox
+  public restoreFromTrash(id: number): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/notifications/restore/${id}`, {}, { headers: this.getAuthHeaders() }).pipe(
+      tap(() => {
+        const updated = this.trashSubject.value.filter(n => n.Notification_ID !== id);
+        this.trashSubject.next(updated);
+        this.fetchNotifications();
+      })
+    );
   }
 
   // Allow components to manually add notifications (Fallback/Local feedback)
@@ -130,13 +191,22 @@ export class NotificationService {
     this.socket.on('notification', (data: any) => {
       console.log('New Notification Received:', data);
 
-      // Role-based filtering on the client side
+      // โ”€โ”€ 1. Sender-exclusion: never show notification to the user who triggered it โ”€โ”€
+      if (this.currentUserName && data.actionBy) {
+        const senderName = (data.actionBy as string).toLowerCase().trim();
+        if (senderName === this.currentUserName) {
+          console.log('[Notification] Suppressed: triggered by self (' + senderName + ')');
+          return;
+        }
+      }
+
+      // โ”€โ”€ 2. Role-based filtering on the client side โ”€โ”€
       const targetRoles = (data.targetRoles || 'ALL').toLowerCase();
       if (targetRoles !== 'all' && this.currentUserRole) {
         const rolesArray = targetRoles.split(',').map((r: string) => r.trim());
         if (!rolesArray.includes(this.currentUserRole) && this.currentUserRole !== 'admin') {
           console.log('Notification filtered out: not for role', this.currentUserRole);
-          return; // Skip – not relevant to this user
+          return; // Skip โ€“ not relevant to this user
         }
       }
 
@@ -186,7 +256,7 @@ export class NotificationService {
     this.updateUnreadCount();
 
     // API Call
-    this.http.put(`${environment.apiUrl}/notifications/read/${id}`, {}).subscribe({
+    this.http.put(`${environment.apiUrl}/notifications/read/${id}`, {}, { headers: this.getAuthHeaders() }).subscribe({
       error: (err) => console.error('Failed to mark as read:', err)
     });
   }
@@ -199,7 +269,7 @@ export class NotificationService {
     this.updateUnreadCount();
 
     // API Call
-    this.http.put(`${environment.apiUrl}/notifications/mark-all-read`, {}).subscribe({
+    this.http.put(`${environment.apiUrl}/notifications/mark-all-read`, {}, { headers: this.getAuthHeaders() }).subscribe({
       next: (res) => console.log('All notifications marked as read in DB'),
       error: (err) => console.error('Failed to mark all as read:', err)
     });
@@ -210,8 +280,8 @@ export class NotificationService {
   }
 
   /**
-   * Plays a clean 2-note ascending chime (C5 → E5) using Web Audio API.
-   * Inspired by Line notification — soft, clear, and distinctive.
+   * Plays a clean 2-note ascending chime (C5 โ’ E5) using Web Audio API.
+   * Inspired by Line notification โ€” soft, clear, and distinctive.
    */
   private playNotificationSound() {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -238,8 +308,8 @@ export class NotificationService {
       };
 
       const now = ctx.currentTime;
-      playTone(523.25, now, 0.25);        // C5 — first note
-      playTone(659.25, now + 0.15, 0.35); // E5 — second note (slightly overlapping)
+      playTone(523.25, now, 0.25);        // C5 โ€” first note
+      playTone(659.25, now + 0.15, 0.35); // E5 โ€” second note (slightly overlapping)
 
     } catch (error) {
       console.error('Notification sound error:', error);
