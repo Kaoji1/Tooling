@@ -32,7 +32,11 @@ export class NotificationComponent implements OnInit {
   togglePanel() {
     // Instead of the old dropdown, we open the new Inbox Modal
     this.isInboxOpen = !this.isInboxOpen;
-    // this.isOpen = !this.isOpen; // Old dropdown toggle
+
+    // Fetch fresh data whenever the inbox is opened
+    if (this.isInboxOpen) {
+      this.notificationService.fetchNotifications();
+    }
   }
 
   closeInbox() {

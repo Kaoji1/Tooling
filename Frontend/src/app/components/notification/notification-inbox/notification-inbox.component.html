@@ -27,12 +27,10 @@
         <!-- ═══ Toolbar / Filters ═══ -->
         <div class="inbox-toolbar">
             <div class="filter-group">
-                <button [class]="filter === 'all' ? 'filter-btn active' : 'filter-btn inactive'"
-                    (click)="setFilter('all')">All</button>
-                <button [class]="filter === 'unread' ? 'filter-btn active' : 'filter-btn inactive'"
-                    (click)="setFilter('unread')">Unread</button>
-                <button [class]="filter === 'priority' ? 'filter-btn active' : 'filter-btn inactive'"
-                    (click)="setFilter('priority')">Action Required</button>
+                <button [class]="filter === 'PMC' ? 'filter-btn active' : 'filter-btn inactive'"
+                    (click)="setFilter('PMC')">PMC</button>
+                <button [class]="filter === 'GM' ? 'filter-btn active' : 'filter-btn inactive'"
+                    (click)="setFilter('GM')">GM</button>
             </div>
             <button (click)="markAllAsRead()" class="mark-all-btn">
                 <i class="bi bi-check-all"></i> Mark all as read
@@ -94,17 +92,20 @@
                                         {{ getEventLabel(item) }}
                                     </span>
                                 </div>
-                                <div class="meta-chip" *ngIf="getMetaValue(item, 'PlanDate')">
+                                <div class="meta-chip"
+                                    *ngIf="getMetaValue(item, 'PlanDate') && item.Event_Type !== 'NEW_PLAN'">
                                     <span class="meta-label">{{ lang === 'EN' ? 'Plan Date' : 'วันที่แผนงาน' }}</span>
                                     <span class="meta-value mono">{{ getMetaValue(item, 'PlanDate') }}</span>
                                 </div>
-                                <div class="meta-chip" *ngIf="getMetaValue(item, 'PartNo')">
+                                <div class="meta-chip"
+                                    *ngIf="getMetaValue(item, 'PartNo') && item.Event_Type !== 'NEW_PLAN'">
                                     <span class="meta-label">{{ lang === 'EN' ? 'Part No.' : 'เลข Part' }}</span>
                                     <span class="meta-value mono">{{ getMetaValue(item, 'PartNo') }}</span>
                                 </div>
                                 <div class="meta-chip"
                                     *ngIf="getMetaValue(item, 'Division') || getMetaValue(item, 'Facility')">
-                                    <span class="meta-label">{{ lang === 'EN' ? 'Div > Fac' : 'แผนก > โรงงาน' }}</span>
+                                    <span class="meta-label">{{ lang === 'EN' ? 'Div > Fac' : 'แผนก > Facility'
+                                        }}</span>
                                     <span class="meta-value">
                                         <ng-container
                                             *ngIf="getMetaValue(item, 'Division') && getMetaValue(item, 'Facility')">

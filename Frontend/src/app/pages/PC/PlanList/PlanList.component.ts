@@ -91,13 +91,23 @@ export class PlanListComponent implements OnInit {
   get canAttachQC(): boolean { return this.authService.isQC(); }
   get canRequest(): boolean { return this.authService.isPD(); }
 
-  // รายการใน Dropdown Filter
+  // รายการใน Dropdown Filter (สำหรับ Tool Bar บนตาราง)
   divisions: string[] = ['GM', 'PMC'];
   machineTypes: string[] = ['CNC', 'Lathe', 'Milling'];
   facList: string[] = [];
   processList: string[] = [];
   partNoList: string[] = [];
+  partBeforeList: string[] = [];
+  barTypeList: string[] = [];
   statusList: string[] = ['Ready', 'Wait Eng', 'Wait QC', 'Wait En & QC', 'Cancelled'];
+
+  // รายการ Dropdown สำหรับหน้าต่างกดย่อย (Edit Modal) โดยเฉพาะ (ดึงจาก API)
+  modalMachineTypes: string[] = [];
+  modalFacList: string[] = [];
+  modalProcessList: string[] = [];
+  modalPartNoList: string[] = [];
+  modalPartBeforeList: string[] = [];
+  modalBarTypeList: string[] = [];
 
   // ข้อมูลตาราง
   planList: any[] = [];
@@ -273,6 +283,7 @@ export class PlanListComponent implements OnInit {
           division: this.mapDivisionName(item.Division), // Map Code to Name for UI
           divisionCode: item.Division, // Keep Code for DB updates
           mcType: item.MC_Type, // HTML ใช้ mcType
+          barType: item.Bar_Type || null, // Map Bar Type
           fac: item.Facility,
           process: item.Process,
           partBefore: item.Before_Part,
@@ -644,6 +655,12 @@ export class PlanListComponent implements OnInit {
     const seenPartNos = new Set(baseListForDropdown.map(i => i.partNo).filter(p => p));
     this.partNoList = Array.from(seenPartNos).sort();
 
+    const seenPartBefores = new Set(this.planList.map(i => i.partBefore).filter(p => p));
+    this.partBeforeList = Array.from(seenPartBefores).sort();
+
+    const seenBarTypes = new Set(this.planList.map(i => i.barType).filter(b => b));
+    this.barTypeList = Array.from(seenBarTypes).sort();
+
     // Fix: If the currently selected items are no longer available in the new lists, reset them
     let shouldReFilter = false;
 
@@ -741,6 +758,7 @@ export class PlanListComponent implements OnInit {
       division: 'PMC', // Default to PMC
       divisionCode: '7122',
       mcType: '',
+      barType: '',
       fac: '',
       partBefore: '',
       mcNo: '',
@@ -756,6 +774,11 @@ export class PlanListComponent implements OnInit {
       groupId: '-', // Special marker for new plan
       isNew: true
     };
+
+    // Call API to populate dropdowns default for PMC
+    const divisionId = this.getDivisionIdForApi(this.editData);
+    this.populateModalDropdowns(divisionId);
+
     this.isEditModalOpen = true;
   }
 
@@ -783,7 +806,64 @@ export class PlanListComponent implements OnInit {
       }
     }
 
+    // Call API to populate dropdowns specific to this item's division
+    const divisionId = this.getDivisionIdForApi(this.editData);
+    this.populateModalDropdowns(divisionId);
+
     this.isEditModalOpen = true;
+  }
+
+  // --- API Dropdown Mapping Helpers ---
+  getDivisionIdForApi(item: any): string {
+    const div = item.divisionCode || item.division || '';
+    if (div === '2' || div.toUpperCase() === 'PMC' || div === '71DZ') return '2';
+    if (div === '3' || div.toUpperCase() === 'GM' || div === '71D1') return '3';
+    return '2'; // Default to PMC
+  }
+
+  populateModalDropdowns(divisionId: string) {
+    this.pcPlanService.getMasterData(divisionId).subscribe({
+      next: (res) => {
+        // Map Result Set 1 (MC Type & Bar Type)
+        if (res.machines && res.machines.length > 0) {
+          const uniqueMcs = new Set<string>(res.machines.map((m: any) => m.MC || m.MC_Type).filter((v: any) => v));
+          this.modalMachineTypes = Array.from(uniqueMcs).sort();
+          this.modalBarTypeList = Array.from(uniqueMcs).sort(); // Sharing the same list per requirement
+        } else {
+          this.modalMachineTypes = [];
+          this.modalBarTypeList = [];
+        }
+
+        // Map Result Set 2 (Facility)
+        if (res.facilities && res.facilities.length > 0) {
+          const uniqueFacs = new Set<string>(res.facilities.map((f: any) => f.FacilityShort).filter((v: any) => v));
+          this.modalFacList = Array.from(uniqueFacs).sort();
+        } else {
+          this.modalFacList = [];
+        }
+
+        // Map Result Set 3 (Process)
+        if (res.processes && res.processes.length > 0) {
+          const uniqueProcs = new Set<string>(res.processes.map((p: any) => p.Process).filter((v: any) => v));
+          this.modalProcessList = Array.from(uniqueProcs).sort();
+        } else {
+          this.modalProcessList = [];
+        }
+
+        // Map Result Set 4 (PartNo & PartBefore)
+        if (res.partNos && res.partNos.length > 0) {
+          const uniqueParts = new Set<string>(res.partNos.map((p: any) => p.PartNo).filter((v: any) => v));
+          this.modalPartNoList = Array.from(uniqueParts).sort();
+          this.modalPartBeforeList = Array.from(uniqueParts).sort();
+        } else {
+          this.modalPartNoList = [];
+          this.modalPartBeforeList = [];
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load modal dropdown master data:', err);
+      }
+    });
   }
 
   onCancel(item: any) {
@@ -973,6 +1053,7 @@ export class PlanListComponent implements OnInit {
     const isPlanChanged =
       newDateStr !== original.date ||
       this.editData.mcType !== original.mcType ||
+      this.editData.barType !== original.barType ||
       this.editData.fac !== original.fac ||
       this.editData.process !== original.process ||
       this.editData.partBefore !== original.partBefore ||
@@ -1098,6 +1179,7 @@ export class PlanListComponent implements OnInit {
           employeeId: this.editData.empId,
           division: this.editData.divisionCode || this.editData.division,
           mcType: this.editData.mcType,
+          barType: this.editData.barType,
           fac: this.editData.fac,
           partBefore: this.editData.partBefore,
           mcNo: this.editData.mcNo,

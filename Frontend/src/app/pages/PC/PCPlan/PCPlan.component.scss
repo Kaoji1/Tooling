@@ -166,7 +166,7 @@
 
   table {
     width: 100%;
-    min-width: 1800px;
+    min-width: 1900px;
     border-collapse: collapse;
 
     thead {
@@ -209,8 +209,14 @@
           width: 120px;
         }
 
+        &.col-bar {
+          width: 90px;
+          min-width: 90px;
+        }
+
         &.col-mc {
-          width: 160px;
+          width: 110px;
+          min-width: 110px;
         }
 
         &.col-process {
@@ -218,17 +224,19 @@
         }
 
         &.col-part {
-          width: 300px;
+          width: 220px;
+          min-width: 220px;
         }
 
         &.col-qty {
-          width: 100px;
-          /* Reduced slightly */
+          width: 70px;
+          min-width: 70px;
           text-align: center;
         }
 
         &.col-time {
-          width: 120px;
+          width: 70px;
+          min-width: 70px;
         }
 
         &.col-comment {

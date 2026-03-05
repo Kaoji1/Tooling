@@ -19,7 +19,7 @@ export class NotificationInboxComponent implements OnInit {
     notifications$: Observable<NotificationLog[]>;
     unreadCount$: Observable<number>;
 
-    filter: 'all' | 'unread' | 'priority' = 'all';
+    filter: 'PMC' | 'GM' = 'PMC';
 
     /** Global language toggle — controls ALL notification bodies */
     lang: 'EN' | 'TH' = 'EN';
@@ -43,23 +43,42 @@ export class NotificationInboxComponent implements OnInit {
         return this.notifications$.pipe(
             map(notifications => {
                 if (!notifications) return [];
-                if (this.filter === 'unread') {
-                    return notifications.filter(n => !n.IsRead);
-                }
-                if (this.filter === 'priority') {
-                    return notifications.filter(n =>
-                        n.Event_Type === 'REQUEST_SENT' ||
-                        n.Event_Type === 'RETURN_SENT' ||
-                        n.Event_Type === 'CANCEL_PLAN'
-                    );
-                }
-                return notifications;
+                return notifications.filter(n => this.getNotificationDivision(n) === this.filter);
             })
         );
     }
 
-    setFilter(filter: 'all' | 'unread' | 'priority') {
+    setFilter(filter: 'PMC' | 'GM') {
         this.filter = filter;
+    }
+
+    getNotificationDivision(item: NotificationLog): 'PMC' | 'GM' | 'UNKNOWN' {
+        const details = this.parseDetails(item);
+
+        // 1. From Details_JSON top-level (Explicitly added in Backend update)
+        if (details?.Division) {
+            const div = details.Division.toString().toUpperCase();
+            if (div === 'PMC' || div === '2' || div === '71DZ') return 'PMC';
+            if (div === 'GM' || div === '3' || div === '7122') return 'GM';
+        }
+
+        // 2. From old payloads parsing (e.g. from itemSummaries)
+        if (details?.itemSummaries?.length > 0) {
+            const div = details.itemSummaries[0].Division;
+            if (div) {
+                const strDiv = div.toString().toUpperCase();
+                if (strDiv === 'PMC' || strDiv === '2' || strDiv === '71DZ') return 'PMC';
+                if (strDiv === 'GM' || strDiv === '3' || strDiv === '7122') return 'GM';
+            }
+        }
+
+        // 3. Fallback to doc number inferences
+        if (item.Doc_No) {
+            if (item.Doc_No.includes('PLAN-2')) return 'PMC';
+            if (item.Doc_No.includes('PLAN-3')) return 'GM';
+        }
+
+        return 'UNKNOWN';
     }
 
     // ─── Global Language Toggle ────────────────────────────────
