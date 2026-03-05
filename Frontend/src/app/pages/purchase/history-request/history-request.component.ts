@@ -61,8 +61,8 @@ export class HistoryRequestComponent implements OnInit {
   Status_: string | null = 'Complete'; // ตั้งค่าเริ่มต้นเป็น Complete
   sortOrder: 'asc' | 'desc' = 'asc';
 
-  sortKey: string = '';   // คอลัมน์ที่ sort
-  sortAsc: boolean = true; // true = ASC, false = DESC
+  sortKey: string = 'DateComplete';   // คอลัมน์ที่ sort
+  sortAsc: boolean = false; // true = ASC, false = DESC
 
   // Pagination
   currentPage: number = 1;
@@ -260,12 +260,22 @@ export class HistoryRequestComponent implements OnInit {
       this.sortAsc = true;
     }
 
+    this.applySort();
+  }
+
+  applySort() {
+    if (!this.sortKey) {
+      this.currentPage = 1;
+      this.updatePaginatedList();
+      return;
+    }
+
     this.filteredRequests.sort((a, b) => {
-      const valA = a[key] ?? '';
-      const valB = b[key] ?? '';
+      const valA = a[this.sortKey] ?? '';
+      const valB = b[this.sortKey] ?? '';
 
       // ✅ เช็คถ้าเป็น Date ให้แปลงเป็น number ก่อนเปรียบเทียบ
-      const isDate = key === 'ReqDate' || key === 'DueDate';
+      const isDate = this.sortKey === 'ReqDate' || this.sortKey === 'DueDate' || this.sortKey === 'DateComplete';
       if (isDate) {
         const dateA = valA ? new Date(valA).getTime() : 0;
         const dateB = valB ? new Date(valB).getTime() : 0;
@@ -342,33 +352,29 @@ export class HistoryRequestComponent implements OnInit {
 
 
       //  แปลง input เป็น Date object
-      const fromDateObj = this.fromDate ? new Date(this.fromDate) : null;
-      const toDateObj = this.toDate ? new Date(this.toDate) : null;
+      const filterDateObj = this.fromDate ? new Date(this.fromDate) : null;
 
       //  แปลงข้อมูลจากตารางเป็น Date
       const requestDate = item.DateTime_Record ? new Date(item.DateTime_Record) : null;
       const dueDate = item.DueDate ? new Date(item.DueDate) : null;
+      // DateComplete คือคอลัมน์ใหม่ที่แสดงใน TRANSACTION(DMY)
+      const dateComplete = item.DateComplete ? new Date(item.DateComplete) : null;
 
       let matchDate: boolean = true;
 
-      if (fromDateObj && toDateObj) {
-        // ✅ ต้องตรงทั้ง ReqDate และ DueDate เท่านั้น (ไม่เอาวันระหว่าง)
-        matchDate = !!(
-          requestDate &&
-          dueDate &&
-          requestDate.toDateString() === fromDateObj.toDateString() &&
-          dueDate.toDateString() === toDateObj.toDateString()
-        );
-      } else if (fromDateObj) {
-        matchDate = !!(requestDate && requestDate.toDateString() === fromDateObj.toDateString());
-      } else if (toDateObj) {
-        matchDate = !!(dueDate && dueDate.toDateString() === toDateObj.toDateString());
+      if (filterDateObj) {
+        // เช็คกับ DateComplete, ReqDate, หรือ DueDate (ถ้า DateComplete เป็นหลัก ให้เช็ค DateComplete ก่อน)
+        const d1 = dateComplete ? dateComplete.toDateString() : null;
+        const d2 = requestDate ? requestDate.toDateString() : null;
+        const d3 = dueDate ? dueDate.toDateString() : null;
+        const targetString = filterDateObj.toDateString();
+
+        matchDate = (d1 === targetString) || (d2 === targetString) || (d3 === targetString);
       }
       return matchStatus && matchDivision && matchItemNo && matchPartNo && matchDocumentNo && matchDate;
     });
 
-    this.currentPage = 1;
-    this.updatePaginatedList();
+    this.applySort();
   }
 
   clearFilters() {
@@ -379,6 +385,8 @@ export class HistoryRequestComponent implements OnInit {
     this.Process_ = '';
     this.Case_ = '';
     this.DocumentNo_ = '';
+    this.fromDate = '';
+    this.toDate = '';
 
     // รีเฟรชตารางหลังเคลียร์
     this.onFilter();
