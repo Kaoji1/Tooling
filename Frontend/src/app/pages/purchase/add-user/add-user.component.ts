@@ -32,7 +32,7 @@ export class AddUserComponent implements OnInit, OnDestroy {
     { label: 'Purchase', value: 'purchase' },
     { label: 'Engineer', value: 'engineer' },
     { label: 'QC', value: 'QC' },
-    { label: 'Gate', value: 'Gate' },
+    { label: 'Gague', value: 'Gague' },
     { label: 'Cost', value: 'Cost' },
     { label: 'View', value: 'view' }
   ];
@@ -264,7 +264,7 @@ export class AddUserComponent implements OnInit, OnDestroy {
       'engineer': 'role-engineer',
       'pc': 'role-pc',
       'qc': 'role-qc',
-      'gate': 'role-gate',
+      'gague': 'role-gague',
       'cost': 'role-cost',
       'view': 'role-view'
     };

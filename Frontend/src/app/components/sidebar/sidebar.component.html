@@ -160,8 +160,8 @@
         </li>
       </div>
 
-      <!-- Restricted Menu (Locked Items for QC, Gate, Cost, View) -->
-      <div *ngIf="role === 'QC' || role === 'Gate' || role === 'Cost' || role === 'View' || role === 'view'"
+      <!-- Restricted Menu (Locked Items for QC, Gague, Cost, View) -->
+      <div *ngIf="role === 'QC' || role === 'Gague' || role === 'Cost' || role === 'View' || role === 'view'"
         class="mt-4 border-top pt-2">
         <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
           (click)="$event.preventDefault(); $event.stopPropagation()">
