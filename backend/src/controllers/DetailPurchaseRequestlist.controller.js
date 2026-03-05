@@ -12,15 +12,8 @@ const frontendLink = process.env.FRONTEND_URL
 exports.Detail_Purchase = async (req, res) => {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().query(`
-      SELECT T1.*, T2.MCT_MachineTypeCode
-      FROM [db_Tooling].[viewer].[View_IssueCuttingTool_Request_Document] T1
-      LEFT JOIN [db_SmartCuttingTool_PMA].[viewer].[tb_MachineType] T2 
-      ON T1.MCType = T2.MCT_MachineTypeName COLLATE Thai_CI_AS 
-      WHERE (T1.Status IN ('Waiting','In Progress', 'Complete', 'CompletetoExcel')) 
-        AND T1.DateTime_Record >= DATEADD(day, -90, GETDATE())
-      ORDER BY T1.DateTime_Record ASC
-    `);
+    const result = await pool.request()
+      .execute('trans.Stored_Detail_Purchase');
     res.json(result.recordset);
   } catch (error) {
     console.error("Error executing query:", error.stack);
@@ -35,14 +28,8 @@ exports.Detail_Purchase = async (req, res) => {
 exports.Detail_Purchase_Setup = async (req, res) => {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().query(`
-      SELECT *
-      FROM [db_Tooling].[viewer].[View_IssueSetupTool_Request_Document]
-      WHERE Status IN ('Waiting','In Progress', 'Complete', 'CompletetoExcel') 
-        AND DateTime_Record >= DATEADD(day, -90, GETDATE())
-      AND ([CASE] IS NULL OR [CASE] != 'SET')
-      ORDER BY DateTime_Record ASC
-    `);
+    const result = await pool.request()
+      .execute('trans.Stored_Detail_Purchase_Setup');
     res.json(result.recordset);
   } catch (error) {
     console.error("Error executing query:", error.stack);
@@ -57,13 +44,8 @@ exports.Detail_Purchase_Setup = async (req, res) => {
 exports.Detail_CaseSetup = async (req, res) => {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().query(`
-      SELECT *
-      FROM [db_Tooling].[viewer].[View_CaseSetup_Request]
-      WHERE Status IN ('Waiting','In Progress', 'Complete', 'CompletetoExcel')
-        AND DateTime_Record >= DATEADD(day, -90, GETDATE())
-      ORDER BY DueDate ASC
-    `);
+    const result = await pool.request()
+      .execute('trans.Stored_Detail_CaseSetup');
     res.json(result.recordset);
   } catch (error) {
     console.error("Error executing query:", error.stack);
@@ -78,7 +60,8 @@ exports.Detail_CaseSetup = async (req, res) => {
 const getItemsQuery = async (req, res) => {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().query("SELECT * FROM [db_Tooling].[viewer].[View_tb_Master_Purchase_SUM_ALL]");
+    const result = await pool.request()
+      .execute('trans.Stored_Get_ItemNo');
     res.json(result.recordset);
   } catch (error) {
     console.error("Error executing query:", error.stack);
@@ -402,7 +385,7 @@ exports.Update_Request = async (req, res) => {
 exports.Add_New_Request = async (req, res) => {
   try {
     let {
-      DocNo, Division, Status, Requester, Fac, SPEC, QTY, CASE, PartNo, ItemNo, Process, MCType,
+      Division, Status, Requester, Fac, SPEC, QTY, CASE, PartNo, ItemNo, Process, MCType,
       Req_QTY, Remark, ON_HAND, DueDate, PathDwg, PathLayout, PhoneNo, ItemName
     } = req.body;
 
@@ -410,72 +393,28 @@ exports.Add_New_Request = async (req, res) => {
 
     const pool = await poolPromise;
 
-    if (!ItemNo) {
-      const itemResult = await pool.request()
-        .input("SPEC", sql.NVarChar, SPEC)
-        .query(`SELECT TOP 1 ItemNo FROM tb_IssueCuttingTool_Request_Document WHERE SPEC = @SPEC`);
-
-      if (itemResult.recordset.length === 0) return res.status(400).json({ message: "ItemNo not found in database." });
-      ItemNo = itemResult.recordset[0].ItemNo;
-    }
-
-    let GeneratedMFGOrderNo = '';
-    try {
-      let machineCode = '';
-      if (['PMC', '71DZ', 'GM', '7122'].includes(Division)) {
-        const machineResult = await pool.request()
-          .input("MCType", sql.NVarChar, MCType)
-          .query(`SELECT TOP 1 MC_Code FROM [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group] WHERE MC_Group = @MCType`);
-        machineCode = machineResult.recordset[0]?.MC_Code || '';
-      }
-
-      const partNoPrefix = (PartNo || '').substring(0, 6);
-      if (['PMC', '71DZ'].includes(Division)) {
-        GeneratedMFGOrderNo = `M${partNoPrefix}${machineCode}`;
-      } else if (['GM', '7122'].includes(Division)) {
-        GeneratedMFGOrderNo = `P${partNoPrefix}${machineCode}`;
-      } else {
-        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        GeneratedMFGOrderNo = `${CASE}${Process}F${Fac}${dateStr}`;
-      }
-    } catch (err) {
-      console.error('Error generating MFGOrderNo:', err);
-      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      GeneratedMFGOrderNo = `${CASE}${Process}F${Fac}${dateStr}`;
-    }
-
-    const MR_No = new Date().toISOString().slice(2, 10).replace(/-/g, '');
-
+    // SP จะจัดการ ItemNo lookup, DocNo/MFGOrderNo generation ให้อัตโนมัติ
     const result = await pool.request()
-      .input("DocNo", sql.NVarChar, DocNo)
-      .input("MFGOrderNo", sql.NVarChar, GeneratedMFGOrderNo)
       .input("Division", sql.NVarChar, Division)
+      .input("Status", sql.NVarChar, Status)
       .input("Requester", sql.NVarChar, Requester)
+      .input("Fac", sql.Int, parseInt(Fac, 10))
+      .input("CASE", sql.NVarChar, CASE)
       .input("PartNo", sql.NVarChar, PartNo)
-      .input("ItemNo", sql.NVarChar, ItemNo)
+      .input("ItemNo", sql.NVarChar, ItemNo || null)
       .input("SPEC", sql.NVarChar, SPEC)
       .input("Process", sql.NVarChar, Process)
       .input("MCType", sql.NVarChar, MCType)
-      .input("Fac", sql.Int, parseInt(Fac, 10))
-      .input("PathDwg", sql.NVarChar, PathDwg)
       .input("ON_HAND", sql.Int, parseInt(ON_HAND, 10))
       .input("Req_QTY", sql.Int, parseInt(Req_QTY, 10))
       .input("QTY", sql.Int, parseInt(QTY, 10) || 0)
       .input("DueDate", sql.DateTime, DueDate ? new Date(DueDate) : null)
-      .input("CASE", sql.NVarChar, CASE)
-      .input("Status", sql.NVarChar, Status)
+      .input("PathDwg", sql.NVarChar, PathDwg)
       .input("PathLayout", sql.NVarChar, PathLayout)
       .input("Remark", sql.NVarChar, Remark)
       .input("PhoneNo", sql.Int, PhoneNo)
-      .input("MR_No", sql.NVarChar, MR_No)
       .input("ItemName", sql.NVarChar, (ItemName || '').substring(0, 255) || null)
-      .query(`
-        INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document]
-          (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, Remark, PhoneNo, MFGOrderNo, MR_No, ItemName)
-        OUTPUT INSERTED.ID_Request
-        VALUES
-          (@DocNo, @Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac, @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout, @Remark, @PhoneNo, @MFGOrderNo, @MR_No, @ItemName);
-      `);
+      .execute('trans.Stored_Add_New_Request');
 
     const ID_Request = result.recordset[0]?.ID_Request || null;
     if (!ID_Request) return res.status(500).json({ message: "Unable to create a new ID" });
@@ -498,7 +437,7 @@ exports.DeleteItem = async (req, res) => {
     const pool = await poolPromise;
     await pool.request()
       .input('ID', sql.Int, id)
-      .query('DELETE FROM [dbo].[tb_IssueCuttingTool_Request_Document] WHERE ID_Request = @ID');
+      .execute('trans.Stored_Delete_Request');
 
     res.status(200).json({ message: 'Successfully deleted' });
   } catch (error) {
