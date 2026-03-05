@@ -21,6 +21,12 @@ export class NotificationInboxComponent implements OnInit {
 
     filter: 'PMC' | 'GM' = 'PMC';
 
+    /** Which top-level view is active */
+    view: 'inbox' | 'trash' = 'inbox';
+
+    /** Trash observable from service */
+    trash$: Observable<NotificationLog[]>;
+
     /** Global language toggle — controls ALL notification bodies */
     lang: 'EN' | 'TH' = 'EN';
 
@@ -33,6 +39,7 @@ export class NotificationInboxComponent implements OnInit {
     ) {
         this.notifications$ = this.notificationService.notifications$;
         this.unreadCount$ = this.notificationService.unreadCount$;
+        this.trash$ = this.notificationService.trash$;
     }
 
     ngOnInit(): void { }
@@ -44,6 +51,22 @@ export class NotificationInboxComponent implements OnInit {
             map(notifications => {
                 if (!notifications) return [];
                 return notifications.filter(n => this.getNotificationDivision(n) === this.filter);
+            })
+        );
+    }
+
+    /** Trash items filtered by the current active PMC/GM tab.
+     *  UNKNOWN-division items default to PMC to avoid appearing in both tabs. */
+    get filteredTrash$() {
+        return this.trash$.pipe(
+            map(items => {
+                if (!items) return [];
+                return items.filter(n => {
+                    const div = this.getNotificationDivision(n);
+                    // Strict match only — UNKNOWN items default to PMC tab
+                    const effective = div === 'UNKNOWN' ? 'PMC' : div;
+                    return effective === this.filter;
+                });
             })
         );
     }
@@ -111,11 +134,47 @@ export class NotificationInboxComponent implements OnInit {
 
     closeModal() {
         this.expandedId = null;
+        this.view = 'inbox';
         this.close.emit();
     }
 
     markAllAsRead() {
         this.notificationService.markAllRead();
+    }
+
+    /** Switch to Trash view and load trash list */
+    switchToTrash() {
+        this.view = 'trash';
+        this.expandedId = null;
+        this.notificationService.fetchTrash();
+    }
+
+    /** Switch back to main inbox view */
+    switchToInbox() {
+        this.view = 'inbox';
+    }
+
+    /** Soft-delete all read notifications with confirmation */
+    deleteRead() {
+        const confirmed = window.confirm(
+            this.lang === 'TH'
+                ? 'ต้องการย้ายข้อความที่อ่านแล้วทั้งหมดไปยังถังขยะใช่ไหม?'
+                : 'Move all read notifications to Trash?'
+        );
+        if (!confirmed) return;
+        this.notificationService.deleteRead().subscribe({
+            next: () => console.log('[Trash] Read notifications moved to trash'),
+            error: (err: any) => console.error('[Trash] deleteRead error:', err)
+        });
+    }
+
+    /** Restore a single notification from trash to inbox */
+    restoreItem(id: number | undefined) {
+        if (!id) return;
+        this.notificationService.restoreFromTrash(id).subscribe({
+            next: () => console.log('[Trash] Notification restored:', id),
+            error: (err: any) => console.error('[Trash] restore error:', err)
+        });
     }
 
     navigateCTA(item: NotificationLog) {
@@ -296,7 +355,7 @@ export class NotificationInboxComponent implements OnInit {
         let val = null;
         if (d.type === 'revision' && d.newValues) {
             val = d.newValues[key];
-        } else if ((d.type === 'new_plan' || d.type === 'cancel') && d.items && d.items.length > 0) {
+        } else if ((d.type === 'new_plan' || d.type === 'cancel' || d.type === 'new_request') && d.items && d.items.length > 0) {
             val = d.items[0][key];
         }
 
@@ -313,6 +372,7 @@ export class NotificationInboxComponent implements OnInit {
         if (d.type === 'revision' && d.changes?.length > 0) return true;
         if (d.type === 'new_plan' && d.items?.length > 0) return true;
         if (d.type === 'cancel' && d.items?.length > 0) return true;
+        if (d.type === 'new_request' && d.items?.length > 0) return true;
         return false;
     }
 }

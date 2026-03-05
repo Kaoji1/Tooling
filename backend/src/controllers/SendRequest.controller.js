@@ -143,21 +143,36 @@ exports.Send_Request = async (req, res) => {
       const userName = firstItem.Employee_Name || 'System';
       const docNo = firstItem.Doc_no || '-';
       const itemCount = String(items.length);
+      const userRole = (req.user && req.user.Role) ? req.user.Role : 'Production';
+      const caseType = firstItem.CASE || firstItem.Case || '-';
 
-      console.log("[Notification Debug] REQUEST_SENT trigger. firstItem:", firstItem);
       const matchedDivision = firstItem.Division || firstItem.division || '';
-      console.log(`[Notification Debug] Extracted Division: '${matchedDivision}'`);
 
       await emitNotification(req, pool, {
         eventType: 'REQUEST_SENT',
         subject: `🔴 [Action Required] New Tooling Request: ${docNo}`,
-        messageEN: `A new tooling request has been submitted by ${userName} (Production). Total items: ${itemCount}. Please review and proceed with the confirmation.`,
-        messageTH: `มีคำขอเบิก Tooling ใหม่ส่งมาจาก ${userName} (แผนก Production) จำนวน ${itemCount} รายการ รบกวนตรวจสอบและดำเนินการยืนยันคำขอ`,
+        messageEN: `There is a new Tooling request for Case ${caseType}, totaling ${itemCount} items, requested by ${userRole} Action by: ${userName}.`,
+        messageTH: `มีคำขอเบิก Tooling ใหม่ Case ${caseType} จำนวน ${itemCount} รายการ โดย ${userRole} จากคุณ ${userName}`,
         docNo: docNo,
         actionBy: userName,
         targetRoles: 'purchase',
         ctaRoute: '/purchase/request-list',
-        division: matchedDivision
+        division: matchedDivision,
+        detailsJson: {
+          type: 'new_request',
+          totalItems: items.length,
+          items: items.map(it => ({
+            DueDate: it.Due_Date ? new Date(it.Due_Date).toLocaleDateString('en-GB') : '-',
+            PartNo: it.PartNo || it.Part_No || '-',
+            ItemNo: it.ItemNo || it.Item_No || '-',
+            ItemName: it.ItemName || it.Item_Name || '-',
+            Spec: it.SPEC || it.Spec || '-',
+            Process: it.Process || '-',
+            MC: it.MCType || it.MC || '-',
+            MCNo: it.MCNo || it.MC_No || '-',
+            QTY: it.QTY || 0
+          }))
+        }
       });
     } catch (notifError) {
       console.error('Notification Trigger Failed:', notifError);

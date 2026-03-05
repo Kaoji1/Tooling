@@ -1,10 +1,10 @@
-<!-- Backdrop -->
+﻿<!-- Backdrop -->
 <div *ngIf="isOpen" class="inbox-backdrop" (click)="closeModal()">
 
     <!-- Container -->
     <div class="inbox-container" (click)="stopPropagation($event)">
 
-        <!-- ═══ Header ═══ -->
+        <!-- โ•โ•โ• Header โ•โ•โ• -->
         <div class="inbox-header">
             <div class="header-left">
                 <h2 class="header-title">Notifications</h2>
@@ -24,21 +24,31 @@
             </div>
         </div>
 
-        <!-- ═══ Toolbar / Filters ═══ -->
+        <!-- โ•โ•โ• Toolbar / Filters โ•โ•โ• -->
         <div class="inbox-toolbar">
             <div class="filter-group">
-                <button [class]="filter === 'PMC' ? 'filter-btn active' : 'filter-btn inactive'"
-                    (click)="setFilter('PMC')">PMC</button>
-                <button [class]="filter === 'GM' ? 'filter-btn active' : 'filter-btn inactive'"
-                    (click)="setFilter('GM')">GM</button>
+                <button [class]="view === 'inbox' && filter === 'PMC' ? 'filter-btn active' : 'filter-btn inactive'"
+                    (click)="switchToInbox(); setFilter('PMC')">PMC</button>
+                <button [class]="view === 'inbox' && filter === 'GM' ? 'filter-btn active' : 'filter-btn inactive'"
+                    (click)="switchToInbox(); setFilter('GM')">GM</button>
+                <button [class]="view === 'trash' ? 'filter-btn trash-tab active' : 'filter-btn trash-tab inactive'"
+                    (click)="switchToTrash()" title="Trash">
+                    <i class="bi bi-trash3"></i> {{ filter }} Trash
+                </button>
             </div>
-            <button (click)="markAllAsRead()" class="mark-all-btn">
-                <i class="bi bi-check-all"></i> Mark all as read
-            </button>
+            <div class="toolbar-actions">
+                <button (click)="markAllAsRead()" class="mark-all-btn" *ngIf="view === 'inbox'">
+                    <i class="bi bi-check-all"></i> Mark all as read
+                </button>
+                <button (click)="deleteRead()" class="delete-read-btn" *ngIf="view === 'inbox'"
+                    title="{{ lang === 'TH' ? 'ลบข้อความที่อ่านแล้ว' : 'Delete Read Notifications' }}">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </div>
         </div>
 
-        <!-- ═══ List Body (Accordion) ═══ -->
-        <div class="inbox-list-body">
+        <!-- โ•โ•โ• INBOX View โ•โ•โ• -->
+        <div class="inbox-list-body" *ngIf="view === 'inbox'">
             <ul class="notification-list" *ngIf="(filteredNotifications$ | async)?.length; else emptyState">
                 <li *ngFor="let item of filteredNotifications$ | async" class="notification-item"
                     [ngClass]="{ 'unread': !item.IsRead, 'read': item.IsRead, 'expanded': isExpanded(item) }">
@@ -93,18 +103,25 @@
                                     </span>
                                 </div>
                                 <div class="meta-chip"
-                                    *ngIf="getMetaValue(item, 'PlanDate') && item.Event_Type !== 'NEW_PLAN'">
-                                    <span class="meta-label">{{ lang === 'EN' ? 'Plan Date' : 'วันที่แผนงาน' }}</span>
+                                    *ngIf="getMetaValue(item, 'PlanDate') && item.Event_Type !== 'NEW_PLAN' && item.Event_Type !== 'CANCEL_PLAN'">
+                                    <span class="meta-label">{{ lang === 'EN' ? 'Plan Date' :
+                                        'Plan Date' }}</span>
                                     <span class="meta-value mono">{{ getMetaValue(item, 'PlanDate') }}</span>
                                 </div>
                                 <div class="meta-chip"
-                                    *ngIf="getMetaValue(item, 'PartNo') && item.Event_Type !== 'NEW_PLAN'">
-                                    <span class="meta-label">{{ lang === 'EN' ? 'Part No.' : 'เลข Part' }}</span>
+                                    *ngIf="getMetaValue(item, 'PartNo') && item.Event_Type !== 'NEW_PLAN' && item.Event_Type !== 'CANCEL_PLAN'">
+                                    <span class="meta-label">{{ lang === 'EN' ? 'Part No.' : 'Part No.' }}</span>
                                     <span class="meta-value mono">{{ getMetaValue(item, 'PartNo') }}</span>
                                 </div>
+                                <!-- Division chip (shown for all types) -->
+                                <div class="meta-chip" *ngIf="getNotificationDivision(item) !== 'UNKNOWN'">
+                                    <span class="meta-label">{{ lang === 'EN' ? 'Division' : 'Division' }}</span>
+                                    <span class="meta-value">{{ getNotificationDivision(item) }}</span>
+                                </div>
+                                <!-- Div > Fac chip (shown when not CANCEL_PLAN) -->
                                 <div class="meta-chip"
-                                    *ngIf="getMetaValue(item, 'Division') || getMetaValue(item, 'Facility')">
-                                    <span class="meta-label">{{ lang === 'EN' ? 'Div > Fac' : 'แผนก > Facility'
+                                    *ngIf="(getMetaValue(item, 'Division') || getMetaValue(item, 'Facility')) && item.Event_Type !== 'CANCEL_PLAN'">
+                                    <span class="meta-label">{{ lang === 'EN' ? 'Div > Fac' : 'Div > Fac'
                                         }}</span>
                                     <span class="meta-value">
                                         <ng-container
@@ -126,7 +143,7 @@
                             <!-- Message Body -->
                             <div class="detail-body" [innerHTML]="getBody(item)"></div>
 
-                            <!-- ═══ Dynamic Details Section ═══ -->
+                            <!-- โ•โ•โ• Dynamic Details Section โ•โ•โ• -->
                             <ng-container *ngIf="hasDetails(item)">
 
                                 <!-- REVISION: Before & After Changes Table -->
@@ -134,15 +151,16 @@
                                     <div class="details-section">
                                         <h4 class="details-title">
                                             <i class="bi bi-arrow-left-right"></i>
-                                            {{ lang === 'EN' ? 'Changes Summary' : 'สรุปการเปลี่ยนแปลง' }}
+                                            {{ lang === 'EN' ? 'Changes Summary' :
+                                            'Changes Summary' }}
                                         </h4>
                                         <div class="changes-table-wrap">
                                             <table class="changes-table">
                                                 <thead>
                                                     <tr>
-                                                        <th>{{ lang === 'EN' ? 'Field' : 'ฟิลด์' }}</th>
-                                                        <th class="col-old">{{ lang === 'EN' ? 'Before' : 'ก่อน' }}</th>
-                                                        <th class="col-new">{{ lang === 'EN' ? 'After' : 'หลัง' }}</th>
+                                                        <th>{{ lang === 'EN' ? 'Field' : 'Field' }}</th>
+                                                        <th class="col-old">{{ lang === 'EN' ? 'Before' : 'Before' }}</th>
+                                                        <th class="col-new">{{ lang === 'EN' ? 'After' : 'After' }}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -158,21 +176,21 @@
                                         </div>
                                         <p class="changes-note" *ngIf="getDetailChanges(item).length === 0">
                                             {{ lang === 'EN' ? 'No field-level changes detected.' :
-                                            'ไม่พบการเปลี่ยนแปลงในข้อมูล' }}
+                                            'ไม่พบการเปลี่ยนแปลงในข้อมูล'
+                                            }}
                                         </p>
                                     </div>
                                 </ng-container>
 
-                                <!-- NEW PLAN: Item Data Grid -->
+                                <!-- NEW PLAN / NEW REQUEST: Item Data Grid -->
                                 <ng-container
-                                    *ngIf="getDetailType(item) === 'new_plan' || getDetailType(item) === 'cancel'">
+                                    *ngIf="getDetailType(item) === 'new_plan' || getDetailType(item) === 'cancel' || getDetailType(item) === 'new_request'">
                                     <div class="details-section">
                                         <h4 class="details-title">
                                             <i class="bi bi-table"></i>
-                                            {{ lang === 'EN' ? 'Items' : 'รายการ' }}
+                                            {{ lang === 'EN' ? 'Items' : 'Items' }}
                                             <span class="items-count" *ngIf="parseDetails(item)?.totalItems">
-                                                ({{ parseDetails(item).totalItems }} {{ lang === 'EN' ? 'total' :
-                                                'รายการ' }})
+                                                ({{ parseDetails(item).totalItems }} {{ lang === 'EN' ? 'total' : 'รายการ' }})
                                             </span>
                                         </h4>
                                         <div class="data-grid-wrap" *ngIf="getDetailItems(item).length > 0">
@@ -186,9 +204,11 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr *ngFor="let row of getDetailItems(item); let i = index">
+                                                    <tr *ngFor="let row of getDetailItems(item); let i = index"
+                                                        [class.cancelled-row]="getDetailType(item) === 'cancel'">
                                                         <td class="row-num">{{ i + 1 }}</td>
-                                                        <td *ngFor="let key of getItemKeys(row)">
+                                                        <td *ngFor="let key of getItemKeys(row)"
+                                                            [class.cancelled-cell]="getDetailType(item) === 'cancel'">
                                                             {{ formatFieldValue(key, row[key]) }}
                                                         </td>
                                                     </tr>
@@ -223,5 +243,59 @@
             </ng-template>
         </div>
 
+
+        <!-- =D=D=D TRASH View =D=D=D -->
+        <div class="inbox-list-body trash-view" *ngIf="view === 'trash'">
+
+            <!-- 3-day Auto-Delete Warning Banner -->
+            <div class="trash-warning">
+                <i class="bi bi-clock-history"></i>
+                <span *ngIf="lang === 'EN'">
+                    Messages in the trash will be automatically deleted within 3&amp;nbsp;days.
+                    You can restore them before they are permanently cleared.
+                </span>
+                <span *ngIf="lang === 'TH'">
+                    ข้อความในถังขยะจะถูกลบถาวรโดยอัตโนมัติภายใน 3 วัน
+                    (สามารถกู้คืนข้อความได้หากยังไม่ถูกลบ)
+                </span>
+            </div>
+
+            <!-- Trash Item List (filtered by current PMC/GM tab) -->
+            <ul class="notification-list" *ngIf="(filteredTrash$ | async)?.length; else emptyTrash">
+                <li *ngFor="let item of filteredTrash$ | async" class="notification-item trash-item read">
+                    <div class="row-header trash-row-header">
+                        <div class="icon-circle" [style.background-color]="'#94a3b820'" [style.color]="'#94a3b8'">
+                            <i class="bi" [class]="getIconClass(item.Event_Type)"></i>
+                        </div>
+                        <div class="row-summary">
+                            <div class="notif-title-row">
+                                <span class="notif-type-label">{{ getEventLabel(item) }}</span>
+                                <span class="notif-docno" *ngIf="item.Doc_No">{{ item.Doc_No }}</span>
+                            </div>
+                            <div class="notif-subject">{{ getSubject(item) }}</div>
+                            <div class="notif-meta"><span class="notif-time">{{ item.Created_At | date:'dd/MM/yyyy
+                                    HH:mm' }}</span></div>
+                        </div>
+                        <div class="trash-item-actions">
+                            <button class="restore-btn" (click)="restoreItem(item.Notification_ID)"
+                                title="{{ lang === 'TH' ? 'กู้คืน' : 'Restore' }}">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                                {{ lang === 'TH' ? 'กู้คืน' : 'Restore' }}
+                            </button>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+
+            <!-- Empty Trash State -->
+            <ng-template #emptyTrash>
+                <div class="empty-state">
+                    <i class="bi bi-trash3" style="font-size: 3rem; opacity: 0.15;"></i>
+                    <p class="empty-title">{{ lang === 'TH' ? 'ถังขยะว่างเปล่า' : 'Trash is empty' }}</p>
+                    <p class="empty-desc">{{ lang === 'TH' ? 'ไม่มีข้อความที่ถูกลบใน ' + filter : 'No deleted ' + filter
+                        + ' notifications.' }}</p>
+                </div>
+            </ng-template>
+        </div>
     </div>
 </div>

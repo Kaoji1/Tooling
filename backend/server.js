@@ -38,7 +38,14 @@ const port = process.env.PORT
 
 // Define the routes
 app.use(fileupload());
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 'Authorization', 'Accept',
+    'x-username', 'x-role'          // Required for per-user notification state
+  ]
+}));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
 app.use(bodyParser.json({ limit: '50mb' }))
 app.use(bodyParser.raw())
@@ -66,8 +73,11 @@ app.use('/api', Return);
 // === Notification Routes === (Using direct controller import)
 const NotificationController = require('./src/controllers/Notification.controller.js');
 app.get('/api/notifications/list', NotificationController.getNotifications);
+app.get('/api/notifications/trash', NotificationController.getTrashNotifications);
 app.put('/api/notifications/read/:id', NotificationController.markAsRead);
 app.put('/api/notifications/mark-all-read', NotificationController.markAllRead);
+app.put('/api/notifications/delete-read', NotificationController.deleteReadNotifications);
+app.put('/api/notifications/restore/:id', NotificationController.restoreNotification);
 // app.use('/api',FileSaver);
 // app.use('/api',ExportToExcel);
 // app.use('/api', updateItem);

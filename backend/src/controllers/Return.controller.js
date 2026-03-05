@@ -142,12 +142,13 @@ exports.saveReturnRequest = async (req, res) => {
                 const { emitNotification } = require('./Notification.controller');
                 const userName = header.returnBy || header.employeeId || 'Production User';
                 const docNo = header.docNo;
+                const userRole = (req.user && req.user.Role) ? req.user.Role : 'Production';
 
                 await emitNotification(req, pool, {
                     eventType: 'RETURN_SENT',
                     subject: `🔴 [Action Required] Tooling Return Pending: ${docNo}`,
-                    messageEN: `A tooling return request has been submitted by ${userName} (Production). Please verify the returned items and complete the process.`,
-                    messageTH: `มีการกรอกรายการส่งคืน Tooling เข้ามาในระบบโดย ${userName} จาก Production รบกวนตรวจสอบรายการและดำเนินการต่อด้วยครับ`,
+                    messageEN: `A tooling return request has been submitted by ${userName} (${userRole}). Please verify the returned items and complete the process.`,
+                    messageTH: `มีการกรอกรายการส่งคืน Tooling เข้ามาในระบบโดย ${userName} (แผนก ${userRole}) รบกวนตรวจสอบรายการและดำเนินการต่อด้วยครับ`,
                     docNo: docNo,
                     actionBy: userName,
                     targetRoles: 'purchase',

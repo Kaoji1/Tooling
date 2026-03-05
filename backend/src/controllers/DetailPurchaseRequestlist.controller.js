@@ -480,32 +480,34 @@ exports.Add_New_Request_Bulk = async (req, res) => {
     try {
       if (totalInserted > 0 && items.length > 0) {
         const firstItem = items[0];
-        // req.user.Name might not be available, fallback to Requester ID
         const userName = (req.user && req.user.Name) ? req.user.Name : (firstItem.Requester || 'System');
+        const userRole = (req.user && req.user.Role) ? req.user.Role : 'Production';
         const countStr = String(totalInserted);
+        const caseType = firstItem.CASE || firstItem.Case || '-';
 
         await emitNotification(req, pool, {
           eventType: 'REQUEST_SENT',
           subject: `🔴 [Action Required] New Tooling Request: ${countStr} items`,
-          messageEN: `A new tooling request has been submitted by ${userName} (Production). Total items: ${countStr}. Please review and proceed with the confirmation.`,
-          messageTH: `มีคำขอเบิก Tooling ใหม่ส่งมาจาก ${userName} (แผนก Production) จำนวน ${countStr} รายการ รบกวนตรวจสอบและดำเนินการยืนยันคำขอ`,
-          docNo: firstItem.PartNo || firstItem.Division || '-', // Fallback since DocNo is generated in SP
+          messageEN: `There is a new Tooling request for Case ${caseType}, totaling ${countStr} items, requested by ${userRole} Action by: ${userName}.`,
+          messageTH: `มีคำขอเบิก Tooling ใหม่ Case ${caseType} จำนวน ${countStr} รายการ โดย ${userRole} จากคุณ ${userName}`,
+          docNo: firstItem.PartNo || firstItem.Division || '-',
           actionBy: userName,
-          targetRoles: 'purchase,ph',
+          targetRoles: 'purchase',
           ctaRoute: '/purchase/request-list',
           division: firstItem.Division,
           detailsJson: {
             type: 'new_request',
+            totalItems: totalInserted,
             items: items.map(ji => ({
-              PartNo: ji.PartNo,
-              ItemNo: ji.ItemNo,
-              ItemName: ji.ItemName,
-              Spec: ji.SPEC,
-              Process: ji.Process,
-              MC: ji.MCType,
-              QTY: ji.QTY,
-              Division: ji.Division,
-              Facility: ji.Fac ? `F.${ji.Fac}` : ''
+              DueDate: ji.DueDate ? new Date(ji.DueDate).toLocaleDateString('en-GB') : '-',
+              PartNo: ji.PartNo || '-',
+              ItemNo: ji.ItemNo || '-',
+              ItemName: ji.ItemName || '-',
+              Spec: ji.SPEC || '-',
+              Process: ji.Process || '-',
+              MC: ji.MCType || '-',
+              MCNo: ji.MCNo || '-',
+              QTY: ji.QTY || 0
             }))
           }
         });
