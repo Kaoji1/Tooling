@@ -72,7 +72,7 @@ export class LoginComponent {
               break;
 
             case 'QC':
-            case 'Gate':
+            case 'Gague':
               this.router.navigate(['/production/PlanList']);
               break;
 

@@ -19,7 +19,7 @@ export const routes: Routes = [
     path: 'production',
     canActivate: [AuthGuard],
     canActivateChild: [AuthGuard],
-    data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gate', 'Cost'] },
+    data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gague', 'Cost'] },
     children: [
       {
         path: 'PCPlan',
@@ -29,7 +29,7 @@ export const routes: Routes = [
       {
         path: 'PlanList',
         loadComponent: () => import('./pages/PC/PlanList/PlanList.component').then(m => m.PlanListComponent),
-        data: { roles: ['production', 'PC', 'view', 'admin', 'engineer', 'QC', 'Gate', 'Cost'] }
+        data: { roles: ['production', 'PC', 'view', 'admin', 'engineer', 'QC', 'Gague', 'Cost'] }
       },
       {
         path: 'request',
@@ -39,7 +39,7 @@ export const routes: Routes = [
       {
         path: 'cart',
         loadComponent: () => import('./pages/user/cart/cart.component').then(m => m.CartComponent),
-        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gate', 'Cost'] }
+        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gague', 'Cost'] }
       },
       {
         path: 'return',
@@ -49,7 +49,7 @@ export const routes: Routes = [
       {
         path: 'request-history',
         loadComponent: () => import('./pages/user/request-history/request-history.component').then(m => m.RequestHistoryComponent),
-        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gate', 'Cost'] }
+        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gague', 'Cost'] }
       },
       {
         path: 'about-us',
@@ -59,12 +59,12 @@ export const routes: Routes = [
       {
         path: 'historyprint',
         loadComponent: () => import('./pages/user/history-print/history-print.component').then(m => m.HistoryPrintComponent),
-        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gate', 'Cost'] }
+        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gague', 'Cost'] }
       },
       {
         path: 'return-history',
         loadComponent: () => import('./pages/user/return-history/return-history.component').then(m => m.ReturnHistoryComponent),
-        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gate', 'Cost'] }
+        data: { roles: ['production', 'view', 'admin', 'engineer', 'PC', 'QC', 'Gague', 'Cost'] }
       }
     ]
   },

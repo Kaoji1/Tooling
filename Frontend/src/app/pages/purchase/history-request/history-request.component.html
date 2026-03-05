@@ -69,9 +69,9 @@
           <th class="filter-cell"></th>
           <th class="filter-cell"></th>
           <th class="filter-cell"></th>
-          <th class="filter-cell"></th>
           <th class="filter-cell">
-            <!-- Date inputs moved to Action Bar, but keeping empty cell for alignment if needed or can be removed if strictly following columns -->
+            <input type="date" class="form-control form-control-sm" [(ngModel)]="fromDate" (change)="onFilter()"
+              placeholder="Date">
           </th>
         </tr>
 
@@ -93,7 +93,8 @@
               *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
           <th style="min-width: 120px;">STK LOC.</th>
           <th style="min-width: 100px;" class="highlight-yellow">MATL LOT</th>
-          <th style="min-width: 120px;" class="highlight-yellow">TRANSACTION(DMY)</th>
+          <th style="min-width: 120px;" (click)="onSort('DateComplete')" class="sortable highlight-yellow">
+            TRANSACTION(DMY)<span *ngIf="sortKey === 'DateComplete'">{{ sortAsc ? '↑' : '↓' }}</span></th>
           <th style="width: 80px;" class="highlight-yellow">ISSUE QTY</th>
           <th style="min-width: 100px;">M/C TYPE</th>
           <th style="min-width: 100px;" class="highlight-yellow">M/C NO.</th>
