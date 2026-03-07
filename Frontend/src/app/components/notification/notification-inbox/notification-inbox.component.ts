@@ -2,8 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationService, NotificationLog } from '../../../core/services/notification.service';
+import { FileUploadSerice } from '../../../core/services/FileUpload.service';
 import { NOTIFICATION_TEMPLATES, getTemplate, getFieldLabel } from '../../../core/utils/notification-templates';
 import { Observable, map } from 'rxjs';
+import Swal from 'sweetalert2';
 
 @Component({
     selector: 'app-notification-inbox',
@@ -35,6 +37,7 @@ export class NotificationInboxComponent implements OnInit {
 
     constructor(
         private notificationService: NotificationService,
+        private fileUploadService: FileUploadSerice,
         private router: Router
     ) {
         this.notifications$ = this.notificationService.notifications$;
@@ -44,13 +47,71 @@ export class NotificationInboxComponent implements OnInit {
 
     ngOnInit(): void { }
 
+    closeModal() {
+        this.close.emit();
+    }
+
+    switchToInbox() {
+        this.view = 'inbox';
+        // When switching back to main inbox, optionally reset filter to PMC or leave as is
+    }
+
+    switchToTrash() {
+        this.view = 'trash';
+    }
+
+    // ─── File Utilities ──────────────────────────────────────────
+
+    /** Proxy file opening via backend (handles network paths) */
+    openFile(filePath: string) {
+        if (!filePath || filePath === '-') {
+            Swal.fire('Error', 'File path not found', 'error');
+            return;
+        }
+
+        // Clean path (remove quotes if any)
+        const cleanPath = filePath.replace(/^"|"$/g, '');
+
+        this.fileUploadService.loadPdfFromPath(cleanPath).subscribe({
+            next: (res) => {
+                const base64 = res.imageData.split(',')[1];
+                const binary = atob(base64);
+                const len = binary.length;
+                const bytes = new Uint8Array(len);
+
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
+
+                const blob = new Blob([bytes], { type: 'application/pdf' });
+                const blobUrl = URL.createObjectURL(blob);
+
+                window.open(blobUrl, '_blank');
+            },
+            error: (err) => {
+                console.error('File load error:', err);
+                Swal.fire('Error', 'Unable to load file. It might be missing or inaccessible.', 'error');
+            }
+        });
+    }
+
     // ─── Filtering ─────────────────────────────────────────────
 
     get filteredNotifications$() {
         return this.notifications$.pipe(
             map(notifications => {
                 if (!notifications) return [];
-                return notifications.filter(n => this.getNotificationDivision(n) === this.filter);
+                const currentUser = localStorage.getItem('username') || '';
+                return notifications.filter(n => {
+                    // Suppress self-notifications
+                    if (n.Action_By && n.Action_By.toLowerCase() === currentUser.toLowerCase()) {
+                        return false;
+                    }
+                    // Filter by Division Tab
+                    const div = this.getNotificationDivision(n);
+                    if (div === 'UNKNOWN') return this.filter === 'PMC'; // Fallback to PMC tab
+                    return div === this.filter;
+                });
             })
         );
     }
@@ -95,10 +156,11 @@ export class NotificationInboxComponent implements OnInit {
             }
         }
 
-        // 3. Fallback to doc number inferences
+        // 3. Fallback to doc number inferences (case-insensitive)
         if (item.Doc_No) {
-            if (item.Doc_No.includes('PLAN-2')) return 'PMC';
-            if (item.Doc_No.includes('PLAN-3')) return 'GM';
+            const doc = item.Doc_No.toUpperCase();
+            if (doc.includes('PLAN-2') || doc.includes('71DZ')) return 'PMC';
+            if (doc.includes('PLAN-3') || doc.includes('7122')) return 'GM';
         }
 
         return 'UNKNOWN';
@@ -117,11 +179,10 @@ export class NotificationInboxComponent implements OnInit {
             // Collapse if already open
             this.expandedId = null;
         } else {
+            // Expand newly clicked item and mark as read
             this.expandedId = item.Notification_ID ?? null;
-            // Auto mark as read
             if (!item.IsRead && item.Notification_ID) {
                 this.notificationService.markAsRead(item.Notification_ID);
-                item.IsRead = true;
             }
         }
     }
@@ -130,60 +191,58 @@ export class NotificationInboxComponent implements OnInit {
         return this.expandedId === item.Notification_ID;
     }
 
-    // ─── Actions ───────────────────────────────────────────────
-
-    closeModal() {
-        this.expandedId = null;
-        this.view = 'inbox';
-        this.close.emit();
-    }
+    // ─── Top-Level Actions ─────────────────────────────────────
 
     markAllAsRead() {
         this.notificationService.markAllRead();
     }
 
-    /** Switch to Trash view and load trash list */
-    switchToTrash() {
-        this.view = 'trash';
-        this.expandedId = null;
-        this.notificationService.fetchTrash();
-    }
-
-    /** Switch back to main inbox view */
-    switchToInbox() {
-        this.view = 'inbox';
-    }
-
-    /** Soft-delete all read notifications with confirmation */
-    deleteRead() {
-        const confirmed = window.confirm(
-            this.lang === 'TH'
-                ? 'ต้องการย้ายข้อความที่อ่านแล้วทั้งหมดไปยังถังขยะใช่ไหม?'
-                : 'Move all read notifications to Trash?'
-        );
-        if (!confirmed) return;
+    // Inbox: Move all read to trash
+    deleteAllRead() {
         this.notificationService.deleteRead().subscribe({
-            next: () => console.log('[Trash] Read notifications moved to trash'),
-            error: (err: any) => console.error('[Trash] deleteRead error:', err)
+            next: (res) => {
+                if (res.deletedCount > 0) {
+                    Swal.fire({
+                        title: this.lang === 'TH' ? 'ย้ายลงถังขยะ' : 'Moved to Trash',
+                        text: this.lang === 'TH' ? `ย้ายข้อความที่อ่านแล้ว ${res.deletedCount} รายการลงถังขยะ` : `Moved ${res.deletedCount} read notifications to trash.`,
+                        icon: 'success',
+                        toast: true,
+                        position: 'bottom-end',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                }
+            }
         });
     }
 
-    /** Restore a single notification from trash to inbox */
-    restoreItem(id: number | undefined) {
+    // Trash: Restore single item
+    restoreItem(id?: number) {
         if (!id) return;
         this.notificationService.restoreFromTrash(id).subscribe({
-            next: () => console.log('[Trash] Notification restored:', id),
-            error: (err: any) => console.error('[Trash] restore error:', err)
+            next: () => {
+                Swal.fire({
+                    title: this.lang === 'TH' ? 'กู้คืนสำเร็จ' : 'Restored',
+                    text: this.lang === 'TH' ? 'ข้อความถูกกู้คืนไปยังกล่องข้อความแล้ว' : 'Notification restored to inbox.',
+                    icon: 'success',
+                    toast: true,
+                    position: 'bottom-end',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            }
         });
     }
 
     navigateCTA(item: NotificationLog) {
         const route = this.getCTARoute(item);
-        this.closeModal();
-        this.router.navigateByUrl(route);
+        if (route) {
+            this.router.navigateByUrl(route);
+            this.close.emit();
+        }
     }
 
-    // ─── Display Helpers (with proper interpolation) ──────────
+    // ─── Display Formatting ────────────────────────────────────
 
     /**
      * Build the subject line with variables interpolated from the DB payload.
@@ -233,7 +292,7 @@ export class NotificationInboxComponent implements OnInit {
             'NEW_REQUEST': 'New Request',
             'PLAN_REVISION': 'Plan Revision',
             'CANCEL_PLAN': 'Plan Cancelled',
-            'UPDATE_PLAN': 'Document Attached',
+            'UPDATE_PLAN': 'Document Attached',  // fallback only
             'RETURN_SENT': 'Return Pending',
             'RETURN_COMPLETED': 'Return Confirmed',
             'FILE_UPLOAD': 'File Uploaded'
@@ -242,6 +301,18 @@ export class NotificationInboxComponent implements OnInit {
         if (eventType === 'PLAN_REVISION' && item.Subject) {
             // Extract "Edit Date, QTY" from "🔵 [FYI] Edit Date, QTY - Part No...."
             const match = item.Subject.match(/\]\s*(.*?)(?:\s*-|$)/);
+            if (match && match[1]) {
+                return match[1].trim();
+            }
+        }
+
+        if (eventType === 'UPDATE_PLAN' && item.Subject) {
+            // Extract dynamic attachment title from Subject, e.g.:
+            //   "🔵 [FYI] Drawing Attached"   → "Drawing Attached"
+            //   "🔵 [FYI] Layout Attached"    → "Layout Attached"
+            //   "🔵 [FYI] Drawing & Layout Attached" → "Drawing & Layout Attached"
+            //   "🔵 [FYI] IIQC Attached"     → "IIQC Attached"
+            const match = item.Subject.match(/\]\s*(.*)/);
             if (match && match[1]) {
                 return match[1].trim();
             }
@@ -261,10 +332,19 @@ export class NotificationInboxComponent implements OnInit {
 
     formatDate(date: Date | string): string {
         if (!date) return '';
-        const d = new Date(date);
+
+        let d: Date;
+        if (typeof date === 'string') {
+            // Strip 'Z' because the backend mssql driver stringifies local time as UTC.
+            // Removing 'Z' forces the browser to interpret the time as local instead of offsetting it.
+            d = new Date(date.replace('Z', ''));
+        } else {
+            d = new Date(date);
+        }
+
         return d.toLocaleDateString('en-GB', {
             day: '2-digit', month: '2-digit', year: 'numeric'
-        }) + ' · ' + d.toLocaleTimeString('en-GB', {
+        }) + ' ' + d.toLocaleTimeString('en-GB', {
             hour: '2-digit', minute: '2-digit'
         });
     }
@@ -298,6 +378,7 @@ export class NotificationInboxComponent implements OnInit {
                 return null;
             }
         }
+        console.log(`[parseDetails] Notification ID ${item.Notification_ID}:`, item.Details_JSON);
         return item.Details_JSON;
     }
 
@@ -357,6 +438,8 @@ export class NotificationInboxComponent implements OnInit {
             val = d.newValues[key];
         } else if ((d.type === 'new_plan' || d.type === 'cancel' || d.type === 'new_request') && d.items && d.items.length > 0) {
             val = d.items[0][key];
+        } else if (d.type === 'update_plan') {
+            val = d[key];
         }
 
         if (val) {
@@ -373,7 +456,7 @@ export class NotificationInboxComponent implements OnInit {
         if (d.type === 'new_plan' && d.items?.length > 0) return true;
         if (d.type === 'cancel' && d.items?.length > 0) return true;
         if (d.type === 'new_request' && d.items?.length > 0) return true;
+        if (d.type === 'update_plan' && d.AttachedFiles?.length > 0) return true;
         return false;
     }
 }
-

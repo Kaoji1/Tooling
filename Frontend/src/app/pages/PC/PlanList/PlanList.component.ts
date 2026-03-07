@@ -1339,7 +1339,7 @@ export class PlanListComponent implements OnInit {
       },
       error: (err) => {
         console.error('File load error:', err);
-        Swal.fire('Error', 'Unable to load file. It might be missing or inaccessible.', 'error');
+        Swal.fire('Error', 'ไม่สามารถโหลดไฟล์ได้ เนื่องจากไม่พบไฟล์', 'error');
       }
     });
   }

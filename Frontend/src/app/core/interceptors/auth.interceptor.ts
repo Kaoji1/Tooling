@@ -21,12 +21,13 @@ export class AuthInterceptor implements HttpInterceptor {
       if (userStr) {
         try {
           const user = JSON.parse(userStr);
-          const username = user.Employee_ID || user.Name || user.username;
+          const username = user.Username || user.username || user.Employee_ID || user.Employee_Name || user.Name;
           if (username) {
             headersConfig['x-username'] = username;
           }
-          if (user.Role) {
-            headersConfig['x-role'] = user.Role;
+          const role = user.Role || user.role;
+          if (role) {
+            headersConfig['x-role'] = role;
           }
         } catch (e) {
           console.error('Error parsing user data in interceptor', e);

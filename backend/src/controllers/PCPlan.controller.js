@@ -1,6 +1,22 @@
 const sql = require('mssql');
 const { poolPromise } = require('../config/database'); // ตรวจสอบ path config database ว่าถูกต้อง
 
+// --- Helper: Two-Way Division Mapping ---
+// DB needs strings ('71DZ', '7122'), UI needs IDs ('2', '3')
+const mapDivisionToDB = (div) => {
+    const d = (div || '').toString().toUpperCase();
+    if (d === '2' || d === 'PMC') return '71DZ';
+    if (d === '3' || d === 'GM') return '7122';
+    return div;
+};
+
+const mapDivisionToUI = (div) => {
+    const d = (div || '').toString().toUpperCase();
+    if (d === '71DZ' || d === 'PMC') return '2';
+    if (d === '7122' || d === 'GM') return '3';
+    return div;
+};
+
 /**
  * API: ดึงข้อมูล Division สำหรับ PC Plan
  * หน้าที่: ดึงข้อมูล Master ของแผนก (เช่น PMC, GM) เพื่อนำไปป้อนลงใน Dropdown เลือกแผนกหน้า PC Plan
@@ -152,7 +168,7 @@ exports.insertPCPlan = async (req, res) => {
             return {
                 PlanDate: new Date(item.date),
                 Employee_ID: item.employeeId || '',
-                Division: division,
+                Division: mapDivisionToDB(division),
                 MC_Type: item.mcType || '',
                 Facility: item.fac || '',
                 Before_Part: item.partBefore || item.partBef || '',
@@ -377,7 +393,7 @@ exports.updatePCPlan = async (req, res) => {
         const result = await pool.request()
             .input('Plan_ID', sql.Int, id)
             .input('PlanDate', sql.Date, date ? new Date(date) : new Date())
-            .input('Division', sql.NVarChar(50), division || '')
+            .input('Division', sql.NVarChar(50), mapDivisionToDB(division || ''))
             .input('MC_Type', sql.NVarChar(50), mcType || '')
             .input('Facility', sql.NVarChar(50), fac || '')
             .input('Before_Part', sql.NVarChar(100), partBefore || '')
@@ -467,7 +483,16 @@ exports.getPlanList = async (req, res) => {
             .execute('trans.Stored_PCPlan_Query');
 
         console.log(`[getPlanList] Rows fetched (History=${showHistory}):`, result.recordset.length); // DEBUG LOG
-        res.status(200).json(result.recordset);
+
+        // Reverse map the division codes for frontend UI compatibility
+        const mappedResult = result.recordset.map(row => {
+            return {
+                ...row,
+                Division: mapDivisionToUI(row.Division)
+            };
+        });
+
+        res.status(200).json(mappedResult);
     } catch (err) {
         console.error('Error getPlanList:', err);
         res.status(500).send({ message: err.message });
@@ -560,7 +585,15 @@ exports.getPlanHistory = async (req, res) => {
             .input('GroupId', sql.NVarChar, groupId)
             .execute('trans.Stored_PCPlan_GetHistory');
 
-        res.status(200).json(result.recordset);
+        // Reverse map the division codes for frontend UI compatibility
+        const mappedResult = result.recordset.map(row => {
+            return {
+                ...row,
+                Division: mapDivisionToUI(row.Division)
+            };
+        });
+
+        res.status(200).json(mappedResult);
     } catch (err) {
         console.error('Error getPlanHistory:', err);
         res.status(500).send({ message: err.message });
@@ -579,6 +612,13 @@ exports.updatePaths = async (req, res) => {
         if (!groupId) return res.status(400).send({ message: "GroupId is required" });
 
         const pool = await poolPromise;
+
+        // Fetch OLD record before update to build the "Edit" (Revision) Before/After table
+        const oldResult = await pool.request()
+            .input('GroupId', sql.NVarChar, groupId)
+            .execute('trans.Stored_PCPlan_GetHistory');
+        const oldRecord = oldResult.recordset && oldResult.recordset.length > 0 ? oldResult.recordset[0] : null;
+
         const result = await pool.request()
             .input('GroupId', sql.NVarChar, groupId)
             .input('Path_Dwg', sql.NVarChar, pathDwg || null)
@@ -592,39 +632,125 @@ exports.updatePaths = async (req, res) => {
         // === Notification Trigger (V2 - Only if rows actually updated) ===
         if (affectedRows > 0) {
             try {
+                const planDateRaw = oldRecord ? oldRecord.PlanDate : null;
+                const planDate = planDateRaw ? new Date(planDateRaw).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
+                const partNo = oldRecord ? oldRecord.PartNo : '-';
+
                 const { emitNotification } = require('./Notification.controller');
-                let attachedFiles = [];
-                let deptName = 'Engineering';
 
-                if (pathDwg && pathDwg !== '-') attachedFiles.push('Drawing');
-                if (pathLayout && pathLayout !== '-') attachedFiles.push('Layout');
-                if (iiqc && iiqc !== '-') {
-                    attachedFiles.push('IIQC Table');
-                    deptName = 'QC';
-                }
+                // Track new attachments (old was empty) vs edits (old had a value)
+                let newAttachments = [];
+                let editedAttachments = [];
+                let changes = [];
+                let actionBy = req.headers['x-username'] || 'EN'; // Default
+                let deptName = 'EN';
 
-                if (attachedFiles.length > 0) {
-                    let subjectMessage = 'Document Attached';
-                    if (pathDwg && pathDwg !== '-' && pathLayout && pathLayout !== '-') {
-                        subjectMessage = 'Drawing & Layout Attached';
-                    } else if (pathDwg && pathDwg !== '-') {
-                        subjectMessage = 'Drawing Attached';
-                    } else if (pathLayout && pathLayout !== '-') {
-                        subjectMessage = 'Layout Attached';
-                    } else if (iiqc && iiqc !== '-') {
-                        subjectMessage = 'IIQC Attached';
+                // Helper to check if a DB path is considered "empty"
+                const isEmptyPath = (p) => !p || p.trim() === '' || p.trim() === '-';
+
+                if (oldRecord) {
+                    // Check Drawing
+                    if (pathDwg !== undefined && pathDwg !== (oldRecord.Path_Dwg || '') && pathDwg !== '-') {
+                        if (isEmptyPath(oldRecord.Path_Dwg)) {
+                            newAttachments.push('Drawing');
+                        } else {
+                            editedAttachments.push('Drawing');
+                            changes.push({ field: 'Drawing', old: oldRecord.Path_Dwg, new: pathDwg });
+                        }
                     }
 
+                    // Check Layout
+                    if (pathLayout !== undefined && pathLayout !== (oldRecord.Path_Layout || '') && pathLayout !== '-') {
+                        if (isEmptyPath(oldRecord.Path_Layout)) {
+                            newAttachments.push('Layout');
+                        } else {
+                            editedAttachments.push('Layout');
+                            changes.push({ field: 'Layout', old: oldRecord.Path_Layout, new: pathLayout });
+                        }
+                    }
+
+                    // Check IIQC
+                    if (iiqc !== undefined && iiqc !== (oldRecord.Path_IIQC || '') && iiqc !== '-') {
+                        deptName = 'QC';
+                        actionBy = req.headers['x-username'] || 'QC';
+                        if (isEmptyPath(oldRecord.Path_IIQC)) {
+                            newAttachments.push('IIQC');
+                        } else {
+                            editedAttachments.push('IIQC');
+                            changes.push({ field: 'IIQC', old: oldRecord.Path_IIQC, new: iiqc });
+                        }
+                    }
+                }
+
+                // 1. Emit Notification for NEW Attachments
+                if (newAttachments.length > 0) {
+                    const docTypes = newAttachments.join(' & ');
+                    let subjectMessage = newAttachments.length > 1 ? 'Drawing & Layout Attached' : `${newAttachments[0]} Attached`;
+                    let attachedFilesList = [];
+                    if (newAttachments.includes('Drawing')) attachedFilesList.push({ name: 'Drawing', url: pathDwg });
+                    if (newAttachments.includes('Layout')) attachedFilesList.push({ name: 'Layout', url: pathLayout });
+                    if (newAttachments.includes('IIQC')) attachedFilesList.push({ name: 'IIQC Table', url: iiqc });
+
+                    let messageEN_new = deptName === 'QC'
+                        ? `New document (IIQC) has been attached for the plan dated ${planDate}, Part No. ${partNo}, by the QC department (Action by: ${actionBy}).`
+                        : `New document(s) (${docTypes}) have been attached for the plan dated ${planDate}, Part No. ${partNo}, by the EN department (Action by: ${actionBy}).`;
+
+                    let messageTH_new = deptName === 'QC'
+                        ? `มีการแนบไฟล์เอกสารใหม่ (IIQC) สำหรับแผนงานของวันที่ ${planDate} ของ Part No. ${partNo} โดยแผนก QC จากคุณ ${actionBy}`
+                        : `มีการแนบไฟล์เอกสารใหม่ (${docTypes}) สำหรับแผนงานของวันที่ ${planDate} ของ Part No. ${partNo} โดยแผนก EN จากคุณ ${actionBy}`;
+
                     await emitNotification(req, pool, {
-                        eventType: 'UPDATE_PLAN',
-                        subject: `🔵 [FYI] ${subjectMessage} for Plan: ${groupId}`,
-                        messageEN: `New documents (${attachedFiles.join(' & ')}) have been attached to plan ${groupId} by ${deptName}.`,
-                        messageTH: `มีการแนบไฟล์เอกสารใหม่ (${attachedFiles.join(' & ')}) สำหรับแผนงาน ${groupId} โดย ${deptName}`,
+                        eventType: 'UPDATE_PLAN', // Standard text format 
+                        subject: `🔵 [FYI] ${subjectMessage}`,
+                        messageEN: messageEN_new,
+                        messageTH: messageTH_new,
                         docNo: groupId,
-                        actionBy: req.headers['x-username'] || deptName, // NEW: Read username from header
+                        actionBy: actionBy,
                         targetRoles: 'ALL',
                         ctaRoute: '/pc/plan-list',
-                        division: groupId.includes('PLAN-2') ? 'PMC' : groupId.includes('PLAN-3') ? 'GM' : null
+                        division: groupId.includes('PLAN-2') ? 'PMC' : groupId.includes('PLAN-3') ? 'GM' : null,
+                        detailsJson: {
+                            type: 'update_plan',
+                            AttachedFiles: attachedFilesList
+                        }
+                    });
+                }
+
+                // 2. Emit Notification for EDITED Attachments
+                if (editedAttachments.length > 0 && changes.length > 0) {
+                    const docTypes = editedAttachments.join(' and/or ');
+                    let subjectMessage = editedAttachments.length > 1 ? 'Drawing & Layout Edited' : `${editedAttachments[0]} Edited`;
+
+                    let attachedFilesList = [];
+                    if (editedAttachments.includes('Drawing')) attachedFilesList.push({ name: 'Drawing', url: pathDwg });
+                    if (editedAttachments.includes('Layout')) attachedFilesList.push({ name: 'Layout', url: pathLayout });
+                    if (editedAttachments.includes('IIQC')) attachedFilesList.push({ name: 'IIQC Table', url: iiqc });
+
+                    let messageEN_edit = deptName === 'QC'
+                        ? `The IIQC document for the plan dated ${planDate}, Part No. ${partNo}, has been edited by the QC department (Action by: ${actionBy}).`
+                        : `The ${docTypes} document(s) for the plan dated ${planDate}, Part No. ${partNo}, have been edited by the EN department (Action by: ${actionBy}).`;
+
+                    let messageTH_edit = deptName === 'QC'
+                        ? `มีการแก้ไขเอกสาร IIQC ของวันที่ ${planDate} ของ Part No. ${partNo} โดยแผนก QC จากคุณ ${actionBy}`
+                        : `มีการแก้ไขเอกสาร ${docTypes.replace('and/or', 'และ/หรือ')} ของวันที่ ${planDate} ของ Part No. ${partNo} โดยแผนก EN จากคุณ ${actionBy}`;
+
+                    await emitNotification(req, pool, {
+                        eventType: 'PLAN_REVISION', // Revision format (Renders changes table)
+                        subject: `🔵 [FYI] ${subjectMessage}`,
+                        messageEN: messageEN_edit,
+                        messageTH: messageTH_edit,
+                        docNo: groupId,
+                        actionBy: actionBy,
+                        targetRoles: 'ALL',
+                        ctaRoute: '/pc/plan-list',
+                        division: groupId.includes('PLAN-2') ? 'PMC' : groupId.includes('PLAN-3') ? 'GM' : null,
+                        detailsJson: {
+                            type: 'revision', // Required for UI change table rendering
+                            revision: oldRecord ? oldRecord.Revision : 0,
+                            changes: changes,
+                            AttachedFiles: attachedFilesList, // Provides clickable buttons under table
+                            ...oldRecord
+                        }
                     });
                 }
             } catch (e) { console.error('Notify Error:', e); }

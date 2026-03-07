@@ -417,11 +417,7 @@
 
         <!-- Attachments Header (Engineer only) -->
         <ng-container *ngIf="selectedDepartment === 'EN'">
-          <div class="form-group full-width">
-            <h4 class="premium-modal-section-title">
-              <i class="bi bi-paperclip"></i> Attachments (Engineer)
-            </h4>
-          </div>
+  
         </ng-container>
         <!-- Engineer Fields (Path) -->
         <ng-container *ngIf="selectedDepartment === 'EN'">
@@ -439,11 +435,6 @@
 
         <!-- QC Fields (IIQC) -->
         <ng-container *ngIf="selectedDepartment === 'QC'">
-          <div class="form-group full-width">
-            <h4 class="premium-modal-section-title">
-              <i class="bi bi-shield-check"></i> Attachments (Quality Control)
-            </h4>
-          </div>
           <div class="form-group full-width">
             <label class="form-label"><i class="bi bi-file-earmark-check"></i> IIQC Path</label>
             <input type="text" class="form-input" [(ngModel)]="editData.iiqc" name="iiqc" placeholder="P:\QC\IIQC\...">

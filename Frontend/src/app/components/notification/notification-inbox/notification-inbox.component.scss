@@ -603,12 +603,75 @@
 }
 
 .empty-desc {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     margin: 0;
-    color: #94a3b8;
 }
 
-/* ─── Scrollbar ───────────────────────────────────── */
+/* ─── Attachments ─────────────────────────────────── */
+.details-section {
+    margin-top: 1.2rem;
+    padding-top: 1.2rem;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.details-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #475569;
+    margin: 0 0 0.8rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+
+    i {
+        color: #64748b;
+        font-size: 1rem;
+    }
+}
+
+.attachment-links-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.attachment-link-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.9rem;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: fit-content;
+
+    i {
+        color: #ef4444;
+        /* PDF red */
+        font-size: 1.2rem;
+    }
+
+    .file-hyperlink {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    &:hover {
+        background-color: #f1f5f9;
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+
+        .file-hyperlink {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+    }
+}
+
+/* ─── Trash Header (when looking at trash) ────────── */
 .inbox-list-body::-webkit-scrollbar {
     width: 5px;
 }

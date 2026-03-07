@@ -54,8 +54,8 @@ export class NotificationService {
         const userSession = sessionStorage.getItem('user');
         if (userSession) {
           const user = JSON.parse(userSession);
-          this.currentUserRole = (user.Role || '').toLowerCase();
-          this.currentUserName = (user.Employee_ID || user.Name || user.username || '').toLowerCase();
+          this.currentUserRole = (user.Role || user.role || '').toLowerCase().trim();
+          this.currentUserName = (user.Username || user.username || user.Employee_ID || user.Employee_Name || user.Name || '').toLowerCase().trim();
           const rawEmpId = parseInt(user.ID_Employee, 10);
           this.currentEmployeeId = !isNaN(rawEmpId) ? rawEmpId : null;
         }
@@ -85,8 +85,8 @@ export class NotificationService {
         const userSession = sessionStorage.getItem('user');
         if (userSession) {
           const user = JSON.parse(userSession);
-          this.currentUserRole = (user.Role || '').toLowerCase();
-          this.currentUserName = (user.Employee_ID || user.Name || user.username || '').toLowerCase();
+          this.currentUserRole = (user.Role || user.role || '').toLowerCase().trim();
+          this.currentUserName = (user.Username || user.username || user.Employee_ID || user.Employee_Name || user.Name || '').toLowerCase().trim();
           const rawEmpId2 = parseInt(user.ID_Employee, 10);
           this.currentEmployeeId = !isNaN(rawEmpId2) ? rawEmpId2 : null;
         }
@@ -126,7 +126,16 @@ export class NotificationService {
     this.http.get<NotificationLog[]>(`${environment.apiUrl}/notifications/list${roleParam}`, { headers: this.getAuthHeaders() })
       .subscribe({
         next: (data) => {
-          this.notificationsSubject.next(data);
+          // ── Self-exclusion: filter out notifications triggered by the current user ──
+          // Mirrors the same suppression applied to real-time socket events (see setupSocketListeners).
+          const filtered = this.currentUserName
+            ? data.filter(n => {
+              const sender = (n.Action_By || '').toLowerCase().trim();
+              return sender !== this.currentUserName;
+            })
+            : data;
+
+          this.notificationsSubject.next(filtered);
           this.updateUnreadCount();
         },
         error: (err) => console.error('Failed to fetch notifications:', err)

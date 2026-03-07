@@ -40,7 +40,7 @@
                 <button (click)="markAllAsRead()" class="mark-all-btn" *ngIf="view === 'inbox'">
                     <i class="bi bi-check-all"></i> Mark all as read
                 </button>
-                <button (click)="deleteRead()" class="delete-read-btn" *ngIf="view === 'inbox'"
+                <button (click)="deleteAllRead()" class="delete-read-btn" *ngIf="view === 'inbox'"
                     title="{{ lang === 'TH' ? 'ลบข้อความที่อ่านแล้ว' : 'Delete Read Notifications' }}">
                     <i class="bi bi-trash3"></i>
                 </button>
@@ -118,33 +118,34 @@
                                     <span class="meta-label">{{ lang === 'EN' ? 'Division' : 'Division' }}</span>
                                     <span class="meta-value">{{ getNotificationDivision(item) }}</span>
                                 </div>
-                                <!-- Div > Fac chip (shown when not CANCEL_PLAN) -->
-                                <div class="meta-chip"
-                                    *ngIf="(getMetaValue(item, 'Division') || getMetaValue(item, 'Facility')) && item.Event_Type !== 'CANCEL_PLAN'">
-                                    <span class="meta-label">{{ lang === 'EN' ? 'Div > Fac' : 'Div > Fac'
-                                        }}</span>
-                                    <span class="meta-value">
-                                        <ng-container
-                                            *ngIf="getMetaValue(item, 'Division') && getMetaValue(item, 'Facility')">
-                                            {{ getMetaValue(item, 'Division') }} > {{ getMetaValue(item, 'Facility') }}
-                                        </ng-container>
-                                        <ng-container
-                                            *ngIf="getMetaValue(item, 'Division') && !getMetaValue(item, 'Facility')">
-                                            {{ getMetaValue(item, 'Division') }}
-                                        </ng-container>
-                                        <ng-container
-                                            *ngIf="!getMetaValue(item, 'Division') && getMetaValue(item, 'Facility')">
-                                            {{ getMetaValue(item, 'Facility') }}
-                                        </ng-container>
-                                    </span>
-                                </div>
                             </div>
 
                             <!-- Message Body -->
                             <div class="detail-body" [innerHTML]="getBody(item)"></div>
 
-                            <!-- โ•โ•โ• Dynamic Details Section โ•โ•โ• -->
+                            <!-- โ•โ•โ•โ• Dynamic Details Section โ•โ•โ•โ•โ• -->
                             <ng-container *ngIf="hasDetails(item)">
+
+                                <!-- Clickable File Links -->
+                                <ng-container
+                                    *ngIf="(getDetailType(item) === 'update_plan' || getDetailType(item) === 'revision') && parseDetails(item)?.AttachedFiles?.length > 0">
+                                    <div class="details-section">
+                                        <h4 class="details-title">
+                                            <i class="bi bi-paperclip"></i>
+                                            {{ lang === 'EN' ? 'Attached Documents' : 'เอกสารแนบ' }}
+                                        </h4>
+                                        <div class="attachment-links-list">
+                                            <div *ngFor="let file of parseDetails(item)?.AttachedFiles"
+                                                class="attachment-link-item" (click)="openFile(file.url)"
+                                                [title]="file.url">
+                                                <i class="bi bi-file-earmark-pdf"></i>
+                                                <span class="file-hyperlink">
+                                                    {{ file.name }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-container>
 
                                 <!-- REVISION: Before & After Changes Table -->
                                 <ng-container *ngIf="getDetailType(item) === 'revision'">
@@ -159,7 +160,8 @@
                                                 <thead>
                                                     <tr>
                                                         <th>{{ lang === 'EN' ? 'Field' : 'Field' }}</th>
-                                                        <th class="col-old">{{ lang === 'EN' ? 'Before' : 'Before' }}</th>
+                                                        <th class="col-old">{{ lang === 'EN' ? 'Before' : 'Before' }}
+                                                        </th>
                                                         <th class="col-new">{{ lang === 'EN' ? 'After' : 'After' }}</th>
                                                     </tr>
                                                 </thead>
@@ -190,7 +192,8 @@
                                             <i class="bi bi-table"></i>
                                             {{ lang === 'EN' ? 'Items' : 'Items' }}
                                             <span class="items-count" *ngIf="parseDetails(item)?.totalItems">
-                                                ({{ parseDetails(item).totalItems }} {{ lang === 'EN' ? 'total' : 'รายการ' }})
+                                                ({{ parseDetails(item).totalItems }} {{ lang === 'EN' ? 'total' :
+                                                'รายการ' }})
                                             </span>
                                         </h4>
                                         <div class="data-grid-wrap" *ngIf="getDetailItems(item).length > 0">
