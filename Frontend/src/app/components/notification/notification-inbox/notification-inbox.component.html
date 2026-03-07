@@ -108,44 +108,38 @@
                                         'Plan Date' }}</span>
                                     <span class="meta-value mono">{{ getMetaValue(item, 'PlanDate') }}</span>
                                 </div>
-                                <div class="meta-chip"
-                                    *ngIf="getMetaValue(item, 'PartNo') && item.Event_Type !== 'NEW_PLAN' && item.Event_Type !== 'CANCEL_PLAN'">
-                                    <span class="meta-label">{{ lang === 'EN' ? 'Part No.' : 'Part No.' }}</span>
-                                    <span class="meta-value mono">{{ getMetaValue(item, 'PartNo') }}</span>
-                                </div>
                                 <!-- Division chip (shown for all types) -->
                                 <div class="meta-chip" *ngIf="getNotificationDivision(item) !== 'UNKNOWN'">
                                     <span class="meta-label">{{ lang === 'EN' ? 'Division' : 'Division' }}</span>
                                     <span class="meta-value">{{ getNotificationDivision(item) }}</span>
+                                </div>
+                                <!-- Div > Fac chip (shown when not CANCEL_PLAN) -->
+                                <div class="meta-chip"
+                                    *ngIf="(getMetaValue(item, 'Division') || getMetaValue(item, 'Facility')) && item.Event_Type !== 'CANCEL_PLAN'">
+                                    <span class="meta-label">{{ lang === 'EN' ? 'Div > Fac' : 'Div > Fac'
+                                        }}</span>
+                                    <span class="meta-value">
+                                        <ng-container
+                                            *ngIf="getMetaValue(item, 'Division') && getMetaValue(item, 'Facility')">
+                                            {{ getMetaValue(item, 'Division') }} > {{ getMetaValue(item, 'Facility') }}
+                                        </ng-container>
+                                        <ng-container
+                                            *ngIf="getMetaValue(item, 'Division') && !getMetaValue(item, 'Facility')">
+                                            {{ getMetaValue(item, 'Division') }}
+                                        </ng-container>
+                                        <ng-container
+                                            *ngIf="!getMetaValue(item, 'Division') && getMetaValue(item, 'Facility')">
+                                            {{ getMetaValue(item, 'Facility') }}
+                                        </ng-container>
+                                    </span>
                                 </div>
                             </div>
 
                             <!-- Message Body -->
                             <div class="detail-body" [innerHTML]="getBody(item)"></div>
 
-                            <!-- โ•โ•โ•โ• Dynamic Details Section โ•โ•โ•โ•โ• -->
+                            <!-- โ•โ•โ• Dynamic Details Section โ•โ•โ• -->
                             <ng-container *ngIf="hasDetails(item)">
-
-                                <!-- Clickable File Links -->
-                                <ng-container
-                                    *ngIf="(getDetailType(item) === 'update_plan' || getDetailType(item) === 'revision') && parseDetails(item)?.AttachedFiles?.length > 0">
-                                    <div class="details-section">
-                                        <h4 class="details-title">
-                                            <i class="bi bi-paperclip"></i>
-                                            {{ lang === 'EN' ? 'Attached Documents' : 'เอกสารแนบ' }}
-                                        </h4>
-                                        <div class="attachment-links-list">
-                                            <div *ngFor="let file of parseDetails(item)?.AttachedFiles"
-                                                class="attachment-link-item" (click)="openFile(file.url)"
-                                                [title]="file.url">
-                                                <i class="bi bi-file-earmark-pdf"></i>
-                                                <span class="file-hyperlink">
-                                                    {{ file.name }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </ng-container>
 
                                 <!-- REVISION: Before & After Changes Table -->
                                 <ng-container *ngIf="getDetailType(item) === 'revision'">
@@ -217,6 +211,25 @@
                                                     </tr>
                                                 </tbody>
                                             </table>
+                                        </div>
+                                    </div>
+                                </ng-container>
+
+                                <!-- UPDATE_PLAN: Clickable File Links -->
+                                <ng-container *ngIf="getDetailType(item) === 'update_plan'">
+                                    <div class="details-section">
+                                        <h4 class="details-title">
+                                            <i class="bi bi-paperclip"></i>
+                                            {{ lang === 'EN' ? 'Attached Documents' : 'Attached Documents' }}
+                                        </h4>
+                                        <div class="attachment-links-list">
+                                            <div *ngFor="let file of parseDetails(item)?.AttachedFiles"
+                                                class="attachment-link-item">
+                                                <i class="bi bi-file-earmark-pdf"></i>
+                                                <a [href]="file.url" target="_blank" class="file-hyperlink">
+                                                    {{ file.name }}
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </ng-container>
