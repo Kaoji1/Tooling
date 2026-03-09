@@ -138,12 +138,12 @@ BEGIN
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document]
             (DocNo, Division, Requester, PartNo, ItemNo, SPEC, Process, MCType, Fac, 
              PathDwg, ON_HAND, Req_QTY, QTY, DueDate, [CASE], Status, PathLayout, 
-             Remark, PhoneNo, MFGOrderNo, MR_No, ItemName)
+             Remark, PhoneNo, MFGOrderNo, MR_No, ItemName, AS400STATUS)
         OUTPUT INSERTED.ID_Request
         VALUES
             (@DocNo, @Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac,
              @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout,
-             @Remark, @PhoneNo, @MFGOrderNo, @MR_No, @ItemName);
+             @Remark, @PhoneNo, @MFGOrderNo, @MR_No, @ItemName, 'Pending Issue');
     END TRY
     BEGIN CATCH
         THROW;

@@ -32,14 +32,16 @@ BEGIN
     BEGIN
         UPDATE [dbo].[tb_IssueSetupTool_Request_Document]
         SET Status = @Status,
-            DateComplete = CASE WHEN @Status = 'Complete' THEN SYSDATETIME() ELSE DateComplete END
+            DateComplete = CASE WHEN @Status = 'Complete' THEN SYSDATETIME() ELSE DateComplete END,
+            AS400STATUS = CASE WHEN @Status = 'Complete' THEN 'Pending' ELSE AS400STATUS END
         WHERE Public_Id = @Public_Id;
     END
     ELSE
     BEGIN
         UPDATE [dbo].[tb_IssueCuttingTool_Request_Document]
         SET Status = @Status,
-            DateComplete = CASE WHEN @Status = 'Complete' THEN SYSDATETIME() ELSE DateComplete END
+            DateComplete = CASE WHEN @Status = 'Complete' THEN SYSDATETIME() ELSE DateComplete END,
+            AS400STATUS = CASE WHEN @Status = 'Complete' THEN 'Pending' ELSE AS400STATUS END
         WHERE Public_Id = @Public_Id;
     END
 END

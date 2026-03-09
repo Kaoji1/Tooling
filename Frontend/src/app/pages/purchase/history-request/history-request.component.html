@@ -73,6 +73,7 @@
             <input type="date" class="form-control form-control-sm" [(ngModel)]="fromDate" (change)="onFilter()"
               placeholder="Date">
           </th>
+          <th class="filter-cell"></th>
         </tr>
 
         <!-- Headers Row -->
@@ -99,11 +100,12 @@
           <th style="min-width: 100px;">M/C TYPE</th>
           <th style="min-width: 100px;" class="highlight-yellow">M/C NO.</th>
           <th style="min-width: 120px;">DECLATION NO.</th>
+          <th style="min-width: 130px;">AS400 STATUS</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngIf="filteredRequests.length === 0">
-          <td colspan="14" class="text-center text-muted py-4">
+          <td colspan="15" class="text-center text-muted py-4">
             <ng-container *ngIf="!Division_">
               <i class="bi bi-info-circle-fill me-2"></i> Please select Division to view data.
             </ng-container>
@@ -131,6 +133,15 @@
           <td>{{ req.MCType }}</td>
           <td>{{ req.MC_No }}</td>
           <td></td>
+          <td>
+            <span class="badge-status" [ngClass]="{
+              'badge-pending-issue': req.AS400STATUS === 'Pending Issue',
+              'badge-pending': req.AS400STATUS === 'Pending',
+              'badge-success': req.AS400STATUS === 'Success'
+            }">
+              {{ req.AS400STATUS || 'Pending' }}
+            </span>
+          </td>
         </tr>
       </tbody>
     </table>

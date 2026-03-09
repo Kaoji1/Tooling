@@ -156,7 +156,8 @@ export class HistoryRequestComponent implements OnInit {
           MC_Code: item.MC_Code ?? '',
           MC_No: (item.MCNo ?? item.MC_No ?? '').toString().split(',')[0].trim(),
           DueDate: item.DueDate ?? '',
-          DateTime_Record: item.DateTime_Record ?? ''
+          DateTime_Record: item.DateTime_Record ?? '',
+          AS400STATUS: item.AS400STATUS ?? 'Pending'
         }));
 
 
