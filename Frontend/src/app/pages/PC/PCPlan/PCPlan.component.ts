@@ -163,7 +163,17 @@ export class PCPlanComponent implements OnInit {
 
   // Helper: Generate a Unique Plan ID (PLAN- + full UUID)
   private generatePlanUniqueId(): string {
-    const uuid = crypto.randomUUID(); // Cryptographically random, 100% unique
+    let uuid: string;
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      uuid = crypto.randomUUID(); // Cryptographically random, 100% unique
+    } else {
+      // Fallback for non-HTTPS environments (Math.random)
+      uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
     return `PLAN-${uuid}`;            // e.g. PLAN-550e8400-e29b-41d4-a716-446655440000
   }
 

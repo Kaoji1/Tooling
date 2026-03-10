@@ -170,7 +170,10 @@
             <ng-container *ngIf="item.isLatest">
               <ng-container *ngIf="selectedDepartment === 'PC'">
                 <button class="btn-edit-pill me-1" (click)="onEdit(item)" title="Edit Plan">EDIT</button>
-                <button class="btn-cancel-pill me-1" (click)="onCancel(item)" title="Cancel Plan">CANCEL</button>
+                <button class="btn-cancel-pill me-1" [class.btn-cancel-disabled]="isEditLockedByComplete(item)"
+                  [disabled]="isEditLockedByComplete(item)"
+                  [title]="isEditLockedByComplete(item) ? 'Cannot cancel: Request is Complete' : 'Cancel Plan'"
+                  (click)="onCancel(item)">CANCEL</button>
                 <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
                   title="View Tooling Request">VIEW</button>
               </ng-container>
@@ -341,6 +344,14 @@
         <!-- PC ONLY FIELDS -->
         <ng-container *ngIf="selectedDepartment === 'PC'">
 
+          <!-- Complete Lock Notice -->
+          <div class="form-group full-width" *ngIf="isEditLockedByComplete(editData)"
+            style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: #92400e;">
+            <i class="bi bi-lock-fill" style="font-size: 1rem;"></i>
+            <span><strong>Fields Locked:</strong> Machine Type, Bar Type, Process, Part Before, and Part No. cannot be
+              edited because the linked request has status <strong>Complete</strong>.</span>
+          </div>
+
           <!-- Row 1: Date + Machine Type -->
           <div class="form-group">
             <label class="form-label"><i class="bi bi-calendar3"></i> Date</label>
@@ -354,16 +365,18 @@
 
           <div class="form-group">
             <label class="form-label"><i class="bi bi-cpu"></i> Machine Type</label>
-            <ng-select [items]="modalMachineTypes" [(ngModel)]="editData.mcType" [addTag]="true" addTagText="Add: "
-              placeholder="Select type" [clearable]="true" class="edit-modal-select w-100">
+            <ng-select [items]="modalMachineTypes" [(ngModel)]="editData.mcType"
+              [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select type"
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)">
             </ng-select>
           </div>
 
           <!-- Row 2: Bar Type + Facility -->
           <div class="form-group">
             <label class="form-label"><i class="bi bi-bar-chart-line"></i> Bar Type</label>
-            <ng-select [items]="modalBarTypeList" [(ngModel)]="editData.barType" [addTag]="true" addTagText="Add: "
-              placeholder="Select bar type" [clearable]="true" class="edit-modal-select w-100">
+            <ng-select [items]="modalBarTypeList" [(ngModel)]="editData.barType"
+              [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select bar type"
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)">
             </ng-select>
           </div>
 
@@ -377,15 +390,17 @@
           <!-- Row 3: Process + Part Before -->
           <div class="form-group">
             <label class="form-label"><i class="bi bi-gear"></i> Process</label>
-            <ng-select [items]="modalProcessList" [(ngModel)]="editData.process" [addTag]="true" addTagText="Add: "
-              placeholder="Select process" [clearable]="true" class="edit-modal-select w-100">
+            <ng-select [items]="modalProcessList" [(ngModel)]="editData.process"
+              [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select process"
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)">
             </ng-select>
           </div>
 
           <div class="form-group">
             <label class="form-label"><i class="bi bi-arrow-left-right"></i> Part Before</label>
-            <ng-select [items]="modalPartBeforeList" [(ngModel)]="editData.partBefore" [addTag]="true"
-              addTagText="Add: " placeholder="Select part before" [clearable]="true" class="edit-modal-select w-100">
+            <ng-select [items]="modalPartBeforeList" [(ngModel)]="editData.partBefore"
+              [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select part before"
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)">
             </ng-select>
           </div>
 
@@ -397,8 +412,9 @@
 
           <div class="form-group">
             <label class="form-label"><i class="bi bi-upc-scan"></i> Part No.</label>
-            <ng-select [items]="modalPartNoList" [(ngModel)]="editData.partNo" [addTag]="true" addTagText="Add: "
-              placeholder="Select part no." [clearable]="true" class="edit-modal-select w-100">
+            <ng-select [items]="modalPartNoList" [(ngModel)]="editData.partNo"
+              [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select part no."
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)">
             </ng-select>
           </div>
 

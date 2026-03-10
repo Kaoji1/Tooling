@@ -1,4 +1,4 @@
-import { Component, OnInit, afterNextRender } from '@angular/core';
+import { Component, OnInit, afterNextRender, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarPurchaseComponent } from '../../../components/sidebar/sidebarPurchase.component';
@@ -35,7 +35,7 @@ export class MasterPHComponent {
         masterToolingGM: null
     };
 
-    constructor(private masterPHService: MasterPHService) { }
+    constructor(private masterPHService: MasterPHService, private ngZone: NgZone) { }
 
     // Generic file handler helper
     handleFile(evt: any, type: 'masterToolingPMC' | 'masterToolingGM') {
@@ -76,23 +76,27 @@ export class MasterPHComponent {
             this.summaryGM = null;
         }
 
-        const interval = setInterval(() => {
-            if (type === 'PMC') {
-                this.uploadProgressPMC += Math.floor(Math.random() * 15) + 5;
-                if (this.uploadProgressPMC >= 100) {
-                    this.uploadProgressPMC = 100;
-                    clearInterval(interval);
-                    setTimeout(() => callback(), 500); // slight delay at 100%
-                }
-            } else {
-                this.uploadProgressGM += Math.floor(Math.random() * 15) + 5;
-                if (this.uploadProgressGM >= 100) {
-                    this.uploadProgressGM = 100;
-                    clearInterval(interval);
-                    setTimeout(() => callback(), 500);
-                }
-            }
-        }, 300);
+        this.ngZone.runOutsideAngular(() => {
+            const interval = setInterval(() => {
+                this.ngZone.run(() => {
+                    if (type === 'PMC') {
+                        this.uploadProgressPMC += Math.floor(Math.random() * 15) + 5;
+                        if (this.uploadProgressPMC >= 100) {
+                            this.uploadProgressPMC = 100;
+                            clearInterval(interval);
+                            setTimeout(() => callback(), 500); // slight delay at 100%
+                        }
+                    } else {
+                        this.uploadProgressGM += Math.floor(Math.random() * 15) + 5;
+                        if (this.uploadProgressGM >= 100) {
+                            this.uploadProgressGM = 100;
+                            clearInterval(interval);
+                            setTimeout(() => callback(), 500);
+                        }
+                    }
+                });
+            }, 300);
+        });
     }
 
     uploadData(type: 'masterTooling') {

@@ -205,6 +205,68 @@ exports.insertPCPlan = async (req, res) => {
             .input('TargetDate', sql.Date, new Date(sampleDate))
             .execute('trans.Stored_PCPlan_Insert_All_Snapshot_Excel');
 
+        // ─────────────────────────────────────────────────────────────────────
+        // STATUS_TO_PH PROPAGATION
+        // After snapshot succeeds, update Status_To_PH on both request
+        // document tables if the plan is linked via Unique_Id.
+        // ─────────────────────────────────────────────────────────────────────
+        const firstItem = items[0];
+        const rawUniqueId = (firstItem.uniqueId || '')
+            .toString()
+            .replace(/^PLAN-/i, '')
+            .trim();
+
+        if (rawUniqueId) {
+            try {
+                let statusToPH = null;
+
+                if (firstItem.planStatus === 'Cancelled') {
+                    // 1. Cancellation → always set to 'Cancelled'
+                    statusToPH = 'Cancelled';
+                } else if (firstItem.revision > 0 && firstItem.groupId) {
+                    // 2. Edit revision → check if key fields changed
+                    const KEY_FIELDS = ['MC_Type', 'Bar_Type', 'Process', 'Before_Part', 'PartNo'];
+                    const fieldMap_KeyOnly = {
+                        'MC_Type': { newKey: 'mcType', transform: v => (v || '') },
+                        'Bar_Type': { newKey: 'barType', transform: v => (v || '') },
+                        'Process': { newKey: 'process', transform: v => (v || '') },
+                        'Before_Part': { newKey: 'partBefore', transform: v => (v || '') },
+                        'PartNo': { newKey: 'partNo', transform: v => (v || '') },
+                    };
+
+                    const histResult = await pool.request()
+                        .input('GroupId', sql.NVarChar, firstItem.groupId)
+                        .execute('trans.Stored_PCPlan_GetHistory');
+
+                    const history = histResult.recordset || [];
+                    const prevRevision = firstItem.revision - 1;
+                    const oldRecord = history.find(h => h.Revision === prevRevision) || history[1]; // skip newest
+
+                    if (oldRecord) {
+                        const keyFieldChanged = KEY_FIELDS.some(dbField => {
+                            const { newKey, transform } = fieldMap_KeyOnly[dbField];
+                            const oldVal = String(transform(oldRecord[dbField]));
+                            const newVal = String(transform(firstItem[newKey]));
+                            return oldVal !== newVal;
+                        });
+
+                        if (keyFieldChanged) statusToPH = 'PC Edit';
+                    }
+                }
+
+                if (statusToPH) {
+                    await pool.request()
+                        .input('Unique_Id', sql.NVarChar(100), rawUniqueId)
+                        .input('NewStatus', sql.NVarChar(50), statusToPH)
+                        .execute('trans.Stored_UpdateStatusToPH');
+                    console.log(`[Status_To_PH] Updated to '${statusToPH}' for Unique_Id: ${rawUniqueId}`);
+                }
+            } catch (phErr) {
+                // Non-blocking: log the error but don't fail the whole request
+                console.error('[Status_To_PH] Failed to update status:', phErr.message);
+            }
+        }
+
         // === Notification Trigger (V2 + Details_JSON) ===
         try {
             const { emitNotification } = require('./Notification.controller');
