@@ -143,7 +143,7 @@ BEGIN
         VALUES
             (@DocNo, @Division, @Requester, @PartNo, @ItemNo, @SPEC, @Process, @MCType, @Fac,
              @PathDwg, @ON_HAND, @Req_QTY, @QTY, @DueDate, @CASE, @Status, @PathLayout,
-             @Remark, @PhoneNo, @MFGOrderNo, @MR_No, @ItemName, 'Pending Issue');
+             @Remark, @PhoneNo, @MFGOrderNo, @MR_No, @ItemName, 'Wait PH Issue');
     END TRY
     BEGIN CATCH
         THROW;

@@ -18,4 +18,8 @@ export class PurchaseHistoryservice {
     return this.httpClient.get(`${this.baseUrl}/Purchase_History`) // ส่ง HTTP GET request เพื่อดึงหมายเลขชิ้นส่วน
   }
 
+  updateHistoryFields(data: { Public_Id: string, MFGOrderNo: string, DocNo: string }): Observable<any> {
+    return this.httpClient.put(`${this.baseUrl}/Purchase_History/update`, data);
+  }
+
 }

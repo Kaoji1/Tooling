@@ -81,7 +81,7 @@ BEGIN
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document]
             (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No, ToolingType, AS400STATUS, Unique_Id)
         SELECT 
-            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No, 'CuttingTool', 'Pending Issue', Unique_Id_Cast
+            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No, 'CuttingTool', 'Wait PH Issue', Unique_Id_Cast
         FROM #AllItems
         WHERE ToolType = 'CuttingTool';
 
@@ -93,7 +93,7 @@ BEGIN
         INSERT INTO [dbo].[tb_IssueSetupTool_Request_Document]
             (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No, ToolingType, AS400STATUS, Unique_Id)
         SELECT 
-            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No, 'SetupTool', 'Pending Issue', Unique_Id_Cast
+            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No, 'SetupTool', 'Wait PH Issue', Unique_Id_Cast
         FROM #AllItems
         WHERE ToolType = 'SetupTool';
 

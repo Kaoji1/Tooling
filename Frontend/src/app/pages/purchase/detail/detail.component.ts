@@ -189,18 +189,13 @@ export class DetailComponent implements OnInit, OnDestroy {
     });
 
     if (isPlatformBrowser(this.platformId)) {
-      this.Detail_Purchase();
-      this.loadSetupData();
+      this.loadAllData();
       this.get_ItemNo();
 
-      // Auto-refresh every 10 seconds
+      // Auto-refresh every 30 seconds
       this.refreshSubscription = interval(30000).subscribe(() => {
-        // Only fetch if no unsaved changes (editing, selected, or dirty)
         if (!this.hasUnsavedChanges()) {
-          // We need to pass a flag to Data_Purchase to avoid spinner
-          this.Detail_Purchase(true);
-          // Also refresh setup data if needed
-          this.loadSetupData();
+          this.loadAllData();
         }
       });
     }
@@ -270,58 +265,63 @@ export class DetailComponent implements OnInit, OnDestroy {
     return isDirty;
   }
 
-  Detail_Purchase(isBackgroundRefresh = false) {
-    // If not background refresh, show spinner (if you have one, currently no global spinner variable used here directly or it's not shown in snippet)
-    // But this method just fetches data.
-
-    this.DetailPurchase.Detail_Request().subscribe({
-      next: (response: any[]) => {
-        if (!Array.isArray(response)) {
+  /** Load both Cutting + Setup data in parallel, show only when BOTH are ready */
+  loadAllData() {
+    forkJoin({
+      cutting: this.DetailPurchase.Detail_Request(),
+      setup: this.DetailPurchase.Detail_Request_Setup()
+    }).subscribe({
+      next: ({ cutting, setup }) => {
+        // Map Cutting Tool data
+        if (Array.isArray(cutting)) {
+          const validResponse = cutting.filter(it => !['SET', 'Set', 'Setup'].includes(it.CASE));
+          this.allRequests = validResponse.map(it => ({
+            ...it,
+            ID_Request: it.ID_Request,
+            Public_Id: it.Public_Id || it.ID_Request,
+            Selection: false,
+            QTY: it.QTY ?? it.Req_QTY,
+            ACCOUNT: it.ACCOUNT ?? it.account,
+            MCQTY: it.MCQTY ?? it.MCNo,
+            _parsedRequestDate: it.DateTime_Record ? new Date(it.DateTime_Record) : null,
+            _parsedDueDate: it.DueDate ? new Date(it.DueDate) : null,
+            Req_ItemNo: it.ItemNo,
+            Req_PartNo: it.PartNo,
+            Req_SPEC: it.SPEC,
+            Req_ItemName: it.ItemName,
+            TableType: 'Cutting'
+          }));
+        } else {
           this.allRequests = [];
-          this.request = [];
-          this.updatePagination();
-          return;
         }
 
-        const validResponse = response.filter(it => !['SET', 'Set', 'Setup'].includes(it.CASE));
+        // Map Setup Tool data
+        if (Array.isArray(setup)) {
+          this.allSetupRequests = setup.map(it => ({
+            ...it,
+            ID_Request: it.ID_RequestSetupTool,
+            Public_Id: it.Public_Id || it.ID_RequestSetupTool,
+            Selection: false,
+            QTY: it.QTY ?? it.Req_QTY,
+            MCQTY: it.MCQTY ?? it.MCNo,
+            _parsedRequestDate: it.DateTime_Record ? new Date(it.DateTime_Record) : null,
+            _parsedDueDate: it.DueDate ? new Date(it.DueDate) : null,
+            Req_ItemNo: it.ItemNo,
+            Req_PartNo: it.PartNo,
+            Req_SPEC: it.SPEC,
+            Req_ItemName: it.ItemName,
+            ON_HAND: it.ON_HAND ?? it.STOCK_ON_HAND ?? 0,
+            STOCK_ON_HAND: it.STOCK_ON_HAND ?? it.ON_HAND ?? 0,
+            TableType: 'Setup'
+          }));
+        } else {
+          this.allSetupRequests = [];
+        }
 
-        const mapped = validResponse.map(it => ({
-          ...it,
-          ID_Request: it.ID_Request, // Keep as string (Public ID if from view, or numeric string)
-          Public_Id: it.Public_Id || it.ID_Request,
-          Selection: false,
-          QTY: it.QTY ?? it.Req_QTY,
-          ACCOUNT: it.ACCOUNT ?? it.account,
-          MCQTY: it.MCQTY ?? it.MCNo, // Map MCNo to MCQTY
-          _parsedRequestDate: it.DateTime_Record ? new Date(it.DateTime_Record) : null,
-          _parsedDueDate: it.DueDate ? new Date(it.DueDate) : null,
-          // Store original request info for Production columns
-          Req_ItemNo: it.ItemNo,
-          Req_PartNo: it.PartNo,
-          Req_SPEC: it.SPEC,
-          Req_ItemName: it.ItemName,
-          // MFGOrderNo logic removed to use Backend value
-          TableType: 'Cutting' // Explicitly mark as Cutting Tool
-        }));
-
-        this.allRequests = mapped;
-        this.request = [...mapped];
-        // FIX: Call onFilter instead of updatePagination to re-apply active filters after refresh
-        this.onFilter();
-
-        this.SpecList = Array.from(new Set(this.allRequests.map(x => x.SPEC))).filter(x => x).sort().map(x => ({ label: x, value: x }));
-        this.ProcessList = Array.from(new Set(this.allRequests.map(x => x.Process))).filter(x => x).sort().map(x => ({ label: x, value: x }));
-        this.CaseList = Array.from(new Set(this.allRequests.map(x => x.CASE))).filter(x => x).sort().map(x => ({ label: x, value: x }));
-        this.PartNoList = Array.from(new Set(this.allRequests.map(x => x.PartNo))).filter(x => x).sort().map(x => ({ label: x, value: x }));
-        this.ItemNoList = Array.from(new Set(this.allRequests.map(x => x.ItemNo))).filter(x => x).sort().map(x => ({ label: x, value: x }));
-        this.DocumentNoList = Array.from(new Set(this.allRequests.map(x => x.DocNo))).filter(x => x).sort().map(x => ({ label: x, value: x }));
-        this.MCTypeList = Array.from(new Set(this.allRequests.map(x => x.MCType))).filter(x => x).sort().map(x => ({ label: x, value: x }));
-        this.MRNoList = Array.from(new Set(this.allRequests.map(x => x.MR_No))).filter(x => x).sort().map(x => ({ label: x, value: x }));
-        this.FacList = Array.from(new Set(this.allRequests.map(x => x.Fac))).filter(x => x).sort().map(x => ({ label: x, value: x }));
-
-        this.cdr.markForCheck();
+        // Update once when both are ready
+        this.updateMergedSource();
       },
-      error: e => console.error('❌ Error Detail_Purchase:', e)
+      error: e => console.error('❌ Error loadAllData:', e)
     });
   }
 
@@ -356,12 +356,7 @@ export class DetailComponent implements OnInit, OnDestroy {
         }));
 
         this.allSetupRequests = mapped;
-        this.setupRequests = [...mapped];
-
-        // FIX: If currently viewing Setup Tool, re-apply filters after refresh
-        if (this.Tooling_ === 'Setup Tool') {
-          this.onFilter();
-        }
+        this.updateMergedSource();
 
         // Merge lists for dropdowns if needed, or keeping separate?
         // For now, let's just load it.
@@ -369,6 +364,26 @@ export class DetailComponent implements OnInit, OnDestroy {
       },
       error: e => console.error('❌ Error loadSetupData:', e)
     });
+  }
+
+  /** Rebuild dropdown lists + re-apply filters after data changes */
+  private updateMergedSource() {
+    this.rebuildDropdownLists();
+    this.onFilter();
+    this.cdr.markForCheck();
+  }
+
+  rebuildDropdownLists() {
+    const merged = [...this.allRequests, ...this.allSetupRequests];
+    this.SpecList = Array.from(new Set(merged.map(x => x.SPEC))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+    this.ProcessList = Array.from(new Set(merged.map(x => x.Process))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+    this.CaseList = Array.from(new Set(merged.map(x => x.CASE))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+    this.PartNoList = Array.from(new Set(merged.map(x => x.PartNo))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+    this.ItemNoList = Array.from(new Set(merged.map(x => x.ItemNo))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+    this.DocumentNoList = Array.from(new Set(merged.map(x => x.DocNo))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+    this.MCTypeList = Array.from(new Set(merged.map(x => x.MCType))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+    this.MRNoList = Array.from(new Set(merged.map(x => x.MR_No))).filter(x => x).sort().map(x => ({ label: x, value: x }));
+    this.FacList = Array.from(new Set(merged.map(x => x.Fac))).filter(x => x).sort().map(x => ({ label: x, value: x }));
   }
 
   trackByRequestId(index: number, item: any): string {
@@ -870,7 +885,8 @@ export class DetailComponent implements OnInit, OnDestroy {
   }
 
   onFilter() {
-    const source = (this.Tooling_ === 'Setup Tool') ? this.allSetupRequests : this.allRequests;
+    // Always compute from current source arrays (not cached)
+    const source = [...this.allRequests, ...this.allSetupRequests];
 
     this.request = source.filter(item => {
       const status = (item.Status ?? '').toLowerCase().trim();

@@ -7,6 +7,7 @@ const PurchaseHistory = require('../controllers/PurchaseHistory.controller');
 
 // กำหนดเส้นทาง History
 router.get('/Purchase_History', PurchaseHistory.Purchase_History);
+router.put('/Purchase_History/update', PurchaseHistory.Update_History_Fields);
 
 // ส่งออก router สำหรับใช้งานในที่อื่น
 module.exports = router;
