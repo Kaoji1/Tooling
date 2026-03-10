@@ -338,6 +338,49 @@
               }
             }
           }
+
+          .btn-edit,
+          .btn-save,
+          .btn-cancel {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0 2px;
+            font-size: 13px;
+          }
+
+          .btn-edit {
+            background-color: #e3f2fd;
+            color: #1976d2;
+
+            &:hover {
+              background-color: #bbdefb;
+            }
+          }
+
+          .btn-save {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+
+            &:hover {
+              background-color: #c8e6c9;
+            }
+          }
+
+          .btn-cancel {
+            background-color: #ffebee;
+            color: #c62828;
+
+            &:hover {
+              background-color: #ffcdd2;
+            }
+          }
         }
       }
     }

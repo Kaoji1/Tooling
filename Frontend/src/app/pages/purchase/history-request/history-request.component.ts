@@ -70,6 +70,11 @@ export class HistoryRequestComponent implements OnInit {
   totalPages: number = 1;
   pages: number[] = [];
 
+  // Inline Edit
+  editingId: string | null = null;
+  editMFGOrderNo: string = '';
+  editDocNo: string = '';
+
   constructor(private purchasehistory: PurchaseHistoryservice,
     private authService: AuthService,
     @Inject(PLATFORM_ID) private platformId: Object
@@ -451,6 +456,39 @@ export class HistoryRequestComponent implements OnInit {
   // }
 
 
+
+  // Inline Edit Methods
+  startEdit(req: any) {
+    this.editingId = req.Public_Id;
+    this.editMFGOrderNo = req.MFG_Order_No || '';
+    this.editDocNo = req.DocNo || '';
+  }
+
+  cancelEdit() {
+    this.editingId = null;
+    this.editMFGOrderNo = '';
+    this.editDocNo = '';
+  }
+
+  saveEdit(req: any) {
+    this.purchasehistory.updateHistoryFields({
+      Public_Id: req.Public_Id,
+      MFGOrderNo: this.editMFGOrderNo,
+      DocNo: this.editDocNo
+    }).subscribe({
+      next: () => {
+        // Update local data
+        req.MFG_Order_No = this.editMFGOrderNo;
+        req.MFGOrderNo = this.editMFGOrderNo;
+        req.DocNo = this.editDocNo;
+        this.editingId = null;
+        Swal.fire({ icon: 'success', title: 'Saved!', showConfirmButton: false, timer: 1000 });
+      },
+      error: (err: any) => {
+        Swal.fire({ icon: 'error', title: 'Save failed', text: err?.error?.message || 'Update failed' });
+      }
+    });
+  }
 
   fileName = "ExcelSheet.xlsx";
 

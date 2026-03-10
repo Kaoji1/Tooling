@@ -101,11 +101,12 @@
           <th style="min-width: 100px;" class="highlight-yellow">M/C NO.</th>
           <th style="min-width: 120px;">DECLATION NO.</th>
           <th style="min-width: 130px;">AS400 STATUS</th>
+          <th style="width: 80px;">ACTION</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngIf="filteredRequests.length === 0">
-          <td colspan="15" class="text-center text-muted py-4">
+          <td colspan="16" class="text-center text-muted py-4">
             <ng-container *ngIf="!Division_">
               <i class="bi bi-info-circle-fill me-2"></i> Please select Division to view data.
             </ng-container>
@@ -122,8 +123,16 @@
           <td>{{ req.Division }}</td>
           <td>{{ req.ItemNo }}</td>
           <td style="white-space: nowrap;">{{ req.PartNo }}</td>
-          <td>{{ req.MFG_Order_No }}</td>
-          <td>{{ req.DocNo }}</td>
+          <td>
+            <ng-container *ngIf="editingId !== req.Public_Id">{{ req.MFG_Order_No }}</ng-container>
+            <input *ngIf="editingId === req.Public_Id" type="text" class="form-control form-control-sm"
+              [(ngModel)]="editMFGOrderNo">
+          </td>
+          <td>
+            <ng-container *ngIf="editingId !== req.Public_Id">{{ req.DocNo }}</ng-container>
+            <input *ngIf="editingId === req.Public_Id" type="text" class="form-control form-control-sm"
+              [(ngModel)]="editDocNo">
+          </td>
           <td>{{ req.Stock_Location }}</td>
           <td>{{ req.MatLot }}</td>
           <td>{{ req.DateComplete ? (req.DateComplete | date: 'ddMMyyyy') : '' }}</td>
@@ -135,12 +144,27 @@
           <td></td>
           <td>
             <span class="badge-status" [ngClass]="{
-              'badge-pending-issue': req.AS400STATUS === 'Pending Issue',
+              'badge-pending-issue': req.AS400STATUS === 'Wait PH Issue',
               'badge-pending': req.AS400STATUS === 'Pending',
               'badge-success': req.AS400STATUS === 'Success'
             }">
               {{ req.AS400STATUS || 'Pending' }}
             </span>
+          </td>
+          <td>
+            <ng-container *ngIf="editingId !== req.Public_Id">
+              <button class="btn-edit" (click)="startEdit(req)" title="Edit">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+            </ng-container>
+            <ng-container *ngIf="editingId === req.Public_Id">
+              <button class="btn-save" (click)="saveEdit(req)" title="Save">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <button class="btn-cancel" (click)="cancelEdit()" title="Cancel">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </ng-container>
           </td>
         </tr>
       </tbody>
