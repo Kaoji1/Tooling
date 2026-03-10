@@ -65,9 +65,9 @@ BEGIN
         -- 3. บันทึกลงตาราง Cutting Tool (ถ้า type เป็น CuttingTool)
         -- =============================================
         INSERT INTO [dbo].[tb_IssueCuttingTool_Request_Document]
-            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No, ToolingType)
+            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No, ToolingType, AS400STATUS)
         SELECT 
-            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No, 'CuttingTool'
+            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, PathDwg, ItemName, MFGOrderNo, MR_No, 'CuttingTool', 'Pending Issue'
         FROM #AllItems
         WHERE ToolType = 'CuttingTool';
 
@@ -77,9 +77,9 @@ BEGIN
         -- 4. บันทึกลงตาราง Setup Tool (ถ้า type เป็น SetupTool)
         -- =============================================
         INSERT INTO [dbo].[tb_IssueSetupTool_Request_Document]
-            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No, ToolingType)
+            (DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No, ToolingType, AS400STATUS)
         SELECT 
-            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No, 'SetupTool'
+            DocNo, Status, Requester, Division, Fac, [CASE], PartNo, ItemNo, SPEC, Process, MCType, MCNo, ON_HAND, Req_QTY, QTY, DueDate, PhoneNo, ItemName, MFGOrderNo, MR_No, 'SetupTool', 'Pending Issue'
         FROM #AllItems
         WHERE ToolType = 'SetupTool';
 

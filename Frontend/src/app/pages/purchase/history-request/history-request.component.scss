@@ -309,6 +309,34 @@
               height: 18px;
               cursor: pointer;
             }
+
+            .badge-status {
+              display: inline-block;
+              padding: 4px 12px;
+              border-radius: 20px;
+              font-size: 12px;
+              font-weight: 600;
+              letter-spacing: 0.3px;
+              text-transform: capitalize;
+
+              &.badge-pending-issue {
+                background-color: #e3f2fd;
+                color: #1565c0;
+                border: 1px solid #90caf9;
+              }
+
+              &.badge-pending {
+                background-color: #fff3e0;
+                color: #e65100;
+                border: 1px solid #ffcc80;
+              }
+
+              &.badge-success {
+                background-color: #e8f5e9;
+                color: #2e7d32;
+                border: 1px solid #a5d6a7;
+              }
+            }
           }
         }
       }

@@ -217,7 +217,8 @@ exports.Update_Status_Purchase = async (req, res) => {
       const result = await rq.query(`
         UPDATE d
         SET d.Status = @Status,
-            d.DateComplete = CASE WHEN @Status = N'Complete' THEN SYSDATETIME() ELSE d.DateComplete END
+            d.DateComplete = CASE WHEN @Status = N'Complete' THEN SYSDATETIME() ELSE d.DateComplete END,
+            d.AS400STATUS = CASE WHEN @Status = N'Complete' THEN N'Pending' ELSE d.AS400STATUS END
         FROM ${targetTable} d
         WHERE ${whereClause};
       `);
