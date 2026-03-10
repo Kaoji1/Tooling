@@ -93,13 +93,6 @@ export class PlanListComponent implements OnInit {
   get canAttachQC(): boolean { return this.authService.isQC(); }
   get canRequest(): boolean { return this.authService.isPD(); }
 
-  // --- Complete Lock Helper ---
-  // Returns true when the plan is linked to a request that has Status_To_PH = 'Complete'
-  // → disables Cancel button and locks key fields in the edit modal
-  isEditLockedByComplete(item: any): boolean {
-    return (item?.statusToPH || '').toUpperCase() === 'COMPLETE';
-  }
-
   // รายการใน Dropdown Filter (สำหรับ Tool Bar บนตาราง)
   divisions: string[] = ['GM', 'PMC'];
   machineTypes: string[] = ['CNC', 'Lathe', 'Milling'];
@@ -318,7 +311,6 @@ export class PlanListComponent implements OnInit {
           Unique_Id: item.Unique_Id || null, // Capture Unique_Id for PD Request
           employeeId: item.Employee_ID || null,
           requester: item.Employee_ID || null, // Used by Tooling Request modal header
-          statusToPH: item.Status_To_PH || null, // ← NEW: Track request document status
           // Print Counts (Initialize)
           printLayoutCount: 0,
           printDwgCount: 0
@@ -889,25 +881,14 @@ export class PlanListComponent implements OnInit {
   }
 
   onCancel(item: any) {
-    // ── Complete Lock: Cannot cancel if the linked request is already Complete ──
-    if (this.isEditLockedByComplete(item)) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Cannot Cancel',
-        text: 'This plan is linked to a completed request (Status: Complete) and can no longer be cancelled.',
-        confirmButtonColor: '#0f172a'
-      });
-      return;
-    }
-
     Swal.fire({
       title: 'Are you sure?',
-      text: "Do you want to cancel this plan?",
+      text: "คุรต้องการยกเลิกแผนงานนี้หรือไม่?",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, cancel it!'
+      confirmButtonText: 'Yes'
     }).then((result) => {
       if (result.isConfirmed) {
         // Create a new revision with status 'Cancelled'
@@ -942,8 +923,7 @@ export class PlanListComponent implements OnInit {
 
           groupId: item.groupId,
           revision: (item.revision || 0) + 1,
-          planStatus: 'Cancelled',
-          uniqueId: item.Unique_Id || null  // ← Pass Unique_Id for Status_To_PH update
+          planStatus: 'Cancelled'
         }];
 
         this.pcPlanService.savePlan(payload).subscribe({
@@ -1227,8 +1207,7 @@ export class PlanListComponent implements OnInit {
           iiqc: this.editData.iiqc,
           groupId: this.editData.groupId,
           revision: (this.editData.revision || 0) + 1,
-          planStatus: 'Active',
-          uniqueId: this.editData.Unique_Id || null  // ← Pass Unique_Id for Status_To_PH update
+          planStatus: 'Active'
         }];
 
         this.pcPlanService.savePlan(payload).subscribe({
