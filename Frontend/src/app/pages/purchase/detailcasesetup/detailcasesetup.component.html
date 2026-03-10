@@ -60,7 +60,7 @@
             <table class="table table-bordered text-center">
                 <thead>
                     <tr class="header-group-row">
-                        <th colspan="23" style="text-align: center; color: red; padding: 20px;">
+                        <th colspan="24" style="text-align: center; color: red; padding: 20px;">
                             This view is for Cutting Tool. Case Setup data usually belongs to 'Setup Tool'.
                             If you need Cutting Tool columns here, please request adjustment.
                         </th>
@@ -139,13 +139,13 @@
                         <td></td> <!-- Phone -->
 
                         <!-- Purchase Columns -->
-                        <td colspan="9"></td>
+                        <td colspan="10"></td>
                     </tr>
 
                     <!-- Group Headers -->
                     <tr class="header-group-row">
                         <th class="header-production" colspan="21">For Production (Setup Tool)</th>
-                        <th class="header-purchase" colspan="9">For Purchase</th>
+                        <th class="header-purchase" colspan="10">For Purchase</th>
                     </tr>
 
                     <!-- Column Headers -->
@@ -192,6 +192,7 @@
                         <th style="min-width: 120px;">Phone</th>
 
                         <!-- Purchase Columns -->
+                        <th style="min-width: 90px;" class="fw-bold text-primary">Status</th>
                         <th style="min-width: 120px;">Item NO.</th>
                         <th style="min-width: 120px;">Item Name</th>
                         <th style="min-width: 150px;">Spec</th>
@@ -237,6 +238,16 @@
                         <td>{{ item.PhoneNo }}</td>
 
                         <!-- Purchase Input Cols -->
+                        <td>
+                            <span *ngIf="item.Status_To_PH" class="badge" [ngClass]="{
+                                'bg-success': item.Status_To_PH === 'Complete',
+                                'bg-warning text-dark': item.Status_To_PH === 'Wait PH Issue',
+                                'bg-secondary': item.Status_To_PH !== 'Complete' && item.Status_To_PH !== 'Wait PH Issue'
+                            }">
+                                {{ item.Status_To_PH }}
+                            </span>
+                            <span *ngIf="!item.Status_To_PH" class="text-muted">-</span>
+                        </td>
                         <td (click)="startEdit(item.Public_Id, i); $event.stopPropagation()"
                             style="cursor: pointer; position: relative;">
                             <ng-container *ngIf="editingIndex[item.Public_Id] === i; else showItemNoSetup">
