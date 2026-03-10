@@ -113,6 +113,9 @@ export class requestComponent implements OnInit {
   detailItems: any[] = [];
   loadingDetail: boolean = false;
 
+  // Unique_Id from PC Plan (carried from PlanList → Request → DB)
+  planUniqueId: string | null = null;
+
   constructor(
     private cartService: CartService,
     private api: RequestService,
@@ -181,6 +184,10 @@ export class requestComponent implements OnInit {
 
   autoFillFromPlan(params: any) {
     console.log('🚀 Auto-filling from Plan:', params);
+
+    // Capture planUniqueId coming from PlanList router params
+    this.planUniqueId = params['Unique_Id'] || params['UniqueId'] || params['planUniqueId'] || null;
+    console.log('📌 Plan Unique_Id received:', this.planUniqueId);
 
     // 1. Set Case & Tooling
     this.Case_ = params['case'] || 'SET';
@@ -653,28 +660,30 @@ export class requestComponent implements OnInit {
 
         if (this.Case_ === 'SET') {
           // === Case SET: แสดง Cutting + Setup ===
-          this.items = response.map(item => ({
-            ...item,
-            PartNo: item.PartNo || item.Part_No,
-            ItemNo: item.ItemNo || item.Cutting_Item_No,
-            SPEC: item.SPEC || item.Cutting_Spec,
-            MC: item.MC || item.MC_Group,
-            ItemName: item.Cutting_Name, // Map for Cutting Tool
-            checked: true,
-            QTY: item.QTY ?? defaultQty,
-            FreshQty: item.FreshQty ?? 0,
-            ReuseQty: item.ReuseQty ?? 0
-          }));
-
-          this.relatedSetupItems = response
-            .filter(item => item.Setup_ID)
+          this.items = response
+            .filter(item => item.Cutting_Item_No) // Ensure we only get Cutting Tools
             .map(item => ({
               ...item,
-              PartNo: item.PartNo || item.Part_No,
-              ItemNo: item.Setup_Item_No || item.ItemNo,
+              PartNo: item.Part_No || item.PartNo,
+              ItemNo: item.Cutting_Item_No,
+              SPEC: item.Cutting_Spec || item.SPEC,
+              MC: item.MC_Group || item.MC,
+              ItemName: item.Cutting_Name, // Map for Cutting Tool
+              checked: true,
+              QTY: item.QTY ?? defaultQty,
+              FreshQty: item.FreshQty ?? 0,
+              ReuseQty: item.ReuseQty ?? 0
+            }));
+
+          this.relatedSetupItems = response
+            .filter(item => item.Setup_Item_No) // Ensure we only get Setup Tools
+            .map(item => ({
+              ...item,
+              PartNo: item.Part_No || item.PartNo,
+              ItemNo: item.Setup_Item_No,
               ItemName: item.Setup_Name, // Use Setup_Name specifically
-              SPEC: item.Setup_Spec || item.SPEC,
-              MC: item.MC || item.MC_Group,
+              SPEC: item.Setup_Spec,
+              MC: item.MC_Group || item.MC,
               Process: item.Process,
               Position: item.Position,
               checked: true,
@@ -685,14 +694,14 @@ export class requestComponent implements OnInit {
           // === Case อื่น + Setup Tool: แสดงเฉพาะ Setup ===
           this.relatedSetupItems = [];
           this.items = response
-            .filter(item => item.Setup_ID)
+            .filter(item => item.Setup_Item_No)
             .map(item => ({
               ...item,
-              PartNo: item.PartNo || item.Part_No,
-              ItemNo: item.Setup_Item_No || item.ItemNo,
+              PartNo: item.Part_No || item.PartNo,
+              ItemNo: item.Setup_Item_No,
               ItemName: item.Setup_Name, // Map for Setup Tool
-              SPEC: item.Setup_Spec || item.SPEC,
-              MC: item.MC || item.MC_Group,
+              SPEC: item.Setup_Spec,
+              MC: item.MC_Group || item.MC,
               checked: true,
               QTY: defaultQty,
               FreshQty: 0,
@@ -702,18 +711,20 @@ export class requestComponent implements OnInit {
         } else {
           // === Case อื่น + Cutting Tool: แสดงเฉพาะ Cutting ===
           this.relatedSetupItems = [];
-          this.items = response.map(item => ({
-            ...item,
-            PartNo: item.PartNo || item.Part_No,
-            ItemNo: item.ItemNo || item.Cutting_Item_No,
-            ItemName: item.Cutting_Name, // Map for Cutting Tool (non-SET)
-            SPEC: item.SPEC || item.Cutting_Spec,
-            MC: item.MC || item.MC_Group,
-            checked: true,
-            QTY: item.QTY ?? defaultQty,
-            FreshQty: item.FreshQty ?? 0,
-            ReuseQty: item.ReuseQty ?? 0
-          }));
+          this.items = response
+            .filter(item => item.Cutting_Item_No)
+            .map(item => ({
+              ...item,
+              PartNo: item.Part_No || item.PartNo,
+              ItemNo: item.Cutting_Item_No,
+              ItemName: item.Cutting_Name, // Map for Cutting Tool (non-SET)
+              SPEC: item.Cutting_Spec || item.SPEC,
+              MC: item.MC_Group || item.MC,
+              checked: true,
+              QTY: item.QTY ?? defaultQty,
+              FreshQty: item.FreshQty ?? 0,
+              ReuseQty: item.ReuseQty ?? 0
+            }));
         }
 
         this.loading = false;
@@ -882,7 +893,7 @@ export class requestComponent implements OnInit {
         Req_QTY: item.QTY,
         DueDate: formattedDate,
         Status: 'Waiting',
-        MCNo: this.mcTags.length > 0 ? this.mcTags.join(',') : this.MCNo_, // Join tags or use input
+        MCNo: this.mcTags.length > 0 ? this.mcTags.join(',') : this.MCNo_,
         PathDwg: toolType === 'CuttingTool' ? this.PathDwg_ : null,
         ON_HAND: item.ON_HAND,
         PhoneNo: this.phone_,
@@ -891,7 +902,10 @@ export class requestComponent implements OnInit {
         ToolType: toolType,
         MFGOrderNo: item.MFGOrderNo || null,
         MR_No: item.MR_No || null,
-        Position: item.Position || null // ✅ Added for verification display
+        Position: item.Position || null,
+        Unique_Id: this.planUniqueId                // Strip 'PLAN-' in SP via TRY_CAST
+          ? this.planUniqueId.replace(/^PLAN-/i, '') // pass raw UUID to backend
+          : null
       };
     };
 

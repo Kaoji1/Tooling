@@ -1,14 +1,59 @@
 <div class="login-page-container">
 
+  <!-- Flow Field Particle Canvas Background -->
+  <canvas #particleCanvas class="particle-canvas"></canvas>
+
   <!-- SVG Header -->
   <div class="svg-header-container">
-    <svg viewBox="0 0 800 160">
-      <!-- Text 1: Brand Name -->
+    <svg viewBox="0 0 800 160" overflow="visible">
+
+      <defs>
+        <!-- Refined silver-indigo celestial gradient — subtle, not neon -->
+        <linearGradient id="brandFill" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#eaf3ff" /> <!-- icy silver-white top -->
+          <stop offset="25%" stop-color="#b8d0f0" /> <!-- soft steel blue -->
+          <stop offset="60%" stop-color="#7090c8" /> <!-- deep indigo mid -->
+          <stop offset="100%" stop-color="#a8c4e8" /> <!-- moonlit blue base -->
+        </linearGradient>
+
+        <!-- Refined glow: subtle depth, NOT aggressive neon.
+             Dark navy drop-shadow provides contrast against starfield. -->
+        <filter id="brandGlow" x="-12%" y="-55%" width="124%" height="210%">
+          <!-- dark navy hard shadow for pop/contrast against starfield -->
+          <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#010918" flood-opacity="0.80" />
+          <!-- tight soft white inner glow -->
+          <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#c8e4ff" flood-opacity="0.40" />
+          <!-- wider indigo celestial halo -->
+          <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#2a55a8" flood-opacity="0.28" />
+        </filter>
+
+        <!-- Clip path — Playfair Display, matching brand-text exactly -->
+        <clipPath id="brandTextClip">
+          <text x="50%" y="45%" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="82px"
+            font-weight="900" font-style="italic">
+            MinebeaMitsumi
+          </text>
+        </clipPath>
+
+        <!-- Shimmer gradient: narrow diagonal white glint -->
+        <linearGradient id="shimmerGradCSS" x1="0%" y1="0%" x2="100%" y2="40%">
+          <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+          <stop offset="44%" stop-color="rgba(255,255,255,0)" />
+          <stop offset="50%" stop-color="rgba(255,255,255,0.45)" />
+          <stop offset="56%" stop-color="rgba(255,255,255,0)" />
+          <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+        </linearGradient>
+      </defs>
+
+      <!-- Brand Name — Playfair Display heavy serif italic -->
       <text x="50%" y="45%" text-anchor="middle" class="brand-text">
         <tspan *ngFor="let char of brandChars" class="hover-char">{{char}}</tspan>
       </text>
 
-      <!-- Text 2: Subtitle -->
+      <!-- Shimmer sweep (clipped to letterforms, intermittent) -->
+      <rect class="brand-shimmer" x="-100%" y="0" width="40%" height="100%" clip-path="url(#brandTextClip)" />
+
+      <!-- Subtitle -->
       <text x="50%" y="75%" text-anchor="middle" class="sub-text">
         <tspan *ngFor="let char of subtitleChars" class="hover-char-sub">{{char}}</tspan>
       </text>

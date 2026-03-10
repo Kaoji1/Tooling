@@ -1,5 +1,6 @@
 USE [db_Tooling]
 GO
+/****** Object:  StoredProcedure [trans].[Stored_Import_Master_Tooling_PMC_JSON] ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -11,12 +12,13 @@ GO
 -- Modified:    2026-02-28
 --   Added data-cleansing rules for invalid Excel values:
 --   (1) Setup_ID  : "-" Holder_Spec + "#N/A" Holder_No = -1
---                    valid Holder_Spec + "#N/A" Holder_No = NULL
+--                   valid Holder_Spec + "#N/A" Holder_No = NULL
 --   (2) Position_Code : "NO DATA" = NULL ; "0" = "-1"
 --   (3) Cutting_ID : Spec or ItemNo is "0", "-", "#DIV/0!" = -1
 --   (4) Usage_pcs, CT_sec, Conner, Usage_Conner : "0","-","#DIV/0!" = -1
 --   (5) Holder_Maker : "0","-","#DIV/0!" = "-1"
--- Description: Import Master Tooling PMC Excel data into [master].[tb_Mapping_All]
+-- Update:      เพิ่มล้างอักขระซ่อนเร้นให้ MC/Process และอัปเดต Process_Id
+-- Description: Import Master Tooling PMC Excel data into [master].[tb_Mapping_All] (Version ฟ้อง Error)
 -- =============================================
 ALTER PROCEDURE [trans].[Stored_Import_Master_Tooling_PMC_JSON]
     @JsonData    NVARCHAR(MAX),
@@ -26,11 +28,13 @@ BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
-        BEGIN TRANSACTION;
+        -- ============================================================
+        -- STEP 0: Cleanup and Prepare Temp Tables (Outside Transaction)
+        -- ============================================================
+        DROP TABLE IF EXISTS #TempRaw;
+        DROP TABLE IF EXISTS #TempMapped;
+        DROP TABLE IF EXISTS #TempAggregated;
 
-        -- ============================================================
-        -- STEP 1: Parse JSON into #TempRaw
-        -- ============================================================
         CREATE TABLE #TempRaw (
             ExcelRow            INT,
             Spec                NVARCHAR(100),
@@ -58,14 +62,79 @@ BEGIN
             Fac                 NVARCHAR(50)
         );
 
+        CREATE TABLE #TempMapped (
+            ExcelRow            INT,
+            Spec                NVARCHAR(100),
+            PartNo              NVARCHAR(100),
+            ItemNo              NVARCHAR(100),
+            Process             NVARCHAR(100),
+            MC                  NVARCHAR(100),
+            Holder_Spec         NVARCHAR(100),
+            Holder_No           NVARCHAR(100),
+            Holder_Maker        NVARCHAR(50),
+            DwgRev              NVARCHAR(50),
+            DwgUpdate           NVARCHAR(50),
+            Usage_pcs           NVARCHAR(50),
+            CT_sec              NVARCHAR(50),
+            [Position]          NVARCHAR(50),
+            Res                 NVARCHAR(50),
+            Date_update         NVARCHAR(50),
+            Insert_Maker        NVARCHAR(50),
+            Conner              NVARCHAR(50),
+            Usage_Conner        NVARCHAR(50),
+            Cutting_Layout_No   NVARCHAR(50),
+            Cutting_Layout_Rev  NVARCHAR(50),
+            Program_cutting_No  NVARCHAR(50),
+            Position_Code       NVARCHAR(100),
+            Fac                 NVARCHAR(50),
+            Part_Id             INT,
+            MC_Group_Id         INT,
+            Setup_ID            INT,
+            Cutting_ID          INT,
+            Process_Id          INT
+        );
+
+        CREATE TABLE #TempAggregated (
+            ExcelRow             INT,
+            Part_Id              INT,
+            Cutting_ID           INT,
+            Process_Id           INT,
+            MC_Group_Id          INT,
+            Setup_ID             INT,
+            Usage_pcs            NVARCHAR(50),
+            [Position]           NVARCHAR(50),
+            Position_Code        NVARCHAR(100),
+            Required_Cutting_QTY INT,
+            Required_Holder_QTY  INT,
+            Process              NVARCHAR(100),
+            DwgRev               NVARCHAR(50),
+            DwgUpdate            NVARCHAR(50),
+            CT_sec               NVARCHAR(50),
+            Res                  NVARCHAR(50),
+            Date_update          NVARCHAR(50),
+            Insert_Maker         NVARCHAR(50),
+            Conner               NVARCHAR(50),
+            Usage_Conner         NVARCHAR(50),
+            Cutting_Layout_No    NVARCHAR(50),
+            Cutting_Layout_Rev   NVARCHAR(50),
+            Program_cutting_No   NVARCHAR(50),
+            Holder_Maker         NVARCHAR(50),
+            Fac                  NVARCHAR(50),
+            Has_Spec_ItemNo      BIT,
+            Has_HolderSpec_HolderNo BIT
+        );
+
+        BEGIN TRANSACTION;
+
         INSERT INTO #TempRaw
         SELECT
             TRY_CAST(J.ExcelRow          AS INT),
             NULLIF(LTRIM(RTRIM(J.Spec)),           ''),
             NULLIF(LTRIM(RTRIM(J.PartNo)),         ''),
             NULLIF(LTRIM(RTRIM(J.ItemNo)),         ''),
-            NULLIF(LTRIM(RTRIM(J.Process)),        ''),
-            NULLIF(LTRIM(RTRIM(J.MC)),             ''),
+            -- ★ ดักล้างอักขระล่องหน Space พิเศษ(160) และ Enter(13,10) ออกจากฝั่ง Excel
+            NULLIF(LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(J.Process, CHAR(160), ' '), CHAR(13), ''), CHAR(10), ''))), ''),
+            NULLIF(LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(J.MC, CHAR(160), ' '), CHAR(13), ''), CHAR(10), ''))), ''),
             NULLIF(LTRIM(RTRIM(J.DwgRev)),         ''),
             NULLIF(LTRIM(RTRIM(J.DwgUpdate)),      ''),
             NULLIF(LTRIM(RTRIM(J.Usage_pcs)),      ''),
@@ -126,12 +195,12 @@ BEGIN
           AND NOT EXISTS (
               SELECT 1
               FROM [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Process] MP
-              WHERE LTRIM(RTRIM(MP.Process_Name)) COLLATE DATABASE_DEFAULT
-                  = R.Process COLLATE DATABASE_DEFAULT
+              -- ★ ดักตัวเล็กใหญ่ และล้างขยะฝั่ง DB ให้ Process
+              WHERE UPPER(LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(MP.Process_Name, CHAR(160), ' '), CHAR(13), ''), CHAR(10), '')))) COLLATE DATABASE_DEFAULT
+                  = UPPER(R.Process) COLLATE DATABASE_DEFAULT
           );
 
         -- 1.5b: Insert new MC Group names into tb_Master_Machine_Group
-        -- Include the paired Process_Id from Step 1.5a (MC and Process are paired in Excel)
         INSERT INTO [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group]
             (MC_Group, Process_Id)
         SELECT MC, MIN(Process_Id)
@@ -141,53 +210,43 @@ BEGIN
                 MP.Process_Id
             FROM #TempRaw R
             INNER JOIN [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Process] MP
-                ON LTRIM(RTRIM(MP.Process_Name)) COLLATE DATABASE_DEFAULT
-                   = R.Process COLLATE DATABASE_DEFAULT
+                ON UPPER(LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(MP.Process_Name, CHAR(160), ' '), CHAR(13), ''), CHAR(10), '')))) COLLATE DATABASE_DEFAULT
+                   = UPPER(R.Process) COLLATE DATABASE_DEFAULT
             WHERE R.MC IS NOT NULL
         ) AS Pairs
         WHERE NOT EXISTS (
             SELECT 1
             FROM [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group] MCG
-            WHERE LTRIM(RTRIM(MCG.MC_Group)) COLLATE DATABASE_DEFAULT
-                = Pairs.MC COLLATE DATABASE_DEFAULT
+            -- ★ ดักตัวเล็กใหญ่ และล้างขยะฝั่ง DB ให้ MC
+            WHERE UPPER(LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(MCG.MC_Group, CHAR(160), ' '), CHAR(13), ''), CHAR(10), '')))) COLLATE DATABASE_DEFAULT
+                = UPPER(Pairs.MC) COLLATE DATABASE_DEFAULT
         )
         GROUP BY MC;
 
         -- ============================================================
+        -- ★ STEP 1.5c: อัปเดต Process_Id ให้ตัวที่มีอยู่แล้วในฐานข้อมูล
+        -- ============================================================
+        UPDATE MCG
+        SET MCG.Process_Id = Pairs.Process_Id
+        FROM [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group] MCG
+        INNER JOIN (
+            SELECT DISTINCT 
+                R.MC, 
+                MIN(MP.Process_Id) AS Process_Id
+            FROM #TempRaw R
+            INNER JOIN [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Process] MP
+                ON UPPER(LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(MP.Process_Name, CHAR(160), ' '), CHAR(13), ''), CHAR(10), '')))) COLLATE DATABASE_DEFAULT
+                   = UPPER(R.Process) COLLATE DATABASE_DEFAULT
+            WHERE R.MC IS NOT NULL
+            GROUP BY R.MC
+        ) AS Pairs 
+            ON UPPER(LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(MCG.MC_Group, CHAR(160), ' '), CHAR(13), ''), CHAR(10), '')))) COLLATE DATABASE_DEFAULT 
+             = UPPER(Pairs.MC) COLLATE DATABASE_DEFAULT
+        WHERE MCG.Process_Id IS NULL;
+
+        -- ============================================================
         -- STEP 2: ID Lookups + Data Cleansing Rules into #TempMapped
         -- ============================================================
-
-        CREATE TABLE #TempMapped (
-            ExcelRow            INT,
-            Spec                NVARCHAR(100),
-            PartNo              NVARCHAR(100),
-            ItemNo              NVARCHAR(100),
-            Process             NVARCHAR(100),
-            MC                  NVARCHAR(100),
-            Holder_Spec         NVARCHAR(100),
-            Holder_No           NVARCHAR(100),
-            Holder_Maker        NVARCHAR(50),
-            DwgRev              NVARCHAR(50),
-            DwgUpdate           NVARCHAR(50),
-            Usage_pcs           NVARCHAR(50),
-            CT_sec              NVARCHAR(50),
-            [Position]          NVARCHAR(50),
-            Res                 NVARCHAR(50),
-            Date_update         NVARCHAR(50),
-            Insert_Maker        NVARCHAR(50),
-            Conner              NVARCHAR(50),
-            Usage_Conner        NVARCHAR(50),
-            Cutting_Layout_No   NVARCHAR(50),
-            Cutting_Layout_Rev  NVARCHAR(50),
-            Program_cutting_No  NVARCHAR(50),
-            Position_Code       NVARCHAR(100),
-            Fac                 NVARCHAR(50),
-            Part_Id             INT,
-            MC_Group_Id         INT,
-            Setup_ID            INT,
-            Cutting_ID          INT,
-            Process_Id          INT
-        );
 
         INSERT INTO #TempMapped
         SELECT
@@ -262,29 +321,29 @@ BEGIN
         LEFT JOIN [db_Production_Report_PMA].[master].[tb_part_no] PN
             ON LTRIM(RTRIM(PN.Part_No_ID)) COLLATE DATABASE_DEFAULT = R.PartNo COLLATE DATABASE_DEFAULT
         LEFT JOIN [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Group] MCG
-            ON LTRIM(RTRIM(MCG.MC_Group)) COLLATE DATABASE_DEFAULT = R.MC COLLATE DATABASE_DEFAULT
+            -- ★ ตอนจับคู่ ID ดักอักขระขยะฝั่ง DB ให้ตรงกัน
+            ON UPPER(LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(MCG.MC_Group, CHAR(160), ' '), CHAR(13), ''), CHAR(10), '')))) COLLATE DATABASE_DEFAULT = UPPER(R.MC) COLLATE DATABASE_DEFAULT
         LEFT JOIN [db_SmartCuttingTool_PMA].[viewer].[tb_Item_MasterAll_PH] SETUP_IM
             ON R.Holder_No IS NOT NULL
            AND R.Holder_No <> '#N/A'
            AND LTRIM(RTRIM(SETUP_IM.ITEM_NO)) COLLATE DATABASE_DEFAULT = R.Holder_No COLLATE DATABASE_DEFAULT
         LEFT JOIN [db_SmartCuttingTool_PMA].[viewer].[tb_Item_MasterAll_PH] CUT_IM
             ON R.ItemNo IS NOT NULL
-           AND NOT (R.Spec   IN ('0', '-', '#DIV/0!'))
+           AND NOT (R.Spec IN ('0', '-', '#DIV/0!'))
            AND NOT (R.ItemNo IN ('0', '-', '#DIV/0!'))
            AND LTRIM(RTRIM(CUT_IM.ITEM_NO)) COLLATE DATABASE_DEFAULT = R.ItemNo COLLATE DATABASE_DEFAULT
         LEFT JOIN [db_Cost_Data_Centralized].[master].[tb_Master_Machine_Process] MP
-            ON LTRIM(RTRIM(MP.Process_Name)) COLLATE DATABASE_DEFAULT = R.Process COLLATE DATABASE_DEFAULT;
+            -- ★ ตอนจับคู่ ID ดักอักขระขยะฝั่ง DB ให้ตรงกัน
+            ON UPPER(LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(MP.Process_Name, CHAR(160), ' '), CHAR(13), ''), CHAR(10), '')))) COLLATE DATABASE_DEFAULT = UPPER(R.Process) COLLATE DATABASE_DEFAULT;
 
         -- ============================================================
-        -- STEP 2.5: Validate Part_Id - halt if any PartNo not found
-        -- Return the FULL list of all unmatched rows (PartNo, Process, MC)
+        -- STEP 2.5: Validate Part_Id - return recordset if any PartNo not found
         -- ============================================================
-        IF EXISTS (
-            SELECT 1 FROM #TempMapped WHERE Part_Id IS NULL AND PartNo IS NOT NULL
-        )
+        IF EXISTS (SELECT 1 FROM #TempMapped WHERE Part_Id IS NULL AND PartNo IS NOT NULL)
         BEGIN
-            -- Return all unmatched records as a result set
-            SELECT
+            -- Return the list of all unmatched records to the caller (Node.js)
+            -- We SELECT BEFORE ROLLBACK to ensure results are sent before tables are dropped.
+            SELECT 
                 M.PartNo,
                 M.Process,
                 M.MC,
@@ -292,13 +351,14 @@ BEGIN
             FROM #TempMapped M
             WHERE M.Part_Id IS NULL
               AND M.PartNo  IS NOT NULL
-            ORDER BY M.ExcelRow ASC;
+            ORDER BY M.ExcelRow;
 
+            -- Rollback to prevent partial data from Step 1.5
             ROLLBACK TRANSACTION;
 
             DROP TABLE IF EXISTS #TempRaw;
             DROP TABLE IF EXISTS #TempMapped;
-
+            
             RETURN;
         END
 
@@ -306,35 +366,6 @@ BEGIN
         -- STEP 3: Deduplication and Aggregation into #TempAggregated
         -- ============================================================
 
-        CREATE TABLE #TempAggregated (
-            ExcelRow             INT,
-            Part_Id              INT,
-            Cutting_ID           INT,
-            Process_Id           INT,
-            MC_Group_Id          INT,
-            Setup_ID             INT,
-            Usage_pcs            NVARCHAR(50),
-            [Position]           NVARCHAR(50),
-            Position_Code        NVARCHAR(100),
-            Required_Cutting_QTY INT,
-            Required_Holder_QTY  INT,
-            Process              NVARCHAR(100),
-            DwgRev               NVARCHAR(50),
-            DwgUpdate            NVARCHAR(50),
-            CT_sec               NVARCHAR(50),
-            Res                  NVARCHAR(50),
-            Date_update          NVARCHAR(50),
-            Insert_Maker         NVARCHAR(50),
-            Conner               NVARCHAR(50),
-            Usage_Conner         NVARCHAR(50),
-            Cutting_Layout_No    NVARCHAR(50),
-            Cutting_Layout_Rev   NVARCHAR(50),
-            Program_cutting_No   NVARCHAR(50),
-            Holder_Maker         NVARCHAR(50),
-            Fac                  NVARCHAR(50),
-            Has_Spec_ItemNo      BIT,
-            Has_HolderSpec_HolderNo BIT
-        );
 
         ;WITH Grouped AS (
             SELECT

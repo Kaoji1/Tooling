@@ -2,8 +2,10 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import * as ExcelJS from 'exceljs'; // Import for Styled Excel Export
 import { AuthService } from '../../../core/services/auth.service'; // Start Import
+import { environment } from '../../../../environments/environment';
 
 import { SidebarComponent } from '../../../components/sidebar/sidebar.component';
 import { PCPlanService } from '../../../core/services/PCPlan.service';
@@ -99,7 +101,7 @@ export class PlanListComponent implements OnInit {
   partNoList: string[] = [];
   partBeforeList: string[] = [];
   barTypeList: string[] = [];
-  statusList: string[] = ['Ready', 'Wait Eng', 'Wait QC', 'Wait En & QC', 'Cancelled'];
+  statusList: string[] = ['PATH READY', 'Wait Eng', 'Wait QC', 'Wait En & QC', 'Cancelled'];
 
   // รายการ Dropdown สำหรับหน้าต่างกดย่อย (Edit Modal) โดยเฉพาะ (ดึงจาก API)
   modalMachineTypes: string[] = [];
@@ -125,6 +127,13 @@ export class PlanListComponent implements OnInit {
     { label: 'Drawing', value: 'pathDwg' }    // matches property name in item
   ];
 
+  // ===== Tooling Request Modal (PD Tab) =====
+  isToolingRequestModalOpen: boolean = false;
+  toolingRequestLoading: boolean = false;
+  toolingRequestHeader: any = null;
+  toolingCuttingList: any[] = [];
+  toolingSetupList: any[] = [];
+
   constructor(
     private pcPlanService: PCPlanService,
     private fileUploadService: FileUploadSerice,
@@ -132,6 +141,7 @@ export class PlanListComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private router: Router,
     private authService: AuthService, // Injected
+    private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
@@ -298,6 +308,9 @@ export class PlanListComponent implements OnInit {
           revision: item.Revision,
           planStatus: item.PlanStatus || 'Active',
           groupId: item.GroupId, // Critical for History
+          Unique_Id: item.Unique_Id || null, // Capture Unique_Id for PD Request
+          employeeId: item.Employee_ID || null,
+          requester: item.Employee_ID || null, // Used by Tooling Request modal header
           // Print Counts (Initialize)
           printLayoutCount: 0,
           printDwgCount: 0
@@ -726,7 +739,7 @@ export class PlanListComponent implements OnInit {
     } else if (!hasQC) {
       return { status: 'WAIT_QC', color: 'badge-wait-qc', label: 'Wait QC' };
     } else {
-      return { status: 'READY', color: 'badge-ready', label: 'Ready' };
+      return { status: 'READY', color: 'badge-ready', label: 'PATH READY' };
     }
   }
 
@@ -735,7 +748,7 @@ export class PlanListComponent implements OnInit {
     console.log('Navigating to Request with item:', item);
 
     // Prepare Query Params
-    const queryParams = {
+    const queryParams: any = {
       case: 'SET', // Force SET case
       division: item.division,
       fac: item.fac,
@@ -745,7 +758,8 @@ export class PlanListComponent implements OnInit {
       mcNo: item.mcNo,
       qty: item.qty,
       fromPlan: 'true',
-      date: item.date // Pass date to Request
+      date: item.date, // Pass date to Request
+      Unique_Id: item.Unique_Id ? `PLAN-${item.Unique_Id}` : null  // Carry Unique_Id (re-add prefix for display)
     };
 
     this.router.navigate(['/production/request'], { queryParams: queryParams });
@@ -1086,12 +1100,12 @@ export class PlanListComponent implements OnInit {
     // 2. Show Confirmation Dialog
     Swal.fire({
       title: 'Confirm Save',
-      text: "Do you want to save these changes?",
+      text: "คุณต้องการบันทึกข้อมูลหรือไม่?",
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#0f172a',
       cancelButtonColor: '#64748b',
-      confirmButtonText: 'Yes, save changes!',
+      confirmButtonText: 'Yes!',
       cancelButtonText: 'Cancel',
       customClass: {
         popup: 'swal-premium-popup',
@@ -1125,7 +1139,7 @@ export class PlanListComponent implements OnInit {
 
         this.pcPlanService.updatePaths(pathPayload).subscribe({
           next: (res) => {
-            Swal.fire('Success', 'Attachments updated!', 'success');
+            Swal.fire('Success', 'บันทึกข้อมูลเสร็จเรียบร้อยแล้วครับ!', 'success');
             this.isEditModalOpen = false;
             this.loadPlanList();
           },
@@ -1678,6 +1692,69 @@ export class PlanListComponent implements OnInit {
       a.click();
       window.URL.revokeObjectURL(url);
     });
+  }
+
+  // ===================================================
+  //  Tooling Request Details Modal (PD Tab VIEW button)
+  // ===================================================
+
+  onViewToolingRequest(item: any) {
+    // Always open the modal — populate header from item directly (no API needed for header)
+    this.isToolingRequestModalOpen = true;
+    this.toolingCuttingList = [];
+    this.toolingSetupList = [];
+
+    // Set header info directly from plan item (not from API)
+    this.toolingRequestHeader = {
+      partNo: item.partNo || '-',
+      process: item.process || '-',
+      mcType: item.mcType || '-',
+      mcNo: item.mcNo || '-',
+      fac: item.fac || '-',
+      requester: item.requester || item.employeeId || this.currentUser?.Name || this.currentUser?.Employee_ID || '-'
+    };
+
+    // If no Unique_Id → show modal with empty tables (no Request found)
+    if (!item.Unique_Id) {
+      this.toolingRequestLoading = false;
+      return;
+    }
+
+    this.toolingRequestLoading = true;
+    const apiUrl = `${environment.apiUrl}/get_ToolingRequest_ByUniqueId`;
+    console.log('🔍 [VIEW] uniqueId =>', item.Unique_Id);
+
+    this.http.post<any>(apiUrl, { uniqueId: item.Unique_Id }).subscribe({
+      next: (result) => {
+        this.toolingRequestLoading = false;
+        console.log('✅ [VIEW] API result =>', result);
+        this.toolingCuttingList = result.cuttingTool || [];
+        this.toolingSetupList = result.setupTool || [];
+      },
+      error: (err) => {
+        this.toolingRequestLoading = false;
+        console.error('❌ [VIEW] API error:', err);
+      }
+    });
+  }
+
+  closeToolingRequestModal() {
+    this.isToolingRequestModalOpen = false;
+    this.toolingRequestHeader = null;
+    this.toolingCuttingList = [];
+    this.toolingSetupList = [];
+  }
+
+  getRequestStatusStyle(status: string): string {
+    switch ((status || '').toLowerCase()) {
+      case 'waiting': return 'background:#fef9c3; color:#854d0e; padding:2px 8px; border-radius:999px; font-size:0.78rem;';
+      case 'in progress': return 'background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:999px; font-size:0.78rem;';
+      case 'complete':
+      case 'completed': return 'background:#dcfce7; color:#166534; padding:2px 8px; border-radius:999px; font-size:0.78rem;';
+      case 'cancelled': return 'background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:999px; font-size:0.78rem;';
+      case 'pending issue': return 'background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:999px; font-size:0.78rem;';
+      default: return 'background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:999px; font-size:0.78rem;';
+    }
   }
 }
 

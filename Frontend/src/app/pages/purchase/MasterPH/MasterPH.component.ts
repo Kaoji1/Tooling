@@ -222,13 +222,13 @@ export class MasterPHComponent {
                     // Show warning dialog
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Import Failed — Unmatched Part No.',
+                        title: 'Failed Unmatched Part No.',
                         html: `<div class="text-start">
                             <p class="mb-1">พบ <strong>${distinctRows.length} Part No.</strong> ที่ไม่พบในระบบ</p>
-                            <p class="text-success mb-0">📥 ดาวน์โหลด Excel รายการ Error แล้ว<br>
-                            <small>(<strong>Unmatched_Parts_${today}.xlsx</strong>)</small></p>
+                            <p class="text-success mb-0">ผมได้ดาวน์โหลด Excel รายการที่เกิดError ให้แล้วครับ<br>
+                            <small>(<strong>Error_List_Parts_${today}.xlsx</strong>)</small></p>
                         </div>`,
-                        confirmButtonText: 'ตกลง'
+                        confirmButtonText: 'OK'
                     });
                     return;
                 }

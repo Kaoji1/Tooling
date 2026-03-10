@@ -17,6 +17,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { forkJoin, of, timer } from 'rxjs';
 
 export interface PlanItem {
+  uniqueId?: string;        // PLAN-{uuid} — generated at download, carried through upload
   date: string | Date | null;
   machineType: string | null;
   fac: string | null;
@@ -30,7 +31,7 @@ export interface PlanItem {
   comment: string;
   revision?: number;
   groupId?: string;
-  checked?: boolean; // Add checked property for selection
+  checked?: boolean;
 }
 
 export const MY_DATE_FORMATS = {
@@ -160,15 +161,21 @@ export class PCPlanComponent implements OnInit {
     });
   }
 
-  // --- ส่วนที่ 1: Download Format (ดาวน์โหลดฟอร์ม Excel) ---
-  // --- ส่วนที่ 1: Download Format (ดาวน์โหลดฟอร์ม Excel แบบสวยงาม) ---
+  // Helper: Generate a Unique Plan ID (PLAN- + full UUID)
+  private generatePlanUniqueId(): string {
+    const uuid = crypto.randomUUID(); // Cryptographically random, 100% unique
+    return `PLAN-${uuid}`;            // e.g. PLAN-550e8400-e29b-41d4-a716-446655440000
+  }
+
   // --- ส่วนที่ 1: Download Format (ดาวน์โหลดฟอร์ม Excel แบบสวยงาม พร้อมคำอธิบาย) ---
   downloadFormat() {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Format PC Plan');
+    const worksheet = workbook.addWorksheet('Format Planning');
 
     // 1. กำหนด Columns และ Width
+    // Unique_Id is the FIRST column — generated here, persisted all the way to DB
     worksheet.columns = [
+      { header: 'Unique_Id', key: 'UniqueId', width: 42 },
       { header: 'Date', key: 'Date', width: 15 },
       { header: 'Div', key: 'Div', width: 10 },
       { header: 'Part Before', key: 'PartBefore', width: 25 },
@@ -184,8 +191,9 @@ export class PCPlanComponent implements OnInit {
     ];
 
     // 2. ใส่ข้อมูลตัวอย่าง (Row 2 & 3)
-    // Row 2: Full Example
+    // Row 2: Full Example — each row gets a pre-generated Unique_Id
     worksheet.addRow({
+      UniqueId: this.generatePlanUniqueId(),
       Date: 'DD/MM/YYYY',
       Div: '71DZ',
       PartBefore: 'A5B68-2-M1A',
@@ -202,29 +210,33 @@ export class PCPlanComponent implements OnInit {
 
     // Row 3: Div Example Only
     worksheet.addRow({
+      UniqueId: this.generatePlanUniqueId(),
       Div: '7122'
     });
 
-    // Row 4: คำอธิบาย (Instructions)
-    const instructionRow = worksheet.addRow({
-      PartBefore: 'กรอกไม่กรอกก็ได้',
-      BarType: 'กรอกไม่กรอกก็ได้',
-      Fac: 'ต้องเป็น F.ตามด้วยเลข Facility',
-      QTY: 'กรอกไม่กรอกก็ได้',
-      Time: 'กรอกไม่กรอกก็ได้',
-      Comment: 'กรอกไม่กรอกก็ได้'
-    });
-
-    // 3. จัดรูปแบบ Header (Row 1) - เขียวเข้ม ตัวขาว
+    // 3. จัดรูปแบบ Header (Row 1) - ใส่สีที่หัวคอลัมน์หลักแทน Row 4
     const headerRow = worksheet.getRow(1);
-    headerRow.eachCell((cell) => {
+    headerRow.height = 25; // ให้หัวสูงขึ้นนิดนึง
+    headerRow.eachCell((cell, colNumber) => {
+      let bgColor = 'FF1B5E20'; // เขียวเข้ม (Default)
+      let fontColor = 'FFFFFFFF'; // สีขาว
+
+      if (colNumber === 1) { // Unique_Id
+        bgColor = 'FFD32F2F'; // สีแดง (ห้ามแก้ไข)
+      } else if ([4, 8, 9, 11, 12, 13].includes(colNumber)) {
+        // คอลัมน์ที่เคยเขียนว่า "กรอกไม่กรอกก็ได้" หรือ "ต้องเป็น F.xxx"
+        // 4=Part Before, 8=Bar Type, 9=Fac, 11=QTY, 12=Time, 13=Comment
+        bgColor = 'FFFFD54F'; // สีส้มเหลือง (แจ้งเตือน/Optional)
+        fontColor = 'FF000000'; // สีดำเพื่อให้เห็นชัดบนส้มเหลือง
+      }
+
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FF1B5E20' } // Green 900
+        fgColor: { argb: bgColor }
       };
       cell.font = {
-        color: { argb: 'FFFFFFFF' }, // White
+        color: { argb: fontColor },
         bold: true,
         size: 11
       };
@@ -237,33 +249,52 @@ export class PCPlanComponent implements OnInit {
     // 4. จัดรูปแบบ Row 2-3 (ข้อมูลตัวอย่าง)
     [2, 3].forEach(rIdx => {
       const r = worksheet.getRow(rIdx);
-      r.eachCell({ includeEmpty: true }, (cell) => {
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        cell.border = {
-          top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
-        };
+      r.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        if (colNumber === 1) {
+          // Style the Unique_Id cell (col 1) with a subtle blue tint
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE3F2FD' } // Light Blue 50
+          };
+          cell.font = { color: { argb: 'FF1565C0' }, size: 9 }; // Blue 800
+          cell.alignment = { vertical: 'middle', horizontal: 'left' };
+          cell.border = {
+            top: { style: 'hair' }, left: { style: 'thin' },
+            bottom: { style: 'hair' }, right: { style: 'hair' }
+          };
+        } else {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.border = {
+            top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
+          };
+        }
       });
     });
 
-    // 5. จัดรูปแบบ Row 4 (คำอธิบาย) - พื้นหลังสีเหลือง/ส้มอ่อน
-    instructionRow.eachCell((cell) => {
-      cell.fill = {
+    // --- 150 blank data rows, each pre-seeded with a unique Unique_Id ---
+    // ทุกครั้งที่ดาวน์โหลด จะสุ่ม UUID ใหม่ 150 ค่า ไม่ซ้ำกันแน่นอน
+    const BLANK_ROWS = 150;
+    for (let i = 0; i < BLANK_ROWS; i++) {
+      const dataRow = worksheet.addRow({ UniqueId: this.generatePlanUniqueId() });
+
+      // Style the Unique_Id cell (col 1) with a subtle blue tint — signals "auto-generated, do not edit"
+      const idCell = dataRow.getCell(1);
+      idCell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FFFFD54F' } // Amber 200 / Yellowish
+        fgColor: { argb: 'FFE3F2FD' } // Light Blue 50
       };
-      cell.font = {
-        color: { argb: 'FF000000' }, // Black
-        size: 10
+      idCell.font = { color: { argb: 'FF1565C0' }, size: 9 }; // Blue 800
+      idCell.alignment = { vertical: 'middle', horizontal: 'left' };
+      idCell.border = {
+        top: { style: 'hair' }, left: { style: 'thin' },
+        bottom: { style: 'hair' }, right: { style: 'hair' }
       };
-      cell.alignment = { vertical: 'middle', horizontal: 'center' };
-      cell.border = {
-        top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
-      };
-    });
+    }
 
-    // 6. เปิด AutoFilter
-    worksheet.autoFilter = { from: 'A1', to: 'L1' };
+    // 6. เปิด AutoFilter (13 columns: A=Unique_Id through M=Comment)
+    worksheet.autoFilter = { from: 'A1', to: 'M1' };
 
     // 7. Export ไฟล์
     workbook.xlsx.writeBuffer().then((buffer: ArrayBuffer) => {
@@ -361,10 +392,26 @@ export class PCPlanComponent implements OnInit {
       let pBef = row['Part Before'] ? row['Part Before'].toString().trim() : null;
       let pNo = row['Part No.'] ? row['Part No.'].toString().trim() : null;
 
+      // ตรวจสอบว่าแถวนี้ว่างหรือไม่ (มีแค่ Unique_Id หลงเงืออยู่ แต่ข้อมูลจริงว่างหมด)
+      const dateVal = row['Date'];
+      const mcNoVal = row['MC No'] || row['MC No.'];
+      const processVal = row['Process'];
+      const mcTypeVal = row['Machine Type'];
+
+      if (!dateVal && !pNo && !processVal && !rawFac && !mcNoVal && !mcTypeVal) {
+        // แถวนี้ว่าง (อาจจะเป็นแค่แถวที่สุ่ม Unique_Id ทิ้งไว้เฉยๆ) -> ข้ามไปเลย
+        return;
+      }
+
       pBef = this.findMatchIgnoringSymbols(pBef, this.partBef);
       pNo = this.findMatchIgnoringSymbols(pNo, this.partNos);
 
+      // Read Unique_Id from Excel (column A). Keep only valid PLAN-{uuid} values.
+      const rawUniqueId = row['Unique_Id'] ? row['Unique_Id'].toString().trim() : '';
+      const uniqueId = rawUniqueId.toUpperCase().startsWith('PLAN-') ? rawUniqueId : undefined;
+
       this.planItems.push({
+        uniqueId: uniqueId,
         date: this.excelDateToJSDate(row['Date']),
         machineType: row['Machine Type'] ? row['Machine Type'].toString().trim() : null,
         fac: rawFac ? rawFac.toString().trim() : null,
@@ -880,6 +927,7 @@ export class PCPlanComponent implements OnInit {
         barType: item.barType || null,
         division: this.selectedDivisionCode, // Division_Id: '2'=PMC, '3'=GM
         employeeId: empId,
+        uniqueId: item.uniqueId || null, // PLAN-{uuid} — backend will strip prefix for uniqueidentifier column
         revision: item.revision || 0 // Ensure new items start with 0 for SP to increment correctly
       };
     });

@@ -610,3 +610,61 @@ exports.get_MC_ByDivision = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 };
+
+// ==========================================
+//    TOOLING REQUEST BY UNIQUE ID (PlanList VIEW)
+// ==========================================
+
+/**
+ * API: ดึงรายการ Request ตาม Unique_Id จาก PC Plan
+ * หน้าที่: ใช้ตอนกด VIEW จากหน้า PlanList แท็บ PD
+ *         เชื่อม Unique_Id กับ tb_IssueCuttingTool_Request_Document และ tb_IssueSetupTool_Request_Document
+ */
+exports.getToolingRequestByUniqueId = async (req, res) => {
+  try {
+    const { uniqueId } = req.body;
+    if (!uniqueId) {
+      return res.status(400).json({ error: "Missing uniqueId parameter" });
+    }
+
+    // Strip 'PLAN-' prefix if present (frontend adds PLAN- for display)
+    const rawUuid = uniqueId.toString().replace(/^PLAN-/i, '').trim();
+
+    const pool = await poolPromise;
+
+    console.log(`[getToolingRequestByUniqueId] Received uniqueId: ${uniqueId}`);
+    console.log(`[getToolingRequestByUniqueId] Stripped rawUuid: ${rawUuid}`);
+
+    // Call Stored Procedure [trans].[Stored_Get_ToolingRequest_ByUniqueId]
+    // Returns 2 recordsets: [0] = CuttingTool, [1] = SetupTool
+    const result = await pool.request()
+      .input('UniqueId', sql.NVarChar, rawUuid)
+      .execute('[trans].[Stored_Get_ToolingRequest_ByUniqueId]');
+
+    console.log(`[getToolingRequestByUniqueId] CuttingTool rows: ${result.recordsets[0] ? result.recordsets[0].length : 0}`);
+    console.log(`[getToolingRequestByUniqueId] SetupTool rows: ${result.recordsets[1] ? result.recordsets[1].length : 0}`);
+
+    const cuttingRecords = result.recordsets[0] || [];
+    const setupRecords = result.recordsets[1] || [];
+
+    // Build header info from first available record
+    const firstRecord = cuttingRecords[0] || setupRecords[0] || null;
+
+    res.json({
+      header: firstRecord ? {
+        partNo: firstRecord.PartNo,
+        process: firstRecord.Process,
+        mcType: firstRecord.MCType,
+        mcNo: firstRecord.MCNo,
+        fac: firstRecord.Fac,
+        requester: firstRecord.Requester
+      } : null,
+      cuttingTool: cuttingRecords,
+      setupTool: setupRecords
+    });
+
+  } catch (error) {
+    console.error("Error getToolingRequestByUniqueId:", error.stack);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+};

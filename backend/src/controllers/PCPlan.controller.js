@@ -165,6 +165,13 @@ exports.insertPCPlan = async (req, res) => {
             // We can prefix it with batchId for traceability if we want, but GUID (NEWID) is safer.
             const uniqueGroupId = item.groupId || `${batchId}-${index}-${Math.floor(Math.random() * 1000)}`;
 
+            // Strip the "PLAN-" prefix before sending to SQL.
+            // The DB column [Unique_Id] is uniqueidentifier, so it stores only the raw UUID.
+            const rawUniqueId = (item.uniqueId || '')
+                .toString()
+                .replace(/^PLAN-/i, '')  // remove prefix
+                .trim() || null;
+
             return {
                 PlanDate: new Date(item.date),
                 Employee_ID: item.employeeId || '',
@@ -175,7 +182,7 @@ exports.insertPCPlan = async (req, res) => {
                 Process: item.process || '',
                 MC_No: item.mcNo || '',
                 PartNo: item.partNo || '',
-                Bar_Type: item.barType || null,          // ← เพิ่มใหม่
+                Bar_Type: item.barType || null,
                 QTY: parseFloat(item.qty) || 0,
                 Time: parseInt(item.time) || 0,
                 Comment: item.comment || '',
@@ -184,7 +191,8 @@ exports.insertPCPlan = async (req, res) => {
                 Revision: item.revision, // Pass target revision
                 Path_Dwg: (item.pathDwg && item.pathDwg !== '-') ? item.pathDwg : null,
                 Path_Layout: (item.pathLayout && item.pathLayout !== '-') ? item.pathLayout : null,
-                Path_IIQC: (item.iiqc && item.iiqc !== '-') ? item.iiqc : null
+                Path_IIQC: (item.iiqc && item.iiqc !== '-') ? item.iiqc : null,
+                Unique_Id: rawUniqueId   // Raw UUID string (null if not present)
             };
         });
 

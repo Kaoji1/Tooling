@@ -44,5 +44,8 @@ router.post('/get_CaseSET_Dropdown_ItemNo', ItemlistController.get_CaseSET_Dropd
 // MC by Division (แสดงเฉยๆ ไม่ใช้กรอง)
 router.post('/get_MC_ByDivision', ItemlistController.get_MC_ByDivision);
 
+// Tooling Request by Unique_Id (for PlanList VIEW button)
+router.post('/get_ToolingRequest_ByUniqueId', ItemlistController.getToolingRequestByUniqueId);
+
 // ส่งออก router สำหรับใช้งานในที่อื่น
 module.exports = router;

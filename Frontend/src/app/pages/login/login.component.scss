@@ -21,6 +21,19 @@ $black: #000000; // to-[#000000]
   font-family: 'Kanit', sans-serif;
 }
 
+// Flow Field Particle Canvas
+.particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1; // Between gradient bg (0) and login card (z-index:10)
+  background: transparent; // Gradient from .login-page-container shows through
+  pointer-events: none; // Never intercepts clicks or form input
+  display: block;
+}
+
 // SVG Header
 .svg-header-container {
   z-index: 10;
@@ -34,44 +47,56 @@ $black: #000000; // to-[#000000]
   svg {
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 0 15px rgba(0, 91, 172, 0.5)); // Enhanced glow
+    // Reduced — the SVG filter handles depth now
+    filter: drop-shadow(0 2px 6px rgba(1, 9, 24, 0.6));
   }
 }
 
-// SVG Text Styles
+// SVG Text Styles — Legibility-First Celestial Serif
 .brand-text {
-  font-family: 'Kanit', sans-serif;
-  font-size: 85px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 82px;
   font-weight: 900;
   font-style: italic;
-  fill: $brand-color;
+
+  // Celestial silver-indigo gradient fill
+  fill: url(#brandFill);
   fill-opacity: 0;
 
-  // White Stroke Outline
-  stroke: white;
-  stroke-width: 2px; // Thin white outline
-  paint-order: stroke fill; // Ensure stroke is behind/around fill if needed, or consistent
+  // Dark navy outline — KEY legibility fix, pops text off busy starfield
+  stroke: #0c1832;
+  stroke-width: 3.5px;
+  paint-order: stroke fill; // stroke renders BEHIND fill
 
-  stroke-dasharray: 600;
-  stroke-dashoffset: 600;
-  animation:
-    drawStroke 2.5s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards,
-    fadeInFill 1s cubic-bezier(0.39, 0.575, 0.565, 1) 2.2s forwards;
+  // Subtle depth glow via SVG filter (dark shadow + soft blue halo)
+  filter: url(#brandGlow);
 
+  // Simple fade-in (no dasharray stroke-draw — serif at 900 has complex paths)
+  animation: fadeInBrand 1.6s cubic-bezier(0.39, 0.575, 0.565, 1) 0.3s forwards;
 
-  // Interactive Char Styles
+  // Interactive char hover
   .hover-char {
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); // Bouncy transition
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transform-box: fill-box;
     transform-origin: center;
     cursor: default;
 
     &:hover {
-      transform: translateY(-15px); // Jump up
-      fill: white; // Turn white on hover
-      stroke: white; // Ensure stroke is also white or matches
+      transform: translateY(-12px);
+      fill: #f0faff; // icy white on hover
+      stroke: #0c1832; // keep navy outline on hover too
     }
   }
+}
+
+// Shimmer — intermittent stardust glimmer, less frequent than before
+.brand-shimmer {
+  fill: url(#shimmerGradCSS);
+  opacity: 0.80;
+  pointer-events: none;
+  // 9s total: ~1.5s sweep + 7.5s pause; starts after brand fade-in
+  animation: shimmerSweep 9s ease-in-out infinite;
+  animation-delay: 3.5s;
 }
 
 .sub-text {
@@ -228,6 +253,18 @@ label {
   }
 }
 
+@keyframes fadeInBrand {
+  from {
+    fill-opacity: 0;
+    opacity: 0;
+  }
+
+  to {
+    fill-opacity: 1;
+    opacity: 1;
+  }
+}
+
 @keyframes fadeInFill {
   from {
     fill-opacity: 0;
@@ -242,5 +279,32 @@ label {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+// Shimmer sweep: glint moves left→right across the text, then long pause
+// 9s cycle: 0–16% = sweep transit, 16–100% = invisible pause
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+
+  4% {
+    opacity: 1;
+  }
+
+  14% {
+    transform: translateX(310%);
+    opacity: 0.85;
+  }
+
+  18% {
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(310%);
+    opacity: 0;
   }
 }

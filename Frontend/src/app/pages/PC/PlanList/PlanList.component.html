@@ -171,15 +171,18 @@
               <ng-container *ngIf="selectedDepartment === 'PC'">
                 <button class="btn-edit-pill me-1" (click)="onEdit(item)" title="Edit Plan">EDIT</button>
                 <button class="btn-cancel-pill me-1" (click)="onCancel(item)" title="Cancel Plan">CANCEL</button>
-                <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                  title="View Tooling Request">VIEW</button>
               </ng-container>
               <ng-container *ngIf="selectedDepartment === 'PD'">
                 <button class="btn-request-pill me-1" (click)="onRequest(item)"
                   title="Go to Request Page">REQUEST</button>
-                <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                  title="View Tooling Request">VIEW</button>
               </ng-container>
               <ng-container *ngIf="selectedDepartment === 'PH'">
-                <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                  title="View Tooling Request">VIEW</button>
               </ng-container>
               <ng-container *ngIf="selectedDepartment === 'EN'">
                 <!-- Show ADD PATH if NOT Completed -->
@@ -189,7 +192,8 @@
                 <button *ngIf="selectedSubTab === 'Completed'" class="btn-edit-pill me-1" (click)="onEdit(item)"
                   title="Edit Attachments">EDIT</button>
 
-                <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                  title="View Tooling Request">VIEW</button>
               </ng-container>
               <ng-container *ngIf="selectedDepartment === 'QC'">
                 <!-- Show ADD PATH if NOT Completed -->
@@ -199,13 +203,16 @@
                 <button *ngIf="selectedSubTab === 'Completed'" class="btn-edit-pill me-1" (click)="onEdit(item)"
                   title="Edit IIQC">EDIT</button>
 
-                <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                  title="View Tooling Request">VIEW</button>
               </ng-container>
               <ng-container *ngIf="selectedDepartment === 'Gague'">
-                <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                  title="View Tooling Request">VIEW</button>
               </ng-container>
               <ng-container *ngIf="selectedDepartment === 'View'">
-                <button class="btn-view-pill" (click)="onViewHistory(item)" title="View History">VIEW</button>
+                <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                  title="View Tooling Request">VIEW</button>
               </ng-container>
             </ng-container>
           </div>
@@ -417,7 +424,7 @@
 
         <!-- Attachments Header (Engineer only) -->
         <ng-container *ngIf="selectedDepartment === 'EN'">
-  
+
         </ng-container>
         <!-- Engineer Fields (Path) -->
         <ng-container *ngIf="selectedDepartment === 'EN'">
@@ -500,6 +507,184 @@
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" (click)="closeHistoryModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Tooling Request Details Modal (PD Tab) ===== -->
+<div class="modal-backdrop" *ngIf="isToolingRequestModalOpen">
+  <div class="modal-content" style="max-width: 1100px; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="modal-header"
+      style="flex-direction: column; align-items: stretch; gap: 1rem; border-bottom: none; padding-bottom: 0;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin:0; font-size: 1.4rem; font-weight: 800; color: #1e293b;">
+          Tooling Request Details
+        </h3>
+        <button class="btn-close" (click)="closeToolingRequestModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <div *ngIf="toolingRequestHeader"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; background: #f8fafc; padding: 16px 20px; border-radius: 8px; border: 1px solid #e2e8f0; align-items: center;">
+        <div style="display: flex; flex-direction: column;">
+          <span
+            style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Part
+            No.</span>
+          <span style="font-size: 1rem; font-weight: 700; color: #0f172a;">{{ toolingRequestHeader.partNo }}</span>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <span
+            style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Process</span>
+          <span style="font-size: 1rem; font-weight: 700; color: #0f172a;">{{ toolingRequestHeader.process }}</span>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <span
+            style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">MC</span>
+          <span style="font-size: 1rem; font-weight: 700; color: #0f172a;">{{ toolingRequestHeader.mcType }} <span
+              *ngIf="toolingRequestHeader.mcNo && toolingRequestHeader.mcNo !== '-'">#{{ toolingRequestHeader.mcNo
+              }}</span></span>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <span
+            style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">FAC</span>
+          <span style="font-size: 1rem; font-weight: 700; color: #0f172a;">{{ toolingRequestHeader.fac }}</span>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <span
+            style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Requester</span>
+          <span style="font-size: 1rem; font-weight: 700; color: #0f172a;">{{ toolingRequestHeader.requester }}</span>
+        </div>
+      </div>
+      <div *ngIf="!toolingRequestHeader" style="text-align: center; color: #64748b; padding: 1rem;">
+        (No request data found)
+      </div>
+    </div>
+
+    <div class="modal-body" style="overflow-y: auto; flex: 1;">
+
+      <!-- Loading State -->
+      <div *ngIf="toolingRequestLoading" style="text-align:center; padding: 3rem; color: #64748b;">
+        <div style="font-size: 1.5rem; margin-bottom: 1rem;"><i class="bi bi-arrow-repeat"
+            style="animation: spin 1s linear infinite;"></i></div>
+        <p>Loading request data...</p>
+      </div>
+
+      <ng-container *ngIf="!toolingRequestLoading">
+
+        <!-- ===== SECTION 1: Cutting Tool ===== -->
+        <div style="margin-bottom: 1.5rem;">
+          <div
+            style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; padding-bottom:8px; border-bottom:2px solid #3b82f6;">
+            <span style="font-weight:800; font-size:1.1rem; color:#1e293b;">Cutting Tool</span>
+            <span class="badge"
+              style="background:#dbeafe; color:#1d4ed8; padding:2px 8px; border-radius:999px; font-size:0.75rem; font-weight: 700;">{{
+              toolingCuttingList.length }} ITEMS</span>
+          </div>
+
+          <div class="table-container" style="box-shadow:none; border:1px solid #e2e8f0;"
+            *ngIf="toolingCuttingList.length > 0; else noCutting">
+            <table>
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Due Date</th>
+                  <th>SPEC</th>
+                  <th>Item No.</th>
+                  <th style="text-align:center;">Req QTY</th>
+                  <th style="text-align:center;">Issue QTY</th>
+                  <th>Item Name</th>
+                  <th>Remark</th>
+                  <th>Completed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of toolingCuttingList">
+                  <td>
+                    <span class="badge" [style]="getRequestStatusStyle(row.Status)"
+                      style="text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
+                      {{ (row.Status | uppercase) === 'WAITING' ? 'Wait PH' : row.Status }}
+                    </span>
+                  </td>
+                  <td>{{ row.DueDate | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ row.SPEC }}</td>
+                  <td>{{ row.ItemNo }}</td>
+                  <td style="text-align:center;">{{ row.Req_QTY }}</td>
+                  <td style="text-align:center;">{{ row.IssueQTY }}</td>
+                  <td>{{ row.ItemName || '-' }}</td>
+                  <td>{{ row.Remark || '-' }}</td>
+                  <td>{{ row.DateComplete ? (row.DateComplete | date:'dd/MM/yyyy') : '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noCutting>
+            <div
+              style="text-align:center; padding:1.5rem; color:#94a3b8; background:#f8fafc; border-radius:8px; border:1px dashed #e2e8f0;">
+              <i class="bi bi-inbox" style="font-size:1.5rem; display:block; margin-bottom:0.5rem;"></i>
+              No Cutting Tool Request Data
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- ===== SECTION 2: Setup Tool ===== -->
+        <div>
+          <div
+            style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; padding-bottom:8px; border-bottom:2px solid #8b5cf6;">
+            <span style="font-weight:800; font-size:1.1rem; color:#1e293b;">Setup Tool</span>
+            <span class="badge"
+              style="background:#ede9fe; color:#7c3aed; padding:2px 8px; border-radius:999px; font-size:0.75rem; font-weight: 700;">{{
+              toolingSetupList.length }} ITEMS</span>
+          </div>
+
+          <div class="table-container" style="box-shadow:none; border:1px solid #e2e8f0;"
+            *ngIf="toolingSetupList.length > 0; else noSetup">
+            <table>
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Due Date</th>
+                  <th>SPEC</th>
+                  <th>Item No.</th>
+                  <th style="text-align:center;">Req QTY</th>
+                  <th style="text-align:center;">Issue QTY</th>
+                  <th>Item Name</th>
+                  <th>Remark</th>
+                  <th>Completed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of toolingSetupList">
+                  <td>
+                    <span class="badge" [style]="getRequestStatusStyle(row.Status)"
+                      style="text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
+                      {{ (row.Status | uppercase) === 'WAITING' ? 'Wait PH' : row.Status }}
+                    </span>
+                  </td>
+                  <td>{{ row.DueDate | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ row.SPEC }}</td>
+                  <td>{{ row.ItemNo }}</td>
+                  <td style="text-align:center;">{{ row.Req_QTY }}</td>
+                  <td style="text-align:center;">{{ row.IssueQTY }}</td>
+                  <td>{{ row.ItemName || '-' }}</td>
+                  <td>{{ row.Remark || '-' }}</td>
+                  <td>{{ row.DateComplete ? (row.DateComplete | date:'dd/MM/yyyy') : '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noSetup>
+            <div
+              style="text-align:center; padding:1.5rem; color:#94a3b8; background:#f8fafc; border-radius:8px; border:1px dashed #e2e8f0;">
+              <i class="bi bi-inbox" style="font-size:1.5rem; display:block; margin-bottom:0.5rem;"></i>
+              No Setup Tool Request Data
+            </div>
+          </ng-template>
+        </div>
+
+      </ng-container>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeToolingRequestModal()">Close</button>
     </div>
   </div>
 </div>

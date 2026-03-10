@@ -66,7 +66,7 @@ export const NOTIFICATION_TEMPLATES: Record<string, NotificationTemplate> = {
         eventType: 'NEW_PLAN',
         subject: '🔵 [FYI] New Initial Plan Imported: [Plan_No]',
         messageEN: (v) => interpolate(
-            'A new PC Plan [Plan_No] has been imported into the system by the PC department. Total items: [Item_Count].',
+            'A new Planning [Plan_No] has been imported into the system by the PC department. Total items: [Item_Count].',
             v
         ),
         messageTH: (v) => interpolate(
