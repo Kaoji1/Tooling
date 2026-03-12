@@ -173,34 +173,12 @@ exports.saveReturnRequest = async (req, res) => {
 };
 
 // 7. Get Return List (History)
+// @uses SP: trans.Stored_Get_ReturnList
 exports.getReturnList = async (req, res) => {
     try {
         const pool = await poolPromise;
         const result = await pool.request()
-            .query(`
-                SELECT 
-                    Return_ID, 
-                    Doc_No, 
-                    Employee_ID, 
-                    Return_By, 
-                    Division, 
-                    Process, 
-                    Facility, 
-                    Phone_No, 
-                    ItemNo, 
-                    PartNo, 
-                    ItemName, 
-                    Spec, 
-                    QTY, 
-                    Used_Qty, 
-                    Remark, 
-                    Return_Date, 
-                    DateTime_Record, 
-                    DateComplete, 
-                    Status
-                FROM [db_Tooling].[master].[tb_Return_List]
-                ORDER BY Return_ID DESC
-            `);
+            .execute('trans.Stored_Get_ReturnList');
 
         res.status(200).json(result.recordset);
     } catch (err) {

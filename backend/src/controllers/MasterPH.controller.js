@@ -1,158 +1,19 @@
 const { poolPromise } = require("../config/database");
 const sql = require("mssql");
 
+/**
+ * @api {GET} /MasterPH
+ * @description ดึงข้อมูล Master PH ตามประเภท (PMC หรือ GM)
+ * @uses SP: trans.Stored_Get_MasterPH_Values
+ */
 exports.getAllMasterPHValues = async (req, res) => {
     try {
         const pool = await poolPromise;
-        const type = req.query.type || 'pmc'; // Default to pmc
+        const type = req.query.type || 'pmc';
 
-        let query = '';
-
-        if (type === 'gm') {
-            query = `
-                SELECT 
-                     a.[PHGM_ID]
-                    ,a.[Division_Id]
-                    ,a.[ItemNo]
-                    ,a.[ItemName]
-                    ,a.[Spec_ID]
-                    ,b.[Spec] AS Spec
-                    ,a.[DW]
-                    ,a.[ClassCode]
-                    ,a.[ItemType]
-                    ,a.[Dept]
-                    ,a.[ProductCode]
-                    ,a.[Source Code] AS SourceCode
-                    ,a.[Organisation]
-                    ,a.[ItemClass]
-                    ,a.[Commodity]
-                    ,a.[CL]
-                    ,a.[AccountCode]
-                    ,a.[StockType]
-                    ,a.[MainWH]
-                    ,a.[StockLoc]
-                    ,a.[MatL_Type]
-                    ,a.[StockUnit]
-                    ,a.[PurchaseUnit1]
-                    ,a.[Conversion1]
-                    ,a.[PurchaseUnit2]
-                    ,a.[Conversion2]
-                    ,a.[WC_Code]
-                    ,a.[ModelGroup]
-                    ,a.[PayDuty]
-                    ,a.[Line]
-                    ,a.[HardAllocation]
-                    ,a.[ECN]
-                    ,a.[OrderPolicy]
-                    ,a.[OrderPoint]
-                    ,a.[WOS]
-                    ,a.[SaftyCode]
-                    ,a.[MakerCode]
-                    ,a.[MakerName]
-                    ,a.[MakerSpec]
-                    ,a.[WPC_No]
-                    ,a.[Vendor]
-                    ,a.[VendorName]
-                    ,a.[UnitPrice]
-                    ,a.[Currency]
-                    ,a.[PurLeadtime]
-                    ,a.[Standard_Qty]
-                    ,a.[BasicOrder]
-                    ,a.[MaxximumOrder]
-                    ,a.[MinimumOrder]
-                    ,a.[Yield]
-                    ,a.[BOI_Code]
-                    ,a.[Remark]
-                    ,a.[SaftyStock]
-                    ,a.[OrderBal]
-                    ,a.[Allocated]
-                    ,a.[OnHand]
-                    ,a.[PendingCode]
-                    ,a.[ReasonPending]
-                    ,a.[Last_Issued]
-                    ,a.[Last_StockIn]
-                    ,a.[Last_Maint]
-                    ,a.[Time]
-                    ,a.[Operator]
-                    ,a.[FileName]
-                    ,a.[ModifyDate]
-                FROM [db_Tooling].[master].[tb_Purchase_Item_Master_GM] a
-                LEFT JOIN [master].[tb_Spec_GM] b ON a.Spec_ID = b.Spec_ID
-            `;
-        } else {
-            // PMC Query - Removing PHGM_ID as it doesn't exist in PMC table
-            query = `
-                SELECT 
-                     a.[Division_Id]
-                    ,a.[ItemNo]
-                    ,a.[ItemName]
-                    ,a.[Spec_ID]
-                    ,b.[Spec] AS Spec
-                    ,a.[DW]
-                    ,a.[ClassCode]
-                    ,a.[ItemType]
-                    ,a.[Dept]
-                    ,a.[ProductCode]
-                    ,a.[Source Code] AS SourceCode
-                    ,a.[Organisation]
-                    ,a.[ItemClass]
-                    ,a.[Commodity]
-                    ,a.[CL]
-                    ,a.[AccountCode]
-                    ,a.[StockType]
-                    ,a.[MainWH]
-                    ,a.[StockLoc]
-                    ,a.[MatL_Type]
-                    ,a.[StockUnit]
-                    ,a.[PurchaseUnit1]
-                    ,a.[Conversion1]
-                    ,a.[PurchaseUnit2]
-                    ,a.[Conversion2]
-                    ,a.[WC_Code]
-                    ,a.[ModelGroup]
-                    ,a.[PayDuty]
-                    ,a.[Line]
-                    ,a.[HardAllocation]
-                    ,a.[ECN]
-                    ,a.[OrderPolicy]
-                    ,a.[OrderPoint]
-                    ,a.[WOS]
-                    ,a.[SaftyCode]
-                    ,a.[MakerCode]
-                    ,a.[MakerName]
-                    ,a.[MakerSpec]
-                    ,a.[WPC_No]
-                    ,a.[Vendor]
-                    ,a.[VendorName]
-                    ,a.[UnitPrice]
-                    ,a.[Currency]
-                    ,a.[PurLeadtime]
-                    ,a.[Standard_Qty]
-                    ,a.[BasicOrder]
-                    ,a.[MaxximumOrder]
-                    ,a.[MinimumOrder]
-                    ,a.[Yield]
-                    ,a.[BOI_Code]
-                    ,a.[Remark]
-                    ,a.[SaftyStock]
-                    ,a.[OrderBal]
-                    ,a.[Allocated]
-                    ,a.[OnHand]
-                    ,a.[PendingCode]
-                    ,a.[ReasonPending]
-                    ,a.[Last_Issued]
-                    ,a.[Last_StockIn]
-                    ,a.[Last_Maint]
-                    ,a.[Time]
-                    ,a.[Operator]
-                    ,a.[FileName]
-                    ,a.[ModifyDate]
-                FROM [db_Tooling].[master].[tb_Purchase_Item_Master_PMC] a
-                LEFT JOIN [master].[tb_Spec_PMC] b ON a.Spec_ID = b.Spec_ID
-            `;
-        }
-
-        const result = await pool.request().query(query);
+        const result = await pool.request()
+            .input('Type', sql.NVarChar(10), type)
+            .execute('trans.Stored_Get_MasterPH_Values');
 
         res.status(200).json(result.recordset);
     } catch (err) {

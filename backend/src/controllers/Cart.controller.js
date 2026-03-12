@@ -2,7 +2,7 @@ const { poolPromise } = require("../config/database");
 const sql = require('mssql');
 const nodemailer = require('nodemailer'); // ใส่บนสุดของไฟล์
 
-const frontendLink = process.env.FRONTEND_URL 
+const frontendLink = process.env.FRONTEND_URL
 
 // เพิ่มรายการลงฐานข้อมูล
 exports.AddCartItems = async (req, res) => {
@@ -139,10 +139,11 @@ exports.AddCartItems = async (req, res) => {
 };
 
 //  ดึงรายการทั้งหมดในตะกร้าจากฐานข้อมูล
+// @uses SP: trans.Stored_Get_CartItems
 exports.GetCartItems = async (req, res) => {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().query('SELECT * FROM tb_IssueCuttingTool_SendToCart'); // ชื่อ table/temp ที่เก็บตะกร้า
+    const result = await pool.request().execute('trans.Stored_Get_CartItems');
     res.json(result.recordset);
   } catch (err) {
     console.error(' Error GetCartItems:', err);

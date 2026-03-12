@@ -34,16 +34,16 @@ exports.SaveHistoryPrint = async (req, res) => {
 /**
  * API: ดึงรายชื่อพนักงานที่มีสิทธิ์พิมพ์ (Get Employee Print Permission List)
  * หน้าที่: ค้นหาว่าในระบบมีพนักงาน (Employee_ID) คนไหนบ้างที่ได้รับอนุญาตให้กดปุ่ม Print ได้ 
- * (โดยเช็คจากตาราง tb_Emp_PermissionPrint)
+ * @uses SP: trans.Stored_Get_EmpPermissionPrint
  */
 exports.EmpPrint = async (req, res) => {
   try {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .query("SELECT Employee_ID FROM [dbo].[tb_Emp_PermissionPrint]");
+      .execute('trans.Stored_Get_EmpPermissionPrint');
 
-    res.json(result.recordset); // [{Employee_ID: '123'}, ...]
+    res.json(result.recordset);
   } catch (error) {
     console.error("Error executing query:", error.stack);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
@@ -52,8 +52,8 @@ exports.EmpPrint = async (req, res) => {
 
 /**
  * API: ตรวจสอบสิทธิ์การพิมพ์ของพนักงานรายบุคคล (Check Print Permission)
- * หน้าที่: รับไอดีพนักงาน (Employee_ID) มาเช็คตรงๆ ว่ามีรายชื่ออยู่ในตาราง tb_Emp_PermissionPrint หรือไม่ 
- * ส่งค่ากลับเป็น true (พิมพ์ได้) หรือ false (ไม่มีสิทธิ์พิมพ์)
+ * หน้าที่: รับไอดีพนักงาน (Employee_ID) มาเช็คตรงๆ ว่ามีสิทธิ์พิมพ์หรือไม่
+ * @uses SP: trans.Stored_Check_PrintPermission
  */
 exports.checkPrintPermission = async (req, res) => {
   try {
@@ -64,9 +64,7 @@ exports.checkPrintPermission = async (req, res) => {
     const result = await pool
       .request()
       .input('Employee_ID', sql.NVarChar, Employee_ID)
-      .query(`SELECT COUNT(*) as count 
-              FROM [dbo].[tb_Emp_PermissionPrint] 
-              WHERE Employee_ID = @Employee_ID`);
+      .execute('trans.Stored_Check_PrintPermission');
 
     const allowed = result.recordset[0].count > 0;
     res.json({ allowed });
@@ -79,16 +77,16 @@ exports.checkPrintPermission = async (req, res) => {
 /**
  * API: ดึงข้อมูลประวัติการพิมพ์ทั้งหมด (Get All History Print)
  * หน้าที่: ดึงข้อมูลดิบประวัติการปริ้นต์จากตาราง tb_Cuttingtool_HistoryPrint ทั้งหมด 
- * เพื่อแสดงลิสต์รายชื่อเอกสารที่เคยถูกสั่งพิมพ์ไปแล้ว
+ * @uses SP: trans.Stored_Get_HistoryPrint
  */
 exports.HistoryPrint = async (req, res) => {
   try {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .query("SELECT * FROM [dbo].[tb_Cuttingtool_HistoryPrint]");
+      .execute('trans.Stored_Get_HistoryPrint');
 
-    res.json(result.recordset); // [{Employee_ID: '123'}, ...]
+    res.json(result.recordset);
   } catch (error) {
     console.error("Error executing query:", error.stack);
     res.status(500).json({ error: "Internal Server Error", details: error.message });
