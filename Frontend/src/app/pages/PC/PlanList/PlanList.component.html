@@ -28,6 +28,9 @@
         <span *ngIf="sub === 'Completed'" class="action-count" style="display: none;">
           <!-- Hidden as requested: no count for completed -->
         </span>
+        <!-- Return badge: red pulsing circle (PD only) -->
+        <span *ngIf="sub === 'Return' && selectedDepartment === 'PD' && returnCount > 0"
+          class="return-badge">{{ returnCount }}</span>
       </button>
 
       <!-- New Export Button (Only for PC) -->
@@ -83,8 +86,61 @@
     </div>
   </div>
 
+  <!-- ===== RETURN TAB PANEL (PD Only) ===== -->
+  <div *ngIf="selectedDepartment === 'PD' && selectedSubTab === 'Return'" class="return-panel">
+    <div class="return-panel-header">
+      <div class="return-panel-title">
+        <i class="bi bi-arrow-return-left"></i>
+        <span>Tooling Return Requests</span>
+        <span *ngIf="returnCount > 0" class="return-badge-inline">{{ returnCount }} Pending</span>
+      </div>
+      <button class="btn-refresh-return" (click)="loadReturnCount()" title="Refresh">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+    </div>
+
+    <div *ngIf="returnList.length === 0" class="return-empty">
+      <i class="bi bi-inbox" style="font-size:2.5rem; color:#cbd5e1;"></i>
+      <p>No return requests found.</p>
+    </div>
+
+    <div *ngIf="returnList.length > 0" class="return-table-wrapper">
+      <table class="return-table">
+        <thead>
+          <tr>
+            <th>Doc No.</th>
+            <th>Return By</th>
+            <th>Division</th>
+            <th>Facility</th>
+            <th>Process</th>
+            <th>Item No.</th>
+            <th>Part No.</th>
+            <th>QTY</th>
+            <th>Return Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of returnList" [class.return-row-pending]="(r.Status || '').toLowerCase() !== 'completed'">
+            <td class="doc-no-cell">{{ r.Doc_No }}</td>
+            <td>{{ r.Return_By }}</td>
+            <td>{{ r.Division }}</td>
+            <td>{{ r.Facility }}</td>
+            <td>{{ r.Process }}</td>
+            <td>{{ r.ItemNo }}</td>
+            <td>{{ r.PartNo }}</td>
+            <td class="text-center">{{ r.QTY }}</td>
+            <td>{{ r.Return_Date | date:'dd/MM/yyyy' }}</td>
+            <td><span [style]="getReturnStatusStyle(r.Status)">{{ r.Status || 'Pending' }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- ===== CSS Grid Table ===== -->
-  <div class="grid-table-wrapper" [class]="'grid-table-wrapper dept-' + (selectedDepartment || 'PC').toLowerCase()">
+  <div *ngIf="!(selectedDepartment === 'PD' && selectedSubTab === 'Return')"
+    class="grid-table-wrapper" [class]="'grid-table-wrapper dept-' + (selectedDepartment || 'PC').toLowerCase()">
     <!-- Header Row (Grouped) -->
     <div class="grid-header-group">
       <!-- Filter Row -->
@@ -344,12 +400,11 @@
         <!-- PC ONLY FIELDS -->
         <ng-container *ngIf="selectedDepartment === 'PC'">
 
-          <!-- Complete Lock Notice -->
+          <!-- Complete Lock Notice — Slim Banner -->
           <div class="form-group full-width" *ngIf="isEditLockedByComplete(editData)"
-            style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: #92400e;">
-            <i class="bi bi-lock-fill" style="font-size: 1rem;"></i>
-            <span><strong>Fields Locked:</strong> Machine Type, Bar Type, Process, Part Before, and Part No. cannot be
-              edited because the linked request has status <strong>Complete</strong>.</span>
+            style="background: linear-gradient(90deg,#fff7ed,#fffbf5); border-left: 3px solid #f97316; border-radius: 4px; padding: 6px 12px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #9a3412; margin-bottom: 4px;">
+            <i class="bi bi-lock-fill" style="font-size: 0.85rem; flex-shrink: 0;"></i>
+            <span>บางฟิลด์ถูกล็อค เนื่องจากมีการเบิกสำเร็จแล้ว (<strong>Complete</strong>)</span>
           </div>
 
           <!-- Row 1: Date + Machine Type -->
@@ -364,19 +419,27 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label"><i class="bi bi-cpu"></i> Machine Type</label>
+            <label class="form-label">
+              <i class="bi bi-cpu"></i> Machine Type
+              <i *ngIf="isEditLockedByComplete(editData)" class="bi bi-lock-fill ms-1" style="font-size:0.7rem;color:#f97316;vertical-align:middle;"></i>
+            </label>
             <ng-select [items]="modalMachineTypes" [(ngModel)]="editData.mcType"
               [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select type"
-              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)">
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)"
+              [ngClass]="{'locked-field': isEditLockedByComplete(editData)}">
             </ng-select>
           </div>
 
           <!-- Row 2: Bar Type + Facility -->
           <div class="form-group">
-            <label class="form-label"><i class="bi bi-bar-chart-line"></i> Bar Type</label>
+            <label class="form-label">
+              <i class="bi bi-bar-chart-line"></i> Bar Type
+              <i *ngIf="isEditLockedByComplete(editData)" class="bi bi-lock-fill ms-1" style="font-size:0.7rem;color:#f97316;vertical-align:middle;"></i>
+            </label>
             <ng-select [items]="modalBarTypeList" [(ngModel)]="editData.barType"
               [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select bar type"
-              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)">
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)"
+              [ngClass]="{'locked-field': isEditLockedByComplete(editData)}">
             </ng-select>
           </div>
 
@@ -389,18 +452,26 @@
 
           <!-- Row 3: Process + Part Before -->
           <div class="form-group">
-            <label class="form-label"><i class="bi bi-gear"></i> Process</label>
+            <label class="form-label">
+              <i class="bi bi-gear"></i> Process
+              <i *ngIf="isEditLockedByComplete(editData)" class="bi bi-lock-fill ms-1" style="font-size:0.7rem;color:#f97316;vertical-align:middle;"></i>
+            </label>
             <ng-select [items]="modalProcessList" [(ngModel)]="editData.process"
               [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select process"
-              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)">
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)"
+              [ngClass]="{'locked-field': isEditLockedByComplete(editData)}">
             </ng-select>
           </div>
 
           <div class="form-group">
-            <label class="form-label"><i class="bi bi-arrow-left-right"></i> Part Before</label>
+            <label class="form-label">
+              <i class="bi bi-arrow-left-right"></i> Part Before
+              <i *ngIf="isEditLockedByComplete(editData)" class="bi bi-lock-fill ms-1" style="font-size:0.7rem;color:#f97316;vertical-align:middle;"></i>
+            </label>
             <ng-select [items]="modalPartBeforeList" [(ngModel)]="editData.partBefore"
               [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select part before"
-              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)">
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)"
+              [ngClass]="{'locked-field': isEditLockedByComplete(editData)}">
             </ng-select>
           </div>
 
@@ -411,10 +482,14 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label"><i class="bi bi-upc-scan"></i> Part No.</label>
+            <label class="form-label">
+              <i class="bi bi-upc-scan"></i> Part No.
+              <i *ngIf="isEditLockedByComplete(editData)" class="bi bi-lock-fill ms-1" style="font-size:0.7rem;color:#f97316;vertical-align:middle;"></i>
+            </label>
             <ng-select [items]="modalPartNoList" [(ngModel)]="editData.partNo"
               [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select part no."
-              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)">
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)"
+              [ngClass]="{'locked-field': isEditLockedByComplete(editData)}">
             </ng-select>
           </div>
 

@@ -85,6 +85,10 @@ export class PlanListComponent implements OnInit {
   // For storing pre-calculated counts
   subTabCounts: { [key: string]: number } = {};
 
+  // --- Return Tab (PD Only) ---
+  returnCount: number = 0;      // Red badge count for pending returns
+  returnList: any[] = [];       // Raw return data from API
+
   currentUser: any;
 
   // --- Permission Helpers ---
@@ -854,7 +858,7 @@ export class PlanListComponent implements OnInit {
           Swal.fire({
             icon: 'warning',
             title: 'Edit Restricted',
-            text: 'Purchase has already completed the issuance for this plan. You cannot edit the core fields.',
+            text: 'Purchase ได้ดำเนินการสำหรับแผนงานนี้แล้ว จึงไม่อนุญาตให้แก้ไขข้อมูลในส่วนสำคัญ',
             confirmButtonText: 'Understood',
             confirmButtonColor: '#3085d6'
           }).then(() => {
@@ -1073,11 +1077,16 @@ export class PlanListComponent implements OnInit {
       } else if (dept === 'QC') {
         this.subTabs = ['Required', 'Completed', 'Upcoming'];
       } else if (dept === 'PD') {
-        this.subTabs = ['Required', 'Completed', 'Upcoming'];
+        this.subTabs = ['Required', 'Completed', 'Upcoming', 'Return'];
       } else {
         this.subTabs = ['Required', 'Upcoming'];
       }
       this.selectedSubTab = 'Required'; // Auto-select Required
+
+      // Load return count when PD is selected
+      if (dept === 'PD') {
+        this.loadReturnCount();
+      }
     } else {
       this.subTabs = ['Upcoming'];
       this.selectedSubTab = 'Upcoming';
@@ -1866,6 +1875,41 @@ export class PlanListComponent implements OnInit {
       case 'cancelled': return 'background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:999px; font-size:0.78rem;';
       case 'pending issue': return 'background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:999px; font-size:0.78rem;';
       default: return 'background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:999px; font-size:0.78rem;';
+    }
+  }
+
+  // --- Return Tab Logic (PD Only) ---
+  loadReturnCount(): void {
+    this.http.get<any[]>(`${environment.apiUrl}/return/list`).subscribe({
+      next: (data) => {
+        this.returnList = data;
+        this.updateReturnCount();
+      },
+      error: (err) => {
+        console.error('Failed to load return list:', err);
+        this.returnCount = 0;
+      }
+    });
+  }
+
+  updateReturnCount(): void {
+    const divisionFilter = this.filterDivision?.toLowerCase() || '';
+    this.returnCount = this.returnList.filter(r => {
+      const statusOk = (r.Status || '').toLowerCase() !== 'completed';
+      if (!divisionFilter) return statusOk;
+      // Match by division code: 'GM' matches '7122', 'PMC' matches '71DZ'
+      const div = (r.Division || '').toUpperCase();
+      if (divisionFilter === 'gm') return statusOk && (div.includes('7122') || div.includes('GM'));
+      if (divisionFilter === 'pmc') return statusOk && (div.includes('71DZ') || div.includes('PMC'));
+      return statusOk && div.includes(divisionFilter.toUpperCase());
+    }).length;
+  }
+
+  getReturnStatusStyle(status: string): string {
+    switch ((status || '').toLowerCase()) {
+      case 'pending': return 'background:#fff7ed; color:#c2410c; padding:2px 10px; border-radius:999px; font-size:0.78rem; font-weight:600;';
+      case 'completed': return 'background:#dcfce7; color:#166534; padding:2px 10px; border-radius:999px; font-size:0.78rem; font-weight:600;';
+      default: return 'background:#f1f5f9; color:#475569; padding:2px 10px; border-radius:999px; font-size:0.78rem;';
     }
   }
 }

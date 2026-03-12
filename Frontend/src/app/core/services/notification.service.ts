@@ -1,4 +1,4 @@
-﻿import { Injectable, Inject, PLATFORM_ID, NgZone } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID, NgZone } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { io, Socket } from 'socket.io-client';
@@ -69,8 +69,11 @@ export class NotificationService {
         this.socket = io(environment.socketUrl, {
           transports: ['websocket', 'polling'],
           reconnection: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 30000, //0.5min
+          reconnectionAttempts: 5,        // max 5 retries
+          reconnectionDelay: 3000,        // start at 3s
+          reconnectionDelayMax: 30000,    // cap at 30s
+          randomizationFactor: 0.5,       // jitter to prevent thundering herd
+          timeout: 10000,                 // 10s connection timeout
         });
         this.setupSocketListeners();
       });
