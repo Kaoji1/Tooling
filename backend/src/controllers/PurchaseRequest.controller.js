@@ -2,32 +2,22 @@ const { poolPromise } = require("../config/database");
 const Type = require("mssql").TYPES;
 const sql = require("mssql");
 
+/**
+ * @api {GET} /Purchase_Request
+ * @description ดึงข้อมูลรายการขอเบิก Cutting Tool + Setup Tool รวมกัน เรียงตามวันที่ล่าสุด
+ * @uses SP: trans.Stored_Get_PurchaseRequest (returns 2 recordsets)
+ */
 exports.Purchase_Request = async (req, res) => {
   try {
     const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .execute('trans.Stored_Get_PurchaseRequest');
 
-    // 1. ดึงข้อมูล Cutting Tool
-    const cuttingQuery = `
-      SELECT *, 'Cutting' as ToolingType 
-      FROM [db_Tooling].[viewer].[View_IssueCuttingTool_Request_Document] 
-    `;
+    // SP returns 2 recordsets: [0] = Cutting, [1] = Setup
+    const combined = [...result.recordsets[0], ...result.recordsets[1]];
 
-    // 2. ดึงข้อมูล Setup Tool
-    const setupQuery = `
-      SELECT *, 'Setup' as ToolingType 
-      FROM [db_Tooling].[viewer].[View_IssueSetupTool_Request_Document] 
-    `;
-
-    // ทำงานพร้อมกัน (Parallel Execution)
-    const [cuttingResult, setupResult] = await Promise.all([
-      pool.request().query(cuttingQuery),
-      pool.request().query(setupQuery)
-    ]);
-
-    // 3. รวมข้อมูล
-    const combined = [...cuttingResult.recordset, ...setupResult.recordset];
-
-    // 4. เรียงลำดับตามวันที่ (ล่าสุดขึ้นก่อน)
+    // เรียงลำดับตามวันที่ (ล่าสุดขึ้นก่อน)
     combined.sort((a, b) => {
       const dateA = a.DateTime_Record ? new Date(a.DateTime_Record) : new Date(0);
       const dateB = b.DateTime_Record ? new Date(b.DateTime_Record) : new Date(0);

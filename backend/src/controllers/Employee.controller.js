@@ -3,18 +3,15 @@ const sql = require('mssql');
 
 /**
  * API: ดึงรายชื่อพนักงานทั้งหมด (Get All Employees)
- * หน้าที่: ดึงข้อมูลพนักงานทั้งหมดระบบจาก View_CuttingTool_Employee เพื่อนำไปแสดงในตารางหน้าจัดการผู้ใช้งาน (User Management)
+ * หน้าที่: ดึงข้อมูลพนักงานทั้งหมดจาก View_CuttingTool_Employee เพื่อแสดงในหน้าจัดการผู้ใช้งาน
+ * @uses SP: trans.Stored_Get_AllEmployees
  */
 exports.ShowUser = async (req, res) => {
   try {
-    console.log(req.body)
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .query(`
-    SELECT 
-    *
-    FROM db_Tooling.dbo.View_CuttingTool_Employee`);
+      .execute('trans.Stored_Get_AllEmployees');
     res.json(result.recordset);
   } catch (err) {
     console.error(' Error GetEmployee:', err);

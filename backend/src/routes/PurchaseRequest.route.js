@@ -1,10 +1,10 @@
 // นำเข้าไลบรารี express
-const express = require('express'); 
+const express = require('express');
 const router = express.Router(); // สร้าง instance ของ Router
 
 // นำเข้าคอนโทรเลอร์
 const PurchaseRequest = require('../controllers/PurchaseRequest.controller');
-const test = require('node:test');
+
 
 // กำหนดเส้นทาง request
 router.get('/Purchase_Request', PurchaseRequest.Purchase_Request);
