@@ -80,10 +80,11 @@ BEGIN
     INNER JOIN #IncomingData new
         ON existing.Unique_Id = new.Unique_Id_Cast
     WHERE existing.IsActive = 1
-      AND new.Unique_Id_Cast IS NOT NULL; -- Only update records with valid Unique_Id
+      AND new.Unique_Id_Cast IS NOT NULL
+      AND ISNULL(new.Revision, 0) = 0; -- Only UPSERT if it's an Excel Import (Revision = 0)
 
     -- =============================================
-    -- 5. INSERT rows where Unique_Id does NOT exist in DB (or is NULL)
+    -- 5. INSERT rows where Unique_Id does NOT exist in DB (or is NULL) OR it's a new Revision
     -- =============================================
     INSERT INTO [master].[tb_PC_Plan] (
         PlanDate, Employee_ID, Division, MC_Type, Facility,
@@ -108,8 +109,8 @@ BEGIN
         new.Unique_Id_Cast
     FROM #IncomingData new
     WHERE
-        -- Insert only if: Unique_Id is NULL (blank row) OR Unique_Id not found in DB
-        new.Unique_Id_Cast IS NULL
+        ISNULL(new.Revision, 0) > 0 -- ALWAYS insert if it's an explicit Revision edit/cancel
+        OR new.Unique_Id_Cast IS NULL -- ALWAYS insert if there is no Unique_Id
         OR NOT EXISTS (
             SELECT 1
             FROM [master].[tb_PC_Plan] existing

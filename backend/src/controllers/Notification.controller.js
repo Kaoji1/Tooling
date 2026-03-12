@@ -159,7 +159,8 @@ exports.emitNotification = async (req, pool, {
     targetRoles,
     ctaRoute,
     detailsJson,
-    division
+    division,
+    excludeUsername // NEW: Exclude this user from seeing the notification
 }) => {
     try {
         const io = req.app.get('socketio');
@@ -184,6 +185,7 @@ exports.emitNotification = async (req, pool, {
             .input('Target_Roles', sql.NVarChar, targetRoles || 'ALL')
             .input('CTA_Route', sql.NVarChar, ctaRoute || '')
             .input('Details_JSON', sql.NVarChar, Object.keys(finalDetailsJson).length > 0 ? JSON.stringify(finalDetailsJson) : null)
+            .input('Exclude_Username', sql.NVarChar, excludeUsername || getUsername(req)) // NEW: Pass exclude user to DB
             .execute('trans.Stored_Insert_Notification_Log');
 
         const notificationId = notifyResult.recordset[0]?.Notification_ID;
@@ -201,6 +203,7 @@ exports.emitNotification = async (req, pool, {
                 targetRoles: targetRoles || 'ALL',
                 ctaRoute: ctaRoute || '',
                 detailsJson: Object.keys(finalDetailsJson).length > 0 ? finalDetailsJson : null,
+                excludeUsername: excludeUsername || getUsername(req) || actionBy || '', // NEW: Send to frontend socket
                 timestamp: new Date()
             });
             console.log(`[Notification] Emitted: ${eventType} (ID: ${notificationId}) -> ${targetRoles}`);

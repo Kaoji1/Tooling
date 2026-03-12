@@ -113,9 +113,9 @@
                                     <span class="meta-label">{{ lang === 'EN' ? 'Division' : 'Division' }}</span>
                                     <span class="meta-value">{{ getNotificationDivision(item) }}</span>
                                 </div>
-                                <!-- Div > Fac chip (shown when not CANCEL_PLAN) -->
+                                <!-- Div > Fac chip (hidden for CANCEL_PLAN and PLAN_REVISION) -->
                                 <div class="meta-chip"
-                                    *ngIf="(getMetaValue(item, 'Division') || getMetaValue(item, 'Facility')) && item.Event_Type !== 'CANCEL_PLAN'">
+                                    *ngIf="(getMetaValue(item, 'Division') || getMetaValue(item, 'Facility')) && item.Event_Type !== 'CANCEL_PLAN' && item.Event_Type !== 'PLAN_REVISION'">
                                     <span class="meta-label">{{ lang === 'EN' ? 'Div > Fac' : 'Div > Fac'
                                         }}</span>
                                     <span class="meta-value">
@@ -236,13 +236,7 @@
 
                             </ng-container>
 
-                            <!-- CTA -->
-                            <div class="detail-cta">
-                                <button class="cta-btn" (click)="navigateCTA(item); $event.stopPropagation()">
-                                    {{ getCTALabel(item) }}
-                                    <i class="bi bi-arrow-right"></i>
-                                </button>
-                            </div>
+                            <!-- CTA Removed per request -->
                         </div>
                     </div>
 

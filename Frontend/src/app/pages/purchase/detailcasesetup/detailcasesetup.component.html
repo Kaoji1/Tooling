@@ -242,7 +242,8 @@
                             <span *ngIf="item.Status_To_PH" class="badge" [ngClass]="{
                                 'bg-success': item.Status_To_PH === 'Complete',
                                 'bg-warning text-dark': item.Status_To_PH === 'Wait PH Issue',
-                                'bg-secondary': item.Status_To_PH !== 'Complete' && item.Status_To_PH !== 'Wait PH Issue'
+                                'bg-orange-custom text-white shadow-sm': item.Status_To_PH === 'PC Edit',
+                                'bg-secondary': item.Status_To_PH !== 'Complete' && item.Status_To_PH !== 'Wait PH Issue' && item.Status_To_PH !== 'PC Edit'
                             }">
                                 {{ item.Status_To_PH }}
                             </span>

@@ -178,7 +178,7 @@
                   title="View Tooling Request">VIEW</button>
               </ng-container>
               <ng-container *ngIf="selectedDepartment === 'PD'">
-                <button class="btn-request-pill me-1" (click)="onRequest(item)"
+                <button *ngIf="selectedSubTab !== 'Completed'" class="btn-request-pill me-1" (click)="onRequest(item)"
                   title="Go to Request Page">REQUEST</button>
                 <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
                   title="View Tooling Request">VIEW</button>
@@ -382,7 +382,7 @@
 
           <div class="form-group">
             <label class="form-label"><i class="bi bi-building"></i> Facility</label>
-            <ng-select [items]="facList" [(ngModel)]="editData.fac" placeholder="Select or type..." [addTag]="true"
+            <ng-select [items]="modalFacList" [(ngModel)]="editData.fac" placeholder="Select or type..." [addTag]="true"
               addTagText="Add: " [clearable]="true" class="edit-modal-select">
             </ng-select>
           </div>

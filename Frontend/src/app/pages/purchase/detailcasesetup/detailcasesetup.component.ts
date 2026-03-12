@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, PLATFORM_ID, NgZone } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -89,7 +89,8 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
     constructor(
         private detailService: DetailPurchaseRequestlistService,
         private cdRef: ChangeDetectorRef,
-        @Inject(PLATFORM_ID) private platformId: Object
+        @Inject(PLATFORM_ID) private platformId: Object,
+        private zone: NgZone
     ) { }
 
     ngOnInit() {
@@ -97,11 +98,15 @@ export class DetailCaseSetupComponent implements OnInit, OnDestroy {
 
         this.fetchData();
         // Auto-refresh every 30 seconds
-        this.refreshSubscription = interval(30000).subscribe(() => {
-            // Only fetch if no unsaved changes (editing, selected, or dirty)
-            if (!this.hasUnsavedChanges()) {
-                this.fetchData(true); // Pass true to indicate background refresh
-            }
+        this.zone.runOutsideAngular(() => {
+            this.refreshSubscription = interval(30000).subscribe(() => {
+                // Only fetch if no unsaved changes (editing, selected, or dirty)
+                if (!this.hasUnsavedChanges()) {
+                    this.zone.run(() => {
+                        this.fetchData(true); // Pass true to indicate background refresh
+                    });
+                }
+            });
         });
     }
 

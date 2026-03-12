@@ -59,24 +59,29 @@ exports.getMasterDataByDivision = async (req, res) => {
             .input('Mode', sql.NVarChar(10), mode)
             .execute('trans.Stored_Get_Dropdown_PC_Plan_Data');
 
+        // Fetch Facility data specifically using Stored_Get_Dropdown_Facility_By_Division
+        let profitCenter = '';
+        if (divCode === '2') profitCenter = '71DZ'; // PMC -> 71DZ
+        else if (divCode === '3') profitCenter = '7122'; // GM -> 7122
+        else profitCenter = divCode;
+
+        const facResult = await pool.request()
+            .input('Profit_Center', sql.NVarChar(50), profitCenter)
+            .execute('trans.Stored_Get_Dropdown_Facility_By_Division');
+
         let response = {};
 
         if (mode === 'FAST') {
-            // Returns only Machine [0] and Facility [1]
+            // Returns only Machine [0] from main SP, and facilities from facResult
             response = {
                 machines: result.recordsets[0] || [],
-                facilities: result.recordsets[1] || [],
+                facilities: facResult.recordset || [],
                 processes: [],
                 partNos: [],
                 partBefs: []
             };
         } else if (mode === 'SLOW') {
-            // Returns Process [0] and PartNo [1] (because FAST parts are skipped)
-            // Wait, if SP logic uses IF blocks, recordsets indices might shift.
-            // Let's check SP again.
-            // IF FAST: Select 1, Select 2
-            // IF SLOW: Select 3, Select 4
-            // So if SLOW, recordsets[0] is Process, recordsets[1] is PartNo
+            // Returns Process [0] and PartNo [1] from main SP
             response = {
                 machines: [],
                 facilities: [],
@@ -85,10 +90,11 @@ exports.getMasterDataByDivision = async (req, res) => {
                 partBefs: result.recordsets[1] || [] // Same as PartNo
             };
         } else {
-            // ALL (Default) - Returns 4 sets order: MC, Fac, Process, PartNo
+            // ALL (Default) - Returns 4 sets order: MC, Fac(from main SP, skip), Process, PartNo
+            // Instead of result.recordsets[1], we use facResult.recordset for facilities
             response = {
                 machines: result.recordsets[0] || [],
-                facilities: result.recordsets[1] || [],
+                facilities: facResult.recordset || [],
                 processes: result.recordsets[2] || [],
                 partNos: result.recordsets[3] || [],
                 partBefs: result.recordsets[3] || []

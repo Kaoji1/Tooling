@@ -339,3 +339,13 @@
         font-size: 0.9rem;
     }
 }
+
+.bg-orange-custom {
+    background-color: #f97316 !important;
+    color: white !important;
+    font-weight: bold;
+    padding: 6px 14px;
+    border-radius: 50rem !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+}

@@ -93,6 +93,13 @@ export class PlanListComponent implements OnInit {
   get canAttachQC(): boolean { return this.authService.isQC(); }
   get canRequest(): boolean { return this.authService.isPD(); }
 
+  // --- Complete Lock Helper ---
+  // Returns true when the plan is linked to a request that has Status_To_PH = 'Complete'
+  // → disables Cancel button and locks key fields in the edit modal
+  isEditLockedByComplete(item: any): boolean {
+    return (item?.statusToPH || '').toUpperCase() === 'COMPLETE';
+  }
+
   // รายการใน Dropdown Filter (สำหรับ Tool Bar บนตาราง)
   divisions: string[] = ['GM', 'PMC'];
   machineTypes: string[] = ['CNC', 'Lathe', 'Milling'];
@@ -311,6 +318,8 @@ export class PlanListComponent implements OnInit {
           Unique_Id: item.Unique_Id || null, // Capture Unique_Id for PD Request
           employeeId: item.Employee_ID || null,
           requester: item.Employee_ID || null, // Used by Tooling Request modal header
+          statusToPH: item.Status_To_PH || null, // Track request document status
+          reqStatus: item.ReqStatus || null, // Raw Status from Request tables
           // Print Counts (Initialize)
           printLayoutCount: 0,
           printDwgCount: 0
@@ -445,6 +454,13 @@ export class PlanListComponent implements OnInit {
           } else if (this.selectedDepartment === 'QC') {
             const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
             if (!hasIIQC) this.subTabCounts['Required'] = (this.subTabCounts['Required'] || 0) + 1;
+          } else if (this.selectedDepartment === 'PD') {
+            // PD logic based on ReqStatus from backend
+            if (item.reqStatus === 'Waiting' || item.reqStatus === 'In Progress') {
+              this.subTabCounts['Completed'] = (this.subTabCounts['Completed'] || 0) + 1;
+            } else {
+              this.subTabCounts['Required'] = (this.subTabCounts['Required'] || 0) + 1;
+            }
           }
         }
       }
@@ -482,6 +498,10 @@ export class PlanListComponent implements OnInit {
           } else if (this.selectedDepartment === 'QC') {
             const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
             actionNeeded = !hasIIQC;
+          } else if (this.selectedDepartment === 'PD') {
+            // PD "Required" means ReqStatus is NOT Waiting/In Progress
+            const isRequested = item.reqStatus === 'Waiting' || item.reqStatus === 'In Progress';
+            actionNeeded = !isRequested;
           }
         }
         matchSubTab = actionNeeded && isInRange;
@@ -494,6 +514,10 @@ export class PlanListComponent implements OnInit {
         } else if (this.selectedDepartment === 'QC') {
           const hasIIQC = item.iiqc && item.iiqc !== '-' && item.iiqc.trim() !== '';
           isCompleted = hasIIQC;
+        } else if (this.selectedDepartment === 'PD') {
+          // PD "Completed" means ReqStatus IS Waiting/In Progress
+          const isRequested = item.reqStatus === 'Waiting' || item.reqStatus === 'In Progress';
+          isCompleted = isRequested;
         }
         matchSubTab = isCompleted && isInRange;
       }
@@ -800,6 +824,75 @@ export class PlanListComponent implements OnInit {
   editData: any = {};
 
   onEdit(item: any) {
+    if (this.selectedDepartment !== 'PC' || !item.Unique_Id) {
+      this.openEditModalInternal(item);
+      return;
+    }
+
+    // Show loading indicator while checking backend
+    Swal.fire({
+      title: 'Checking Status...',
+      text: 'Please wait while we verify the request status.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    const apiUrl = `${environment.apiUrl}/get_ToolingRequest_ByUniqueId`;
+    this.http.post<any>(apiUrl, { uniqueId: item.Unique_Id }).subscribe({
+      next: (result) => {
+        const allRequests = [...(result.cuttingTool || []), ...(result.setupTool || [])];
+
+        // 1. Check if ANY request is Complete
+        const hasComplete = allRequests.some(req => (req.Status || '').toLowerCase() === 'complete' || (req.Status || '').toLowerCase() === 'completed');
+
+        // 2. Check if ANY request is Waiting
+        const hasWaiting = allRequests.some(req => (req.Status || '').toLowerCase() === 'waiting' || (req.Status || '').toLowerCase() === 'in progress');
+
+        if (hasComplete) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Edit Restricted',
+            text: 'Purchase has already completed the issuance for this plan. You cannot edit the core fields.',
+            confirmButtonText: 'Understood',
+            confirmButtonColor: '#3085d6'
+          }).then(() => {
+            this.openEditModalInternal({ ...item, statusToPH: 'Complete' }); // Force lock on frontend
+          });
+        }
+        else if (hasWaiting) {
+          Swal.fire({
+            icon: 'info',
+            title: 'Proceed with Edit?',
+            text: 'แผนงานนี้ถูกส่งคำขอเบิก Tooling โดยฝ่าย Production เรียบร้อยแล้ว คุณยังต้องการดำเนินการแก้ไขต่อไปหรือไม่?',
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33'
+          }).then((res) => {
+            if (res.isConfirmed) {
+              this.openEditModalInternal(item);
+            }
+          });
+        }
+        else {
+          // Normal edit
+          Swal.close();
+          this.openEditModalInternal(item);
+        }
+      },
+      error: (err) => {
+        console.error('API Error checking status', err);
+        Swal.close();
+        // Fallback to open normally if API fails, avoiding blocking the user
+        this.openEditModalInternal(item);
+      }
+    });
+  }
+
+  private openEditModalInternal(item: any) {
     this.editData = { ...item }; // Clone data
     this.editData.originalItem = { ...item }; // Keep original for comparison
 
@@ -849,8 +942,9 @@ export class PlanListComponent implements OnInit {
         }
 
         // Map Result Set 2 (Facility)
+        // Note: New SP [Stored_Get_Dropdown_Facility_By_Division] returns FacilityShort, FacilityName
         if (res.facilities && res.facilities.length > 0) {
-          const uniqueFacs = new Set<string>(res.facilities.map((f: any) => f.FacilityShort).filter((v: any) => v));
+          const uniqueFacs = new Set<string>(res.facilities.map((f: any) => f.FacilityShort || f.FacilityName).filter((v: any) => v));
           this.modalFacList = Array.from(uniqueFacs).sort();
         } else {
           this.modalFacList = [];
@@ -881,6 +975,17 @@ export class PlanListComponent implements OnInit {
   }
 
   onCancel(item: any) {
+    // ── Complete Lock: Cannot cancel if the linked request is already Complete ──
+    if (this.isEditLockedByComplete(item)) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Cannot Cancel',
+        text: 'This plan is linked to a completed request (Status: Complete) and can no longer be cancelled.',
+        confirmButtonColor: '#0f172a'
+      });
+      return;
+    }
+
     Swal.fire({
       title: 'Are you sure?',
       text: "คุรต้องการยกเลิกแผนงานนี้หรือไม่?",
@@ -923,7 +1028,8 @@ export class PlanListComponent implements OnInit {
 
           groupId: item.groupId,
           revision: (item.revision || 0) + 1,
-          planStatus: 'Cancelled'
+          planStatus: 'Cancelled',
+          uniqueId: item.Unique_Id || null
         }];
 
         this.pcPlanService.savePlan(payload).subscribe({
@@ -960,11 +1066,13 @@ export class PlanListComponent implements OnInit {
     this.selectedDepartment = dept;
 
     // Dynamically update sub-tabs based on department
-    if (dept === 'EN' || dept === 'QC') {
+    if (dept === 'EN' || dept === 'QC' || dept === 'PD') {
       // Reorder: Required first, then Completed, then Upcoming (Requested Order)
       if (dept === 'EN') {
         this.subTabs = ['Required', 'Completed', 'Upcoming'];
       } else if (dept === 'QC') {
+        this.subTabs = ['Required', 'Completed', 'Upcoming'];
+      } else if (dept === 'PD') {
         this.subTabs = ['Required', 'Completed', 'Upcoming'];
       } else {
         this.subTabs = ['Required', 'Upcoming'];
@@ -1063,19 +1171,22 @@ export class PlanListComponent implements OnInit {
       newDateStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
     }
 
+    // Helper to safely compare strings even if null/empty
+    const normalize = (v: any) => (v === null || v === undefined) ? '' : String(v).trim();
+
     // Compare Plan Fields
     const isPlanChanged =
-      newDateStr !== original.date ||
-      this.editData.mcType !== original.mcType ||
-      this.editData.barType !== original.barType ||
-      this.editData.fac !== original.fac ||
-      this.editData.process !== original.process ||
-      this.editData.partBefore !== original.partBefore ||
-      this.editData.mcNo !== original.mcNo ||
-      this.editData.partNo !== original.partNo ||
-      this.editData.qty != original.qty ||
-      this.editData.time != original.time ||
-      this.editData.comment !== original.comment;
+      normalize(newDateStr) !== normalize(original.date) ||
+      normalize(this.editData.mcType) !== normalize(original.mcType) ||
+      normalize(this.editData.barType) !== normalize(original.barType) ||
+      normalize(this.editData.fac) !== normalize(original.fac) ||
+      normalize(this.editData.process) !== normalize(original.process) ||
+      normalize(this.editData.partBefore) !== normalize(original.partBefore) ||
+      normalize(this.editData.mcNo) !== normalize(original.mcNo) ||
+      normalize(this.editData.partNo) !== normalize(original.partNo) ||
+      Number(this.editData.qty || 0) !== Number(original.qty || 0) ||
+      Number(this.editData.time || 0) !== Number(original.time || 0) ||
+      normalize(this.editData.comment) !== normalize(original.comment);
 
     // Compare Path Fields
     const isPathChanged =
@@ -1207,7 +1318,8 @@ export class PlanListComponent implements OnInit {
           iiqc: this.editData.iiqc,
           groupId: this.editData.groupId,
           revision: (this.editData.revision || 0) + 1,
-          planStatus: 'Active'
+          planStatus: 'Active',
+          uniqueId: this.editData.Unique_Id || null
         }];
 
         this.pcPlanService.savePlan(payload).subscribe({

@@ -1,4 +1,4 @@
-﻿import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+﻿import { Injectable, Inject, PLATFORM_ID, NgZone } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { io, Socket } from 'socket.io-client';
@@ -45,7 +45,8 @@ export class NotificationService {
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private http: HttpClient
+    private http: HttpClient,
+    private zone: NgZone
   ) {
     // Connect to Backend Socket.IO only in Browser
     if (isPlatformBrowser(this.platformId)) {
@@ -63,13 +64,17 @@ export class NotificationService {
         console.error('Error reading user session for notifications:', e);
       }
 
-      this.socket = io(environment.socketUrl, {
-        transports: ['websocket', 'polling'],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 30000, //0.5min
+      // Wrap socket connection outside Angular to prevent Hydration Timeout (NG0506)
+      this.zone.runOutsideAngular(() => {
+        this.socket = io(environment.socketUrl, {
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 30000, //0.5min
+        });
+        this.setupSocketListeners();
       });
-      this.setupSocketListeners();
+
       this.fetchNotifications(); // Initial load of notifications   
     }
   }
@@ -198,44 +203,55 @@ export class NotificationService {
     });
 
     this.socket.on('notification', (data: any) => {
-      console.log('New Notification Received:', data);
+      this.zone.run(() => {
+        console.log('New Notification Received:', data);
 
-      // โ”€โ”€ 1. Sender-exclusion: never show notification to the user who triggered it โ”€โ”€
-      if (this.currentUserName && data.actionBy) {
-        const senderName = (data.actionBy as string).toLowerCase().trim();
-        if (senderName === this.currentUserName) {
-          console.log('[Notification] Suppressed: triggered by self (' + senderName + ')');
-          return;
+        // โ”€โ”€ 1. Sender-exclusion: never show notification to the user who triggered it โ”€โ”€
+        if (data.excludeUsername) {
+          const excludedId = String(data.excludeUsername).toLowerCase().trim();
+          const currentIdStr = this.currentEmployeeId ? String(this.currentEmployeeId).toLowerCase() : '';
+          const currentNameStr = this.currentUserName ? this.currentUserName.toLowerCase().trim() : '';
+
+          if (excludedId === currentIdStr || excludedId === currentNameStr) {
+            console.log('[Notification] Suppressed: excludeUsername matched current user');
+            return;
+          }
+        } else if (this.currentUserName && data.actionBy) {
+          const senderName = (data.actionBy as string).toLowerCase().trim();
+          if (senderName === this.currentUserName) {
+            console.log('[Notification] Suppressed: triggered by self (' + senderName + ')');
+            return;
+          }
         }
-      }
 
-      // โ”€โ”€ 2. Role-based filtering on the client side โ”€โ”€
-      const targetRoles = (data.targetRoles || 'ALL').toLowerCase();
-      if (targetRoles !== 'all' && this.currentUserRole) {
-        const rolesArray = targetRoles.split(',').map((r: string) => r.trim());
-        if (!rolesArray.includes(this.currentUserRole) && this.currentUserRole !== 'admin') {
-          console.log('Notification filtered out: not for role', this.currentUserRole);
-          return; // Skip โ€“ not relevant to this user
+        // โ”€โ”€ 2. Role-based filtering on the client side โ”€โ”€
+        const targetRoles = (data.targetRoles || 'ALL').toLowerCase();
+        if (targetRoles !== 'all' && this.currentUserRole) {
+          const rolesArray = targetRoles.split(',').map((r: string) => r.trim());
+          if (!rolesArray.includes(this.currentUserRole) && this.currentUserRole !== 'admin') {
+            console.log('Notification filtered out: not for role', this.currentUserRole);
+            return; // Skip โ€“ not relevant to this user
+          }
         }
-      }
 
-      const newNotif: NotificationLog = {
-        Notification_ID: data.id,
-        Event_Type: data.type,
-        Subject: data.subject || '',
-        Message: data.message,
-        Message_TH: data.messageTH || '',
-        Doc_No: data.docNo,
-        Action_By: data.actionBy || '',
-        Target_Roles: data.targetRoles || 'ALL',
-        CTA_Route: data.ctaRoute || '',
-        Details_JSON: data.detailsJson || null,
-        Created_At: new Date(data.timestamp || new Date()),
-        IsRead: false
-      };
+        const newNotif: NotificationLog = {
+          Notification_ID: data.id,
+          Event_Type: data.type,
+          Subject: data.subject || '',
+          Message: data.message,
+          Message_TH: data.messageTH || '',
+          Doc_No: data.docNo,
+          Action_By: data.actionBy || '',
+          Target_Roles: data.targetRoles || 'ALL',
+          CTA_Route: data.ctaRoute || '',
+          Details_JSON: data.detailsJson || null,
+          Created_At: new Date(data.timestamp || new Date()),
+          IsRead: false
+        };
 
-      this.addNotification(newNotif);
-      this.playNotificationSound();
+        this.addNotification(newNotif);
+        this.playNotificationSound();
+      });
     });
 
     this.socket.on('disconnect', () => {
